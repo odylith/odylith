@@ -73,6 +73,20 @@ def _normalize_id_list(values: Any) -> list[str]:
     return deduped
 
 
+def _normalize_text_list(values: Any) -> list[str]:
+    if not isinstance(values, list):
+        return []
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for raw in values:
+        token = " ".join(str(raw or "").split()).strip()
+        if not token or token.casefold() in seen:
+            continue
+        seen.add(token.casefold())
+        deduped.append(token)
+    return deduped
+
+
 def _normalize_gate_refs(values: Any) -> list[dict[str, str]]:
     if not isinstance(values, list):
         return []
@@ -295,6 +309,8 @@ def build_execution_wave_view_payload(traceability_graph: Mapping[str, Any]) -> 
             wave_id = str(raw_wave.get("wave_id", "")).strip()
             label = str(raw_wave.get("label", "")).strip() or wave_id
             status = str(raw_wave.get("status", "")).strip().lower()
+            exit_gate = " ".join(str(raw_wave.get("exit_gate", "") or "").split()).strip()
+            validation_gates = _normalize_text_list(raw_wave.get("validation"))
             primary_ids = _normalize_id_list(raw_wave.get("primary_workstreams"))
             carried_ids = _normalize_id_list(raw_wave.get("carried_workstreams"))
             in_band_ids = _normalize_id_list(raw_wave.get("in_band_workstreams"))
@@ -338,6 +354,9 @@ def build_execution_wave_view_payload(traceability_graph: Mapping[str, Any]) -> 
                 "status_label": _status_label(status),
                 "status_tone": _status_tone(status),
                 "summary": str(raw_wave.get("summary", "")).strip(),
+                "exit_gate": exit_gate,
+                "validation_gates": validation_gates,
+                "validation_gate_summary": "; ".join(validation_gates[:2]),
                 "sequence": index,
                 "depends_on": depends_on_ids,
                 "depends_on_labels": depends_on_labels,

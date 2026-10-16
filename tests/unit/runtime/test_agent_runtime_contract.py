@@ -82,18 +82,16 @@ def test_timeline_event_id_uses_agent_prefix() -> None:
     )
 
 
-# Canonical Codex model tuples pinned by the B-072 execution-engine
-# contract. These must remain byte-identical across B-084 host-family
-# axis refactors; drift here is a Codex execution-ladder regression and
-# must be caught by this test before it reaches the router or orchestrator.
+# Current Codex defaults preserve the semantic roles and effort levels from
+# B-072/B-084 while replacing retired host models.
 _CODEX_CANONICAL_PROFILE_LADDER: dict[str, tuple[str, str]] = {
-    agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE: ("gpt-5.4-mini", "medium"),
-    agent_runtime_contract.ANALYSIS_HIGH_PROFILE: ("gpt-5.4-mini", "high"),
+    agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE: ("gpt-5.6-luna", "medium"),
+    agent_runtime_contract.ANALYSIS_HIGH_PROFILE: ("gpt-5.6-luna", "high"),
     agent_runtime_contract.FAST_WORKER_PROFILE: ("gpt-5.3-codex-spark", "medium"),
-    agent_runtime_contract.WRITE_MEDIUM_PROFILE: ("gpt-5.3-codex", "medium"),
-    agent_runtime_contract.WRITE_HIGH_PROFILE: ("gpt-5.3-codex", "high"),
-    agent_runtime_contract.FRONTIER_HIGH_PROFILE: ("gpt-5.4", "high"),
-    agent_runtime_contract.FRONTIER_XHIGH_PROFILE: ("gpt-5.4", "xhigh"),
+    agent_runtime_contract.WRITE_MEDIUM_PROFILE: ("gpt-5.6-terra", "medium"),
+    agent_runtime_contract.WRITE_HIGH_PROFILE: ("gpt-5.6-terra", "high"),
+    agent_runtime_contract.FRONTIER_HIGH_PROFILE: ("gpt-5.6-sol", "high"),
+    agent_runtime_contract.FRONTIER_XHIGH_PROFILE: ("gpt-5.6-sol", "xhigh"),
 }
 
 # Canonical Claude model tuples introduced by B-084 so the execution profile
@@ -112,7 +110,7 @@ _CLAUDE_CANONICAL_PROFILE_LADDER: dict[str, tuple[str, str]] = {
 }
 
 
-def test_codex_execution_profile_ladder_is_byte_identical() -> None:
+def test_codex_execution_profile_ladder_uses_current_role_defaults() -> None:
     for profile in agent_runtime_contract.CANONICAL_EXECUTION_PROFILES:
         fields = agent_runtime_contract.execution_profile_runtime_fields(
             profile, host_runtime="codex_cli"
@@ -191,5 +189,5 @@ def test_execution_profile_aliases_resolve_through_host_axis() -> None:
     claude_alias = agent_runtime_contract.execution_profile_runtime_fields(
         "gpt54_high", host_runtime="claude_cli"
     )
-    assert codex_alias == ("gpt-5.4", "high")
+    assert codex_alias == ("gpt-5.6-sol", "high")
     assert claude_alias == ("claude-opus-4-6", "high")

@@ -1,0 +1,66 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "education",
+    "learning",
+    "student",
+    "teaching",
+    "school",
+    "course"
+  ],
+  "matched_description_evidence_terms": [
+    "learning"
+  ],
+  "repository": {
+    "default_branch": "develop",
+    "description": "Artemis - Interactive Learning with Automated Feedback",
+    "full_name": "ls1intum/Artemis",
+    "id": 69562331,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "Artemis",
+    "node_id": "MDEwOlJlcG9zaXRvcnk2OTU2MjMzMQ==",
+    "pushed_at": "2026-07-18T11:14:14Z",
+    "topics": [
+      "apollon",
+      "artificial-intelligence",
+      "assessment",
+      "autograding",
+      "automatic-feedback",
+      "computer-science",
+      "education",
+      "education-technology",
+      "exam-mode",
+      "exercises",
+      "feedback",
+      "gen-ai",
+      "interactive-learning",
+      "learning",
+      "modeling-exercises",
+      "programming-exercises",
+      "research",
+      "software-engineering",
+      "text-exercises",
+      "university"
+    ]
+  },
+  "response_item_index": 39,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aeducation&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:15:57 GMT",
+    "x-github-request-id": "D127:37400:14E2036:154650B:6A5B606A"
+  },
+  "search_response_path": "responses/education.json",
+  "search_response_sha256": "d51afeba9684308dd78e53e1ecc6ffcf33d5093aa6f1d2e4bc3690c31b6b2504",
+  "selection_index": 14,
+  "source_family": "education",
+  "source_id": "github-repository:69562331",
+  "source_uri": "https://github.com/ls1intum/Artemis",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

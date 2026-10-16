@@ -76,14 +76,11 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [x] Risk: publication-state lookup could fail and make the lane unsafe.
-  - [x] Mitigation: fail closed when publication state cannot be resolved for a
-    conflicting existing tag.
+  - [x] Mitigation: fail closed when publication state cannot be resolved for a conflicting existing tag.
 - [x] Risk: tag rebinding could accidentally move a published release tag.
-  - [x] Mitigation: only rebind when GitHub release lookup proves the tag is
-    unpublished; published tags still fail closed.
+  - [x] Mitigation: only rebind when GitHub release lookup proves the tag is unpublished; published tags still fail closed.
 - [x] Risk: maintainers still misread raw tags as canonical history.
-  - [x] Mitigation: surface both highest published release and highest raw tag
-    explicitly in the maintainer state output and docs.
+  - [x] Mitigation: surface both highest published release and highest raw tag explicitly in the maintainer state output and docs.
 
 ## Validation/Test Plan
 - [x] `PYTHONPATH=src .venv/bin/pytest -q tests/unit/install/test_release_version_session.py`

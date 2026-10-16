@@ -30,8 +30,6 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
     near-identical fork.
     """
 
-    header_variant = str(section_header_variant or "").strip().lower()
-
     layout_css = """
 .execution-wave-board {
   display: grid;
@@ -67,19 +65,11 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 .execution-wave-section-summary {
   cursor: pointer;
   padding: 16px 18px;
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  min-width: 0;
-}
-
-.execution-wave-section-summary-compass {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
   gap: 12px 16px;
+  min-width: 0;
 }
 
 .execution-wave-section-summary:hover {
@@ -95,7 +85,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   display: grid;
   gap: 6px;
   min-width: 0;
-  flex: 1 1 320px;
+  grid-column: 1 / 2;
 }
 
 .execution-wave-section-line {
@@ -114,7 +104,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   min-width: 0;
 }
 
@@ -122,6 +112,8 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .execution-wave-section-meta-bottom {
@@ -172,11 +164,14 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 }
 
 .execution-wave-focus-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 16px;
-  align-items: start;
+  display: block;
   min-width: 0;
+}
+
+.execution-wave-focus-grid::after {
+  content: "";
+  display: block;
+  clear: both;
 }
 
 .execution-wave-focus-copy {
@@ -196,7 +191,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 .execution-wave-focus-line {
   color: #27445e;
   line-height: 1.6;
-  max-width: 70ch;
+  max-width: none;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
@@ -206,11 +201,14 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 }
 
 .execution-wave-focus-stat-rail {
+  float: right;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   justify-content: flex-end;
   align-items: flex-start;
+  max-width: min(44%, 520px);
+  margin: 0 0 8px 16px;
 }
 
 .execution-wave-sequence {
@@ -236,17 +234,6 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 
 .execution-wave-card summary::-webkit-details-marker {
   display: none;
-}
-
-.execution-wave-card-link {
-  display: block;
-  color: inherit;
-  text-decoration: none;
-}
-
-.execution-wave-card-link:focus-visible {
-  outline: 3px solid #2563eb;
-  outline-offset: 3px;
 }
 
 .execution-wave-card.is-member {
@@ -487,6 +474,18 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   min-width: 0;
 }
 
+.execution-wave-group-body .label.execution-wave-label {
+  flex: 0 1 auto;
+  max-width: 100%;
+  min-width: 0;
+  justify-content: flex-start;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-align: left;
+  line-height: 1.18;
+}
+
 .execution-wave-gates {
   display: grid;
   gap: 10px;
@@ -529,9 +528,14 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
     padding-right: 14px;
   }
 
-  .execution-wave-focus-grid,
   .execution-wave-card-shell {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .execution-wave-focus-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
   }
 
   .execution-wave-card-shell-full-copy {
@@ -546,7 +550,13 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .execution-wave-focus-stat-rail,
+  .execution-wave-focus-stat-rail {
+    float: none;
+    margin: 0;
+    max-width: none;
+    justify-content: flex-start;
+  }
+
   .execution-wave-card-stat-rail,
   .execution-wave-section-meta {
     justify-content: flex-start;
@@ -554,6 +564,16 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 
   .execution-wave-section-summary-compass {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .execution-wave-section-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .execution-wave-section-toggle {
+    grid-column: 1;
+    grid-row: auto;
+    justify-self: start;
   }
 
   .execution-wave-section-meta-bottom {
@@ -948,6 +968,8 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     const waveTone = waveStatusChipClass(wave.status);
     const compactSummaryLine = String(wave.compact_summary_line || "").trim();
     const gatePreview = String(wave.gate_preview_summary || "").trim();
+    const exitGate = String(wave.exit_gate || "").trim();
+    const validationGateSummary = String(wave.validation_gate_summary || "").trim();
     const dependsOnLabels = Array.isArray(wave.depends_on_labels)
       ? wave.depends_on_labels.map((token) => String(token || "").trim()).filter(Boolean)
       : [];
@@ -967,6 +989,22 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
         <div class="execution-wave-highlight">
           <div class="execution-wave-highlight-label">Gate focus</div>
           <div class="execution-wave-highlight-copy">${escapeHtml(gatePreview)}</div>
+        </div>
+      `);
+    }
+    if (exitGate) {
+      supportBlocks.push(`
+        <div class="execution-wave-highlight">
+          <div class="execution-wave-highlight-label">Exit gate</div>
+          <div class="execution-wave-highlight-copy">${escapeHtml(exitGate)}</div>
+        </div>
+      `);
+    }
+    if (validationGateSummary) {
+      supportBlocks.push(`
+        <div class="execution-wave-highlight">
+          <div class="execution-wave-highlight-label">Validation</div>
+          <div class="execution-wave-highlight-copy">${escapeHtml(validationGateSummary)}</div>
         </div>
       `);
     }
@@ -1047,12 +1085,12 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     <div class="execution-wave-board">
       <div class="execution-wave-focus">
         <div class="execution-wave-focus-grid">
+          ${contextChips.length ? `<div class="execution-wave-focus-stat-rail">${contextChips.join("")}</div>` : ""}
           <div class="execution-wave-focus-copy">
             ${showProgramFocusTitle ? `<div class="execution-wave-focus-title">${escapeHtml(programLabel)}</div>` : ""}
             <div class="execution-wave-focus-line">${escapeHtml(contextLine)}</div>
             ${summaryLine ? `<div class="execution-wave-focus-line execution-wave-focus-line-muted">${escapeHtml(summaryLine)}</div>` : ""}
           </div>
-          ${contextChips.length ? `<div class="execution-wave-focus-stat-rail">${contextChips.join("")}</div>` : ""}
         </div>
       </div>
       <div class="execution-wave-sequence">${cardsHtml}</div>
@@ -1123,10 +1161,8 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
             ${contextLine ? `<div class="execution-wave-section-line">${escapeHtml(contextLine)}</div>` : ""}
             ${summaryLine ? `<div class="execution-wave-section-line execution-wave-section-line-muted">${escapeHtml(summaryLine)}</div>` : ""}
           </div>
-          <div class="execution-wave-section-meta">
-            ${sectionChips.join("")}
-            <span class="execution-wave-section-toggle execution-wave-section-toggle-triangle" aria-hidden="true"></span>
-          </div>
+          <span class="execution-wave-section-toggle execution-wave-section-toggle-triangle" aria-hidden="true"></span>
+          ${sectionChips.length ? `<div class="execution-wave-section-meta execution-wave-section-meta-bottom">${sectionChips.join("")}</div>` : ""}
         </summary>
         <div class="execution-wave-section-body">${boardsHtml}</div>
       </details>

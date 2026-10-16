@@ -1,0 +1,196 @@
+"""Separate cited source precedence from one proposed first-run walkthrough.
+
+Event identities follow the selected citation array, not execution order. Precedence refers
+to the existing operational-constraint facts; this module owns only structural
+integrity and never infers temporal meaning from citation text.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Mapping, Sequence
+from copy import deepcopy
+from graphlib import CycleError, TopologicalSorter
+from typing import Any
+
+from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
+    MAX_AUTHORED_LIST_ITEMS,
+)
+
+_EVENT_INDEX = {"type": "integer", "minimum": 1, "maximum": 32}
+_PRECEDENCE_FIELDS = ("before_event", "after_event", "constraint_index")
+SOURCE_PRECEDENCE_SCHEMA = {
+    "type": "array",
+    "maxItems": 64,
+    "description": (
+        "Preserve every explicit source-stated ordering requirement as a directed "
+        "edge between two existing accepted actor/action event IDs, backed by the "
+        "one-based index of its accepted operational constraint. Different constraints "
+        "may support the same directed edge; do not repeat an identical edge and "
+        "constraint binding. Return [] when no edge is possible or required, including "
+        "passive or unowned timing whose ordered side is not an accepted event. Event "
+        "array order and the proposed first-run walkthrough are not source authority."
+    ),
+    "items": {
+        "type": "object", "additionalProperties": False,
+        "required": list(_PRECEDENCE_FIELDS),
+        "properties": {
+            "before_event": dict(_EVENT_INDEX), "after_event": dict(_EVENT_INDEX),
+            "constraint_index": {"type": "integer", "minimum": 1, "maximum": MAX_AUTHORED_LIST_ITEMS},
+        },
+    },
+}
+FIRST_RUN_SCHEMA = {
+    "type": "object", "additionalProperties": False,
+    "required": ["event_orders", "rationale"],
+    "properties": {
+        "event_orders": {
+            "type": "array", "minItems": 1, "maxItems": 32,
+            "description": (
+                "One coherent proposed walkthrough over a unique subset of source-event "
+                "identities. Include the selected terminal result and every cited source-"
+                "precedence prerequisite on that branch. Do not concatenate mutually "
+                "exclusive outcomes. Other source events remain retained and component-"
+                "supported outside this first run."
+            ),
+            "items": dict(_EVENT_INDEX),
+        },
+        "rationale": {"type": "string", "minLength": 1, "maxLength": 1000},
+    },
+}
+
+
+def validate_source_precedence(
+    value: Any, *, event_orders: Sequence[int], operational_constraints: Sequence[str],
+) -> tuple[dict[str, int], ...]:
+    """Bind edges to existing cited constraints without creating source facts."""
+
+    accepted = _event_identities(event_orders)
+    if (
+        not isinstance(operational_constraints, Sequence)
+        or isinstance(operational_constraints, (str, bytes, bytearray))
+        or len(operational_constraints) > MAX_AUTHORED_LIST_ITEMS
+        or any(not isinstance(row, str) or not row.strip() for row in operational_constraints)
+    ):
+        raise ValueError("Greenfield source precedence requires existing operational constraints")
+    return _validated_edges(value, accepted=accepted, constraint_count=len(operational_constraints))
+
+
+def _validated_edges(
+    value: Any, *, accepted: set[int], constraint_count: int,
+) -> tuple[dict[str, int], ...]:
+    if (
+        not isinstance(value, Sequence)
+        or isinstance(value, (str, bytes, bytearray))
+        or len(value) > SOURCE_PRECEDENCE_SCHEMA["maxItems"]
+    ):
+        raise ValueError("Greenfield source precedence has an invalid edge list")
+    seen: set[tuple[int, int, int]] = set()
+    prerequisites: dict[int, list[int]] = {order: [] for order in accepted}
+    rows: list[dict[str, int]] = []
+    for row in value:
+        if not isinstance(row, Mapping) or set(row) != set(_PRECEDENCE_FIELDS):
+            raise ValueError("Greenfield source precedence has invalid edge fields")
+        before, after, constraint = (row[field] for field in _PRECEDENCE_FIELDS)
+        if (
+            any(type(index) is not int for index in (before, after, constraint))
+            or before not in accepted or after not in accepted or before == after
+            or not 1 <= constraint <= constraint_count
+        ):
+            raise ValueError("Greenfield source precedence has invalid event or constraint references")
+        binding = (before, after, constraint)
+        if binding in seen:
+            raise ValueError("Greenfield source precedence contains a duplicate binding")
+        seen.add(binding)
+        prerequisites[after].append(before)
+        rows.append(dict(row))
+    try:
+        tuple(TopologicalSorter(prerequisites).static_order())
+    except CycleError as exc:
+        raise ValueError("Greenfield source precedence contains a cycle") from exc
+    return tuple(rows)
+
+
+def validate_first_run(
+    value: Any, *, event_orders: Sequence[int],
+    source_precedence: Sequence[Mapping[str, int]], result_event_order: int | None,
+    first_path_event_orders: Sequence[int] | None = None,
+    recurring_event_orders: Sequence[int] = (),
+) -> dict[str, Any]:
+    """Validate one selected proposed branch, never infer a runtime ordering."""
+
+    accepted = _event_identities(event_orders)
+    if not isinstance(value, Mapping) or set(value) != set(FIRST_RUN_SCHEMA["required"]):
+        raise ValueError("Greenfield first run has an invalid design contract")
+    selected = _event_identities(value["event_orders"])
+    if not selected <= accepted:
+        raise ValueError("Greenfield first run references an unknown source event")
+    if any(type(order) is not int or order not in accepted for order in recurring_event_orders):
+        raise ValueError("Greenfield recurring duty references an unknown source event")
+    if selected.intersection(recurring_event_orders):
+        raise ValueError("Greenfield recurring invariant cannot be discharged as a one-time first-run action")
+    rationale = value["rationale"]
+    if (
+        not isinstance(rationale, str) or not rationale.strip()
+        or len(rationale) > FIRST_RUN_SCHEMA["properties"]["rationale"]["maxLength"]
+    ):
+        raise ValueError("Greenfield first run requires a bounded nonblank rationale")
+    if result_event_order is not None and (
+        type(result_event_order) is not int or result_event_order not in accepted
+    ):
+        raise ValueError("Greenfield first run has an invalid explicit result event")
+    if result_event_order is not None and result_event_order not in selected:
+        raise ValueError("Greenfield first run must include its explicit result event")
+    positions = {order: index for index, order in enumerate(value["event_orders"])}
+    edges = _validated_edges(
+        source_precedence, accepted=accepted, constraint_count=MAX_AUTHORED_LIST_ITEMS,
+    )
+    for edge in edges:
+        if edge["after_event"] not in selected:
+            continue
+        if edge["before_event"] not in selected:
+            raise ValueError("Greenfield first run omits a cited source prerequisite")
+        if positions[edge["before_event"]] >= positions[edge["after_event"]]:
+            raise ValueError("Greenfield first run violates cited source precedence")
+    if first_path_event_orders is not None:
+        first_path = _event_identities(first_path_event_orders)
+        if not first_path <= accepted:
+            raise ValueError("Greenfield first run has unknown source first-path duties")
+        prerequisites: dict[int, list[int]] = {}
+        for edge in edges:
+            prerequisites.setdefault(edge["after_event"], []).append(edge["before_event"])
+        required = set(first_path)
+        pending = list(first_path)
+        while pending:
+            for before in prerequisites.get(pending.pop(), ()):
+                if before not in required:
+                    required.add(before)
+                    pending.append(before)
+        if selected != required:
+            raise ValueError(
+                "Greenfield first run must contain source first-path duties and only "
+                "their cited source prerequisites exactly once"
+            )
+        if tuple(order for order in value["event_orders"] if order in first_path) != tuple(
+            first_path_event_orders
+        ):
+            raise ValueError("Greenfield first run must preserve ledger workflow order")
+    return deepcopy(dict(value))
+
+
+def _event_identities(value: Any) -> set[int]:
+    if (
+        not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray))
+        or not value or len(value) > 32
+        or any(type(order) is not int or not 1 <= order <= 32 for order in value)
+        or len(set(value)) != len(value)
+    ):
+        raise ValueError("Greenfield event orders must be unique bounded source identities")
+    return set(value)
+
+
+__all__ = [
+    "FIRST_RUN_SCHEMA",
+    "SOURCE_PRECEDENCE_SCHEMA",
+    "validate_first_run",
+    "validate_source_precedence",
+]

@@ -158,6 +158,13 @@ def test_casebook_status_normalizer_is_closed_fsm() -> None:
     assert casebook_metadata.casebook_status_transition_is_valid("FixedPendingRelease", "Closed")
     assert casebook_metadata.casebook_status_transition_is_valid("Closed", "Open")
     assert not casebook_metadata.casebook_status_transition_is_valid("Closed", "FixedPendingRelease")
+    assert casebook_metadata.casebook_status_requires_active_attention("Open")
+    assert casebook_metadata.casebook_status_requires_active_attention("InProgress")
+    assert casebook_metadata.casebook_status_requires_active_attention("Mitigated")
+    assert casebook_metadata.casebook_status_requires_active_attention("Monitoring")
+    assert not casebook_metadata.casebook_status_requires_active_attention("Resolved")
+    assert not casebook_metadata.casebook_status_requires_active_attention("FixedPendingRelease")
+    assert not casebook_metadata.casebook_status_requires_active_attention("Closed")
 
 
 def test_casebook_source_validation_rejects_prose_type(tmp_path: Path) -> None:

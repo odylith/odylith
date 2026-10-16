@@ -1,0 +1,1174 @@
+{
+  "version": "independent-public40-source-complexity.v1",
+  "authority": "Frozen phase1 source census plus parent-supplied tier helper; completed before candidate annotation reads.",
+  "frozen_census_sha256": "b24cd14f7ba76ebc9c6a865843d78f1960a7e62ad5508398ba44149a1813cf66",
+  "tier_rule": "2 if value > high else 1 if value > moderate else 0",
+  "dimensions_census_units": "Semantic units are declared, not a claim of universal atom cardinality. Component responsibilities count requested system surfaces. Paths count complete journeys.",
+  "summary": {
+    "bounded": 32,
+    "moderate": 8
+  },
+  "coverage_note": "Zero high cases is a prospective annotation coverage gap; this assessment makes no product or release qualification claim.",
+  "cases": [
+    {
+      "case_id": "release-accessibility-004-topic",
+      "dimensions": {
+        "evidence_bytes": 368,
+        "documents": 1,
+        "actors": 0,
+        "state_objects": 0,
+        "paths": 0,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 0,
+        "success_metrics": 0,
+        "evidence_requirements": 0,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 0,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-accessibility-005-source",
+      "dimensions": {
+        "evidence_bytes": 1389,
+        "documents": 1,
+        "actors": 5,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 5,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 3,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 5,
+        "assumptions": 0,
+        "non_goals": 2
+      },
+      "score": 4,
+      "complexity_band": "moderate",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-accessibility-006-source",
+      "dimensions": {
+        "evidence_bytes": 292,
+        "documents": 1,
+        "actors": 0,
+        "state_objects": 0,
+        "paths": 0,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 0,
+        "success_metrics": 0,
+        "evidence_requirements": 0,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 0,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-accessibility-007-source",
+      "dimensions": {
+        "evidence_bytes": 961,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 0,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 1,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-agriculture-021-description",
+      "dimensions": {
+        "evidence_bytes": 359,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 0,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 1,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-agriculture-024-topic",
+      "dimensions": {
+        "evidence_bytes": 321,
+        "documents": 1,
+        "actors": 0,
+        "state_objects": 0,
+        "paths": 0,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 0,
+        "success_metrics": 0,
+        "evidence_requirements": 0,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 0,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-agriculture-037-source",
+      "dimensions": {
+        "evidence_bytes": 3668,
+        "documents": 1,
+        "actors": 5,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 5,
+        "contradictions": 0,
+        "ambiguities": 3,
+        "safety_boundaries": 9,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 5,
+        "assumptions": 3,
+        "non_goals": 3
+      },
+      "score": 6,
+      "complexity_band": "moderate",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-agriculture-030-source",
+      "dimensions": {
+        "evidence_bytes": 456,
+        "documents": 1,
+        "actors": 0,
+        "state_objects": 0,
+        "paths": 0,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 0,
+        "success_metrics": 0,
+        "evidence_requirements": 0,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 0,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-civic-tech-041-description",
+      "dimensions": {
+        "evidence_bytes": 363,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 0,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 1,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-civic-tech-044-topic",
+      "dimensions": {
+        "evidence_bytes": 298,
+        "documents": 1,
+        "actors": 0,
+        "state_objects": 0,
+        "paths": 0,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 0,
+        "success_metrics": 0,
+        "evidence_requirements": 0,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 0,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-civic-tech-045-source",
+      "dimensions": {
+        "evidence_bytes": 605,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 0,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 1,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-civic-tech-057-source",
+      "dimensions": {
+        "evidence_bytes": 3811,
+        "documents": 1,
+        "actors": 5,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 5,
+        "contradictions": 0,
+        "ambiguities": 3,
+        "safety_boundaries": 9,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 5,
+        "assumptions": 3,
+        "non_goals": 4
+      },
+      "score": 6,
+      "complexity_band": "moderate",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-climate-061-description",
+      "dimensions": {
+        "evidence_bytes": 337,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 0,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 1,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-climate-064-topic",
+      "dimensions": {
+        "evidence_bytes": 364,
+        "documents": 1,
+        "actors": 0,
+        "state_objects": 0,
+        "paths": 0,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 0,
+        "success_metrics": 0,
+        "evidence_requirements": 0,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 0,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-climate-073-source",
+      "dimensions": {
+        "evidence_bytes": 1354,
+        "documents": 1,
+        "actors": 5,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 5,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 3,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 5,
+        "assumptions": 0,
+        "non_goals": 2
+      },
+      "score": 4,
+      "complexity_band": "moderate",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-climate-069-source",
+      "dimensions": {
+        "evidence_bytes": 328,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 0,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 1,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-education-081-description",
+      "dimensions": {
+        "evidence_bytes": 346,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 0,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 1,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-education-084-topic",
+      "dimensions": {
+        "evidence_bytes": 292,
+        "documents": 1,
+        "actors": 0,
+        "state_objects": 0,
+        "paths": 0,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 0,
+        "success_metrics": 0,
+        "evidence_requirements": 0,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 0,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-education-085-source",
+      "dimensions": {
+        "evidence_bytes": 381,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 0,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 1,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-education-086-source",
+      "dimensions": {
+        "evidence_bytes": 436,
+        "documents": 1,
+        "actors": 0,
+        "state_objects": 0,
+        "paths": 0,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 0,
+        "success_metrics": 0,
+        "evidence_requirements": 0,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 0,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-healthcare-117-source",
+      "dimensions": {
+        "evidence_bytes": 3898,
+        "documents": 1,
+        "actors": 5,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 5,
+        "contradictions": 0,
+        "ambiguities": 3,
+        "safety_boundaries": 9,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 5,
+        "assumptions": 3,
+        "non_goals": 3
+      },
+      "score": 6,
+      "complexity_band": "moderate",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-healthcare-104-topic",
+      "dimensions": {
+        "evidence_bytes": 278,
+        "documents": 1,
+        "actors": 0,
+        "state_objects": 0,
+        "paths": 0,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 0,
+        "success_metrics": 0,
+        "evidence_requirements": 0,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 0,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-healthcare-108-source",
+      "dimensions": {
+        "evidence_bytes": 280,
+        "documents": 1,
+        "actors": 0,
+        "state_objects": 0,
+        "paths": 0,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 0,
+        "success_metrics": 0,
+        "evidence_requirements": 0,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 0,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-healthcare-109-source",
+      "dimensions": {
+        "evidence_bytes": 375,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 0,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 1,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-mobility-121-description",
+      "dimensions": {
+        "evidence_bytes": 300,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 0,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 1,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-mobility-124-topic",
+      "dimensions": {
+        "evidence_bytes": 264,
+        "documents": 1,
+        "actors": 0,
+        "state_objects": 0,
+        "paths": 0,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 0,
+        "success_metrics": 0,
+        "evidence_requirements": 0,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 0,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-mobility-125-source",
+      "dimensions": {
+        "evidence_bytes": 1411,
+        "documents": 1,
+        "actors": 5,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 5,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 3,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 5,
+        "assumptions": 0,
+        "non_goals": 2
+      },
+      "score": 4,
+      "complexity_band": "moderate",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-mobility-126-source",
+      "dimensions": {
+        "evidence_bytes": 249,
+        "documents": 1,
+        "actors": 0,
+        "state_objects": 0,
+        "paths": 0,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 0,
+        "success_metrics": 0,
+        "evidence_requirements": 0,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 0,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-open-data-142-topic",
+      "dimensions": {
+        "evidence_bytes": 216,
+        "documents": 1,
+        "actors": 0,
+        "state_objects": 0,
+        "paths": 0,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 0,
+        "success_metrics": 0,
+        "evidence_requirements": 0,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 0,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-open-data-144-topic",
+      "dimensions": {
+        "evidence_bytes": 409,
+        "documents": 1,
+        "actors": 0,
+        "state_objects": 0,
+        "paths": 0,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 0,
+        "success_metrics": 0,
+        "evidence_requirements": 0,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 0,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-open-data-157-source",
+      "dimensions": {
+        "evidence_bytes": 3512,
+        "documents": 1,
+        "actors": 5,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 5,
+        "contradictions": 0,
+        "ambiguities": 3,
+        "safety_boundaries": 9,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 5,
+        "assumptions": 3,
+        "non_goals": 4
+      },
+      "score": 6,
+      "complexity_band": "moderate",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-open-data-150-source",
+      "dimensions": {
+        "evidence_bytes": 237,
+        "documents": 1,
+        "actors": 0,
+        "state_objects": 0,
+        "paths": 0,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 0,
+        "success_metrics": 0,
+        "evidence_requirements": 0,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 0,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-research-161-description",
+      "dimensions": {
+        "evidence_bytes": 410,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 0,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 1,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-research-163-description",
+      "dimensions": {
+        "evidence_bytes": 625,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 0,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 1,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-research-170-source",
+      "dimensions": {
+        "evidence_bytes": 252,
+        "documents": 1,
+        "actors": 0,
+        "state_objects": 0,
+        "paths": 0,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 0,
+        "success_metrics": 0,
+        "evidence_requirements": 0,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 0,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-research-171-source",
+      "dimensions": {
+        "evidence_bytes": 1336,
+        "documents": 1,
+        "actors": 5,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 5,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 3,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 5,
+        "assumptions": 0,
+        "non_goals": 2
+      },
+      "score": 4,
+      "complexity_band": "moderate",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-security-182-topic",
+      "dimensions": {
+        "evidence_bytes": 285,
+        "documents": 1,
+        "actors": 0,
+        "state_objects": 0,
+        "paths": 0,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 0,
+        "success_metrics": 0,
+        "evidence_requirements": 0,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 0,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-security-183-description",
+      "dimensions": {
+        "evidence_bytes": 595,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 0,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 1,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-security-186-source",
+      "dimensions": {
+        "evidence_bytes": 266,
+        "documents": 1,
+        "actors": 0,
+        "state_objects": 0,
+        "paths": 0,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 0,
+        "success_metrics": 0,
+        "evidence_requirements": 0,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 0,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    },
+    {
+      "case_id": "release-security-195-source",
+      "dimensions": {
+        "evidence_bytes": 357,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "internal_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 0,
+        "success_metrics": 1,
+        "evidence_requirements": 1,
+        "component_responsibilities": 0,
+        "assumptions": 0,
+        "non_goals": 0
+      },
+      "score": 1,
+      "complexity_band": "bounded",
+      "notes": [
+        "Success and evidence count one terminal verification/proof bundle, not every proof field.",
+        "Assumptions count only the three explicit default choices in detailed reviewed cases.",
+        "Non-goals use the frozen census semantic exclusion units; overlapping safety constraints are not extra safety counts.",
+        "Five named product systems remain product scope even where exact responsibility-to-action mapping is not prescribed.",
+        "No material question is implied by non-material defaults."
+      ]
+    }
+  ]
+}

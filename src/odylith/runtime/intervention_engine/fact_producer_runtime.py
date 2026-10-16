@@ -229,8 +229,8 @@ def _current_visibility_status_fact(
         and visible_event_count <= 0
         and chat_confirmed_event_count <= 0
     ):
-        headline = "Odylith is active, but no Odylith note has reached this chat yet."
-        detail = "The operator needs any Odylith note stated directly in normal assistant text."
+        headline = "Odylith visibility is the blocker for this turn."
+        detail = "Surface one specific Odylith note in normal assistant text, or keep the intervention claim unproven."
         priority = 98
     elif proof in {
         "pending_confirmation",
@@ -308,17 +308,25 @@ def collect_facts(
         )
         if capture_opportunity_fact is not None:
             facts.append(capture_opportunity_fact)
-    if lookup.get("workstream_ids") and _allow_repo_fact(
+    prompt_workstream_ids = _normalize_string_list(
+        signal_profile.get("prompt_explicit_workstream_ids")
+    )
+    fact_workstream_ids = (
+        prompt_workstream_ids
+        if prompt_workstream_ids
+        else _normalize_string_list(lookup.get("workstream_ids"))
+    )
+    if fact_workstream_ids and _allow_repo_fact(
         observation=observation,
         signal_profile=signal_profile,
         kind="workstream",
     ):
-        ws_id = lookup["workstream_ids"][0]
+        ws_id = fact_workstream_ids[0]
         facts.append(
             _fact(
                 "governance_truth",
-                f"{ws_id} is the live Radar lane for this turn.",
-                "Keep the next visible claim tied to that lane only when this prompt actually touches it.",
+                f"{ws_id} is an active Radar lane; prompt binding determines whether it governs this turn.",
+                "Keep the next visible claim tied to that lane only after this prompt binds it.",
                 evidence_classes,
                 [{"kind": "workstream", "id": ws_id, "label": ws_id}],
                 95,

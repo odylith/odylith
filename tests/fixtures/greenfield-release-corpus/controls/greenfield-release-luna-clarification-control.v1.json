@@ -1,0 +1,47 @@
+{
+  "version": "odylith.greenfield.matrix.case-file.v1",
+  "claim_class": "disclosed-public-lower-capability-control",
+  "source_case_count": 1,
+  "cases": [
+    {
+      "case_id": "public-v33-luna-control-accessibility-002-topic",
+      "expectation": "clarification_required",
+      "input_style": "edited_confirmation",
+      "leakage_terms": ["tailwindlabs/headlessui"],
+      "metamorphic_group": "github-repository-295992065-pair",
+      "metamorphic_transform": "topic_evidence",
+      "name": "accessibility source Luna clarification control",
+      "prompt": "Create a reviewed accessibility product. Source repository: tailwindlabs/headlessui. Source evidence: a11y. Repository description: Completely unstyled, fully accessible UI components, designed to integrate beautifully with Tailwind CSS.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "disclosed-lower-capability-control-v1",
+        "derived_prompt_sha256": "7d8e7a99045c9768df7065f20443da2c26d8ef2e037a979bc1e81fbc2024941c",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/accessibility-01-tailwindlabs-headlessui.json",
+        "source_artifact_sha256": "551bab34ffdfda3461e67923c7412ad77295a51c61ae7174db81f3d0d211c48f",
+        "source_excerpt": "a11y",
+        "source_excerpt_sha256": "b6b8d090aac80aa0db279d56c45f585cf8c6e28c4a44c09a76e8815ebdcb58dc",
+        "source_family": "accessibility",
+        "source_id": "github-repository:295992065",
+        "source_span": "line 30",
+        "source_span_sha256": "5da20e8f38cb83b10cf0077d77406eacd89a6e912fd58f7f477e00e3f439486f",
+        "source_uri": "https://github.com/tailwindlabs/headlessui"
+      },
+      "required_terms": ["accessibility"],
+      "stressors": ["path-grant", "multi-role-tribunal", "atlas-label-pressure"],
+      "tags": ["release-corpus", "accessibility", "github-metadata", "source-evidence-only"]
+    }
+  ],
+  "annotations": [
+    {
+      "case_id": "public-v33-luna-control-accessibility-002-topic",
+      "expected_clarification": {
+        "field": "first_path",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?"
+      }
+    }
+  ]
+}

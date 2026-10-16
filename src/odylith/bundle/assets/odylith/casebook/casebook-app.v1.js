@@ -37,9 +37,6 @@ const __ODYLITH_SHELL_REDIRECT_IN_PROGRESS__ = (function enforceShellOwnedSurfac
     }
     window.__ODYLITH_SHELL_REDIRECTING__ = true;
     window.__ODYLITH_SHELL_REDIRECT_TARGET__ = shellUrl.toString();
-    if (typeof window.stop === "function") {
-      window.stop();
-    }
     targetWindow.location.replace(shellUrl.toString());
     return true;
   } catch (_error) {
@@ -62,7 +59,6 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
     const kpiOpenTotal = document.getElementById("kpiOpenTotal");
     const kpiTotalCases = document.getElementById("kpiTotalCases");
     const kpiLatestCase = document.getElementById("kpiLatestCase");
-    let detailRenderToken = 0;
     const BUG_ID_COMPACT_RE = /^(?:CB)?-?(\d{1,})$/i;
     const SORT_DEFAULT = "newest";
     const SORT_OPTIONS = [
@@ -279,17 +275,30 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       return match ? String(match.bug_route || "").trim() : "";
     }
 
-    function readState() {
+    function readRequestedState() {
       const params = new URLSearchParams(window.location.search || "");
       return {
         bug: canonicalizeBugToken(params.get("bug") || ""),
-        severity: canonicalizeKnownFilterToken(params.get("severity") || "", "severity_tokens"),
-        status: canonicalizeKnownFilterToken(params.get("status") || "", "status_tokens"),
+        severity: canonicalizeFilterToken(params.get("severity") || ""),
+        status: canonicalizeFilterToken(params.get("status") || ""),
         sort: canonicalizeSortToken(params.get("sort") || SORT_DEFAULT),
       };
     }
 
-    function writeState(state) {
+    function readState() {
+      const state = readRequestedState();
+      state.severity = canonicalizeKnownFilterToken(state.severity, "severity_tokens");
+      state.status = canonicalizeKnownFilterToken(state.status, "status_tokens");
+      return state;
+    }
+
+    const requestedRoute = { tab: "casebook", ...readRequestedState() };
+    if (!new URLSearchParams(window.location.search).has("sort")) requestedRoute.sort = "";
+    let frameSnapshot = { requested: requestedRoute, rendered: null, outcome: "loading" };
+    const frameBridge = window.OdylithFrameBridge.surface({ readSnapshot: () => frameSnapshot });
+
+    function writeState(state, userIntent = false) {
+      if (userIntent) frameBridge.navigate({ route: { tab: "casebook", ...state }, replaceDocument: false });
       const query = new URLSearchParams();
       if (state.bug) query.set("bug", state.bug);
       if (state.severity) query.set("severity", state.severity);
@@ -299,17 +308,6 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       const next = `${window.location.pathname}${suffix}`;
       if (next !== `${window.location.pathname}${window.location.search}`) {
         window.history.replaceState(null, "", next);
-      }
-      if (window.parent && window.parent !== window) {
-        window.parent.postMessage({
-          type: "odylith-casebook-navigate",
-          state: {
-            bug: state.bug || "",
-            severity: state.severity || "",
-            status: state.status || "",
-            sort: canonicalizeSortToken(state.sort),
-          },
-        }, "*");
       }
     }
 
@@ -750,27 +748,12 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
         return `Proof state is ambiguous across multiple blocker lanes${laneIds.length ? `: ${laneIds.join(", ")}` : ""}.`;
       }
       if (state === "none") {
-        return "No dominant proof lane is resolved for this bug yet.";
+        return "Verification status is not yet determined.";
       }
       return "";
     }
 
-    async function renderDetail(row) {
-      if (!row) {
-        detailRenderToken += 1;
-        detailPane.innerHTML = ``;
-        return;
-      }
-      const renderToken = ++detailRenderToken;
-      detailPane.innerHTML = ``;
-      const detailKey = String(row.bug_route || row.bug_key || "").trim();
-      const loadedDetail = detailKey ? await casebookDataSource.loadDetail(detailKey) : null;
-      if (renderToken !== detailRenderToken) {
-        return;
-      }
-      const detail = loadedDetail && typeof loadedDetail === "object"
-        ? { ...row, ...loadedDetail }
-        : row;
+    function renderDetail(detail) {
       const fields = detail.fields && typeof detail.fields === "object" ? detail.fields : {};
       const proofState = detail.proof_state && typeof detail.proof_state === "object" ? detail.proof_state : {};
       const proofResolution = detail.proof_state_resolution && typeof detail.proof_state_resolution === "object"
@@ -868,10 +851,6 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       if (detail.archive_bucket) {
         chips.push(`<span class="meta-chip archive-chip">Archive: ${escapeHtml(detail.archive_bucket)}</span>`);
       }
-      if (totalFields) {
-        const intelTooltip = `${capturedCount}/${totalFields} recommended fields captured`;
-        chips.push(`<span class="meta-chip ${requiredMissingFields.length ? "warn-chip" : ""}" data-tooltip="${escapeHtml(intelTooltip)}">Intel</span>`);
-      }
       const externalIssueActions = externalIssueLinks(detail);
       const sourceLink = detail.source_href ? actionChipHtml("Source markdown", detail.source_href) : `<span class="meta-chip muted">Source markdown missing</span>`;
       const summaryText = String(detail.summary || detailFieldValue("Description") || detailFieldValue("Impact") || "").trim();
@@ -916,13 +895,10 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
         : {};
       const lastFalsificationBits = [
         String(lastFalsification.recorded_at || "").trim(),
-        String(lastFalsification.failure_fingerprint || "").trim(),
         String(lastFalsification.frontier_phase || "").trim(),
       ].filter(Boolean);
       const proofRows = [
-        proofState.lane_id ? { label: "Proof lane", value: String(proofState.lane_id || "").trim() } : null,
         proofState.current_blocker ? { label: "Current blocker", value: String(proofState.current_blocker || "").trim() } : null,
-        proofState.failure_fingerprint ? { label: "Failure fingerprint", value: String(proofState.failure_fingerprint || "").trim() } : null,
         proofState.first_failing_phase ? { label: "First failing phase", value: String(proofState.first_failing_phase || "").trim() } : null,
         proofState.frontier_phase ? { label: "Frontier", value: String(proofState.frontier_phase || "").trim() } : null,
         proofState.clearance_condition ? { label: "Clear only when", value: String(proofState.clearance_condition || "").trim() } : null,
@@ -930,6 +906,12 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
         proofState.evidence_tier ? { label: "Evidence tier", value: String(proofState.evidence_tier || "").trim().replace(/_/g, " ") } : null,
         claimGuard.highest_truthful_claim ? { label: "Highest truthful claim", value: String(claimGuard.highest_truthful_claim || "").trim() } : null,
         lastFalsificationBits.length ? { label: "Last falsification", value: lastFalsificationBits.join(" / ") } : null,
+      ].filter(Boolean);
+      const technicalEvidenceRows = [
+        proofState.lane_id ? { label: "Proof lane", value: String(proofState.lane_id || "").trim() } : null,
+        proofState.failure_fingerprint ? { label: "Failure fingerprint", value: String(proofState.failure_fingerprint || "").trim() } : null,
+        lastFalsification.failure_fingerprint ? { label: "Last falsification fingerprint", value: String(lastFalsification.failure_fingerprint || "").trim() } : null,
+        ...deploymentTruthRows,
       ].filter(Boolean);
       const allowedNextWork = Array.isArray(proofState.allowed_next_work)
         ? proofState.allowed_next_work.map((item) => String(item || "").trim()).filter(Boolean)
@@ -950,7 +932,10 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       ].filter(Boolean);
       const proofOverview = renderLabeledNarratives(proofRows);
       const proofContext = renderLabeledNarratives(proofContextRows);
-      const proofDeployment = renderLabeledNarratives(deploymentTruthRows);
+      const technicalEvidence = renderLabeledNarratives(technicalEvidenceRows);
+      const technicalEvidenceHtml = technicalEvidence
+        ? `<details class="detail-disclosure"><summary class="disclosure-title">Technical evidence</summary><div class="detail-disclosure-body detail-copy">${technicalEvidence}</div></details>`
+        : "";
       const proofWarningsHtml = proofWarnings.length
         ? `
           <div class="agent-band-block">
@@ -959,17 +944,16 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
           </div>
         `
         : "";
-      const proofSection = (proofResolutionText || proofOverview || proofContext || proofDeployment || proofWarningsHtml)
+      const proofSection = (proofResolutionText || proofOverview || proofContext || technicalEvidenceHtml || proofWarningsHtml)
         ? `
           <article class="detail-section detail-section-proof">
-            <h2 class="section-heading">Proof Control Panel</h2>
-            <p class="section-lede">Pinned blocker, frontier, and proof tier for this bug lane.</p>
+            <h2 class="section-heading">Proof status</h2>
             <div class="agent-band">
               ${proofResolutionText ? `<div class="agent-band-block"><p class="coverage-note proof-resolution-note">${escapeHtml(proofResolutionText)}</p></div>` : ""}
               ${proofOverview ? `<div class="agent-band-block"><p class="agent-band-title">Primary blocker lane</p>${proofOverview}</div>` : ""}
               ${proofContext ? `<div class="agent-band-block"><p class="agent-band-title">Proof discipline</p>${proofContext}</div>` : ""}
-              ${proofDeployment ? `<div class="agent-band-block"><p class="agent-band-title">Deployed vs local truth</p>${proofDeployment}</div>` : ""}
               ${proofWarningsHtml}
+              ${technicalEvidenceHtml}
             </div>
           </article>
         `
@@ -1006,7 +990,7 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
                 <span class="meta-chip">${capturedCount} of ${totalFields} recommended fields captured</span>
                 ${requiredMissingFields.length ? `<span class="meta-chip warn-chip">Missing critical signals: ${requiredMissingFields.length}</span>` : ""}
               </div>
-              <p class="coverage-note">Casebook still renders this bug, but the record is missing some of the surrounding context that makes nearby implementation work easier and safer.</p>
+              <p class="coverage-note">Review the listed missing fields before using this record for implementation.</p>
               ${requiredMissingFields.length ? `
                 <div class="detail-copy">
                   <p class="signal-label">Missing critical signals</p>
@@ -1114,17 +1098,14 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
           `
           : "",
       ].filter(Boolean).join("");
-      const agentSection = agentBlocks || remainingDetailSections || intelligenceSection
-        ? `
-          <article class="detail-section detail-section-agent">
-            <h2 class="section-heading">Odylith Agent Learnings</h2>
-            <p class="section-lede">Deeper guardrails, evidence, and nearby context for future Odylith-assisted changes.</p>
-            ${agentBlocks ? `<div class="agent-band">${agentBlocks}</div>` : ""}
-            ${remainingDetailSections}
-            ${intelligenceSection}
-          </article>
-        `
-        : "";
+      const agentSection = (agentBlocks || remainingDetailSections || intelligenceSection) ? `
+        <article class="detail-section detail-section-agent">
+          <h2 class="section-heading">Lessons and evidence</h2>
+          ${agentBlocks ? `<div class="agent-band">${agentBlocks}</div>` : ""}
+          ${remainingDetailSections}
+          ${intelligenceSection}
+        </article>
+      ` : "";
       const sectionBlocks = [
         humanSection,
         proofSection,
@@ -1149,37 +1130,27 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       `;
     }
 
-    function renderList(state, rows) {
+        function casebookListPresentation({ rows, totalCount, selectedRoute, escapeHtml, displayTokenLabel }) {
       if (!rows.length) {
-        bugList.innerHTML = `
-          <div class="empty-state" role="status">
-            No Casebook entries match the current filters.
-          </div>
-        `;
-        listMeta.textContent = "Visible: 0";
-        detailRenderToken += 1;
-        detailPane.innerHTML = `
-          <div class="empty-state" role="status">
-            Select a different filter or search term to inspect Casebook detail.
-          </div>
-        `;
-        return;
+        const noCases = totalCount === 0;
+        const listMessage = noCases
+          ? "No Casebook cases have been recorded yet."
+          : "No Casebook entries match the current filters.";
+        const detailMessage = noCases
+          ? "When you find a defect, ask Odylith to capture it with the expected behavior, actual behavior, and reproduction steps."
+          : "Select a different filter or search term to inspect Casebook detail.";
+        return {
+          listHtml: `<div class="empty-state" role="status">${listMessage}</div>`,
+          detailHtml: `<div class="empty-state" role="status">${detailMessage}</div>`,
+          meta: "0 visible",
+        };
       }
-      const selectedRoute = resolveBugRoute(rows, state.bug) || String(rows[0].bug_route || "");
-      const selected = rows.find((row) => row.bug_route === selectedRoute) || rows[0];
-      bugList.innerHTML = rows.map((row) => {
-        const coverage = row.intelligence_coverage && typeof row.intelligence_coverage === "object" ? row.intelligence_coverage : {};
-        const capturedCount = Number(coverage.captured_count || 0);
-        const totalFields = Number(coverage.total_fields || 0);
-        const requiredMissingFields = Array.isArray(coverage.required_missing_fields)
-          ? coverage.required_missing_fields.map((item) => String(item || "").trim()).filter(Boolean)
-          : [];
+      const listHtml = rows.map((row) => {
         const active = row.bug_route === selectedRoute;
         const chips = [
           row.severity ? `<span class="list-chip ${/^p[01]$/i.test(String(row.severity || "")) ? "critical-chip" : ""}">${escapeHtml(row.severity)}</span>` : "",
           row.status ? `<span class="list-chip">${escapeHtml(displayTokenLabel(row.status))}</span>` : "",
           row.archive_bucket ? `<span class="list-chip archive-chip">${escapeHtml(row.archive_bucket)}</span>` : "",
-          totalFields ? `<span class="list-chip ${requiredMissingFields.length ? "warn-chip" : ""}" data-tooltip="${escapeHtml(`${capturedCount}/${totalFields} recommended fields captured`)}">Intel</span>` : "",
         ].filter(Boolean).join("");
         return `
           <button type="button" class="bug-row${active ? " active" : ""}" data-bug="${escapeHtml(row.bug_route || "")}">
@@ -1190,17 +1161,59 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
               </div>
               <span class="bug-row-date">${escapeHtml(row.date || "-")}</span>
             </div>
-            <p class="bug-row-summary">${escapeHtml(row.summary || row.components || "No summary available.")}</p>
             <div class="bug-row-meta">${chips}</div>
           </button>
         `;
       }).join("");
-      listMeta.textContent = `Visible: ${rows.length}`;
+      return { listHtml, detailHtml: null, meta: `${rows.length} visible` };
+    }
+
+    function createCasebookSelection({ detail, loadDetail, renderDetail, onOutcome }) {
+      let detailRenderToken = 0;
+      return async function selectBug(row, emptyHtml = "") {
+        const renderToken = ++detailRenderToken;
+        detail.innerHTML = "";
+        if (!row) {
+          detail.innerHTML = emptyHtml;
+          onOutcome({ id: "", outcome: "empty" });
+          return;
+        }
+        onOutcome({ id: "", outcome: "loading" });
+        const id = String(row.bug_route || row.bug_key || "").trim();
+        let loaded;
+        try { loaded = id ? await loadDetail(id) : null; } catch (_error) { loaded = null; }
+        if (renderToken !== detailRenderToken) return;
+        const complete = loaded && typeof loaded === "object";
+        renderDetail(complete ? { ...row, ...loaded } : row);
+        if (!complete) detail.innerHTML += '<p role="status">Bug detail unavailable. The available summary is shown.</p>';
+        onOutcome({ id, outcome: complete ? "ready" : "degraded" });
+      };
+    }
+    const renderSelectedBug = createCasebookSelection({
+      detail: detailPane, loadDetail: id => casebookDataSource.loadDetail(id), renderDetail,
+      onOutcome: ({ id, outcome }) => {
+        frameSnapshot = { requested: requestedRoute, rendered: { tab: "casebook", ...readState(), bug: id }, outcome };
+        frameBridge.publish();
+      },
+    });
+
+    function renderList(state, rows) {
+      const selectedRoute = state.bug ? resolveBugRoute(rows, state.bug) : String(rows[0]?.bug_route || "");
+      const presentation = casebookListPresentation({
+        rows, totalCount: bugSummaries.length, selectedRoute, escapeHtml, displayTokenLabel,
+      });
+      bugList.innerHTML = presentation.listHtml;
+      listMeta.textContent = presentation.meta;
+      if (presentation.detailHtml !== null) {
+        void renderSelectedBug(null, presentation.detailHtml);
+        return;
+      }
+      const selected = rows.find((row) => row.bug_route === selectedRoute);
       for (const button of bugList.querySelectorAll(".bug-row")) {
         button.addEventListener("click", () => {
           const bug = canonicalizeBugToken(button.getAttribute("data-bug") || "");
           const next = { ...readState(), bug };
-          writeState(next);
+          writeState(next, true);
           render();
         });
         const bug = canonicalizeBugToken(button.getAttribute("data-bug") || "");
@@ -1213,7 +1226,7 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
           });
         }
       }
-      if (selectedRoute !== state.bug) {
+      if (selectedRoute && selectedRoute !== state.bug) {
         writeState({ ...state, bug: selectedRoute });
       }
       rows.slice(0, Math.min(6, rows.length)).forEach((row) => {
@@ -1222,7 +1235,7 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
           casebookDataSource.prefetch(bug);
         }
       });
-      void renderDetail(selected);
+      void renderSelectedBug(selected, '<div class="empty-state" role="status">The requested bug is unavailable in the current selection. Choose a bug or change the filters.</div>');
     }
 
     function render() {
@@ -1250,17 +1263,17 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
     searchInput.addEventListener("input", () => render());
     severityFilter.addEventListener("change", () => {
       const state = readState();
-      writeState({ ...state, severity: canonicalizeFilterToken(severityFilter.value || ""), bug: state.bug });
+      writeState({ ...state, severity: canonicalizeFilterToken(severityFilter.value || ""), bug: state.bug }, true);
       render();
     });
     statusFilter.addEventListener("change", () => {
       const state = readState();
-      writeState({ ...state, status: canonicalizeFilterToken(statusFilter.value || ""), bug: state.bug });
+      writeState({ ...state, status: canonicalizeFilterToken(statusFilter.value || ""), bug: state.bug }, true);
       render();
     });
     sortFilter.addEventListener("change", () => {
       const state = readState();
-      writeState({ ...state, sort: canonicalizeSortToken(sortFilter.value || SORT_DEFAULT), bug: state.bug });
+      writeState({ ...state, sort: canonicalizeSortToken(sortFilter.value || SORT_DEFAULT), bug: state.bug }, true);
       render();
     });
     window.addEventListener("popstate", () => {

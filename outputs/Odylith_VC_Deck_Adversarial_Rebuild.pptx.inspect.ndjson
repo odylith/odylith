@@ -1,0 +1,243 @@
+{"kind":"deck","id":"pr/l7xnfi","name":"Deck"}
+{"kind":"layout","layoutId":"66b8ee17-d895-4ab5-969c-e803d9476f4e","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"1307a118-2bbd-475c-a237-733748d6dcb0","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/xhqwdc","slide":1,"title":"ODYLITH / SEED ROUND","textShapes":8}
+{"kind":"shape","id":"sh/ds3e5032","slide":1,"bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/qpcva54b","slide":1,"text":"ODYLITH / SEED ROUND","textPreview":"ODYLITH / SEED ROUND","textChars":20,"textLines":1,"bbox":[72,42,660,24]}
+{"kind":"textbox","id":"sh/rqlw3alw","slide":1,"text":"The execution layer\nfor valid enterprise-agent outcomes","textPreview":"The execution layer | for valid enterprise-agent outcomes","textChars":55,"textLines":2,"bbox":[72,176,1080,210]}
+{"kind":"textbox","id":"sh/4nad8vml","slide":1,"text":"Ground the task. Decide whether to act. Constrain execution. Verify the result.","textPreview":"Ground the task. Decide whether to act. Constrain execution. Verify the result.","textChars":79,"textLines":1,"bbox":[72,418,1000,62]}
+{"kind":"shape","id":"sh/po3e1036","slide":1,"bbox":[72,530,420,0]}
+{"kind":"textbox","id":"sh/2lsv6l4f","slide":1,"text":"DEMONSTRATED TODAY","textPreview":"DEMONSTRATED TODAY","textChars":18,"textLines":1,"bbox":[72,540,420,20]}
+{"kind":"textbox","id":"sh/3m1wzql0","slide":1,"text":"Repository grounding, write admission,\nexecution contracts, and verification","textPreview":"Repository grounding, write admission, | execution contracts, and verification","textChars":76,"textLines":2,"bbox":[72,566,440,70]}
+{"kind":"shape","id":"sh/8jexkf2p","slide":1,"bbox":[660,530,420,0]}
+{"kind":"textbox","id":"sh/9knedk3a","slide":1,"text":"THIS ROUND","textPreview":"THIS ROUND","textChars":10,"textLines":1,"bbox":[660,540,420,20]}
+{"kind":"textbox","id":"sh/po3290b2","slide":1,"text":"Cross-provider allocation,\ncontrolled replay, and adaptive policy","textPreview":"Cross-provider allocation, | controlled replay, and adaptive policy","textChars":65,"textLines":2,"bbox":[660,566,460,70]}
+{"kind":"textbox","id":"sh/onal0vah","slide":1,"text":"$2M  ·  12–18 MONTHS","textPreview":"$2M  ·  12–18 MONTHS","textChars":20,"textLines":1,"bbox":[1018,42,190,22]}
+{"kind":"notes","id":"nt/xhqwdc","slide":1,"text":""}
+{"kind":"slide","id":"sl/whmk5n","slide":2,"title":"ODYLITH / INVESTOR CORE DECK","textShapes":15}
+{"kind":"textbox","id":"sh/2ponupgr","slide":2,"text":"ODYLITH / INVESTOR CORE DECK","textPreview":"ODYLITH / INVESTOR CORE DECK","textChars":28,"textLines":1,"bbox":[72,42,660,24]}
+{"kind":"textbox","id":"sh/psz65kzi","slide":2,"text":"Model alpha decays; enterprise performance is conditional","textPreview":"Model alpha decays; enterprise performance is conditional","textChars":57,"textLines":1,"bbox":[72,82,1100,92]}
+{"kind":"shape","id":"sh/or6pwfyx","slide":2,"bbox":[72,183,1136,0]}
+{"kind":"textbox","id":"sh/buho7uho","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1170,668,38,18]}
+{"kind":"textbox","id":"sh/at87ypg3","slide":2,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[72,222,80,44]}
+{"kind":"textbox","id":"sh/xwz694ze","slide":2,"text":"No universal winner","textPreview":"No universal winner","textChars":19,"textLines":1,"bbox":[72,286,320,58]}
+{"kind":"textbox","id":"sh/cvqp0zyt","slide":2,"text":"Task fit, cost, latency, reliability, tools, governance, and risk create different winners.","textPreview":"Task fit, cost, latency, reliability, tools, governance, and risk create different winners.","textChars":91,"textLines":1,"bbox":[72,365,320,132]}
+{"kind":"shape","id":"sh/rydovah4","slide":2,"bbox":[434,235,0,260]}
+{"kind":"textbox","id":"sh/6x4nm5gj","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[458,222,80,44]}
+{"kind":"textbox","id":"sh/cbq94jep","slide":2,"text":"Every release reprices","textPreview":"Every release reprices","textChars":22,"textLines":1,"bbox":[458,286,320,58]}
+{"kind":"textbox","id":"sh/dczqxofa","slide":2,"text":"New checkpoints, prices, and provider behavior invalidate static enterprise defaults.","textPreview":"New checkpoints, prices, and provider behavior invalidate static enterprise defaults.","textChars":85,"textLines":1,"bbox":[458,365,320,132]}
+{"kind":"shape","id":"sh/q9or2twz","slide":2,"bbox":[820,235,0,260]}
+{"kind":"textbox","id":"sh/rah8vex4","slide":2,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[844,222,80,44]}
+{"kind":"textbox","id":"sh/0zq983e1","slide":2,"text":"Agents multiply choices","textPreview":"Agents multiply choices","textChars":23,"textLines":1,"bbox":[844,286,320,58]}
+{"kind":"textbox","id":"sh/10za18fm","slide":2,"text":"Long trajectories repeat allocation decisions across coupled steps, retries, tools, and recovery.","textPreview":"Long trajectories repeat allocation decisions across coupled steps, retries, tools, and recovery.","textChars":97,"textLines":1,"bbox":[844,365,320,132]}
+{"kind":"shape","id":"sh/ed8r6twv","slide":2,"bbox":[72,532,1136,82]}
+{"kind":"textbox","id":"sh/zeh8zyxg","slide":2,"text":"HYPOTHESIS","textPreview":"HYPOTHESIS","textChars":10,"textLines":1,"bbox":[96,554,150,20]}
+{"kind":"textbox","id":"sh/g369wzyh","slide":2,"text":"Durable value migrates from owning a temporary model lead to controlling verified execution inside real work.","textPreview":"Durable value migrates from owning a temporary model lead to controlling verified execution inside real work.","textChars":109,"textLines":1,"bbox":[250,546,915,48]}
+{"kind":"textbox","id":"sh/h4fqp4f2","slide":2,"text":"Founder thesis: “The Half-Life of Model Alpha,” CELL/Substack, 23 Jul 2026 · Thesis, not customer evidence.","textPreview":"Founder thesis: “The Half-Life of Model Alpha,” CELL/Substack, 23 Jul 2026 · Thesis, not customer evidence.","textChars":107,"textLines":1,"bbox":[72,632,1040,28]}
+{"kind":"notes","id":"nt/whmk5n","slide":2,"text":""}
+{"kind":"slide","id":"sl/6xhjnv","slide":3,"title":"ODYLITH / INVESTOR CORE DECK","textShapes":17}
+{"kind":"textbox","id":"sh/a9ozedkb","slide":3,"text":"ODYLITH / INVESTOR CORE DECK","textPreview":"ODYLITH / INVESTOR CORE DECK","textChars":28,"textLines":1,"bbox":[72,42,660,24]}
+{"kind":"textbox","id":"sh/xwfy983m","slide":3,"text":"The enterprise unit is cost per valid outcome—not cost per token","textPreview":"The enterprise unit is cost per valid outcome—not cost per token","textChars":64,"textLines":1,"bbox":[72,82,1100,92]}
+{"kind":"shape","id":"sh/wb6hg321","slide":3,"bbox":[72,183,1136,0]}
+{"kind":"textbox","id":"sh/n6xg3ylk","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1170,668,38,18]}
+{"kind":"textbox","id":"sh/m5ofat4z","slide":3,"text":"TOTAL COST TO REACH A VALID RESULT","textPreview":"TOTAL COST TO REACH A VALID RESULT","textChars":34,"textLines":1,"bbox":[72,230,610,28]}
+{"kind":"textbox","id":"sh/98fy583q","slide":3,"text":"valid outcomes","textPreview":"valid outcomes","textChars":14,"textLines":1,"bbox":[72,278,565,80]}
+{"kind":"shape","id":"sh/876hc3m5","slide":3,"bbox":[72,371,565,0]}
+{"kind":"textbox","id":"sh/72hgf2lo","slide":3,"text":"cost per valid outcome","textPreview":"cost per valid outcome","textChars":22,"textLines":1,"bbox":[72,396,565,74]}
+{"kind":"shape","id":"sh/618zmxk3","slide":3,"bbox":[686,222,0,306]}
+{"kind":"textbox","id":"sh/03uts72t","slide":3,"text":"Generation","textPreview":"Generation","textChars":10,"textLines":1,"bbox":[734,226,190,26]}
+{"kind":"textbox","id":"sh/1o3ulc3e","slide":3,"text":"Model calls and tokens","textPreview":"Model calls and tokens","textChars":22,"textLines":1,"bbox":[930,226,260,50]}
+{"kind":"shape","id":"sh/e1cbqxkn","slide":3,"bbox":[734,273,456,0]}
+{"kind":"textbox","id":"sh/z2lsj2l8","slide":3,"text":"Search","textPreview":"Search","textChars":6,"textLines":1,"bbox":[734,301,190,26]}
+{"kind":"textbox","id":"sh/czato72h","slide":3,"text":"Candidate paths and reasoning depth","textPreview":"Candidate paths and reasoning depth","textChars":35,"textLines":1,"bbox":[930,301,260,50]}
+{"kind":"shape","id":"sh/d03ahs32","slide":3,"bbox":[734,348,456,0]}
+{"kind":"textbox","id":"sh/qxsbmxkr","slide":3,"text":"Execution","textPreview":"Execution","textChars":9,"textLines":1,"bbox":[734,376,190,26]}
+{"kind":"textbox","id":"sh/ry1sf2lw","slide":3,"text":"Tools, state changes, and retries","textPreview":"Tools, state changes, and retries","textChars":33,"textLines":1,"bbox":[930,376,260,50]}
+{"kind":"shape","id":"sh/4vatkn2l","slide":3,"bbox":[734,423,456,0]}
+{"kind":"textbox","id":"sh/pwjads36","slide":3,"text":"Verification","textPreview":"Verification","textChars":12,"textLines":1,"bbox":[734,451,190,26]}
+{"kind":"textbox","id":"sh/5sbqhovu","slide":3,"text":"Tests, review, recovery, and escalation","textPreview":"Tests, review, recovery, and escalation","textChars":39,"textLines":1,"bbox":[930,451,260,50]}
+{"kind":"shape","id":"sh/kr29oje9","slide":3,"bbox":[734,542,456,0]}
+{"kind":"textbox","id":"sh/jqt8fedo","slide":3,"text":"ECONOMIC HYPOTHESIS","textPreview":"ECONOMIC HYPOTHESIS","textChars":19,"textLines":1,"bbox":[734,552,456,20]}
+{"kind":"textbox","id":"sh/ipkrm9wj","slide":3,"text":"Cheaper generation can fund more search, retries, tools, and verification when demand is elastic.","textPreview":"Cheaper generation can fund more search, retries, tools, and verification when demand is elastic.","textChars":97,"textLines":1,"bbox":[734,578,456,54]}
+{"kind":"textbox","id":"sh/xobqd4vy","slide":3,"text":"Long-running-agent KPI: cost per successfully resolved trajectory.","textPreview":"Long-running-agent KPI: cost per successfully resolved trajectory.","textChars":66,"textLines":1,"bbox":[72,652,1040,28]}
+{"kind":"notes","id":"nt/6xhjnv","slide":3,"text":""}
+{"kind":"slide","id":"sl/15n0gb","slide":4,"title":"ODYLITH / INVESTOR CORE DECK","textShapes":13}
+{"kind":"textbox","id":"sh/5cri9wvi","slide":4,"text":"ODYLITH / INVESTOR CORE DECK","textPreview":"ODYLITH / INVESTOR CORE DECK","textChars":28,"textLines":1,"bbox":[72,42,660,24]}
+{"kind":"textbox","id":"sh/i90zehcr","slide":4,"text":"A router picks an endpoint. An execution layer owns the outcome.","textPreview":"A router picks an endpoint. An execution layer owns the outcome.","textChars":64,"textLines":1,"bbox":[72,82,1100,92]}
+{"kind":"shape","id":"sh/ja907mdc","slide":4,"bbox":[72,183,1136,0]}
+{"kind":"textbox","id":"sh/w7yhc7ul","slide":4,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1170,668,38,18]}
+{"kind":"shape","id":"sh/x87i5cv6","slide":4,"bbox":[640,218,0,350]}
+{"kind":"textbox","id":"sh/algzahwf","slide":4,"text":"ROUTER","textPreview":"ROUTER","textChars":6,"textLines":1,"bbox":[72,222,500,28]}
+{"kind":"textbox","id":"sh/vmp032d0","slide":4,"text":"Selects a model or provider","textPreview":"Selects a model or provider","textChars":27,"textLines":1,"bbox":[72,270,490,52]}
+{"kind":"textbox","id":"sh/g3218bu5","slide":4,"text":"• Optimizes request-level price, latency, or availability\n• Fails over when an endpoint is unhealthy\n• Records the response","textPreview":"• Optimizes request-level price, latency, or availability | • Fails over when an endpoint is unhealthy | • Records the response","textChars":123,"textLines":3,"bbox":[72,345,490,160]}
+{"kind":"textbox","id":"sh/h4bihgva","slide":4,"text":"ODYLITH","textPreview":"ODYLITH","textChars":7,"textLines":1,"bbox":[694,222,500,28]}
+{"kind":"textbox","id":"sh/14ve9w7u","slide":4,"text":"Controls the path to a valid result","textPreview":"Controls the path to a valid result","textChars":35,"textLines":1,"bbox":[694,270,500,62]}
+{"kind":"textbox","id":"sh/03md0rq9","slide":4,"text":"• Grounds task and repository state\n• Admits, suppresses, or constrains execution\n• Verifies closure against contracts and validators","textPreview":"• Grounds task and repository state | • Admits, suppresses, or constrains execution | • Verifies closure against contracts and validators","textChars":133,"textLines":3,"bbox":[694,345,500,160]}
+{"kind":"shape","id":"sh/f2dw7mpo","slide":4,"bbox":[72,542,520,72]}
+{"kind":"textbox","id":"sh/e1kvyh83","slide":4,"text":"DEMONSTRATED","textPreview":"DEMONSTRATED","textChars":12,"textLines":1,"bbox":[92,559,150,18]}
+{"kind":"textbox","id":"sh/d0be5c7i","slide":4,"text":"Ground · admit · constrain · verify","textPreview":"Ground · admit · constrain · verify","textChars":35,"textLines":1,"bbox":[92,583,440,24]}
+{"kind":"shape","id":"sh/sz2dwrqx","slide":4,"bbox":[640,542,568,72]}
+{"kind":"textbox","id":"sh/retw3mps","slide":4,"text":"ROUND MILESTONE","textPreview":"ROUND MILESTONE","textChars":15,"textLines":1,"bbox":[662,559,180,18]}
+{"kind":"textbox","id":"sh/qdkvuh87","slide":4,"text":"Compare policies · allocate providers · adapt","textPreview":"Compare policies · allocate providers · adapt","textChars":45,"textLines":1,"bbox":[662,583,505,24]}
+{"kind":"notes","id":"nt/15n0gb","slide":4,"text":""}
+{"kind":"slide","id":"sl/qhuyg0","slide":5,"title":"ODYLITH / INVESTOR CORE DECK","textShapes":15}
+{"kind":"textbox","id":"sh/65wzylwf","slide":5,"text":"ODYLITH / INVESTOR CORE DECK","textPreview":"ODYLITH / INVESTOR CORE DECK","textChars":28,"textLines":1,"bbox":[72,42,660,24]}
+{"kind":"textbox","id":"sh/t87i90f6","slide":5,"text":"Software is the first market because correctness is executable","textPreview":"Software is the first market because correctness is executable","textChars":62,"textLines":1,"bbox":[72,82,1100,92]}
+{"kind":"shape","id":"sh/s7yh0vel","slide":5,"bbox":[72,183,1136,0]}
+{"kind":"textbox","id":"sh/fap0baxw","slide":5,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1170,668,38,18]}
+{"kind":"textbox","id":"sh/e9gz25wr","slide":5,"text":"Repositories turn agent behavior into fast, objective outcome evidence.","textPreview":"Repositories turn agent behavior into fast, objective outcome evidence.","textChars":71,"textLines":1,"bbox":[72,207,980,38]}
+{"kind":"textbox","id":"sh/1c7idkf2","slide":5,"text":"GROUND TRUTH","textPreview":"GROUND TRUTH","textChars":12,"textLines":1,"bbox":[72,278,320,20]}
+{"kind":"textbox","id":"sh/gbyh4feh","slide":5,"text":"Executable proof","textPreview":"Executable proof","textChars":16,"textLines":1,"bbox":[72,326,320,44]}
+{"kind":"textbox","id":"sh/3y90fax8","slide":5,"text":"Compilation, tests, policy checks, replay, and deterministic no-op evidence.","textPreview":"Compilation, tests, policy checks, replay, and deterministic no-op evidence.","textChars":76,"textLines":1,"bbox":[72,396,320,110]}
+{"kind":"shape","id":"sh/2dgz65wn","slide":5,"bbox":[434,280,0,246]}
+{"kind":"textbox","id":"sh/wv2dknqt","slide":5,"text":"FAILURE SURFACE","textPreview":"FAILURE SURFACE","textChars":15,"textLines":1,"bbox":[458,278,320,20]}
+{"kind":"textbox","id":"sh/xwbetsre","slide":5,"text":"Real complexity","textPreview":"Real complexity","textChars":15,"textLines":1,"bbox":[458,326,320,44]}
+{"kind":"textbox","id":"sh/a9kvid83","slide":5,"text":"Hidden dependencies, stale context, partial migrations, security boundaries, and conflicting truth.","textPreview":"Hidden dependencies, stale context, partial migrations, security boundaries, and conflicting truth.","textChars":99,"textLines":1,"bbox":[458,396,320,110]}
+{"kind":"shape","id":"sh/vatcri9o","slide":5,"bbox":[820,280,0,246]}
+{"kind":"textbox","id":"sh/kzmdo7q5","slide":5,"text":"LEARNING SPEED","textPreview":"LEARNING SPEED","textChars":14,"textLines":1,"bbox":[844,278,320,20]}
+{"kind":"textbox","id":"sh/50vexsrq","slide":5,"text":"Comparable outcomes","textPreview":"Comparable outcomes","textChars":19,"textLines":1,"bbox":[844,326,320,44]}
+{"kind":"textbox","id":"sh/ix4vmx8z","slide":5,"text":"Reproducible state makes competing execution policies measurable against the same task.","textPreview":"Reproducible state makes competing execution policies measurable against the same task.","textChars":87,"textLines":1,"bbox":[844,396,320,110]}
+{"kind":"shape","id":"sh/jydwv29k","slide":5,"bbox":[72,548,1136,70]}
+{"kind":"textbox","id":"sh/s3mds7q1","slide":5,"text":"DEMONSTRATED WEDGE","textPreview":"DEMONSTRATED WEDGE","textChars":18,"textLines":1,"bbox":[96,570,210,18]}
+{"kind":"textbox","id":"sh/t4ve1crm","slide":5,"text":"Prevent wrong or unnecessary coding-agent execution before optimizing model choice.","textPreview":"Prevent wrong or unnecessary coding-agent execution before optimizing model choice.","textChars":83,"textLines":1,"bbox":[314,560,850,40]}
+{"kind":"notes","id":"nt/qhuyg0","slide":5,"text":""}
+{"kind":"slide","id":"sl/5dw43x","slide":6,"title":"ODYLITH / INVESTOR CORE DECK","textShapes":18}
+{"kind":"textbox","id":"sh/903mhcbm","slide":6,"text":"ODYLITH / INVESTOR CORE DECK","textPreview":"ODYLITH / INVESTOR CORE DECK","textChars":28,"textLines":1,"bbox":[72,42,660,24]}
+{"kind":"textbox","id":"sh/mxsn6xcv","slide":6,"text":"Same Codex host. Same task definitions. Different execution policy.","textPreview":"Same Codex host. Same task definitions. Different execution policy.","textChars":67,"textLines":1,"bbox":[72,82,1120,92]}
+{"kind":"shape","id":"sh/ny14f2tg","slide":6,"bbox":[72,183,1136,0]}
+{"kind":"textbox","id":"sh/0va547u5","slide":6,"text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1170,668,38,18]}
+{"kind":"textbox","id":"sh/1wjmdcvq","slide":6,"text":"INTERNAL PROVISIONAL BENCHMARK","textPreview":"INTERNAL PROVISIONAL BENCHMARK","textChars":30,"textLines":1,"bbox":[72,205,400,22]}
+{"kind":"textbox","id":"sh/ets32xcz","slide":6,"text":"82","textPreview":"82","textChars":2,"textLines":1,"bbox":[72,244,330,78]}
+{"kind":"textbox","id":"sh/zu14b2dk","slide":6,"text":"scenario definitions","textPreview":"scenario definitions","textChars":20,"textLines":1,"bbox":[72,330,330,50]}
+{"kind":"textbox","id":"sh/kru5gru9","slide":6,"text":"One Odylith repository—not 82 independent customer observations.","textPreview":"One Odylith repository—not 82 independent customer observations.","textChars":64,"textLines":1,"bbox":[72,399,330,80]}
+{"kind":"shape","id":"sh/5sn6pwbu","slide":6,"bbox":[434,252,0,215]}
+{"kind":"textbox","id":"sh/xkbux0zy","slide":6,"text":"68/82","textPreview":"68/82","textChars":5,"textLines":1,"bbox":[458,244,330,78]}
+{"kind":"textbox","id":"sh/wjitovid","slide":6,"text":"no-op closures","textPreview":"no-op closures","textChars":14,"textLines":1,"bbox":[458,330,330,50]}
+{"kind":"textbox","id":"sh/vi9cvqhs","slide":6,"text":"Odylith-on stopped before host invocation when declared validators proved no change was needed.","textPreview":"Odylith-on stopped before host invocation when declared validators proved no change was needed.","textChars":95,"textLines":1,"bbox":[458,399,330,80]}
+{"kind":"shape","id":"sh/ah0bml07","slide":6,"bbox":[820,252,0,215]}
+{"kind":"textbox","id":"sh/9grutgzm","slide":6,"text":"4/82","textPreview":"4/82","textChars":4,"textLines":1,"bbox":[844,244,330,78]}
+{"kind":"textbox","id":"sh/8fitkvi1","slide":6,"text":"rows changed files","textPreview":"rows changed files","textChars":18,"textLines":1,"bbox":[844,330,330,50]}
+{"kind":"textbox","id":"sh/ne9crqhg","slide":6,"text":"The signal is write admission and unnecessary-work suppression—not routing lift.","textPreview":"The signal is write admission and unnecessary-work suppression—not routing lift.","textChars":80,"textLines":1,"bbox":[844,399,330,80]}
+{"kind":"shape","id":"sh/md0bil0b","slide":6,"bbox":[72,518,540,92]}
+{"kind":"textbox","id":"sh/tcvu5kzq","slide":6,"text":"WHAT IT SUPPORTS","textPreview":"WHAT IT SUPPORTS","textChars":16,"textLines":1,"bbox":[94,536,180,18]}
+{"kind":"textbox","id":"sh/sbmdwfyl","slide":6,"text":"Grounding and write admission can change agent behavior.","textPreview":"Grounding and write admission can change agent behavior.","textChars":56,"textLines":1,"bbox":[94,568,490,28]}
+{"kind":"shape","id":"sh/cru5onat","slide":6,"bbox":[640,518,568,92]}
+{"kind":"textbox","id":"sh/dsn6hsbe","slide":6,"text":"WHAT IT DOES NOT SUPPORT","textPreview":"WHAT IT DOES NOT SUPPORT","textChars":24,"textLines":1,"bbox":[662,536,250,18]}
+{"kind":"textbox","id":"sh/q5cnmdsn","slide":6,"text":"Customer ROI, repeated external proof, or adaptive multi-provider routing.","textPreview":"Customer ROI, repeated external proof, or adaptive multi-provider routing.","textChars":74,"textLines":1,"bbox":[662,568,514,28]}
+{"kind":"textbox","id":"sh/bql4fit8","slide":6,"text":"Source: Odylith live benchmark snapshot, report 44f2a3d83d2c9975 · Same Codex proof host · Full methodology available in diligence.","textPreview":"Source: Odylith live benchmark snapshot, report 44f2a3d83d2c9975 · Same Codex proof host · Full methodology available in diligence.","textChars":131,"textLines":1,"bbox":[72,632,1080,28]}
+{"kind":"notes","id":"nt/5dw43x","slide":6,"text":""}
+{"kind":"slide","id":"sl/1dnrz7","slide":7,"title":"ODYLITH / INVESTOR CORE DECK","textShapes":20}
+{"kind":"textbox","id":"sh/onalgved","slide":7,"text":"ODYLITH / INVESTOR CORE DECK","textPreview":"ODYLITH / INVESTOR CORE DECK","textChars":28,"textLines":1,"bbox":[72,42,660,24]}
+{"kind":"textbox","id":"sh/3m14naxs","slide":7,"text":"Start with a 90-day proof around costly agent regressions","textPreview":"Start with a 90-day proof around costly agent regressions","textChars":57,"textLines":1,"bbox":[72,82,1100,92]}
+{"kind":"shape","id":"sh/2ls3e5wn","slide":7,"bbox":[72,183,1136,0]}
+{"kind":"textbox","id":"sh/1kzml0f2","slide":7,"text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[1170,668,38,18]}
+{"kind":"textbox","id":"sh/gjqlcveh","slide":7,"text":"TARGET BUYER — HYPOTHESIS","textPreview":"TARGET BUYER — HYPOTHESIS","textChars":25,"textLines":1,"bbox":[72,216,480,24]}
+{"kind":"textbox","id":"sh/fihkjqxw","slide":7,"text":"Head of AI Platform or VP Engineering\nCTO / CIO economic buyer · CISO veto","textPreview":"Head of AI Platform or VP Engineering | CTO / CIO economic buyer · CISO veto","textChars":74,"textLines":2,"bbox":[72,250,480,76]}
+{"kind":"textbox","id":"sh/eh83alwb","slide":7,"text":"PURCHASE TRIGGER — HYPOTHESIS","textPreview":"PURCHASE TRIGGER — HYPOTHESIS","textChars":29,"textLines":1,"bbox":[664,216,544,24]}
+{"kind":"textbox","id":"sh/twz2hgfq","slide":7,"text":"Model or provider change · agent regression\nmigration · cost pressure · security mandate","textPreview":"Model or provider change · agent regression | migration · cost pressure · security mandate","textChars":88,"textLines":2,"bbox":[664,250,544,76]}
+{"kind":"shape","id":"sh/svql8be5","slide":7,"bbox":[72,342,1136,0]}
+{"kind":"textbox","id":"sh/6dk72d4r","slide":7,"text":"DAYS 1–30","textPreview":"DAYS 1–30","textChars":9,"textLines":1,"bbox":[72,378,320,20]}
+{"kind":"textbox","id":"sh/7et8vilc","slide":7,"text":"Instrument","textPreview":"Instrument","textChars":10,"textLines":1,"bbox":[72,414,320,42]}
+{"kind":"textbox","id":"sh/8f2943mh","slide":7,"text":"Read-only capture of work, cost, latency, repository state, and verifier outcomes.","textPreview":"Read-only capture of work, cost, latency, repository state, and verifier outcomes.","textChars":82,"textLines":1,"bbox":[72,468,320,94]}
+{"kind":"textbox","id":"sh/tgbqx832","slide":7,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[408,424,36,36]}
+{"kind":"textbox","id":"sh/y907yt4f","slide":7,"text":"DAYS 31–60","textPreview":"DAYS 31–60","textChars":10,"textLines":1,"bbox":[458,378,320,20]}
+{"kind":"textbox","id":"sh/ja98ryl0","slide":7,"text":"Shadow + replay","textPreview":"Shadow + replay","textChars":15,"textLines":1,"bbox":[458,414,320,42]}
+{"kind":"textbox","id":"sh/kbip03ml","slide":7,"text":"Compare representative alternatives without changing production traffic.","textPreview":"Compare representative alternatives without changing production traffic.","textChars":72,"textLines":1,"bbox":[458,468,320,94]}
+{"kind":"textbox","id":"sh/lcbqt836","slide":7,"text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[794,424,36,36]}
+{"kind":"textbox","id":"sh/al07ut4j","slide":7,"text":"DAYS 61–90","textPreview":"DAYS 61–90","textChars":10,"textLines":1,"bbox":[844,378,320,20]}
+{"kind":"textbox","id":"sh/bm98nyl4","slide":7,"text":"Canary + prove","textPreview":"Canary + prove","textChars":14,"textLines":1,"bbox":[844,414,320,42]}
+{"kind":"textbox","id":"sh/felwfqxk","slide":7,"text":"Controlled enforcement, rollback, and an economic-impact report against agreed gates.","textPreview":"Controlled enforcement, rollback, and an economic-impact report against agreed gates.","textChars":85,"textLines":1,"bbox":[844,468,320,94]}
+{"kind":"shape","id":"sh/edcv6lgz","slide":7,"bbox":[72,586,1136,46]}
+{"kind":"textbox","id":"sh/1gneh0fq","slide":7,"text":"BUSINESS-MODEL HYPOTHESIS","textPreview":"BUSINESS-MODEL HYPOTHESIS","textChars":25,"textLines":1,"bbox":[94,600,245,16]}
+{"kind":"textbox","id":"sh/gfex8vy5","slide":7,"text":"Annual platform fee + transparent usage · Customers retain provider relationships","textPreview":"Annual platform fee + transparent usage · Customers retain provider relationships","textChars":81,"textLines":1,"bbox":[342,596,820,24]}
+{"kind":"notes","id":"nt/1dnrz7","slide":7,"text":""}
+{"kind":"slide","id":"sl/i1ggzr","slide":8,"title":"ODYLITH / INVESTOR CORE DECK","textShapes":24}
+{"kind":"textbox","id":"sh/mh0fixsn","slide":8,"text":"ODYLITH / INVESTOR CORE DECK","textPreview":"ODYLITH / INVESTOR CORE DECK","textChars":28,"textLines":1,"bbox":[72,42,660,24]}
+{"kind":"textbox","id":"sh/t4bydcry","slide":8,"text":"The moat is not logs. It is controlled counterfactual evidence.","textPreview":"The moat is not logs. It is controlled counterfactual evidence.","textChars":63,"textLines":1,"bbox":[72,82,1100,92]}
+{"kind":"shape","id":"sh/832xk7ad","slide":8,"bbox":[72,183,1136,0]}
+{"kind":"textbox","id":"sh/v6tgf294","slide":8,"text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1170,668,38,18]}
+{"kind":"textbox","id":"sh/u5kfmhsj","slide":8,"text":"RAW LOGS DECAY","textPreview":"RAW LOGS DECAY","textChars":14,"textLines":1,"bbox":[72,220,300,24]}
+{"kind":"textbox","id":"sh/h8byhcra","slide":8,"text":"They observe only the selected action—and go stale as models, prompts, tools, repositories, and policies change.","textPreview":"They observe only the selected action—and go stale as models, prompts, tools, repositories, and policies change.","textChars":112,"textLines":1,"bbox":[72,270,340,180]}
+{"kind":"textbox","id":"sh/g72xo7ap","slide":8,"text":"TELEMETRY ≠ DEFENSIBILITY","textPreview":"TELEMETRY ≠ DEFENSIBILITY","textChars":25,"textLines":1,"bbox":[72,478,340,24]}
+{"kind":"shape","id":"sh/3adgjm90","slide":8,"bbox":[448,220,0,340]}
+{"kind":"textbox","id":"sh/i94fqhsf","slide":8,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[494,218,48,24]}
+{"kind":"textbox","id":"sh/grqd0vip","slide":8,"text":"Observe","textPreview":"Observe","textChars":7,"textLines":1,"bbox":[560,216,170,28]}
+{"kind":"textbox","id":"sh/hszu90zu","slide":8,"text":"Permissioned live work","textPreview":"Permissioned live work","textChars":22,"textLines":1,"bbox":[738,218,430,28]}
+{"kind":"shape","id":"sh/u58byl0j","slide":8,"bbox":[494,260,674,0]}
+{"kind":"textbox","id":"sh/f6hc7qh4","slide":8,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[494,286,48,24]}
+{"kind":"textbox","id":"sh/4vqd4vil","slide":8,"text":"Replay","textPreview":"Replay","textChars":6,"textLines":1,"bbox":[560,284,170,28]}
+{"kind":"textbox","id":"sh/pwzud0z6","slide":8,"text":"Same environment, competing policies","textPreview":"Same environment, competing policies","textChars":36,"textLines":1,"bbox":[738,286,430,28]}
+{"kind":"shape","id":"sh/2t8v2l0f","slide":8,"bbox":[494,328,674,0]}
+{"kind":"textbox","id":"sh/3uhcbqh0","slide":8,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[494,354,48,24]}
+{"kind":"textbox","id":"sh/czad8fih","slide":8,"text":"Verify","textPreview":"Verify","textChars":6,"textLines":1,"bbox":[560,352,170,28]}
+{"kind":"textbox","id":"sh/d0juhkz2","slide":8,"text":"Outcome receipts and limits","textPreview":"Outcome receipts and limits","textChars":27,"textLines":1,"bbox":[738,354,430,28]}
+{"kind":"shape","id":"sh/lgful0r6","slide":8,"bbox":[494,396,674,0]}
+{"kind":"textbox","id":"sh/0f6tsfa1","slide":8,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[494,422,48,24]}
+{"kind":"textbox","id":"sh/zexcja9g","slide":8,"text":"Attribute","textPreview":"Attribute","textChars":9,"textLines":1,"bbox":[560,420,170,28]}
+{"kind":"textbox","id":"sh/ydobq5sv","slide":8,"text":"Incremental lift, not anecdotes","textPreview":"Incremental lift, not anecdotes","textChars":31,"textLines":1,"bbox":[738,422,430,28]}
+{"kind":"shape","id":"sh/9kzupkri","slide":8,"bbox":[494,464,674,0]}
+{"kind":"textbox","id":"sh/8jqdwfax","slide":8,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[494,490,48,24]}
+{"kind":"textbox","id":"sh/nixcna9c","slide":8,"text":"Refresh","textPreview":"Refresh","textChars":7,"textLines":1,"bbox":[560,488,170,28]}
+{"kind":"textbox","id":"sh/mhovu5sr","slide":8,"text":"Update before evidence goes stale","textPreview":"Update before evidence goes stale","textChars":33,"textLines":1,"bbox":[738,490,430,28]}
+{"kind":"shape","id":"sh/povudgre","slide":8,"bbox":[494,576,674,58]}
+{"kind":"textbox","id":"sh/onmtkbat","slide":8,"text":"HYPOTHESIS","textPreview":"HYPOTHESIS","textChars":10,"textLines":1,"bbox":[516,594,110,18]}
+{"kind":"textbox","id":"sh/uh0jyx4f","slide":8,"text":"Permissioned access + counterfactual machinery compound allocation advantage.","textPreview":"Permissioned access + counterfactual machinery compound allocation advantage.","textChars":77,"textLines":1,"bbox":[638,584,500,44]}
+{"kind":"textbox","id":"sh/fi9072l0","slide":8,"text":"Tenant-isolated by default; only explicitly permitted priors or templates transfer.","textPreview":"Tenant-isolated by default; only explicitly permitted priors or templates transfer.","textChars":83,"textLines":1,"bbox":[72,652,1040,28]}
+{"kind":"notes","id":"nt/i1ggzr","slide":8,"text":""}
+{"kind":"slide","id":"sl/l19lp3","slide":9,"title":"ODYLITH / INVESTOR CORE DECK","textShapes":12}
+{"kind":"textbox","id":"sh/fy1obq90","slide":9,"text":"ODYLITH / INVESTOR CORE DECK","textPreview":"ODYLITH / INVESTOR CORE DECK","textChars":28,"textLines":1,"bbox":[72,42,660,24]}
+{"kind":"textbox","id":"sh/gza54vql","slide":9,"text":"Every new model expands supply; every agent step expands demand for control","textPreview":"Every new model expands supply; every agent step expands demand for control","textChars":75,"textLines":1,"bbox":[72,82,1130,92]}
+{"kind":"shape","id":"sh/10j6d076","slide":9,"bbox":[72,183,1136,0]}
+{"kind":"textbox","id":"sh/21sn6l8r","slide":9,"text":"09","textPreview":"09","textChars":2,"textLines":1,"bbox":[1170,668,38,18]}
+{"kind":"textbox","id":"sh/321ofqpc","slide":9,"text":"MODEL SUPPLY","textPreview":"MODEL SUPPLY","textChars":12,"textLines":1,"bbox":[72,232,360,24]}
+{"kind":"textbox","id":"sh/o3ap8vqx","slide":9,"text":"More providers\nMore price points\nMore tradeoffs","textPreview":"More providers | More price points | More tradeoffs","textChars":47,"textLines":3,"bbox":[72,278,360,154]}
+{"kind":"textbox","id":"sh/p4j6h07i","slide":9,"text":"×","textPreview":"×","textChars":1,"textLines":1,"bbox":[518,320,70,70]}
+{"kind":"textbox","id":"sh/i5onu18n","slide":9,"text":"AGENT DECISIONS","textPreview":"AGENT DECISIONS","textChars":15,"textLines":1,"bbox":[666,232,420,24]}
+{"kind":"textbox","id":"sh/j6ho3698","slide":9,"text":"More steps\nMore retries\nMore recovery","textPreview":"More steps | More retries | More recovery","textChars":37,"textLines":3,"bbox":[666,278,390,154]}
+{"kind":"shape","id":"sh/zypkrelc","slide":9,"bbox":[72,472,1136,88]}
+{"kind":"textbox","id":"sh/ydgjy94r","slide":9,"text":"ALLOCATION OPPORTUNITY","textPreview":"ALLOCATION OPPORTUNITY","textChars":22,"textLines":1,"bbox":[96,493,240,18]}
+{"kind":"textbox","id":"sh/l072to3i","slide":9,"text":"Every job becomes a portfolio of conditional execution choices.","textPreview":"Every job becomes a portfolio of conditional execution choices.","textChars":63,"textLines":1,"bbox":[344,486,820,38]}
+{"kind":"textbox","id":"sh/kzyl0j2x","slide":9,"text":"HYPOTHESIS","textPreview":"HYPOTHESIS","textChars":10,"textLines":1,"bbox":[72,592,120,18]}
+{"kind":"textbox","id":"sh/ba5knelg","slide":9,"text":"Software first. Expand only where outcomes can be verified.","textPreview":"Software first. Expand only where outcomes can be verified.","textChars":59,"textLines":1,"bbox":[194,585,1014,36]}
+{"kind":"notes","id":"nt/l19lp3","slide":9,"text":""}
+{"kind":"slide","id":"sl/ujp3ao","slide":10,"title":"ODYLITH / INVESTOR CORE DECK","textShapes":12}
+{"kind":"textbox","id":"sh/orqhk32d","slide":10,"text":"ODYLITH / INVESTOR CORE DECK","textPreview":"ODYLITH / INVESTOR CORE DECK","textChars":28,"textLines":1,"bbox":[72,42,660,24]}
+{"kind":"textbox","id":"sh/nqh0by18","slide":10,"text":"Freedom combines frontier-model depth with enterprise systems experience","textPreview":"Freedom combines frontier-model depth with enterprise systems experience","textChars":72,"textLines":1,"bbox":[72,82,1120,92]}
+{"kind":"shape","id":"sh/mp8zitkn","slide":10,"bbox":[72,183,1136,0]}
+{"kind":"textbox","id":"sh/14zi98j2","slide":10,"text":"10","textPreview":"10","textChars":2,"textLines":1,"bbox":[1170,668,38,18]}
+{"kind":"shape","id":"sh/z2x07y1w","slide":10,"bbox":[72,598,365,34]}
+{"kind":"textbox","id":"sh/e1ozetkb","slide":10,"text":"FREEDOM PREETHAM","textPreview":"FREEDOM PREETHAM","textChars":16,"textLines":1,"bbox":[90,606,330,18]}
+{"kind":"textbox","id":"sh/50jilsj6","slide":10,"text":"SELECTED EXPERIENCE","textPreview":"SELECTED EXPERIENCE","textChars":19,"textLines":1,"bbox":[500,218,260,22]}
+{"kind":"textbox","id":"sh/kza1sn2l","slide":10,"text":"AI and enterprise-architecture leadership","textPreview":"AI and enterprise-architecture leadership","textChars":41,"textLines":1,"bbox":[500,258,650,44]}
+{"kind":"textbox","id":"sh/qporip4z","slide":10,"text":"InMobi · Course Hero · NewScale · Centrata","textPreview":"InMobi · Course Hero · NewScale · Centrata","textChars":42,"textLines":1,"bbox":[500,310,650,32]}
+{"kind":"shape","id":"sh/rqx8ru5k","slide":10,"bbox":[500,365,668,0]}
+{"kind":"textbox","id":"sh/sr69kfm5","slide":10,"text":"Three deep-technology startups","textPreview":"Three deep-technology startups","textChars":30,"textLines":1,"bbox":[500,393,650,40]}
+{"kind":"textbox","id":"sh/dsfqtknq","slide":10,"text":"Including Cognit.AI and Kena","textPreview":"Including Cognit.AI and Kena","textChars":28,"textLines":1,"bbox":[500,444,650,30]}
+{"kind":"shape","id":"sh/il47e543","slide":10,"bbox":[500,496,668,0]}
+{"kind":"textbox","id":"sh/3md8na58","slide":10,"text":"RELEVANT OPERATING PATTERN","textPreview":"RELEVANT OPERATING PATTERN","textChars":26,"textLines":1,"bbox":[500,524,300,20]}
+{"kind":"textbox","id":"sh/4n69gfmt","slide":10,"text":"AI research  ·  complex systems  ·  enterprise infrastructure  ·  commercial execution","textPreview":"AI research  ·  complex systems  ·  enterprise infrastructure  ·  commercial execution","textChars":86,"textLines":1,"bbox":[500,557,668,62]}
+{"kind":"textbox","id":"sh/5ofqpkne","slide":10,"text":"Roles and startup names from founder-supplied materials · Portrait: public CELL/Substack author profile.","textPreview":"Roles and startup names from founder-supplied materials · Portrait: public CELL/Substack author profile.","textChars":104,"textLines":1,"bbox":[72,652,1080,28]}
+{"kind":"image","id":"im/1k3y9o7a","slide":10,"name":"","geometry":"roundRect","alt":"Freedom Preetham","bbox":[72,222,365,365]}
+{"kind":"notes","id":"nt/ujp3ao","slide":10,"text":""}
+{"kind":"slide","id":"sl/gbgjju","slide":11,"title":"ODYLITH / THE ROUND","textShapes":16}
+{"kind":"textbox","id":"sh/5c3q1wfa","slide":11,"text":"ODYLITH / THE ROUND","textPreview":"ODYLITH / THE ROUND","textChars":19,"textLines":1,"bbox":[72,42,660,24]}
+{"kind":"textbox","id":"sh/ipc76hgz","slide":11,"text":"$2M","textPreview":"$2M","textChars":3,"textLines":1,"bbox":[72,108,250,82]}
+{"kind":"textbox","id":"sh/jal8zmxk","slide":11,"text":"buys three falsifiable proofs in 12–18 months","textPreview":"buys three falsifiable proofs in 12–18 months","textChars":45,"textLines":1,"bbox":[320,118,850,64]}
+{"kind":"shape","id":"sh/sfe9cry1","slide":11,"bbox":[72,208,1136,0]}
+{"kind":"textbox","id":"sh/tgnq5wfm","slide":11,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[72,252,60,34]}
+{"kind":"textbox","id":"sh/6dc7a1gv","slide":11,"text":"Adaptive proof","textPreview":"Adaptive proof","textChars":14,"textLines":1,"bbox":[72,316,320,48]}
+{"kind":"textbox","id":"sh/rel83mxg","slide":11,"text":"Cross-provider allocation beats a frozen policy on preregistered external holdouts across repositories, providers, repetitions, and ablations.","textPreview":"Cross-provider allocation beats a frozen policy on preregistered external holdouts across repositories, providers, repetitions, and ablat...","textChars":142,"textLines":1,"bbox":[72,389,320,124]}
+{"kind":"shape","id":"sh/gje9gbyd","slide":11,"bbox":[434,258,0,260]}
+{"kind":"textbox","id":"sh/1knq9gfi","slide":11,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[458,252,60,34]}
+{"kind":"textbox","id":"sh/1s36hgju","slide":11,"text":"Commercial proof","textPreview":"Commercial proof","textChars":16,"textLines":1,"bbox":[458,316,320,48]}
+{"kind":"textbox","id":"sh/0ru58bi9","slide":11,"text":"Five to eight substantive design partners and multiple repeatable paid deployments. A target—not present traction.","textPreview":"Five to eight substantive design partners and multiple repeatable paid deployments. A target—not present traction.","textChars":114,"textLines":1,"bbox":[458,389,320,124]}
+{"kind":"shape","id":"sh/zqlof61o","slide":11,"bbox":[820,258,0,260]}
+{"kind":"textbox","id":"sh/epsn6103","slide":11,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[844,252,60,34]}
+{"kind":"textbox","id":"sh/9w36lgjq","slide":11,"text":"Compounding proof","textPreview":"Compounding proof","textChars":17,"textLines":1,"bbox":[844,316,320,48]}
+{"kind":"textbox","id":"sh/8vupcvi5","slide":11,"text":"Allocation quality improves against a frozen baseline over time without crossing tenant boundaries.","textPreview":"Allocation quality improves against a frozen baseline over time without crossing tenant boundaries.","textChars":99,"textLines":1,"bbox":[844,389,320,124]}
+{"kind":"shape","id":"sh/nulojq1k","slide":11,"bbox":[72,550,1136,84]}
+{"kind":"textbox","id":"sh/mtc7al0z","slide":11,"text":"THE ROUND SUCCEEDS ONLY IF","textPreview":"THE ROUND SUCCEEDS ONLY IF","textChars":26,"textLines":1,"bbox":[96,570,250,18]}
+{"kind":"textbox","id":"sh/p0j69wjm","slide":11,"text":"Odylith proves adaptive lift, repeatable purchase, and measurable compounding.","textPreview":"Odylith proves adaptive lift, repeatable purchase, and measurable compounding.","textChars":78,"textLines":1,"bbox":[350,563,815,40]}
+{"kind":"textbox","id":"sh/4za50ri1","slide":11,"text":"Production baseline: verification · recovery · enterprise policy · security · canarying · rollback","textPreview":"Production baseline: verification · recovery · enterprise policy · security · canarying · rollback","textChars":98,"textLines":1,"bbox":[72,656,1080,20]}
+{"kind":"textbox","id":"sh/gjupgrax","slide":11,"text":"11","textPreview":"11","textChars":2,"textLines":1,"bbox":[1170,668,38,18]}
+{"kind":"notes","id":"nt/gbgjju","slide":11,"text":""}

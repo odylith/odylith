@@ -238,7 +238,18 @@ def proposal_actions(
         or fact_producer_runtime.joined_prompt_surface(observation)
     )
     phase = _normalize_token(observation.turn_phase)
-    workstream_ids = list(lookup.get("workstream_ids", []))
+    # A workstream named in the current prompt is the strongest ownership
+    # signal.  Session-replayed or packet-inherited anchors remain useful
+    # context, but must not steal the proposal from an explicit current-turn
+    # target when both are present.
+    prompt_workstream_ids = _normalize_string_list(
+        signal_profile.get("prompt_explicit_workstream_ids")
+    )
+    workstream_ids = (
+        prompt_workstream_ids
+        if prompt_workstream_ids
+        else list(lookup.get("workstream_ids", []))
+    )
     component_ids = list(lookup.get("component_ids", []))
     diagram_refs = list(lookup.get("diagram_refs", []))
     bug_ids = list(lookup.get("bug_ids", []))

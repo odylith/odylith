@@ -21,7 +21,7 @@ def _seed_repo(repo_root: Path) -> None:
     (codex_root / "config.toml").write_text("project_root_markers = [\".git\"]\n", encoding="utf-8")
     (codex_root / "hooks.json").write_text(
         json.dumps(
-            {
+            {"hooks": {
                 "UserPromptSubmit": [
                     {
                         "hooks": [
@@ -53,7 +53,7 @@ def _seed_repo(repo_root: Path) -> None:
                         ]
                     }
                 ],
-            }
+            }}
         ),
         encoding="utf-8",
     )
@@ -99,7 +99,7 @@ def test_inspect_codex_compatibility_marks_local_0119_build_assistant_visible_re
     assert report.supports_stop_summary_hook is True
     assert report.prompt_input_probe_passed is True
     assert report.repo_guidance_detected is True
-    assert report.overall_posture == "baseline_safe_assistant_visible_ready"
+    assert report.overall_posture == "baseline_safe_hooks_configured"
 
 
 def test_inspect_codex_compatibility_does_not_call_repo_guidance_probe_hook_visibility(
@@ -132,7 +132,7 @@ def test_inspect_codex_compatibility_does_not_call_repo_guidance_probe_hook_visi
     assert report.supports_stop_summary_hook is False
     assert report.overall_posture == "baseline_safe_with_best_effort_project_assets"
     assert "hook wiring is incomplete" in rendered
-    assert "separate visibility proof" in rendered
+    assert "separate from execution and chat-visibility proof" in rendered
 
 
 def test_inspect_codex_compatibility_accepts_bash_only_checkpoint_matcher(
@@ -141,7 +141,7 @@ def test_inspect_codex_compatibility_accepts_bash_only_checkpoint_matcher(
 ) -> None:
     _seed_repo(tmp_path)
     payload = json.loads((tmp_path / ".codex" / "hooks.json").read_text(encoding="utf-8"))
-    payload["PostToolUse"][0]["matcher"] = "Bash"
+    payload["hooks"]["PostToolUse"][0]["matcher"] = "Bash"
     (tmp_path / ".codex" / "hooks.json").write_text(json.dumps(payload), encoding="utf-8")
 
     def _fake_run(*, repo_root: Path, codex_bin: str, args: list[str], timeout: int = 10):
@@ -163,7 +163,7 @@ def test_inspect_codex_compatibility_accepts_bash_only_checkpoint_matcher(
     assert report.supports_user_prompt_submit_hook is True
     assert report.supports_post_bash_checkpoint_hook is True
     assert report.supports_stop_summary_hook is True
-    assert report.overall_posture == "baseline_safe_assistant_visible_ready"
+    assert report.overall_posture == "baseline_safe_hooks_configured"
     assert "PostToolUse post-bash-checkpoint hook wired for Bash: yes" in rendered
     assert "Assistant-render recovery" in rendered
     assert "may not hot-reload changed hooks" in rendered
@@ -191,7 +191,7 @@ def test_inspect_codex_compatibility_marks_assistant_visible_ready_without_promp
     assert report.prompt_input_probe_supported is False
     assert report.prompt_input_probe_passed is False
     assert report.repo_guidance_detected is False
-    assert report.overall_posture == "baseline_safe_assistant_visible_ready"
+    assert report.overall_posture == "baseline_safe_hooks_configured"
 
 
 def test_inspect_codex_compatibility_stays_baseline_safe_when_codex_is_missing(monkeypatch, tmp_path: Path) -> None:
@@ -274,7 +274,7 @@ def test_main_emits_json_report(monkeypatch, tmp_path: Path, capsys) -> None:
             prompt_input_probe_passed=True,
             repo_guidance_detected=True,
             future_version_policy="capability_based_no_max_pin",
-            overall_posture="baseline_safe_assistant_visible_ready",
+            overall_posture="baseline_safe_hooks_configured",
         ),
     )
 
@@ -283,7 +283,7 @@ def test_main_emits_json_report(monkeypatch, tmp_path: Path, capsys) -> None:
     assert exit_code == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["codex_version"] == "0.119.0-alpha.28"
-    assert payload["overall_posture"] == "baseline_safe_assistant_visible_ready"
+    assert payload["overall_posture"] == "baseline_safe_hooks_configured"
     assert payload["supports_user_prompt_submit_hook"] is True
     assert payload["supports_post_bash_checkpoint_hook"] is True
     assert payload["supports_stop_summary_hook"] is True

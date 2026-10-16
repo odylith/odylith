@@ -15,15 +15,16 @@ from __future__ import annotations
 import argparse
 import concurrent.futures
 import contextlib
+from copy import deepcopy
 from contextvars import copy_context
 from dataclasses import dataclass
+from functools import partial
 import importlib
 import io
 import json
 import os
 from pathlib import Path
 import queue
-import signal
 import subprocess
 import sys
 import threading
@@ -42,7 +43,11 @@ from odylith.runtime.governance import compass_dashboard_refresh_inputs
 from odylith.runtime.governance import dashboard_refresh_contract
 from odylith.runtime.governance import release_truth_runtime
 from odylith.runtime.governance import surface_refresh_fingerprint_dag
+from odylith.runtime.governance import sync_command_execution
+from odylith.runtime.governance import sync_generated_outputs
 from odylith.runtime.governance import sync_session as governed_sync_session
+from odylith.runtime.governance import sync_surface_render_batch
+from odylith.runtime.governance import traceability_freshness
 from odylith.runtime.governance.legacy_backlog_normalization import backlog_next_action
 from odylith.runtime.governance.legacy_backlog_normalization import collect_backlog_contract_errors
 from odylith.runtime.governance.legacy_backlog_normalization import normalize_legacy_backlog_index
@@ -62,6 +67,7 @@ _SYNC_PATH_PREFIXES: tuple[str, ...] = (
     "odylith/radar/source/INDEX.md",
     "odylith/radar/source/ideas/",
     "odylith/radar/source/programs/",
+    "odylith/radar/source/releases/",
     "odylith/radar/source/policy/",
     "odylith/radar/source/templates/",
     "odylith/radar/source/AGENTS.md",
@@ -121,7 +127,6 @@ _SURFACE_DISPLAY_NAMES: Mapping[str, str] = {
     "registry": "registry",
     "casebook": "casebook",
 }
-_HEARTBEAT_INTERVAL_SECONDS = 10.0
 _HEARTBEAT_START_DELAY_SECONDS = 2.0
 _IN_PROCESS_HEARTBEAT_MODULES = frozenset(
     {
@@ -141,6 +146,9 @@ _SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES: tuple[str, ...] = (
     "odylith/agents-guidelines/",
     "odylith/skills/",
     "odylith/runtime/source/",
+)
+_SOURCE_TRUTH_BUNDLE_MIRROR_EXACT_PATHS = frozenset(
+    {"odylith/AGENTS.md", "odylith/README.md", "odylith/SECURITY_POSTURE.md"}
 )
 _PROJECTION_INVALIDATION_PREFIXES: tuple[str, ...] = (
     "odylith/radar/source/",
@@ -165,15 +173,6 @@ _TRUTH_ONLY_SELECTIVE_EXACT_PATHS: frozenset[str] = frozenset(
 )
 
 
-def _active_odylith_import_roots() -> tuple[str, ...]:
-    roots: list[str] = []
-    for candidate in (Path(__file__).resolve().parents[3],):
-        token = str(candidate)
-        if token not in roots:
-            roots.append(token)
-    return tuple(roots)
-
-
 @dataclass(frozen=True)
 class ExecutionStep:
     label: str
@@ -188,14 +187,12 @@ class ExecutionStep:
     change_watch_paths: tuple[str, ...] = ()
     followup_steps_on_change: tuple["ExecutionStep", ...] = ()
 
-
 @dataclass(frozen=True)
 class ExecutionPlan:
     headline: str
     steps: tuple[ExecutionStep, ...]
     dirty_overlap: tuple[str, ...]
     notes: tuple[str, ...] = ()
-
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = configure_sync_parser(argparse.ArgumentParser(prog="odylith sync"))
@@ -204,10 +201,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         args.registry_policy_mode = str(args.policy_mode).strip()
     return args
 
-
 def _normalize_changed_paths(*, repo_root: Path, changed_paths: Sequence[str]) -> list[str]:
     return governance.normalize_changed_paths(repo_root=repo_root, values=changed_paths)
-
 
 def _effective_changed_paths(
     *,
@@ -219,7 +214,6 @@ def _effective_changed_paths(
     if normalized or force:
         return normalized
     return governance.collect_git_changed_paths(repo_root=repo_root)
-
 
 def _requires_sync(*, repo_root: Path, changed_paths: Sequence[str], force: bool) -> bool:
     if force:
@@ -235,7 +229,6 @@ def _requires_sync(*, repo_root: Path, changed_paths: Sequence[str], force: bool
         if any(token == prefix or token.startswith(prefix) for prefix in _SYNC_PATH_PREFIXES):
             return True
     return False
-
 
 def _execution_step(
     label: str,
@@ -265,7 +258,6 @@ def _execution_step(
         followup_steps_on_change=tuple(followup_steps_on_change),
     )
 
-
 def _dirty_overlap_for_paths(*, repo_root: Path, paths: Sequence[str]) -> tuple[str, ...]:
     normalized = tuple(dict.fromkeys(str(token).strip() for token in paths if str(token).strip()))
     if not normalized or not (repo_root / ".git").exists():
@@ -289,15 +281,15 @@ def _dirty_overlap_for_paths(*, repo_root: Path, paths: Sequence[str]) -> tuple[
         return ()
     return tuple(line.rstrip() for line in str(completed.stdout or "").splitlines() if line.strip())
 
-
 def _should_bundle_mirror_source_truth_path(path_token: str) -> bool:
     token = str(path_token).strip()
     if not token:
         return False
     if any(token.startswith(prefix) for prefix in _SOURCE_TRUTH_BUNDLE_MIRROR_EXCLUDE_PREFIXES):
         return False
-    return any(token.startswith(prefix) for prefix in _SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES)
-
+    return token in _SOURCE_TRUTH_BUNDLE_MIRROR_EXACT_PATHS or any(
+        token.startswith(prefix) for prefix in _SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES
+    )
 
 def _sync_changed_source_truth_bundle_mirrors(
     *,
@@ -344,10 +336,8 @@ def _sync_changed_source_truth_bundle_mirrors(
     print(f"- removed: {len(removed_paths)}")
     return 0
 
-
 def _is_truth_only_selective_changed_path(token: str) -> bool:
     return bool(_owned_surface_for_selective_changed_path(token))
-
 
 def _owned_surface_for_selective_changed_path(token: str) -> str:
     normalized = str(token or "").strip()
@@ -371,7 +361,6 @@ def _owned_surface_for_selective_changed_path(token: str) -> str:
         return "compass"
     return ""
 
-
 def _owned_surfaces_for_selective_slice(changed_paths: Sequence[str]) -> tuple[str, ...]:
     selected: list[str] = []
     seen: set[str] = set()
@@ -382,10 +371,8 @@ def _owned_surfaces_for_selective_slice(changed_paths: Sequence[str]) -> tuple[s
             selected.append(surface)
     return tuple(selected)
 
-
 def _touches_radar_selective_truth(changed_paths: Sequence[str]) -> bool:
     return "radar" in _owned_surfaces_for_selective_slice(changed_paths)
-
 
 def _dashboard_impact_for_truth_only_selective_slice(changed_paths: Sequence[str]) -> governance.DashboardImpact:
     surfaces = set(_owned_surfaces_for_selective_slice(changed_paths))
@@ -401,7 +388,6 @@ def _dashboard_impact_for_truth_only_selective_slice(changed_paths: Sequence[str
         casebook="casebook" in surfaces,
         reasons=reasons,
     )
-
 
 def _should_use_truth_only_selective_sync(
     *,
@@ -528,17 +514,20 @@ def _build_truth_only_selective_sync_plan(
                     changed_paths=normalized,
                 ),
                 mutation_classes=("generated_surfaces",),
-                paths=_SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES,
+                paths=(*_SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES, *sorted(_SOURCE_TRUTH_BUNDLE_MIRROR_EXACT_PATHS)),
                 next_command_on_failure=sync_failure_command,
             )
         )
-    for surface in refresh_surfaces:
+    # Compass and other runtime readers consume the derived Casebook index.
+    # Run its owned refresh first, preserving the other surfaces' order.
+    for surface in sorted(refresh_surfaces, key=lambda surface: surface != "casebook"):
         steps.extend(
             _dashboard_surface_steps(
                 repo_root=repo_root,
                 surface=surface,
                 runtime_mode=runtime_mode,
                 atlas_sync=surface == "atlas",
+                casebook_migrate_bug_ids=False,
             )
         )
 
@@ -614,70 +603,6 @@ def _print_execution_plan(name: str, plan: ExecutionPlan, *, dry_run: bool, verb
         print("dry-run mode: no files written")
 
 
-def _run_command(
-    *,
-    repo_root: Path,
-    args: Sequence[str],
-    heartbeat_label: str = "",
-    timeout_seconds: float | None = None,
-) -> int:
-    env = os.environ.copy()
-    cwd = Path.cwd()
-    pythonpath_tokens: list[str] = []
-    for token in _active_odylith_import_roots():
-        if token not in pythonpath_tokens:
-            pythonpath_tokens.append(token)
-    raw_pythonpath = str(env.get("PYTHONPATH", "")).strip()
-    if raw_pythonpath:
-        for token in raw_pythonpath.split(os.pathsep):
-            normalized = str((cwd / token).resolve()) if token and not Path(token).is_absolute() else token
-            if normalized and normalized not in pythonpath_tokens:
-                pythonpath_tokens.append(normalized)
-    if pythonpath_tokens:
-        env["PYTHONPATH"] = os.pathsep.join(pythonpath_tokens)
-    tokens = [str(token) for token in args]
-    if tokens and tokens[0] == "python":
-        tokens[0] = sys.executable
-    if heartbeat_label or timeout_seconds is not None:
-        started_at = time.perf_counter()
-        last_heartbeat = started_at
-        popen_kwargs: dict[str, Any] = {
-            "cwd": str(repo_root),
-            "env": env,
-        }
-        if os.name == "posix":
-            popen_kwargs["start_new_session"] = True
-        process = subprocess.Popen(tokens, **popen_kwargs)
-        while True:
-            rc = process.poll()
-            if rc is not None:
-                return int(rc)
-            now = time.perf_counter()
-            if timeout_seconds is not None and now - started_at >= float(timeout_seconds):
-                print(
-                    f"- timeout: {heartbeat_label or 'command'} exceeded "
-                    f"{int(float(timeout_seconds))}s; terminating"
-                )
-                _terminate_process(process)
-                try:
-                    process.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    _kill_process(process)
-                    process.wait(timeout=5)
-                return 124
-            if now - last_heartbeat >= _HEARTBEAT_INTERVAL_SECONDS:
-                print(f"- heartbeat: {heartbeat_label} still running ({int(now - started_at)}s)")
-                last_heartbeat = now
-            time.sleep(0.5)
-    completed = subprocess.run(
-        tokens,
-        cwd=str(repo_root),
-        env=env,
-        check=False,
-    )
-    return int(completed.returncode)
-
-
 def _run_callable_with_heartbeat(
     *,
     label: str,
@@ -704,7 +629,7 @@ def _run_callable_with_heartbeat(
         except queue.Empty:
             elapsed = int(time.perf_counter() - started_at)
             print(f"- heartbeat: {label} still running ({elapsed}s)")
-            timeout = max(0.01, float(_HEARTBEAT_INTERVAL_SECONDS))
+            timeout = max(0.01, float(sync_command_execution.HEARTBEAT_INTERVAL_SECONDS))
             continue
         worker.join(timeout=0.01)
         if error is not None:
@@ -851,26 +776,8 @@ def _step_materially_changed(
     return before_change_fingerprint != after_change_fingerprint
 
 
-def _terminate_process(process: subprocess.Popen[Any]) -> None:
-    process_pid = int(getattr(process, "pid", 0) or 0)
-    if os.name == "posix" and process_pid > 0:
-        try:
-            os.killpg(process_pid, signal.SIGTERM)
-            return
-        except (OSError, ProcessLookupError):
-            pass
-    process.terminate()
 
 
-def _kill_process(process: subprocess.Popen[Any]) -> None:
-    process_pid = int(getattr(process, "pid", 0) or 0)
-    if os.name == "posix" and process_pid > 0:
-        try:
-            os.killpg(process_pid, signal.SIGKILL)
-            return
-        except (OSError, ProcessLookupError):
-            pass
-    process.kill()
 
 
 def _display_sync_step_command(*, repo_root: Path, command: Sequence[str]) -> str:
@@ -892,7 +799,7 @@ def _run_command_in_process(
 ) -> int:
     tokens = tuple(str(token) for token in args)
     if timeout_seconds is not None:
-        return _run_command(
+        return sync_command_execution.run_command(
             repo_root=repo_root,
             args=tokens,
             heartbeat_label=heartbeat_label,
@@ -908,7 +815,28 @@ def _run_command_in_process(
                     callable_=lambda: int(main(list(tokens[3:])) or 0),
                 )
             return int(main(list(tokens[3:])) or 0)
-    return _run_command(
+    return sync_command_execution.run_command(
+        repo_root=repo_root,
+        args=tokens,
+        heartbeat_label=heartbeat_label,
+        timeout_seconds=timeout_seconds,
+    )
+
+
+def _run_command_in_process_direct(
+    *,
+    repo_root: Path,
+    args: Sequence[str],
+    heartbeat_label: str = "",
+    timeout_seconds: float | None = None,
+) -> int:
+    tokens = tuple(str(token) for token in args)
+    if len(tokens) >= 3 and tokens[0] == "python" and tokens[1] == "-m":
+        module = importlib.import_module(tokens[2])
+        main = getattr(module, "main", None)
+        if callable(main):
+            return _coerce_callable_step_result(main(list(tokens[3:])))
+    return sync_command_execution.run_command(
         repo_root=repo_root,
         args=tokens,
         heartbeat_label=heartbeat_label,
@@ -1096,6 +1024,7 @@ def _atlas_auto_update_command(
     force: bool,
     impact_mode: str,
     runtime_mode: str,
+    atlas_diagram_ids: Sequence[str] = (),
 ) -> tuple[str, ...]:
     command: list[str] = [
         "python",
@@ -1108,7 +1037,11 @@ def _atlas_auto_update_command(
     command.extend(_runtime_args(runtime_mode))
     for token in changed_paths:
         command.extend(["--changed-path", str(token)])
-    if force or str(impact_mode).strip().lower() != "selective":
+    if atlas_diagram_ids:
+        for diagram_id in atlas_diagram_ids:
+            command.extend(["--diagram-id", diagram_id])
+        command.append("--preserve-review-date")
+    elif force or str(impact_mode).strip().lower() != "selective":
         command.append("--all-stale")
     return tuple(command)
 
@@ -1126,46 +1059,18 @@ def _delivery_intelligence_command(*, repo_root: Path, check_only: bool) -> tupl
     return tuple(command)
 
 
-def _surface_render_outputs(surface: str) -> tuple[str, ...]:
-    return {
-        "tooling_shell": ("odylith/index.html", "odylith/tooling-payload.v1.js", "odylith/tooling-app.v1.js"),
-        "radar": (
-            "odylith/radar/radar.html",
-            "odylith/radar/backlog-payload.v1.js",
-            "odylith/radar/backlog-app.v1.js",
-            "odylith/radar/traceability-graph.v1.json",
-        ),
-        "compass": (
-            "odylith/compass/compass.html",
-            "odylith/compass/compass-payload.v1.js",
-            "odylith/compass/compass-app.v1.js",
-            "odylith/compass/compass-style-base.v1.css",
-            "odylith/compass/compass-style-execution-waves.v1.css",
-            "odylith/compass/compass-style-surface.v1.css",
-            "odylith/compass/compass-shared.v1.js",
-            "odylith/compass/compass-state.v1.js",
-            "odylith/compass/compass-summary.v1.js",
-            "odylith/compass/compass-timeline.v1.js",
-            "odylith/compass/compass-waves.v1.js",
-            "odylith/compass/compass-workstreams.v1.js",
-            "odylith/compass/compass-ui-runtime.v1.js",
-        ),
-        "atlas": ("odylith/atlas/atlas.html", "odylith/atlas/mermaid-payload.v1.js", "odylith/atlas/mermaid-app.v1.js"),
-        "registry": ("odylith/registry/registry.html", "odylith/registry/registry-payload.v1.js", "odylith/registry/registry-app.v1.js"),
-        "casebook": ("odylith/casebook/casebook.html", "odylith/casebook/casebook-payload.v1.js", "odylith/casebook/casebook-app.v1.js"),
-    }.get(surface, ())
-
-
 def _runtime_retry_command(command: Sequence[str]) -> tuple[str, ...]:
     return _replace_runtime_mode_args(command, runtime_mode="standalone")
 
 
-def _casebook_index_refresh_step(*, repo_root: Path, next_command_on_failure: str, label: str) -> ExecutionStep:
+def _casebook_index_refresh_step(
+    *, repo_root: Path, next_command_on_failure: str, label: str, migrate_bug_ids: bool = True,
+) -> ExecutionStep:
     def _refresh_index() -> int:
         try:
             sync_casebook_bug_index.sync_casebook_bug_index(
                 repo_root=repo_root,
-                migrate_bug_ids=True,
+                migrate_bug_ids=migrate_bug_ids,
             )
         except ValueError as exc:
             print(str(exc))
@@ -1176,7 +1081,7 @@ def _casebook_index_refresh_step(*, repo_root: Path, next_command_on_failure: st
         label,
         surface="casebook",
         mutation_classes=("repo_owned_truth",),
-        paths=("odylith/casebook/bugs/INDEX.md",),
+        paths=("odylith/casebook/bugs/",) if migrate_bug_ids else ("odylith/casebook/bugs/INDEX.md",),
         action=_refresh_index,
         next_command_on_failure=next_command_on_failure,
     )
@@ -1192,16 +1097,6 @@ def _casebook_source_validation_action(*, repo_root: Path) -> int:
         return 0
     casebook_source_validation.print_casebook_source_validation_report(result)
     return 2
-
-
-def _casebook_source_validation_step(*, repo_root: Path, label: str) -> ExecutionStep:
-    return _execution_step(
-        label,
-        surface="casebook",
-        paths=("odylith/casebook/bugs/",),
-        action=lambda: _casebook_source_validation_action(repo_root=repo_root),
-        next_command_on_failure=_casebook_source_validation_command(),
-    )
 
 
 def _casebook_render_step(
@@ -1225,17 +1120,22 @@ def _casebook_render_step(
         command=command,
         standalone_command=_runtime_retry_command(command),
         mutation_classes=("generated_surfaces",),
-        paths=_surface_render_outputs("casebook"),
+        paths=sync_generated_outputs.surface_render_outputs("casebook", repo_root=repo_root),
         next_command_on_failure=next_command_on_failure,
         timeout_seconds=_DASHBOARD_REFRESH_TIMEOUT_SECONDS,
     )
 
 
-def _owned_surface_refresh_command(*, surface: str, atlas_sync: bool = False) -> str:
+def _owned_surface_refresh_command(
+    *, surface: str, atlas_sync: bool = False, atlas_diagram_ids: Sequence[str] = (),
+) -> str:
     normalized = str(surface).strip().lower()
     if normalized in {"radar", "registry", "casebook"}:
         return display_command(normalized, "refresh", "--repo-root", ".")
     if normalized == "atlas":
+        if atlas_diagram_ids:
+            return display_command("atlas", "auto-update", "--repo-root", ".", "--preserve-review-date", "--fail-on-stale",
+                                   *(token for diagram_id in atlas_diagram_ids for token in ("--diagram-id", diagram_id)))
         argv: list[str] = ["atlas", "refresh", "--repo-root", "."]
         if atlas_sync:
             argv.append("--atlas-sync")
@@ -1258,15 +1158,71 @@ def _normalize_radar_source_before_surface_refresh(*, repo_root: Path) -> None:
     print(f"  source: {normalization.backlog_index.relative_to(repo_root)}")
 
 
+def _normalize_radar_source_for_sync(*, repo_root: Path) -> int:
+    normalization = normalize_legacy_backlog_index(repo_root=repo_root)
+    if not normalization.changed:
+        print("- radar preflight: legacy Radar source already normalized")
+        return 0
+    normalized_idea_specs = tuple(getattr(normalization, "normalized_idea_specs", ()) or ())
+    normalized_table_sections = tuple(getattr(normalization, "normalized_table_sections", ()) or ())
+    print("workstream sync legacy normalization")
+    print(
+        f"- radar_index: normalized {len(normalization.normalized_sections)} rationale section"
+        f"{'' if len(normalization.normalized_sections) == 1 else 's'} before validation"
+    )
+    print(f"- added_sections: {len(normalization.added_sections)}")
+    print(f"- idea_schema_updates: {len(normalized_idea_specs)}")
+    print(f"- table_schema_updates: {len(normalized_table_sections)}")
+    print(f"- source: {normalization.backlog_index.relative_to(repo_root)}")
+    return 0
+
+
+def _ensure_radar_traceability_graph_fresh(*, repo_root: Path) -> dict[str, Any]:
+    graph_path = Path(repo_root).resolve() / "odylith" / "radar" / "traceability-graph.v1.json"
+    changed = traceability_freshness.ensure_traceability_graph_fresh(
+        repo_root=repo_root,
+        graph_path=graph_path,
+    )
+    print(
+        "- radar traceability graph: "
+        + ("rebuilt from current source fingerprint" if changed else "already fresh")
+    )
+    return {
+        "rc": 0,
+        "status": "passed",
+        "state": {
+            "changed": changed,
+        },
+    }
+
+
+def _run_backlog_contract_preflight_for_sync(*, repo_root: Path) -> int:
+    normalization_rc = _normalize_radar_source_for_sync(repo_root=repo_root)
+    if normalization_rc != 0:
+        return normalization_rc
+    backlog_errors = collect_backlog_contract_errors(repo_root=repo_root)
+    if not backlog_errors:
+        return 0
+    print("odylith sync did not complete.")
+    print("Radar backlog contract validation is blocking sync.")
+    print("Top blockers:")
+    for line in summarize_backlog_contract_errors(backlog_errors):
+        print(f"- {line}")
+    print(f"Next: {backlog_next_action(errors=backlog_errors)}")
+    return 2
+
+
 def _dashboard_surface_steps(
     *,
     repo_root: Path,
     surface: str,
     runtime_mode: str,
     atlas_sync: bool,
+    atlas_diagram_ids: Sequence[str] = (),
+    casebook_migrate_bug_ids: bool = False,
 ) -> list[ExecutionStep]:
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
-    refresh_command = _owned_surface_refresh_command(surface=surface, atlas_sync=atlas_sync)
+    refresh_command = _owned_surface_refresh_command(surface=surface, atlas_sync=atlas_sync, atlas_diagram_ids=atlas_diagram_ids)
     steps: list[ExecutionStep] = []
     if surface in {"registry", "tooling_shell"}:
         command = _delivery_intelligence_command(repo_root=repo_root, check_only=False)
@@ -1288,10 +1244,12 @@ def _dashboard_surface_steps(
             force=True,
             impact_mode="full",
             runtime_mode=normalized_runtime_mode,
+            **({"atlas_diagram_ids": atlas_diagram_ids} if atlas_diagram_ids else {}),
         )
         steps.append(
             _execution_step(
-                "Refresh stale Atlas Mermaid diagrams before rerendering the Atlas surface.",
+                "Refresh selected Atlas Mermaid diagrams before rerendering the Atlas surface." if atlas_diagram_ids
+                else "Refresh stale Atlas Mermaid diagrams before rerendering the Atlas surface.",
                 surface=surface,
                 command=command,
                 standalone_command=_runtime_retry_command(command),
@@ -1301,8 +1259,9 @@ def _dashboard_surface_steps(
                     "odylith/atlas/source/*.svg",
                     "odylith/atlas/source/*.png",
                 ),
-                next_command_on_failure=display_command("atlas", "auto-update", "--repo-root", ".", "--all-stale"),
-                timeout_seconds=_DASHBOARD_REFRESH_TIMEOUT_SECONDS,
+                next_command_on_failure=refresh_command if atlas_diagram_ids
+                else display_command("atlas", "auto-update", "--repo-root", ".", "--all-stale"),
+                timeout_seconds=dashboard_refresh_contract.dashboard_refresh_timeout_seconds(surface="atlas"),
             )
         )
     if surface == "compass":
@@ -1315,7 +1274,7 @@ def _dashboard_surface_steps(
                     normalized_runtime_mode=normalized_runtime_mode,
                 ),
                 mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("compass"),
+                paths=sync_generated_outputs.surface_render_outputs("compass", repo_root=repo_root),
                 next_command_on_failure=dashboard_refresh_contract.dashboard_refresh_failure_command(
                     surface=surface,
                 ),
@@ -1323,6 +1282,17 @@ def _dashboard_surface_steps(
         )
         return steps
     if surface == "radar":
+        steps.append(
+            _execution_step(
+                "Refresh Radar traceability graph when governed source truth changed.",
+                surface=surface,
+                action=lambda: _ensure_radar_traceability_graph_fresh(repo_root=repo_root),
+                mutation_classes=("generated_surfaces",),
+                paths=("odylith/radar/traceability-graph.v1.json",),
+                change_watch_paths=("odylith/radar/traceability-graph.v1.json",),
+                next_command_on_failure=refresh_command,
+            )
+        )
         command = (
             "python",
             "-m",
@@ -1338,7 +1308,7 @@ def _dashboard_surface_steps(
                 command=command,
                 standalone_command=_runtime_retry_command(command),
                 mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("radar"),
+                paths=sync_generated_outputs.surface_render_outputs("radar", repo_root=repo_root),
                 next_command_on_failure=refresh_command,
                 timeout_seconds=_DASHBOARD_REFRESH_TIMEOUT_SECONDS,
             )
@@ -1350,7 +1320,7 @@ def _dashboard_surface_steps(
                 "Render Atlas from the current Mermaid catalog state.",
                 surface=surface,
                 mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("atlas"),
+                paths=sync_generated_outputs.surface_render_outputs("atlas", repo_root=repo_root),
                 action=lambda: render_mermaid_catalog_refresh.main(
                     [
                         "--repo-root",
@@ -1358,6 +1328,7 @@ def _dashboard_surface_steps(
                         "--fail-on-stale",
                         "--runtime-mode",
                         normalized_runtime_mode,
+                        *(token for diagram_id in atlas_diagram_ids for token in ("--diagram-id", diagram_id)),
                     ]
                 ),
                 next_command_on_failure=refresh_command,
@@ -1380,7 +1351,7 @@ def _dashboard_surface_steps(
                 command=command,
                 standalone_command=_runtime_retry_command(command),
                 mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("registry"),
+                paths=sync_generated_outputs.surface_render_outputs("registry", repo_root=repo_root),
                 next_command_on_failure=refresh_command,
                 timeout_seconds=_DASHBOARD_REFRESH_TIMEOUT_SECONDS,
             )
@@ -1391,7 +1362,8 @@ def _dashboard_surface_steps(
             _casebook_index_refresh_step(
                 repo_root=repo_root,
                 next_command_on_failure=refresh_command,
-                label="Normalize and validate Casebook bugs before rerendering the Casebook dashboard.",
+                label="Validate Casebook source and refresh its index before selected readers.",
+                migrate_bug_ids=casebook_migrate_bug_ids,
             )
         )
         steps.append(
@@ -1399,7 +1371,7 @@ def _dashboard_surface_steps(
                 repo_root=repo_root,
                 runtime_mode=normalized_runtime_mode,
                 next_command_on_failure=refresh_command,
-                label="Render Casebook for the updated bug index.",
+                label="Render Casebook from validated source.",
             )
         )
         return steps
@@ -1419,7 +1391,7 @@ def _dashboard_surface_steps(
                 command=command,
                 standalone_command=_runtime_retry_command(command),
                 mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("tooling_shell"),
+                paths=sync_generated_outputs.surface_render_outputs("tooling_shell", repo_root=repo_root),
                 next_command_on_failure=display_command("dashboard", "refresh", "--repo-root", ".", "--surfaces", "shell"),
                 timeout_seconds=_DASHBOARD_REFRESH_TIMEOUT_SECONDS,
             )
@@ -1433,8 +1405,10 @@ def _build_dashboard_refresh_steps(
     selected: Sequence[str],
     runtime_mode: str,
     atlas_sync: bool,
+    atlas_diagram_ids: Sequence[str] = (),
 ) -> list[ExecutionStep]:
     steps: list[ExecutionStep] = []
+    explicit_casebook_refresh = tuple(selected) == ("casebook",)
     for surface in selected:
         steps.extend(
             _dashboard_surface_steps(
@@ -1442,6 +1416,8 @@ def _build_dashboard_refresh_steps(
                 surface=surface,
                 runtime_mode=runtime_mode,
                 atlas_sync=atlas_sync,
+                casebook_migrate_bug_ids=explicit_casebook_refresh,
+                **({"atlas_diagram_ids": atlas_diagram_ids} if atlas_diagram_ids else {}),
             )
         )
     return steps
@@ -1453,6 +1429,8 @@ def build_dashboard_refresh_plan(
     surfaces: Sequence[str],
     runtime_mode: str,
     atlas_sync: bool = False,
+    force: bool = False,
+    atlas_diagram_ids: Sequence[str] = (),
 ) -> ExecutionPlan:
     selected = normalize_dashboard_surfaces(surfaces)
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
@@ -1460,7 +1438,11 @@ def build_dashboard_refresh_plan(
         repo_root=repo_root,
         selected=selected,
         atlas_sync=bool(atlas_sync),
+        force=bool(force),
     )
+    if atlas_diagram_ids:
+        notes.append("Atlas refresh is restricted to " + ", ".join(atlas_diagram_ids)
+                     + "; authored review dates and unrelated review debt remain intact.")
     return _execution_plan(
         headline=(
             f"Refresh {', '.join(selected)} with runtime mode `{normalized_runtime_mode}`."
@@ -1470,6 +1452,7 @@ def build_dashboard_refresh_plan(
             selected=selected,
             runtime_mode=normalized_runtime_mode,
             atlas_sync=atlas_sync,
+            **({"atlas_diagram_ids": atlas_diagram_ids} if atlas_diagram_ids else {}),
         ),
         notes=notes,
         repo_root=repo_root,
@@ -1510,6 +1493,7 @@ def _dashboard_refresh_notes(
     repo_root: Path,
     selected: Sequence[str],
     atlas_sync: bool,
+    force: bool,
 ) -> list[str]:
     selected_tokens = [str(token).strip() for token in selected if str(token).strip()]
     excluded = [surface for surface in _VALID_DASHBOARD_SURFACES if surface not in selected_tokens]
@@ -1527,6 +1511,8 @@ def _dashboard_refresh_notes(
             "It does not rewrite `odylith/compass/runtime/current.v1.json`; if the visible Compass brief is stale, run "
             + display_command("compass", "refresh", "--repo-root", ".")
         )
+    if force:
+        notes.append("`--force` bypasses generated refresh-guard reuse for the selected surface renderers.")
     if atlas_sync and "atlas" in selected_tokens:
         notes.append(
             "`--atlas-sync` mutates repo-owned Atlas truth by touching selected `.mmd` review markers and rewriting "
@@ -1590,6 +1576,7 @@ def _run_dashboard_refresh_step(
     step: ExecutionStep,
     runtime_mode: str,
     run_impl: Callable[..., int],
+    include_action_results: bool = False,
 ) -> dict[str, Any]:
     if step.action is not None:
         action_result = step.action()
@@ -1599,6 +1586,7 @@ def _run_dashboard_refresh_step(
             rc = _coerce_callable_step_result(action_result)
             return {
                 "rc": rc,
+                **({"action_result": deepcopy(dict(action_result))} if include_action_results else {}),
                 "fallback_used": False,
                 "status": str(action_result.get("status", "")).strip() or "passed",
                 "next_command": (
@@ -1667,9 +1655,11 @@ def _execute_dashboard_refresh_surface(
     steps: Sequence[ExecutionStep],
     runtime_mode: str,
     run_impl: Callable[..., int],
+    include_action_results: bool = False,
 ) -> dict[str, Any]:
     fallback_used = False
     surface_status = "passed"
+    action_results: list[dict[str, Any]] = []
     for index, step in enumerate(steps, start=1):
         print(f"- {surface} step {index}/{len(steps)}: {step.label}")
         step_result = _run_dashboard_refresh_step(
@@ -1677,9 +1667,12 @@ def _execute_dashboard_refresh_surface(
             step=step,
             runtime_mode=runtime_mode,
             run_impl=run_impl,
+            **({"include_action_results": True} if include_action_results else {}),
         )
         rc = int(step_result.get("rc", 0) or 0)
         step_status = str(step_result.get("status", "")).strip() or ("passed" if rc == 0 else "failed")
+        if "action_result" in step_result:
+            action_results.append(step_result["action_result"])
         fallback_used = fallback_used or bool(step_result.get("fallback_used"))
         if step_status == "queued":
             surface_status = "queued"
@@ -1689,6 +1682,7 @@ def _execute_dashboard_refresh_surface(
                 next_command = _display_sync_step_command(repo_root=repo_root, command=step.command)
             return {
                 "surface": surface,
+                **({"action_results": action_results} if include_action_results else {}),
                 "status": "failed",
                 "fallback_used": fallback_used,
                 "rc": int(rc),
@@ -1697,6 +1691,7 @@ def _execute_dashboard_refresh_surface(
             }
     return {
         "surface": surface,
+        **({"action_results": action_results} if include_action_results else {}),
         "status": surface_status,
         "fallback_used": fallback_used,
         "rc": 0,
@@ -1740,7 +1735,11 @@ def _run_surface_worker(
     surface: str,
     runtime_mode: str,
     atlas_sync: bool,
+    force: bool = False,
+    casebook_migrate_bug_ids: bool = False,
     run_impl: Callable[..., int],
+    include_action_results: bool = False,
+    atlas_diagram_ids: Sequence[str] = (),
 ) -> tuple[str, dict[str, Any]]:
     """Execute one surface's step chain and capture its stdout.
 
@@ -1752,13 +1751,18 @@ def _run_surface_worker(
     try:
         if surface == "radar":
             _normalize_radar_source_before_surface_refresh(repo_root=repo_root)
-        outputs = _surface_render_outputs(surface)
-        cache_hit, cache_details = surface_refresh_fingerprint_dag.can_reuse_surface_refresh(
-            repo_root=repo_root,
-            surface=surface,
-            atlas_sync=atlas_sync if surface == "atlas" else False,
-            outputs=outputs,
-        )
+        outputs = sync_generated_outputs.surface_render_outputs(surface, repo_root=repo_root)
+        if force or (surface == "casebook" and casebook_migrate_bug_ids):
+            cache_hit = False
+            cache_details = {"force": bool(force), "casebook_index_normalization": bool(casebook_migrate_bug_ids)}
+        else:
+            cache_hit, cache_details = surface_refresh_fingerprint_dag.can_reuse_surface_refresh(
+                repo_root=repo_root,
+                surface=surface,
+                atlas_sync=atlas_sync if surface == "atlas" else False,
+                outputs=outputs,
+                **({"atlas_diagram_ids": atlas_diagram_ids} if surface == "atlas" and atlas_diagram_ids else {}),
+            )
         if cache_hit and surface == "casebook":
             validation_rc = _casebook_source_validation_action(repo_root=repo_root)
             if validation_rc != 0:
@@ -1787,6 +1791,8 @@ def _run_surface_worker(
                 surface=surface,
                 runtime_mode=runtime_mode,
                 atlas_sync=atlas_sync,
+                casebook_migrate_bug_ids=casebook_migrate_bug_ids,
+                **({"atlas_diagram_ids": atlas_diagram_ids} if surface == "atlas" and atlas_diagram_ids else {}),
             )
             result = _execute_dashboard_refresh_surface(
                 repo_root=repo_root,
@@ -1794,6 +1800,7 @@ def _run_surface_worker(
                 steps=steps,
                 runtime_mode=runtime_mode,
                 run_impl=run_impl,
+                **({"include_action_results": True} if include_action_results else {}),
             )
             if str(result.get("status", "")).strip() == "passed":
                 surface_refresh_fingerprint_dag.record_surface_refresh(
@@ -1802,6 +1809,7 @@ def _run_surface_worker(
                     atlas_sync=atlas_sync if surface == "atlas" else False,
                     outputs=outputs,
                     details={"runtime_mode": runtime_mode},
+                    **({"atlas_diagram_ids": atlas_diagram_ids} if surface == "atlas" and atlas_diagram_ids else {}),
                 )
     finally:
         _dashboard_thread_capture.buf = None
@@ -1814,7 +1822,10 @@ def _refresh_surfaces_parallel(
     selected: Sequence[str],
     runtime_mode: str,
     atlas_sync: bool,
+    force: bool,
     run_impl: Callable[..., int],
+    include_action_results: bool = False,
+    atlas_diagram_ids: Sequence[str] = (),
 ) -> list[dict[str, Any]]:
     """Refresh multiple dashboard surfaces concurrently.
 
@@ -1842,7 +1853,10 @@ def _refresh_surfaces_parallel(
                     surface=surface,
                     runtime_mode=runtime_mode,
                     atlas_sync=atlas_sync,
+                    force=force,
                     run_impl=run_impl,
+                    **({"include_action_results": True} if include_action_results else {}),
+                    **({"atlas_diagram_ids": atlas_diagram_ids} if surface == "atlas" and atlas_diagram_ids else {}),
                 )
                 future_map[future] = surface
     finally:
@@ -1863,6 +1877,28 @@ def _refresh_surfaces_parallel(
     return ordered_results
 
 
+def _dashboard_refresh_surface_groups(*, selected: Sequence[str], atlas_sync: bool) -> list[list[str]]:
+    ordered = [str(surface).strip() for surface in selected if str(surface).strip()]
+    if len(ordered) <= 1:
+        return [ordered] if ordered else []
+    tooling_group = ["tooling_shell"] if "tooling_shell" in ordered else []
+    casebook_group = ["casebook"] if "casebook" in ordered else []
+    non_tooling = [surface for surface in ordered if surface not in {"tooling_shell", "casebook"}]
+    groups: list[list[str]] = []
+    if casebook_group:
+        groups.append(casebook_group)
+    if atlas_sync and "atlas" in non_tooling:
+        pre_atlas = [surface for surface in non_tooling if surface != "atlas"]
+        if pre_atlas:
+            groups.append(pre_atlas)
+        groups.append(["atlas"])
+    elif non_tooling:
+        groups.append(non_tooling)
+    if tooling_group:
+        groups.append(tooling_group)
+    return groups
+
+
 def refresh_dashboard_surfaces(
     *,
     repo_root: Path,
@@ -1871,14 +1907,23 @@ def refresh_dashboard_surfaces(
     atlas_sync: bool = False,
     dry_run: bool = False,
     verbose: bool = False,
+    force: bool = False,
+    on_completed: Callable[[], int] | None = None,
+    repository_lock_fd: int | None = None,
+    on_results: Callable[[Sequence[Mapping[str, Any]]], None] | None = None,
+    atlas_diagram_ids: Sequence[str] = (),
 ) -> int:
     selected = normalize_dashboard_surfaces(surfaces)
+    if atlas_diagram_ids and ("atlas" not in selected or not atlas_sync):
+        raise ValueError("selected Atlas diagrams require an Atlas sync refresh")
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
     plan = build_dashboard_refresh_plan(
         repo_root=repo_root,
         surfaces=selected,
         runtime_mode=normalized_runtime_mode,
         atlas_sync=atlas_sync,
+        force=bool(force),
+        **({"atlas_diagram_ids": atlas_diagram_ids} if atlas_diagram_ids else {}),
     )
     _print_execution_plan("dashboard refresh", plan, dry_run=bool(dry_run), verbose=bool(verbose))
     if dry_run:
@@ -1886,9 +1931,9 @@ def refresh_dashboard_surfaces(
     started_at = time.perf_counter()
     surface_results: list[dict[str, Any]] = []
     runtime_fallback_used = False
-    run_impl = _run_command
+    run_impl = sync_command_execution.run_command if repository_lock_fd is None else partial(sync_command_execution.run_command, pass_fds=(repository_lock_fd,))
     session_context: contextlib.AbstractContextManager[object] = contextlib.nullcontext()
-    if len(selected) == 1 and _use_runtime_fast_path(normalized_runtime_mode) and _runtime_fast_path_prerequisites_met(repo_root):
+    if repository_lock_fd is None and len(selected) == 1 and _use_runtime_fast_path(normalized_runtime_mode) and _runtime_fast_path_prerequisites_met(repo_root):
         run_impl = _run_command_in_process
         session_context = governed_sync_session.activate_sync_session(
             governed_sync_session.GovernedSyncSession(repo_root=repo_root)
@@ -1896,164 +1941,114 @@ def refresh_dashboard_surfaces(
     elif len(selected) == 1 and _use_runtime_fast_path(normalized_runtime_mode):
         print("- runtime_fallback: standalone (runtime prerequisites missing)")
         runtime_fallback_used = True
-    with session_context:
-        surface_groups: list[list[str]]
-        if "tooling_shell" in selected and len(selected) > 1:
-            surface_groups = [
-                [surface for surface in selected if surface != "tooling_shell"],
-                ["tooling_shell"],
-            ]
-        else:
-            surface_groups = [list(selected)]
-        for surface_group in surface_groups:
-            if not surface_group:
-                continue
-            if len(surface_group) >= 2:
-                surface_results.extend(
-                    _refresh_surfaces_parallel(
+    previous_guard_skip = os.environ.get(_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV)
+    if force:
+        os.environ[_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV] = "1"
+    try:
+        with session_context:
+            surface_groups = _dashboard_refresh_surface_groups(
+                selected=selected,
+                atlas_sync=atlas_sync,
+            )
+            for surface_group in surface_groups:
+                if not surface_group:
+                    continue
+                if len(surface_group) >= 2:
+                    surface_results.extend(
+                        _refresh_surfaces_parallel(
+                            repo_root=repo_root,
+                            selected=surface_group,
+                            runtime_mode=normalized_runtime_mode,
+                            atlas_sync=atlas_sync,
+                            force=bool(force),
+                            run_impl=run_impl,
+                            **({"include_action_results": True} if on_results is not None else {}),
+                            **({"atlas_diagram_ids": atlas_diagram_ids} if atlas_diagram_ids else {}),
+                        )
+                    )
+                    continue
+                for surface in surface_group:
+                    output, result = _run_surface_worker(
                         repo_root=repo_root,
-                        selected=surface_group,
+                        surface=surface,
                         runtime_mode=normalized_runtime_mode,
                         atlas_sync=atlas_sync,
+                        force=bool(force),
+                        casebook_migrate_bug_ids=selected == ["casebook"],
                         run_impl=run_impl,
+                        **({"include_action_results": True} if on_results is not None else {}),
+                        **({"atlas_diagram_ids": atlas_diagram_ids} if surface == "atlas" and atlas_diagram_ids else {}),
                     )
-                )
-                continue
-            for surface in surface_group:
-                output, result = _run_surface_worker(
-                    repo_root=repo_root,
-                    surface=surface,
-                    runtime_mode=normalized_runtime_mode,
-                    atlas_sync=atlas_sync,
-                    run_impl=run_impl,
-                )
-                if output:
-                    sys.stdout.write(output)
-                    if not output.endswith("\n"):
-                        sys.stdout.write("\n")
-                surface_results.append(result)
-    for result in surface_results:
-        runtime_fallback_used = runtime_fallback_used or bool(result.get("fallback_used"))
-    elapsed = time.perf_counter() - started_at
-    failures = [result for result in surface_results if str(result.get("status", "")).strip() == "failed"]
-    queued = [result for result in surface_results if str(result.get("status", "")).strip() == "queued"]
-    print("dashboard refresh completed")
-    if failures:
-        print("- outcome: failed")
-    elif queued:
-        print("- outcome: queued")
-    else:
-        print("- outcome: passed")
-    print(f"- elapsed_seconds: {elapsed:.1f}")
-    print(f"- runtime_fallback_used: {'yes' if runtime_fallback_used else 'no'}")
-    for result in surface_results:
-        surface = str(result.get("surface", "")).strip()
-        status = str(result.get("status", "")).strip() or "failed"
-        suffix = " (standalone fallback used)" if bool(result.get("fallback_used")) else ""
-        if bool(result.get("cache_hit")):
-            suffix += " (fingerprint reuse)"
-        print(f"- {surface}: {status}{suffix}")
-        if status not in {"passed", "queued"}:
-            failed_step = str(result.get("failed_step", "")).strip()
-            next_command = str(result.get("next_command", "")).strip()
-            if failed_step:
-                print(f"  failed_step: {failed_step}")
-            if next_command:
-                print(f"  next: {next_command}")
-        elif status == "queued":
-            next_command = str(result.get("next_command", "")).strip()
-            if next_command:
-                print(f"  next: {next_command}")
-    if failures:
-        return 2
-    return 0
+                    if output:
+                        sys.stdout.write(output)
+                        if not output.endswith("\n"):
+                            sys.stdout.write("\n")
+                    surface_results.append(result)
+                if surface_group == ["casebook"] and surface_results[-1].get("status") == "failed":
+                    break
+    finally:
+        if force:
+            if previous_guard_skip is None:
+                os.environ.pop(_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV, None)
+            else:
+                os.environ[_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV] = previous_guard_skip
+    if on_results is not None:
+        on_results(deepcopy(surface_results))
+    return dashboard_refresh_contract.complete_dashboard_refresh(
+        results=surface_results, selected=selected, elapsed=time.perf_counter() - started_at,
+        runtime_fallback_used=runtime_fallback_used, on_completed=on_completed,
+    )
+
+
+def _sync_surface_batch_outputs(surfaces: Sequence[str], *, repo_root: Path) -> tuple[str, ...]:
+    return sync_surface_render_batch.sync_surface_batch_outputs(
+        surfaces=surfaces,
+        surface_render_outputs=lambda surface: sync_generated_outputs.surface_render_outputs(surface, repo_root=repo_root),
+    )
+
+
+def _sync_surface_batch_runtime(*, repo_root: Path) -> sync_surface_render_batch.SyncSurfaceBatchRuntime:
+    return sync_surface_render_batch.SyncSurfaceBatchRuntime(
+        normalize_dashboard_surfaces=normalize_dashboard_surfaces,
+        surface_render_outputs=lambda surface: sync_generated_outputs.surface_render_outputs(surface, repo_root=repo_root),
+        dashboard_surface_steps=_dashboard_surface_steps,
+        execute_dashboard_refresh_surface=_execute_dashboard_refresh_surface,
+        use_runtime_fast_path=_use_runtime_fast_path,
+        runtime_fast_path_prerequisites_met=_runtime_fast_path_prerequisites_met,
+        run_command=sync_command_execution.run_command,
+        run_command_in_process_direct=_run_command_in_process_direct,
+        skip_generated_refresh_guard_env=_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV,
+    )
+
+
+def _run_sync_surface_render_batch(
+    *,
+    repo_root: Path,
+    surfaces: Sequence[str],
+    runtime_mode: str,
+) -> int:
+    return sync_surface_render_batch.run_sync_surface_render_batch(
+        runtime=_sync_surface_batch_runtime(repo_root=repo_root),
+        repo_root=repo_root,
+        surfaces=surfaces,
+        runtime_mode=runtime_mode,
+    )
 
 
 def generated_output_targets() -> tuple[str, ...]:
-    return (
-        "odylith/radar/radar.html",
-        "odylith/radar/backlog-payload.v1.js",
-        "odylith/radar/backlog-app.v1.js",
-        "odylith/radar/backlog-detail-shard-*.v1.js",
-        "odylith/radar/backlog-document-shard-*.v1.js",
-        "odylith/radar/standalone-pages.v1.js",
-        "odylith/radar/traceability-graph.v1.json",
-        "odylith/radar/traceability-autofix-report.v1.json",
-        "odylith/atlas/atlas.html",
-        "odylith/atlas/mermaid-payload.v1.js",
-        "odylith/atlas/mermaid-app.v1.js",
-        "odylith/compass/compass.html",
-        "odylith/compass/compass-payload.v1.js",
-        "odylith/compass/compass-app.v1.js",
-        "odylith/compass/compass-style-base.v1.css",
-        "odylith/compass/compass-style-execution-waves.v1.css",
-        "odylith/compass/compass-style-surface.v1.css",
-        "odylith/compass/compass-shared.v1.js",
-        "odylith/compass/compass-state.v1.js",
-        "odylith/compass/compass-summary.v1.js",
-        "odylith/compass/compass-timeline.v1.js",
-        "odylith/compass/compass-waves.v1.js",
-        "odylith/compass/compass-workstreams.v1.js",
-        "odylith/compass/compass-ui-runtime.v1.js",
-        "odylith/registry/registry.html",
-        "odylith/registry/registry-payload.v1.js",
-        "odylith/registry/registry-app.v1.js",
-        "odylith/casebook/casebook.html",
-        "odylith/casebook/casebook-payload.v1.js",
-        "odylith/casebook/casebook-app.v1.js",
-        "odylith/casebook/casebook-detail-shard-*.v1.js",
-        "odylith/index.html",
-        "odylith/tooling-payload.v1.js",
-        "odylith/tooling-app.v1.js",
-        "odylith/runtime/delivery_intelligence.v4.json",
-        "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
-        "odylith/atlas/source/catalog/diagrams.v1.json",
-        "odylith/atlas/source/*.svg",
-        "odylith/atlas/source/*.png",
-        "odylith/registry/registry-detail-shard-*.v1.js",
-    )
+    return sync_generated_outputs.generated_output_targets()
 
 
 def _git_status_generated_outputs(*, repo_root: Path) -> list[str]:
-    completed = subprocess.run(
-        [
-            "git",
-            "-C",
-            str(repo_root),
-            "status",
-            "--porcelain",
-            "--untracked-files=all",
-            "--",
-            *generated_output_targets(),
-        ],
-        capture_output=True,
-        check=False,
-        text=True,
-    )
-    raw = str(completed.stdout or "")
-    return [line for line in raw.splitlines() if line]
+    return sync_generated_outputs.git_status_generated_outputs(repo_root=repo_root)
 
 
 def _git_dirty_generated_outputs(*, repo_root: Path) -> str:
-    return "\n".join(_git_status_generated_outputs(repo_root=repo_root)).rstrip()
-
-
-def _commit_ready_dirty_status_line(line: str) -> bool:
-    status = line[:2]
-    if status == "??":
-        return True
-    if len(status) < 2:
-        return True
-    return status[1] != " "
+    return sync_generated_outputs.git_dirty_generated_outputs(repo_root=repo_root)
 
 
 def _git_commit_ready_generated_outputs(*, repo_root: Path) -> str:
-    lines = [
-        line
-        for line in _git_status_generated_outputs(repo_root=repo_root)
-        if _commit_ready_dirty_status_line(line)
-    ]
-    return "\n".join(lines).rstrip()
+    return sync_generated_outputs.git_commit_ready_generated_outputs(repo_root=repo_root)
 
 
 def build_sync_execution_plan(
@@ -2201,6 +2196,16 @@ def build_sync_execution_plan(
             runtime_mode=runtime_mode,
         )
 
+    if _backlog_contract_preflight_ready(repo_root):
+        steps.append(
+            _execution_step(
+                "Normalize legacy Radar backlog sections before validation and render.",
+                action=lambda: _run_backlog_contract_preflight_for_sync(repo_root=repo_root),
+                mutation_classes=("repo_owned_truth",),
+                paths=("odylith/radar/source/INDEX.md",),
+                next_command_on_failure=sync_failure_command,
+            )
+        )
     steps.append(
         _execution_step(
             "Normalize active-plan risk/mitigation sections before validation and render.",
@@ -2342,7 +2347,7 @@ def build_sync_execution_plan(
                         runtime_mode=runtime_mode,
                     ),
                     mutation_classes=("generated_surfaces",),
-                    paths=_surface_render_outputs("atlas"),
+                    paths=sync_generated_outputs.surface_render_outputs("atlas", repo_root=repo_root),
                     next_command_on_failure=display_command("atlas", "render", "--repo-root", ".", "--fail-on-stale"),
                 ),
             ]
@@ -2373,89 +2378,29 @@ def build_sync_execution_plan(
             next_command_on_failure=sync_failure_command,
         )
     ]
+    sync_surface_batch: list[str] = []
     if bool(getattr(impact, "compass", False)):
-        post_registry_truth_steps.append(
-            _execution_step(
-                "Render Compass before Radar after Atlas/Registry truth settles so runtime-backed surfaces warm once against final state.",
-                command=(
-                    "python",
-                    "-m",
-                    "odylith.runtime.surfaces.render_compass_dashboard",
-                    "--repo-root",
-                    str(repo_root),
-                    *_runtime_args(runtime_mode),
-                ),
-                mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("compass"),
-                next_command_on_failure=sync_failure_command,
-            )
-        )
+        sync_surface_batch.append("compass")
     if bool(getattr(impact, "radar", False)):
-        post_registry_truth_steps.append(
-            _execution_step(
-                "Render Radar after Compass so execution overlays see the latest runtime snapshot.",
-                command=(
-                    "python",
-                    "-m",
-                    "odylith.runtime.surfaces.render_backlog_ui",
-                    "--repo-root",
-                    str(repo_root),
-                    *_runtime_args(runtime_mode),
-                ),
-                mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("radar"),
-                change_watch_paths=("odylith/radar/traceability-graph.v1.json",),
-                next_command_on_failure=sync_failure_command,
-            )
-        )
+        sync_surface_batch.append("radar")
     if bool(getattr(impact, "registry", False)):
-        post_registry_truth_steps.append(
-            _execution_step(
-                "Render Registry for the impacted component view.",
-                command=(
-                    "python",
-                    "-m",
-                    "odylith.runtime.surfaces.render_registry_dashboard",
-                    "--repo-root",
-                    str(repo_root),
-                    *_runtime_args(runtime_mode),
-                ),
-                mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("registry"),
-                next_command_on_failure=sync_failure_command,
-            )
-        )
+        sync_surface_batch.append("registry")
     if bool(getattr(impact, "casebook", False)):
-        post_registry_truth_steps.append(
-            _execution_step(
-                "Render Casebook for the refreshed bug index.",
-                command=(
-                    "python",
-                    "-m",
-                    "odylith.runtime.surfaces.render_casebook_dashboard",
-                    "--repo-root",
-                    str(repo_root),
-                    *_runtime_args(runtime_mode),
-                ),
-                mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("casebook"),
-                next_command_on_failure=sync_failure_command,
-            )
-        )
+        sync_surface_batch.append("casebook")
     if bool(impact_tooling_shell):
+        sync_surface_batch.append("tooling_shell")
+    if sync_surface_batch:
         post_registry_truth_steps.append(
             _execution_step(
-                "Render the top-level Odylith shell after the selected surfaces settle.",
-                command=(
-                    "python",
-                    "-m",
-                    "odylith.runtime.surfaces.render_tooling_dashboard",
-                    "--repo-root",
-                    str(repo_root),
-                    *_runtime_args(runtime_mode),
+                "Render selected dashboard surfaces in a bounded batch after Atlas/Registry truth settles.",
+                action=lambda surfaces=tuple(sync_surface_batch): _run_sync_surface_render_batch(
+                    repo_root=repo_root,
+                    surfaces=surfaces,
+                    runtime_mode=runtime_mode,
                 ),
                 mutation_classes=("generated_surfaces",),
-                paths=_surface_render_outputs("tooling_shell"),
+                paths=_sync_surface_batch_outputs(sync_surface_batch, repo_root=repo_root),
+                change_watch_paths=("odylith/radar/traceability-graph.v1.json",),
                 next_command_on_failure=sync_failure_command,
             )
         )
@@ -2473,7 +2418,7 @@ def build_sync_execution_plan(
                         runtime_mode,
                     ]
                 ),
-                paths=_surface_render_outputs("atlas"),
+                paths=sync_generated_outputs.surface_render_outputs("atlas", repo_root=repo_root),
                 next_command_on_failure=sync_failure_command,
             )
         )
@@ -2489,7 +2434,7 @@ def build_sync_execution_plan(
                     str(repo_root),
                     *_runtime_args(runtime_mode),
                 ),
-                paths=_surface_render_outputs("compass"),
+                paths=sync_generated_outputs.surface_render_outputs("compass", repo_root=repo_root),
                 next_command_on_failure=sync_failure_command,
             )
         )
@@ -2505,7 +2450,7 @@ def build_sync_execution_plan(
                     str(repo_root),
                     *_runtime_args(runtime_mode),
                 ),
-                paths=_surface_render_outputs("radar"),
+                paths=sync_generated_outputs.surface_render_outputs("radar", repo_root=repo_root),
                 next_command_on_failure=sync_failure_command,
             )
         )
@@ -2521,7 +2466,7 @@ def build_sync_execution_plan(
                     str(repo_root),
                     *_runtime_args(runtime_mode),
                 ),
-                paths=_surface_render_outputs("registry"),
+                paths=sync_generated_outputs.surface_render_outputs("registry", repo_root=repo_root),
                 next_command_on_failure=sync_failure_command,
             )
         )
@@ -2537,7 +2482,7 @@ def build_sync_execution_plan(
                     str(repo_root),
                     *_runtime_args(runtime_mode),
                 ),
-                paths=_surface_render_outputs("tooling_shell"),
+                paths=sync_generated_outputs.surface_render_outputs("tooling_shell", repo_root=repo_root),
                 next_command_on_failure=sync_failure_command,
             )
         )
@@ -2578,7 +2523,7 @@ def build_sync_execution_plan(
                         runtime_mode=runtime_mode,
                     ),
                     mutation_classes=("generated_surfaces",),
-                    paths=_surface_render_outputs("atlas"),
+                    paths=sync_generated_outputs.surface_render_outputs("atlas", repo_root=repo_root),
                     next_command_on_failure=sync_failure_command,
                 ),
             ]
@@ -2593,7 +2538,7 @@ def build_sync_execution_plan(
                 changed_paths=changed_paths,
             ),
             mutation_classes=("generated_surfaces",),
-            paths=_SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES,
+            paths=(*_SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES, *sorted(_SOURCE_TRUTH_BUNDLE_MIRROR_EXACT_PATHS)),
             next_command_on_failure=sync_failure_command,
         )
     )
@@ -2643,7 +2588,7 @@ def _execute_plan(
             if step.action is not None:
                 rc = _run_callable_with_heartbeat(
                     label=step.label,
-                    callable_=lambda: int(step.action() or 0),
+                    callable_=lambda: _coerce_callable_step_result(step.action()),
                 )
             elif step.command:
                 heartbeat_label = _display_sync_step_command(repo_root=repo_root, command=step.command)
@@ -2708,6 +2653,8 @@ def _execute_plan(
 def _dirty_overlap_gate_required(*, args: argparse.Namespace, plan: ExecutionPlan) -> bool:
     if bool(getattr(args, "dry_run", False)) or bool(getattr(args, "check_only", False)):
         return False
+    if bool(getattr(args, "force", False)):
+        return False
     if bool(getattr(args, "proceed_with_overlap", False)):
         return False
     return len(plan.dirty_overlap) >= DEFAULT_SYNC_OVERLAP_GATE_THRESHOLD
@@ -2752,35 +2699,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     ):
         print("workstream sync skipped (no relevant artifact changes detected)")
         return 0
-
-    normalization = None
-    if _backlog_contract_preflight_ready(repo_root) and not truth_only_selective:
-        if not args.check_only:
-            normalization = normalize_legacy_backlog_index(repo_root=repo_root)
-            if normalization.changed:
-                normalized_idea_specs = tuple(getattr(normalization, "normalized_idea_specs", ()) or ())
-                normalized_table_sections = tuple(getattr(normalization, "normalized_table_sections", ()) or ())
-                print("workstream sync legacy normalization")
-                print(
-                    f"- radar_index: normalized {len(normalization.normalized_sections)} rationale section"
-                    f"{'' if len(normalization.normalized_sections) == 1 else 's'} before validation"
-                )
-                print(f"- added_sections: {len(normalization.added_sections)}")
-                print(f"- idea_schema_updates: {len(normalized_idea_specs)}")
-                print(f"- table_schema_updates: {len(normalized_table_sections)}")
-                print(f"- source: {normalization.backlog_index.relative_to(repo_root)}")
-        backlog_errors = collect_backlog_contract_errors(repo_root=repo_root)
-        if backlog_errors:
-            print("odylith sync did not complete.")
-            if normalization is not None and normalization.changed:
-                print("Legacy Radar rationale was normalized, but backlog contract blockers still remain.")
-            else:
-                print("Radar backlog contract validation is blocking sync.")
-            print("Top blockers:")
-            for line in summarize_backlog_contract_errors(backlog_errors):
-                print(f"- {line}")
-            print(f"Next: {backlog_next_action(errors=backlog_errors)}")
-            return 2
 
     impact = None
     governance_fallback_reason = ""
@@ -2878,9 +2796,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"{len(plan.dirty_overlap)} local worktree entries overlap this write-mode sync plan "
             f"(threshold {DEFAULT_SYNC_OVERLAP_GATE_THRESHOLD})."
         )
+        print("- writes: none (dirty-overlap gate ran before tracked mutations)")
         print(
             "- next: "
-            f"{display_command('sync', '--repo-root', '.', '--proceed-with-overlap')}"
+            f"{display_command('sync', '--repo-root', '.', '--force')}"
+        )
+        print(
+            "- narrow_refresh: "
+            f"{display_command('dashboard', 'refresh', '--repo-root', '.', '--force')}"
         )
         print(
             "- preview: "
@@ -2890,7 +2813,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.dry_run:
         return 0
 
-    run_impl = _run_command
+    run_impl = sync_command_execution.run_command
     runtime_fallback_used = False
     if not args.check_only and _use_runtime_fast_path(effective_runtime_mode) and _runtime_fast_path_prerequisites_met(repo_root):
         run_impl = _run_command_in_process

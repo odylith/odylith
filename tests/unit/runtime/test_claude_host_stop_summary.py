@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from odylith.runtime.surfaces import claude_host_stop_summary
+from odylith.runtime.surfaces import host_dirty_checkpoint
 
 
 _CLI_HELP_OUTPUT = """usage: odylith [-h] {start,context,query,sync,codex} ...
@@ -20,46 +21,40 @@ options:
 """
 
 
-def test_main_logs_meaningful_stop_summary_to_compass(monkeypatch, tmp_path: Path) -> None:
-    captured: list[tuple[str, str, list[str]]] = []
-
-    def _fake_run_compass_log(*, project_dir, summary, workstreams):
-        captured.append((str(project_dir), summary, list(workstreams)))
-
-    monkeypatch.setattr(
-        claude_host_stop_summary.claude_host_shared,
-        "run_compass_log",
-        _fake_run_compass_log,
-    )
-    monkeypatch.setattr(
-        "sys.stdin",
-        io.StringIO(
-            json.dumps(
-                {
-                    "last_assistant_message": (
-                        "Updated CLAUDE assets and validated focused runtime tests for B-083. "
-                        "Validation passed on the install and runtime slices."
-                    )
-                }
-            )
-        ),
-    )
-
-    exit_code = claude_host_stop_summary.main(["--repo-root", str(tmp_path)])
-
-    assert exit_code == 0
-    assert len(captured) == 1
-    project_dir, summary, workstreams = captured[0]
-    assert project_dir == str(tmp_path.resolve())
-    assert "Updated CLAUDE assets" in summary
-    assert workstreams == ["B-083"]
+def test_main_retains_full_sentence_and_native_session_without_canonical_writes(monkeypatch, tmp_path: Path) -> None:
+    summary = ("Implemented complete Claude runtime memory capture while preserving the original "
+               "source custody, governed publication boundary and every required verification clause; "
+               "the final evidence remains accurate and retrievable for B-083.")
+    assert len(summary) > 180
+    session = "claude-actual-native-session"
+    confirmations = []
+    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps({
+        "session_id": session, "last_assistant_message": summary + " Additional details follow.",
+    })))
+    monkeypatch.setattr(claude_host_stop_summary.host_surface_runtime, "confirm_assistant_chat_delivery",
+                        lambda **kwargs: confirmations.append(kwargs))
+    monkeypatch.setattr(claude_host_stop_summary.claude_host_shared, "run_odylith",
+                        lambda **kwargs: (_ for _ in ()).throw(AssertionError("Stop must not dispatch canonical commands")))
+    assert claude_host_stop_summary.main(["--repo-root", str(tmp_path)]) == 0
+    rows = host_dirty_checkpoint.read_compass_events(repo_root=tmp_path)
+    assert len(rows) == 1
+    event = rows[0]["event"]
+    assert event["summary"] == summary
+    assert event["session_id"] == rows[0]["session_id"] == session
+    assert event["host_family"] == "claude"
+    assert event["author"] == event["source"] == "assistant"
+    assert event["kind"] == "implementation" and event["workstreams"] == ["B-083"]
+    assert event["transaction_id"] == "host-event-" + rows[0]["id"]
+    assert event["ts_iso"] and host_dirty_checkpoint.read_compass_events(repo_root=tmp_path) == rows
+    assert confirmations[0]["defer"] is True and confirmations[0]["session_id"] == session
+    assert not (tmp_path / "odylith").exists()
 
 
 def test_main_skips_question_shaped_stop_summaries(monkeypatch, tmp_path: Path) -> None:
     called: list[bool] = []
     monkeypatch.setattr(
-        claude_host_stop_summary.claude_host_shared,
-        "run_compass_log",
+        host_dirty_checkpoint,
+        "capture_stop_summary",
         lambda **kwargs: called.append(True),
     )
     monkeypatch.setattr(
@@ -76,8 +71,8 @@ def test_main_skips_question_shaped_stop_summaries(monkeypatch, tmp_path: Path) 
 def test_main_skips_active_stop_hook_payload(monkeypatch, tmp_path: Path) -> None:
     called: list[bool] = []
     monkeypatch.setattr(
-        claude_host_stop_summary.claude_host_shared,
-        "run_compass_log",
+        host_dirty_checkpoint,
+        "capture_stop_summary",
         lambda **kwargs: called.append(True),
     )
     monkeypatch.setattr(
@@ -356,9 +351,9 @@ def test_render_stop_summary_replaces_teaser_with_unseen_live_beat(tmp_path: Pat
 
 def test_main_never_emits_stop_system_message_for_visible_surface(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(
-        claude_host_stop_summary.claude_host_shared,
-        "run_compass_log",
-        lambda **kwargs: None,
+        host_dirty_checkpoint,
+        "capture_stop_summary",
+        lambda **kwargs: True,
     )
     monkeypatch.setattr(
         "sys.stdin",
@@ -407,9 +402,9 @@ def test_main_does_not_replay_pending_chat_blocks_through_stop_system_message(mo
         delivery_status="assistant_fallback_ready",
     )
     monkeypatch.setattr(
-        claude_host_stop_summary.claude_host_shared,
-        "run_compass_log",
-        lambda **kwargs: None,
+        host_dirty_checkpoint,
+        "capture_stop_summary",
+        lambda **kwargs: True,
     )
     monkeypatch.setattr(
         "sys.stdin",
@@ -477,9 +472,9 @@ def test_main_does_not_block_stop_when_odylith_closeout_is_already_visible(
     tmp_path: Path,
 ) -> None:
     monkeypatch.setattr(
-        claude_host_stop_summary.claude_host_shared,
-        "run_compass_log",
-        lambda **kwargs: None,
+        host_dirty_checkpoint,
+        "capture_stop_summary",
+        lambda **kwargs: True,
     )
     monkeypatch.setattr(
         "sys.stdin",
@@ -512,3 +507,29 @@ def test_main_does_not_block_stop_when_odylith_closeout_is_already_visible(
 
     assert exit_code == 0
     assert buffer.getvalue() == ""
+
+
+def test_main_reports_capture_refusal_without_claiming_durability(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps({
+        "session_id": "claude-capture-failure",
+        "last_assistant_message": "Implemented the durable summary boundary and validated the exact failure handling tests.",
+    })))
+    monkeypatch.setattr(host_dirty_checkpoint, "capture_stop_summary", lambda **kwargs: (
+        _ for _ in ()).throw(host_dirty_checkpoint.HostDirtyCheckpointError("journal refused")))
+    monkeypatch.setattr(claude_host_stop_summary.host_surface_runtime, "confirm_assistant_chat_delivery", lambda **kwargs: [])
+    assert claude_host_stop_summary.main(["--repo-root", str(tmp_path)]) == 0
+    assert json.loads(capsys.readouterr().out) == {"systemMessage": "Odylith could not save this turn's summary."}
+    assert host_dirty_checkpoint.read_compass_events(repo_root=tmp_path) == []
+
+
+def test_confirmation_refusal_preserves_the_saved_summary(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps({
+        "session_id": "confirmation-refused", "last_assistant_message": 'Implemented the deferred confirmation boundary and validated the durable session retention tests.',
+    })))
+    monkeypatch.setattr(claude_host_stop_summary.host_surface_runtime, "confirm_assistant_chat_delivery", lambda **kwargs: (
+        _ for _ in ()).throw(host_dirty_checkpoint.HostDirtyCheckpointError("confirmation journal refused")))
+    assert claude_host_stop_summary.main(["--repo-root", str(tmp_path)]) == 0
+    assert json.loads(capsys.readouterr().out) == {"systemMessage": "Odylith could not save chat-delivery confirmation."}
+    rows = host_dirty_checkpoint.read_compass_events(repo_root=tmp_path)
+    assert len(rows) == 1 and rows[0]["event"]["summary"] == 'Implemented the deferred confirmation boundary and validated the durable session retention tests.'
+    assert rows[0]["event"]["session_id"] == "confirmation-refused"

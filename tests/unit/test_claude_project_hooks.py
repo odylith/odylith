@@ -140,6 +140,8 @@ def test_show_me_prompt_guard_routes_lowercase_comma_demo(tmp_path: Path) -> Non
     assert "Odylith show-me first-match route lock" in additional_context
     assert "must not answer as generic Claude Code" in additional_context
     assert "`./.odylith/bin/odylith show --repo-root .`" in additional_context
+    assert "end the turn immediately" in additional_context
+    assert "Do not run any other Bash command before or after it" in additional_context
 
 
 def test_show_me_prompt_guard_routes_help_without_diagnostics(tmp_path: Path) -> None:
@@ -186,6 +188,7 @@ def test_show_me_prompt_guard_routes_capability_inventory_to_product_command(tmp
     assert "`./.odylith/bin/odylith capabilities --repo-root .`" in additional_context
     assert "`odylith capabilities --repo-root .`" in additional_context
     assert "Return that stdout directly" in additional_context
+    assert "end the turn immediately" in additional_context
 
 
 def test_show_me_prompt_guard_stays_silent_for_unrelated_prompts(tmp_path: Path) -> None:

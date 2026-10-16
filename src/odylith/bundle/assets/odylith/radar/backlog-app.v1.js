@@ -37,9 +37,6 @@ const __ODYLITH_SHELL_REDIRECT_IN_PROGRESS__ = (function enforceShellOwnedSurfac
     }
     window.__ODYLITH_SHELL_REDIRECTING__ = true;
     window.__ODYLITH_SHELL_REDIRECT_TARGET__ = shellUrl.toString();
-    if (typeof window.stop === "function") {
-      window.stop();
-    }
     targetWindow.location.replace(shellUrl.toString());
     return true;
   } catch (_error) {
@@ -50,6 +47,18 @@ const __ODYLITH_SHELL_REDIRECT_IN_PROGRESS__ = (function enforceShellOwnedSurfac
 
 (async () => {
     const DATA = window["__ODYLITH_BACKLOG_DATA__"] || {};
+    const urlParams = new URLSearchParams(window.location.search);
+    const workstreamParam = (urlParams.get("workstream") || "").trim().toUpperCase();
+    const viewParam = (urlParams.get("view") || "").trim().toLowerCase();
+    const requestedRoute = { tab: "radar", workstream: workstreamParam, view: ["spec", "plan"].includes(viewParam) ? viewParam : "" };
+    let frameSnapshot = { requested: requestedRoute, rendered: null, outcome: "loading" };
+    const frameBridge = window.OdylithFrameBridge.surface({ readSnapshot: () => frameSnapshot });
+    document.addEventListener("click", (event) => {
+      const link = event.target.closest("a[data-radar-view]");
+      if (!link || event.button || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      const route = { tab: "radar", workstream: link.dataset.radarWorkstream || "", view: link.dataset.radarView || "" };
+      if (frameBridge.navigate({ route, replaceDocument: true })) event.preventDefault();
+    });
     const assetLoadCache = new Map();
     function loadScriptAsset(href) {
       const token = String(href || "").trim();
@@ -239,25 +248,21 @@ const __ODYLITH_SHELL_REDIRECT_IN_PROGRESS__ = (function enforceShellOwnedSurfac
       appendStandaloneNodes(document.body, nextBodyNodes);
       return true;
     }
-    const urlParams = new URLSearchParams(window.location.search);
-    const workstreamParam = (urlParams.get("workstream") || "").trim().toUpperCase();
-    const viewParam = (urlParams.get("view") || "").trim().toLowerCase();
     if ((viewParam === "spec" || viewParam === "plan") && workstreamParam) {
-      const standaloneHtml = await backlogDataSource.loadDocument({ id: workstreamParam, view: viewParam });
+      let standaloneHtml;
+      try { standaloneHtml = await backlogDataSource.loadDocument({ id: workstreamParam, view: viewParam }); } catch (_error) { standaloneHtml = ""; }
       if (typeof standaloneHtml === "string" && standaloneHtml.trim()) {
-        try {
-          if (window.parent && window.parent !== window) {
-            window.parent.postMessage({
-              type: "odylith-radar-navigate",
-              state: { workstream: workstreamParam, view: viewParam },
-            }, "*");
-          }
-        } catch (_error) {
-          // Ignore parent-shell sync failures; standalone rendering must still work.
+        if (replaceStandaloneDocument(standaloneHtml)) {
+          const outcome = await window.OdylithRadarDocumentCompletion;
+          frameSnapshot = { requested: requestedRoute, rendered: requestedRoute, outcome: outcome === "ready" ? "ready" : "degraded" };
+          frameBridge.publish();
+          return;
         }
-        replaceStandaloneDocument(standaloneHtml);
-        return;
       }
+      document.querySelector("main").innerHTML = '<section role="status"><h1>Requested document unavailable</h1><p>The requested workstream document could not be loaded. Return to Radar to choose an available workstream.</p><a href="?" data-radar-view="" data-radar-workstream="">Open Radar</a></section>';
+      frameSnapshot = { requested: requestedRoute, rendered: null, outcome: "degraded" };
+      frameBridge.publish();
+      return;
     }
 
     const state = {
@@ -270,7 +275,7 @@ const __ODYLITH_SHELL_REDIRECT_IN_PROGRESS__ = (function enforceShellOwnedSurfac
       release: "all",
       sort: "date",
       mixBy: "complexity",
-      selectedIdeaId: ""
+      selectedIdeaId: workstreamParam
     };
 
     const el = {
@@ -417,8 +422,11 @@ initSharedQuickTooltips();
     const allIdeaIds = new Set(all.map((row) => String(row.idea_id || "").trim().toUpperCase()).filter(Boolean));
     const BACKLOG_LIST_WINDOW_THRESHOLD = 180;
     const BACKLOG_LIST_OVERSCAN = 24;
-    const BACKLOG_LIST_ROW_HEIGHT = 88;
+    const BACKLOG_LIST_ROW_HEIGHT = 214;
     const BACKLOG_LIST_HEADER_HEIGHT = 40;
+    const backlogListRowHeights = new Map();
+    let backlogListMeasuredWidth = 0;
+    let backlogListAnchor = null;
     let latestRenderedRows = [];
     let latestListWindowKey = "";
     let listScrollFrame = 0;
@@ -429,7 +437,7 @@ initSharedQuickTooltips();
       if (!trigger) return;
       event.preventDefault();
       const ideaId = String(trigger.getAttribute("data-link-idea") || "").trim();
-      if (!selectIdea(ideaId, { reveal: true })) return;
+      if (!selectIdea(ideaId, { reveal: true, userIntent: true })) return;
       render();
       el.detail?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -447,12 +455,16 @@ initSharedQuickTooltips();
       });
     }
     el.list.addEventListener("scroll", () => {
+      captureBacklogListAnchor();
       if (latestRenderedRows.length <= BACKLOG_LIST_WINDOW_THRESHOLD) return;
       if (listScrollFrame) return;
       listScrollFrame = window.requestAnimationFrame(() => {
         listScrollFrame = 0;
         renderList(latestRenderedRows, { fromScroll: true });
       });
+    });
+    window.addEventListener("resize", () => {
+      renderList(latestRenderedRows, { preserveListScroll: true });
     });
 
     function uniqueValues(field) {
@@ -532,23 +544,18 @@ initSharedQuickTooltips();
     function prettyLabel(value) {
       const token = String(value || "").trim();
       if (!token) return "-";
+      if (token === "unassessed") return "Not assessed";
       if (token.includes("-")) return token;
       return token.charAt(0).toUpperCase() + token.slice(1);
     }
 
-    function syncParentShellSelection() {
-      try {
-        if (!window.parent || window.parent === window) return;
-        window.parent.postMessage({
-          type: "odylith-radar-navigate",
-          state: {
-            workstream: String(state.selectedIdeaId || "").trim(),
-            view: "",
-          },
-        }, "*");
-      } catch (_error) {
-        // Ignore parent-shell sync failures; local radar interactions must still work.
-      }
+    function humanizeToken(token) {
+      return String(token || "")
+        .replace(/_/g, " ")
+        .replace(/-/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .replace(/\b\w/g, (m) => m.toUpperCase()) || "Unknown";
     }
 
     function formatCompactTimestamp(value) {
@@ -585,7 +592,7 @@ initSharedQuickTooltips();
       });
     }
 
-    seedSelect(el.priority, uniqueValues("priority"));
+    seedSelect(el.priority, uniqueValues("priority"), assessmentLabel);
     seedSelect(
       el.release,
       releaseCatalog()
@@ -614,37 +621,13 @@ initSharedQuickTooltips();
     function revealIdeaSelection(ideaId) {
       const row = all.find((candidate) => String(candidate.idea_id || "").trim() === ideaId);
       if (!row) return false;
-      const query = String(state.query || "").trim().toLowerCase();
-      const exactIdeaQuery = isExactIdeaIdQuery(query);
-      if (!rowMatchesQuery(row, query, exactIdeaQuery)) {
-        state.query = "";
-      }
-      if (!rowMatchesFilters(row, { query: "", exactIdeaQuery: false })) {
-        if (state.section !== "all" && row.section !== state.section) {
-          state.section = "all";
-        }
-        if (state.phase !== "all") {
-          if (row.section !== "execution" || stageLabel(row.status) !== state.phase) {
-            state.phase = "all";
-          }
-        }
-        if (state.activity !== "all") {
-          const stateToken = normalizeExecutionState(row.execution_state);
-          const activity = (
-            stateToken === "actively_executing"
-            || stateToken === "planning_active"
-          ) ? "active" : "quiet";
-          if (row.section !== "execution" || activity !== state.activity) {
-            state.activity = "all";
-          }
-        }
-        if (state.type !== "all" && workstreamTypeInfo(row).type !== state.type) {
-          state.type = "all";
-        }
-        if (state.priority !== "all" && row.priority !== state.priority) {
-          state.priority = "all";
-        }
-      }
+      state.query = "";
+      state.section = "all";
+      state.phase = "all";
+      state.activity = "all";
+      state.type = "all";
+      state.priority = "all";
+      state.release = "all";
       syncFilterControls();
       return true;
     }
@@ -652,6 +635,7 @@ initSharedQuickTooltips();
     function selectIdea(ideaId, options = {}) {
       const token = canonicalizeIdeaId(ideaId);
       if (!token || !allIdeaIds.has(token)) return false;
+      if (options.userIntent) frameBridge.navigate({ route: { tab: "radar", workstream: token, view: "" }, replaceDocument: false });
       if (options.reveal) {
         revealIdeaSelection(token);
       }
@@ -660,12 +644,23 @@ initSharedQuickTooltips();
     }
 
     function escapeHtml(value) {
-      return String(value || "")
+      return String(value ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+    }
+
+
+    function rowStorySummary(row) {
+      const text = typeof row.story_text === "string" ? row.story_text : "";
+      const source = typeof row.story_source === "string" ? row.story_source : "";
+      const label = text && source ? `<span class="row-story-source">${escapeHtml(source)}</span>` : "";
+      const rich = typeof row.story_html === "string" ? row.story_html : "";
+      const body = rich ? `<div class="row-story-text row-story-rich">${rich}</div>`
+        : `<p class="row-story-text">${escapeHtml(text || "No authored workstream summary yet.")}</p>`;
+      return `<div class="row-story" aria-label="Authored workstream summary">${label}${body}</div>`;
     }
 
     function tooltipLookupPayload() {
@@ -1313,6 +1308,41 @@ initSharedQuickTooltips();
       return Number.isFinite(direct) ? direct : 0;
     }
 
+    function assessmentNumber(value) {
+      if (value === null || value === undefined || String(value).trim() === "" || typeof value === "boolean") return null;
+      const number = Number(value);
+      return Number.isFinite(number) ? number : null;
+    }
+
+    function compareAssessmentNumbers(left, right, descending = false) {
+      const a = assessmentNumber(left);
+      const b = assessmentNumber(right);
+      if (a === null || b === null) return a === b ? 0 : (a === null ? 1 : -1);
+      return descending ? b - a : a - b;
+    }
+
+    function assessmentLabel(value) {
+      if (value === null || value === undefined || String(value).trim() === "" || String(value).toLowerCase() === "unassessed") return "Not assessed";
+      return String(value);
+    }
+
+    function assessmentView(row) {
+      const unassessed = row.assessment_status === "unassessed";
+      const score = unassessed ? null : assessmentNumber(row.ordering_score);
+      const label = value => assessmentLabel(unassessed ? null : value);
+      const provenance = row.assessment_provenance === "greenfield_provisional_design"
+        ? "Provisional Greenfield design" : String(row.assessment_provenance || "");
+      return {
+        score: assessmentLabel(score),
+        confidence: label(row.confidence), priority: label(row.priority),
+        sizing: unassessed ? "Not assessed" : `${label(row.sizing)} / ${label(row.complexity)}`,
+        rankingClass: score === null ? "assessment-unassessed" : (row.founder_override === "yes" ? "founder-override" : "score-ordered"),
+        rankingText: score === null ? "Not assessed" : (row.founder_override === "yes" ? "Priority Override" : "Score Ordered"),
+        meter: score === null ? "" : `<div class="bar"><div class="fill" style="width: ${Math.max(3, Math.min(100, score))}%"></div></div>`,
+        provenance,
+      };
+    }
+
     function sortRows(rows) {
       const sectionOrder = { execution: 0, parked: 1, active: 2, finished: 3 };
       const executionStatusOrder = { implementation: 0, planning: 1 };
@@ -1326,10 +1356,6 @@ initSharedQuickTooltips();
       const copy = [...rows];
       copy.sort((a, b) => {
         if (a.section !== b.section) return (sectionOrder[a.section] ?? 99) - (sectionOrder[b.section] ?? 99);
-        if (a.section !== "finished") {
-          const rankDelta = scopeSignalRank(b) - scopeSignalRank(a);
-          if (rankDelta !== 0) return rankDelta;
-        }
         if (a.section === "execution") {
           const leftState = executionStateOrder[normalizeExecutionState(a.execution_state)] ?? 99;
           const rightState = executionStateOrder[normalizeExecutionState(b.execution_state)] ?? 99;
@@ -1337,11 +1363,6 @@ initSharedQuickTooltips();
           const left = executionStatusOrder[String(a.status || "").toLowerCase()] ?? 99;
           const right = executionStatusOrder[String(b.status || "").toLowerCase()] ?? 99;
           if (left !== right) return left - right;
-          if (b.ordering_score !== a.ordering_score) return b.ordering_score - a.ordering_score;
-          if (state.sort === "date") {
-            const dateCmp = String(b.date).localeCompare(String(a.date));
-            if (dateCmp !== 0) return dateCmp;
-          }
         }
         if (a.section === "finished") {
           const completedCmp = String(b.finished_sort_date || b.date).localeCompare(
@@ -1365,13 +1386,19 @@ initSharedQuickTooltips();
           const dateCmp = String(b.date).localeCompare(String(a.date));
           if (dateCmp !== 0) return dateCmp;
         }
-        if (a.section !== "finished" && (state.sort === "score" || a.section === "execution")) {
-          if (b.ordering_score !== a.ordering_score) return b.ordering_score - a.ordering_score;
+        if (a.section !== "finished" && state.sort === "rank") {
+          const rankDelta = scopeSignalRank(b) - scopeSignalRank(a);
+          if (rankDelta !== 0) return rankDelta;
+        } else if (a.section !== "finished" && state.sort === "score") {
+          const scoreDelta = compareAssessmentNumbers(a.ordering_score, b.ordering_score, true);
+          if (scoreDelta !== 0) return scoreDelta;
         } else if (a.section !== "finished" && state.sort === "date") {
           const dateCmp = String(b.date).localeCompare(String(a.date));
           if (dateCmp !== 0) return dateCmp;
         }
-        if (a.rank_num !== b.rank_num) return a.rank_num - b.rank_num;
+        const rankDelta = compareAssessmentNumbers(a.rank_num, b.rank_num);
+        if (rankDelta !== 0) return rankDelta;
+        if (a.assessment_status === "unassessed" && b.assessment_status === "unassessed") return 0;
         return String(a.idea_id).localeCompare(String(b.idea_id));
       });
       return copy;
@@ -1462,7 +1489,7 @@ initSharedQuickTooltips();
       if (section === "parked") {
         return { label: "Parked", chipClassName: "rank-chip-parked", kpiClassName: "kpi-section-parked" };
       }
-      return { label: `Rank #${row.rank}`, chipClassName: "rank-chip-active", kpiClassName: "kpi-section-active" };
+      return { label: row.assessment_status === "unassessed" || assessmentNumber(row.rank) === null ? "Not assessed" : `Rank #${row.rank}`, chipClassName: "rank-chip-active", kpiClassName: "kpi-section-active" };
     }
 
     function rowHtml(row) {
@@ -1470,41 +1497,9 @@ initSharedQuickTooltips();
       const activeClass = row.idea_id === state.selectedIdeaId ? "active" : "";
       const ageRaw = String(row.idea_age_days || "-");
       const ageLabel = /^\d+$/.test(ageRaw) ? `${ageRaw}d` : ageRaw;
-      const executionDaysRaw = String(row.execution_duration_days || row.execution_age_days || "-");
-      const executionDays = /^\d+$/.test(executionDaysRaw) ? `${executionDaysRaw}d` : "n/a";
-      const wsType = workstreamTypeInfo(row);
-      const typeChips = (() => {
-        if (wsType.type === "umbrella") {
-          return `<span class="chip ws-umbrella">Umbrella</span>`;
-        }
-        if (wsType.type === "child") {
-          const parentToken = compactWorkstreamId(wsType.parent);
-          const childLabel = parentToken ? `↳ ${parentToken}` : "↳";
-          const parentTooltip = workstreamTooltip(wsType.parent);
-          const tooltip = parentTooltip ? `Parent workstream: ${parentTooltip}` : "";
-          const tooltipAttrs = tooltip
-            ? ` data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}"`
-            : "";
-          return `<span class="chip ws-child"${tooltipAttrs}>${escapeHtml(childLabel)}</span>`;
-        }
-        return "";
-      })();
-      const executionState = String(row.execution_state || "").trim().toLowerCase();
-      const executionMeta = row.execution_state_meta && typeof row.execution_state_meta === "object"
-        ? row.execution_state_meta
-        : {};
-      const activeWindowMinutes = executionActiveWindowMinutes(executionMeta);
-      const stageChip = row.section === "execution" || row.section === "parked"
-        ? `<span class="chip ${escapeHtml(statusChipClass(row.status))}" data-tooltip="Canonical backlog stage for this workstream.">${escapeHtml(executionStageLabel(row.status))}</span>`
-        : "";
-      const executionChip = row.section === "execution"
-        ? `<span class="chip execution-chip ${escapeHtml(executionStateClass(executionState))}" data-tooltip="${escapeHtml(executionSignalTooltip(row.status, executionState, activeWindowMinutes))}">${escapeHtml(executionStateLabel(executionState))}</span>`
-        : "";
       const releaseChip = workstreamActiveReleaseLabel(row)
         ? `<span class="chip" data-tooltip="Active target release for this workstream.">${escapeHtml(workstreamActiveReleaseLabel(row))}</span>`
         : "";
-      const waveChips = executionWaveRoleChips(row);
-      const footerChips = `${waveChips}${typeChips}${stageChip}${executionChip}${releaseChip}`;
       return `
         <button class="row ${activeClass}" data-idea-id="${escapeHtml(row.idea_id)}">
           <div class="row-top">
@@ -1515,12 +1510,10 @@ initSharedQuickTooltips();
             <p class="row-id">${escapeHtml(row.idea_id)}</p>
             <div class="row-chips row-chips-end">
               <span class="chip">Age ${escapeHtml(ageLabel)}</span>
-              <span class="chip">Exec ${escapeHtml(executionDays)}</span>
+              ${releaseChip}
             </div>
           </div>
-          <div class="row-foot">
-            ${footerChips ? `<div class="row-chips row-chips-end">${footerChips}</div>` : ""}
-          </div>
+          ${rowStorySummary(row)}
         </button>
       `;
     }
@@ -1534,7 +1527,37 @@ initSharedQuickTooltips();
     }
 
     function backlogListItemHeight(item) {
-      return item && item.kind === "header" ? BACKLOG_LIST_HEADER_HEIGHT : BACKLOG_LIST_ROW_HEIGHT;
+      if (item && item.kind === "header") return BACKLOG_LIST_HEADER_HEIGHT;
+      return backlogListRowHeights.get(item.key) || BACKLOG_LIST_ROW_HEIGHT;
+    }
+
+    function measureBacklogListRows() {
+      const width = el.list.clientWidth;
+      if (width !== backlogListMeasuredWidth) {
+        backlogListRowHeights.clear();
+        backlogListMeasuredWidth = width;
+        latestListWindowKey = "";
+      }
+      el.list.querySelectorAll(".row").forEach((button) => {
+        const style = window.getComputedStyle(button);
+        const height = button.getBoundingClientRect().height + parseFloat(style.marginTop) + parseFloat(style.marginBottom);
+        backlogListRowHeights.set(`row:${button.dataset.ideaId}`, height);
+      });
+    }
+
+    function captureBacklogListAnchor() {
+      // A resize has already reflowed the DOM; keep the last pre-resize reading position.
+      if (el.list.clientWidth !== backlogListMeasuredWidth) return;
+      const clip = el.list.getBoundingClientRect();
+      const visible = [...el.list.querySelectorAll(".row")].filter((button) => {
+        const box = button.getBoundingClientRect();
+        return box.top < clip.bottom && box.bottom > clip.top;
+      });
+      const anchor = visible.find((button) => button.dataset.ideaId === state.selectedIdeaId)
+        || visible.find((button) => elementFullyVisibleWithinContainer(el.list, button)) || visible[0];
+      backlogListAnchor = anchor
+        ? { ideaId: anchor.dataset.ideaId, offset: anchor.getBoundingClientRect().top - clip.top }
+        : null;
     }
 
     function buildBacklogListItems(rows) {
@@ -1585,7 +1608,7 @@ initSharedQuickTooltips();
       const viewportHeight = Math.max(1, Number(el.list.clientHeight || 640));
       const scrollTop = Number(el.list.scrollTop || 0);
       const top = backlogListOffsetForIndex(items, selectedIndex);
-      const bottom = top + BACKLOG_LIST_ROW_HEIGHT;
+      const bottom = top + backlogListItemHeight(items[selectedIndex]);
       if (top >= scrollTop && bottom <= (scrollTop + viewportHeight)) return;
       el.list.scrollTop = Math.max(0, top - Math.max(24, Math.round(viewportHeight * 0.3)));
     }
@@ -1597,12 +1620,11 @@ initSharedQuickTooltips();
       return elementRect.top >= containerRect.top && elementRect.bottom <= containerRect.bottom;
     }
 
-    function resolveBacklogListWindow(items) {
+    function resolveBacklogListWindow(items, scrollTop = Number(el.list.scrollTop || 0)) {
       if (items.length <= BACKLOG_LIST_WINDOW_THRESHOLD) {
         return { beforePx: 0, afterPx: 0, items, key: `all:${items.length}` };
       }
       const viewportHeight = Math.max(1, Number(el.list.clientHeight || 640));
-      const scrollTop = Number(el.list.scrollTop || 0);
       const startPx = Math.max(0, scrollTop - (BACKLOG_LIST_OVERSCAN * BACKLOG_LIST_ROW_HEIGHT));
       const endPx = scrollTop + viewportHeight + (BACKLOG_LIST_OVERSCAN * BACKLOG_LIST_ROW_HEIGHT);
       let cursorPx = 0;
@@ -1635,19 +1657,27 @@ initSharedQuickTooltips();
       latestRenderedRows = Array.isArray(rows) ? rows.slice() : [];
       if (!rows.length) {
         el.list.innerHTML = "";
-        state.selectedIdeaId = "";
         latestListWindowKey = "empty";
         return;
       }
-      if (!rows.some((row) => row.idea_id === state.selectedIdeaId)) {
-        state.selectedIdeaId = rows[0].idea_id;
-      }
+      const resizeAnchor = backlogListAnchor && el.list.clientWidth !== backlogListMeasuredWidth
+        ? { ...backlogListAnchor } : null;
+      measureBacklogListRows();
       const items = buildBacklogListItems(rows);
-      if (!options.fromScroll && !options.preserveListScroll) {
+      let anchorScrollTop;
+      if (resizeAnchor) {
+        const index = items.findIndex((item) => item.kind === "row" && item.row.idea_id === resizeAnchor.ideaId);
+        if (index >= 0) {
+          const room = el.list.clientHeight - backlogListItemHeight(items[index]);
+          resizeAnchor.offset = Math.max(Math.min(0, room), Math.min(resizeAnchor.offset, Math.max(0, room)));
+          anchorScrollTop = Math.max(0, backlogListOffsetForIndex(items, index) - resizeAnchor.offset);
+        }
+      } else if (!options.fromScroll && !options.preserveListScroll) {
         ensureBacklogSelectionVisible(items, state.selectedIdeaId);
       }
-      const windowed = resolveBacklogListWindow(items);
+      const windowed = resolveBacklogListWindow(items, anchorScrollTop);
       if (options.fromScroll && windowed.key === latestListWindowKey) {
+        captureBacklogListAnchor();
         return;
       }
       latestListWindowKey = windowed.key;
@@ -1672,8 +1702,8 @@ initSharedQuickTooltips();
       el.list.querySelectorAll(".row").forEach((button) => {
         button.addEventListener("click", () => {
           const preserveListScroll = elementFullyVisibleWithinContainer(el.list, button);
-          selectIdea(button.dataset.ideaId || "");
-          render({ preserveListScroll });
+          selectIdea(button.dataset.ideaId || "", { userIntent: true });
+          render({ preserveListScroll, revealDetail: true });
         });
         const ideaId = String(button.dataset.ideaId || "").trim();
         if (ideaId) {
@@ -1685,50 +1715,31 @@ initSharedQuickTooltips();
           });
         }
       });
+      measureBacklogListRows();
+      if (resizeAnchor) {
+        const anchor = [...el.list.querySelectorAll(".row")].find((button) => button.dataset.ideaId === resizeAnchor.ideaId);
+        if (anchor) {
+          el.list.scrollTop = anchorScrollTop;
+          el.list.scrollTop += anchor.getBoundingClientRect().top - el.list.getBoundingClientRect().top - resizeAnchor.offset;
+        }
+      }
+      captureBacklogListAnchor();
     }
 
     function toBulletHtml(row) {
+      if (row.rationale_html) return `<div class="detail-copy">${row.rationale_html}</div>`;
       const bullets = Array.isArray(row.rationale_bullets) ? row.rationale_bullets.filter(Boolean) : [];
       const lines = bullets.length ? bullets : [row.ordering_rationale || "No decision basis recorded."];
       if (lines.length === 1) {
-        return `<p>${escapeHtml(lines[0])}</p>`;
+        return readableTextHtml(lines[0]);
       }
-      return `<ul class="bullets">${lines.map((line) => renderDecisionBasisLine(line)).join("")}</ul>`;
+      return `<ul class="bullets decision-bullets">${lines.map((line) => `<li class="source-text">${escapeHtml(line)}</li>`).join("")}</ul>`;
     }
 
-    function decisionBasisLabel(label) {
-      const token = String(label || "").trim().toLowerCase();
-      if (token === "why now" || token === "why this moved") return "Why now";
-      if (token === "expected outcome" || token === "expected value capture") return "Expected outcome";
-      if (token === "tradeoff" || token === "cost/risk tradeoff") return "Tradeoff";
-      if (token === "deferred for now" || token === "what is deferred and why") return "Deferred for now";
-      if (token === "ranking basis" || token === "override note") return "Ranking basis";
-      return humanizeToken(label);
-    }
 
-    function renderDecisionBasisLine(line) {
-      const raw = String(line || "").trim();
-      const match = raw.match(/^([^:]+):\s*(.+)$/);
-      if (!match) return `<li>${escapeHtml(raw)}</li>`;
-      const [, label, body] = match;
-      return `<li>${escapeHtml(decisionBasisLabel(label))}: ${escapeHtml(body)}</li>`;
-    }
-
-    function splitInlineBulletText(value) {
-      const raw = String(value || "").trim();
-      if (!raw) return [];
-      const normalized = raw.replace(/\s+/g, " ").trim();
-      const looksLikeInlineList = normalized.startsWith("- ")
-        || normalized.includes(". - ")
-        || normalized.includes("; - ")
-        || normalized.includes("? - ")
-        || normalized.includes("! - ");
-      if (!looksLikeInlineList) return [];
-      const body = normalized.startsWith("- ") ? normalized.slice(2) : normalized;
-      return body
-        .split(/\s+-\s+/)
-        .map((token) => token.trim())
-        .filter(Boolean);
+    function readableTextHtml(value, fallback = "Not captured in the idea spec yet.") {
+      const text = String(value || fallback || "").trim();
+      return `<p class="source-text">${escapeHtml(text)}</p>`;
     }
 
     function successMetricsHtml(row) {
@@ -1740,15 +1751,10 @@ initSharedQuickTooltips();
         ? row.success_metrics_items.map((token) => String(token || "").trim()).filter(Boolean)
         : [];
       const raw = String(row.success_metrics || "").trim();
-      const inlineMetrics = explicitMetrics.length ? [] : splitInlineBulletText(raw);
-      const metrics = explicitMetrics.length ? explicitMetrics : inlineMetrics;
-      const shouldRenderList = explicitMetrics.length > 0
-        || metrics.length > 1
-        || (metrics.length === 1 && raw.startsWith("- "));
-      if (shouldRenderList) {
-        return `<div class="detail-copy"><ul class="bullets">${metrics.map((metric) => `<li>${escapeHtml(metric)}</li>`).join("")}</ul></div>`;
+      if (explicitMetrics.length) {
+        return `<div class="detail-copy"><ul class="bullets">${explicitMetrics.map((metric) => `<li>${escapeHtml(metric)}</li>`).join("")}</ul></div>`;
       }
-      return `<div class="detail-copy"><p>${escapeHtml(raw || "Not captured in the idea spec yet.")}</p></div>`;
+      return `<div class="detail-copy">${readableTextHtml(raw)}</div>`;
     }
 
     function summarySectionHtml(value, fallback, renderedHtml = "") {
@@ -1756,12 +1762,27 @@ initSharedQuickTooltips();
       if (rich) {
         return `<div class="detail-copy">${rich}</div>`;
       }
-      const raw = String(value || "").trim();
-      const bullets = splitInlineBulletText(raw);
-      if (bullets.length) {
-        return `<div class="detail-copy"><ul class="bullets">${bullets.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul></div>`;
-      }
-      return `<div class="detail-copy"><p>${escapeHtml(raw || fallback || "Not captured in the idea spec yet.")}</p></div>`;
+      if (!String(value || "").trim()) return "";
+      return `<div class="detail-copy">${readableTextHtml(value, fallback)}</div>`;
+    }
+
+    function summaryBlockHtml(title, value, renderedHtml = "", className = "") {
+      const body = summarySectionHtml(value, "", renderedHtml);
+      return body ? `<section class="block ${className}"><h3>${escapeHtml(title)}</h3>${body}</section>` : "";
+    }
+
+    function orderingRationaleBlockHtml(row) {
+      const raw = String(row && row.ordering_rationale || "").trim();
+      if (!raw) return "";
+      const rawKey = normalizeSearchToken(raw);
+      const opportunityKey = normalizeSearchToken(row && row.opportunity);
+      if (rawKey && rawKey === opportunityKey) return "";
+      return [
+        '<section class="block">',
+        "<h3>Ordering Rationale</h3>",
+        summarySectionHtml(raw, "", row.ordering_rationale_html),
+        "</section>",
+      ].join("");
     }
 
     function normalizeIdList(values) {
@@ -1803,13 +1824,10 @@ initSharedQuickTooltips();
 
     function releaseLabel(row) {
       const release = row && typeof row === "object" ? row : {};
-      const nameLabel = String(release.effective_name || release.name || "").trim();
-      if (nameLabel) return nameLabel;
-      const versionLabel = String(release.version || release.display_label || "").trim();
-      if (versionLabel) return /^v\d/.test(versionLabel) ? versionLabel.slice(1) : versionLabel;
-      const tagLabel = String(release.tag || "").trim();
-      if (tagLabel) return /^v\d/.test(tagLabel) ? tagLabel.slice(1) : tagLabel;
-      return String(release.release_id || "").trim();
+      const text = String(release.version || release.display_label || release.tag || release.effective_name || release.name || release.release_id || "").trim().replace(/\s+/g, " ");
+      const match = /\bv?(\d+(?:\.\d+){1,3})\b/i.exec(text);
+      if (match && match[1]) return match[1];
+      return text.length > 18 ? `${text.slice(0, 15).trimEnd()}...` : text;
     }
 
     function releaseCardLabel(row) {
@@ -2146,6 +2164,8 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     const waveTone = waveStatusChipClass(wave.status);
     const compactSummaryLine = String(wave.compact_summary_line || "").trim();
     const gatePreview = String(wave.gate_preview_summary || "").trim();
+    const exitGate = String(wave.exit_gate || "").trim();
+    const validationGateSummary = String(wave.validation_gate_summary || "").trim();
     const dependsOnLabels = Array.isArray(wave.depends_on_labels)
       ? wave.depends_on_labels.map((token) => String(token || "").trim()).filter(Boolean)
       : [];
@@ -2165,6 +2185,22 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
         <div class="execution-wave-highlight">
           <div class="execution-wave-highlight-label">Gate focus</div>
           <div class="execution-wave-highlight-copy">${escapeHtml(gatePreview)}</div>
+        </div>
+      `);
+    }
+    if (exitGate) {
+      supportBlocks.push(`
+        <div class="execution-wave-highlight">
+          <div class="execution-wave-highlight-label">Exit gate</div>
+          <div class="execution-wave-highlight-copy">${escapeHtml(exitGate)}</div>
+        </div>
+      `);
+    }
+    if (validationGateSummary) {
+      supportBlocks.push(`
+        <div class="execution-wave-highlight">
+          <div class="execution-wave-highlight-label">Validation</div>
+          <div class="execution-wave-highlight-copy">${escapeHtml(validationGateSummary)}</div>
         </div>
       `);
     }
@@ -2245,12 +2281,12 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     <div class="execution-wave-board">
       <div class="execution-wave-focus">
         <div class="execution-wave-focus-grid">
+          ${contextChips.length ? `<div class="execution-wave-focus-stat-rail">${contextChips.join("")}</div>` : ""}
           <div class="execution-wave-focus-copy">
             ${showProgramFocusTitle ? `<div class="execution-wave-focus-title">${escapeHtml(programLabel)}</div>` : ""}
             <div class="execution-wave-focus-line">${escapeHtml(contextLine)}</div>
             ${summaryLine ? `<div class="execution-wave-focus-line execution-wave-focus-line-muted">${escapeHtml(summaryLine)}</div>` : ""}
           </div>
-          ${contextChips.length ? `<div class="execution-wave-focus-stat-rail">${contextChips.join("")}</div>` : ""}
         </div>
       </div>
       <div class="execution-wave-sequence">${cardsHtml}</div>
@@ -2321,10 +2357,8 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
             ${contextLine ? `<div class="execution-wave-section-line">${escapeHtml(contextLine)}</div>` : ""}
             ${summaryLine ? `<div class="execution-wave-section-line execution-wave-section-line-muted">${escapeHtml(summaryLine)}</div>` : ""}
           </div>
-          <div class="execution-wave-section-meta">
-            ${sectionChips.join("")}
-            <span class="execution-wave-section-toggle execution-wave-section-toggle-triangle" aria-hidden="true"></span>
-          </div>
+          <span class="execution-wave-section-toggle execution-wave-section-toggle-triangle" aria-hidden="true"></span>
+          ${sectionChips.length ? `<div class="execution-wave-section-meta execution-wave-section-meta-bottom">${sectionChips.join("")}</div>` : ""}
         </summary>
         <div class="execution-wave-section-body">${boardsHtml}</div>
       </details>
@@ -2538,7 +2572,9 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       splitFrom,
       splitInto,
       mergedInto,
-      mergedFrom
+      mergedFrom,
+      registryComponentLinksHtml = "",
+      registryComponentCount = 0
     ) {
       const parentValues = normalizeIdList(parents);
       const childrenValues = normalizeIdList(children);
@@ -2551,6 +2587,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       const splitIntoValues = normalizeIdList(splitInto);
       const mergedIntoValues = normalizeIdList(mergedInto);
       const mergedFromValues = normalizeIdList(mergedFrom);
+      const registryCount = Math.max(0, Number(registryComponentCount || 0));
       const totalLinks =
         parentValues.length
         + childrenValues.length
@@ -2562,7 +2599,8 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         + splitFromValues.length
         + splitIntoValues.length
         + mergedIntoValues.length
-        + mergedFromValues.length;
+        + mergedFromValues.length
+        + registryCount;
 
       const relationItems = [
         {
@@ -2620,6 +2658,11 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
           count: mergedFromValues.length,
           bodyHtml: renderWorkstreamLinkSet(mergedFromValues, "chip-topology-blocks"),
         },
+        {
+          title: "Registry Components",
+          count: registryCount,
+          bodyHtml: registryComponentLinksHtml || `<span class="topology-rel-empty">None</span>`,
+        },
       ];
       const visibleRelationItems = relationItems.filter((item) => Number(item.count || 0) > 0);
       const relationRows = visibleRelationItems.map((item) => topologyRelationRow(item)).join("");
@@ -2635,6 +2678,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         splitIntoValues,
         mergedIntoValues,
         mergedFromValues,
+        registryCount ? [registryCount] : [],
       ].filter((values) => Array.isArray(values) && values.length > 0).length;
 
       return `
@@ -2867,29 +2911,9 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       );
     }
 
-    async function renderDetail(rows) {
-      const selectedSummary = rows.find((row) => row.idea_id === state.selectedIdeaId);
-      if (!selectedSummary) {
-        el.detail.hidden = true;
-        el.detailEmpty.hidden = true;
-        el.detail.innerHTML = "";
-        return;
-      }
-      el.detail.hidden = false;
-      el.detailEmpty.hidden = true;
-      el.detail.innerHTML = "";
-      const loadedDetail = await backlogDataSource.loadDetail(selectedSummary.idea_id);
-      if (String(state.selectedIdeaId || "").trim() !== String(selectedSummary.idea_id || "").trim()) {
-        return;
-      }
-      const selected = loadedDetail && typeof loadedDetail === "object"
-        ? { ...selectedSummary, ...loadedDetail }
-        : selectedSummary;
-
+    function renderDetail(selected) {
       const sectionBadge = sectionBadgeInfo(selected);
-      const rankingClass = selected.founder_override === "yes" ? "founder-override" : "score-ordered";
-      const rankingText = selected.founder_override === "yes" ? "Priority Override" : "Score Ordered";
-      const scoreWidth = Math.max(3, Math.min(100, selected.ordering_score));
+      const assessment = assessmentView(selected);
       const statusClass = statusChipClass(selected.status);
       const stageDisplay = executionStageLabel(selected.status);
       const executionState = String(selected.execution_state || "").trim().toLowerCase();
@@ -2961,6 +2985,8 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       `
         : "";
 
+      const registryComponents = registryComponentsForRow(selected);
+      const registryComponentLinksHtml = renderRegistryComponentLinkSet(selected);
       const topologyBoardHtml = renderTopologyBoard(
         selected.idea_id,
         parents,
@@ -2974,9 +3000,9 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         splitInto,
         mergedInto,
         mergedFrom,
+        registryComponentLinksHtml,
+        registryComponents.length,
       );
-      const registryComponents = registryComponentsForRow(selected);
-      const registryComponentLinksHtml = renderRegistryComponentLinkSet(selected);
       const executionWaveSectionHtml = renderExecutionWaveDetailSection(selected);
       const implementedSummary = String(selected.implemented_summary || "").trim();
       const implementedSummaryHtml = implementedSummary
@@ -2987,104 +3013,97 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         </section>
       `
         : "";
+      const missingRequiredNarratives = [
+        ["Problem", selected.problem, selected.problem_html],
+        ["Product View", selected.founder_pov, selected.founder_pov_html],
+        ["Customer", selected.customer, selected.customer_html],
+        ["Opportunity", selected.opportunity, selected.opportunity_html],
+      ].filter(([, value, renderedHtml]) => !summarySectionHtml(value, "", renderedHtml)).map(([label]) => label);
+      const missingRequiredNarrativesHtml = missingRequiredNarratives.length
+        ? `<details class="detail-disclosure"><summary class="disclosure-title">Missing required source fields</summary><div class="detail-disclosure-body detail-copy"><p>${escapeHtml(missingRequiredNarratives.join(", "))}</p></div></details>`
+        : "";
       el.detail.innerHTML = `
         <header class="detail-header">
           <h2 class="detail-title">${escapeHtml(selected.title)}</h2>
+          <div class="chips">
+            <span class="chip ${statusClass}">${escapeHtml(stageDisplay)}</span>
+            ${executionSignalChip}
+            ${activeReleaseLabel ? `<span class="chip">${escapeHtml(activeReleaseLabel)}</span>` : ""}
+          </div>
+          <details class="detail-disclosure"><summary class="disclosure-title">Assessment and dates</summary><div class="detail-disclosure-body">
           <div class="kpis">
             <div class="kpi" data-kpi="workstream-id"><div class="k">Workstream ID</div><div class="v">${escapeHtml(selected.idea_id)}</div></div>
             <div class="kpi kpi-section ${escapeHtml(sectionBadge.kpiClassName)}" data-kpi="workstream-placement"><div class="k">Placement</div><div class="v">${escapeHtml(sectionBadge.label)}</div></div>
-            <div class="kpi"><div class="k">Ordering Score</div><div class="v">${escapeHtml(selected.ordering_score)}</div></div>
+            <div class="kpi"><div class="k">Ordering Score</div><div class="v">${escapeHtml(assessment.score)}</div></div>
             <div class="kpi"><div class="k">Created Date</div><div class="v">${escapeHtml(selected.idea_date_display || selected.idea_date || "-")}</div></div>
             <div class="kpi"><div class="k">Age (days)</div><div class="v">${escapeHtml(selected.idea_age_days || "-")}</div></div>
             <div class="kpi"><div class="k">Execution Start</div><div class="v">${escapeHtml(selected.execution_start_date_display || selected.execution_start_date || "-")}</div></div>
             <div class="kpi"><div class="k">Execution End</div><div class="v">${escapeHtml(selected.execution_end_date_display || selected.execution_end_date || "-")}</div></div>
             <div class="kpi"><div class="k">Execution Days</div><div class="v">${escapeHtml(selected.execution_duration_days || selected.execution_age_days || "-")}</div></div>
             <div class="kpi"><div class="k">Live Signal At</div><div class="v v-compact" title="${escapeHtml(executionSignalAt || "-")}">${escapeHtml(executionSignalLabel)}</div></div>
-            <div class="kpi"><div class="k">Confidence</div><div class="v">${escapeHtml(selected.confidence || "-")}</div></div>
+            <div class="kpi"><div class="k">Confidence</div><div class="v">${escapeHtml(assessment.confidence)}</div></div>
           </div>
           <div class="chips">
-            <span class="chip chip-priority">${escapeHtml(selected.priority)}</span>
-            <span class="chip ${statusClass}">${escapeHtml(stageDisplay)}</span>
-            ${executionSignalChip}
-            ${activeReleaseLabel ? `<span class="chip">${escapeHtml(activeReleaseLabel)}</span>` : ""}
-            <span class="chip chip-sizing">${escapeHtml(selected.sizing)} / ${escapeHtml(selected.complexity)}</span>
-            <span class="chip ${rankingClass}">${rankingText}</span>
+            <span class="chip chip-priority">${escapeHtml(assessment.priority)}</span>
+            <span class="chip chip-sizing">${escapeHtml(assessment.sizing)}</span>
+            <span class="chip ${assessment.rankingClass}">${assessment.rankingText}</span>
           </div>
           <div class="meter">
             <div class="meter-head">
-              <span>Score Signal</span><strong>${escapeHtml(selected.ordering_score)}</strong>
+              <span>Score Signal</span><strong>${escapeHtml(assessment.score)}</strong>
             </div>
-            <div class="bar"><div class="fill" style="width: ${scoreWidth}%"></div></div>
+            ${assessment.meter}
+            ${assessment.provenance ? `<p class="assessment-provenance">${escapeHtml(assessment.provenance)}</p>` : ""}
           </div>
+          <section class="block">
+            <h3>Decision Basis</h3>
+            ${toBulletHtml(selected)}
+          </section>
+          </div></details>
         </header>
-
-        <section class="block">
-          <h3>Traceability</h3>
-          <div class="links">
-            <a href="${escapeHtml(selected.idea_ui_href || selected.idea_href)}">Workstream Spec</a>
-            ${
-              selected.promoted_to_plan_ui_href
-                ? `<a href="${escapeHtml(selected.promoted_to_plan_ui_href)}">Technical Implementation Plan</a>`
-                : ""
-            }
-            <a href="${escapeHtml(compassScopeHref(selected.idea_id))}" target="_top">Compass Scope</a>
-            <a href="${escapeHtml(registryHrefForRow(selected))}" target="_top">Registry</a>
-          </div>
-          ${activeReleaseLabel ? `<p class="trace-subhead">Release Target</p><p>${escapeHtml(activeReleaseLabel)}</p>` : ""}
-          ${registryComponents.length ? `
-            <p class="trace-subhead">Registry Components</p>
-            <div class="topology-rel-body">${registryComponentLinksHtml}</div>
-          ` : ""}
-        </section>
-
-        <section class="block">
-          <h3>Topology</h3>
-          ${topologyBoardHtml}
-        </section>
-
-        ${executionWaveSectionHtml}
 
         ${warningsSectionHtml}
 
-        ${implementedSummaryHtml}
+        ${summaryBlockHtml("Problem", selected.problem, selected.problem_html, "block-problem")}
 
-        <section class="block block-problem">
-          <h3>Problem</h3>
-          ${summarySectionHtml(selected.problem, "Not captured in the idea spec yet.", selected.problem_html)}
-        </section>
+        ${summaryBlockHtml("Product View", selected.founder_pov, selected.founder_pov_html)}
 
-        <section class="block">
-          <div class="split-grid">
-            <article class="split-card">
-              <h3>Product View</h3>
-              ${summarySectionHtml(selected.founder_pov, "Not captured in the idea spec yet.", selected.founder_pov_html)}
-            </article>
-            <article class="split-card">
-              <h3>Decision Basis</h3>
-              ${toBulletHtml(selected)}
-            </article>
-          </div>
-        </section>
+        ${summaryBlockHtml("Customer", selected.customer, selected.customer_html)}
 
-        <section class="block">
-          <h3>Customer</h3>
-          ${summarySectionHtml(selected.customer, "Not captured in the idea spec yet.", selected.customer_html)}
-        </section>
+        ${summaryBlockHtml("Opportunity", selected.opportunity, selected.opportunity_html)}
 
-        <section class="block">
-          <h3>Opportunity</h3>
-          ${summarySectionHtml(selected.opportunity, "Not captured in the idea spec yet.", selected.opportunity_html)}
-        </section>
+        ${missingRequiredNarrativesHtml}
 
         <section class="block">
           <h3>Success Metrics</h3>
           ${successMetricsHtml(selected)}
         </section>
 
-        <section class="block">
-          <h3>Ordering Rationale</h3>
-          <p>${escapeHtml(selected.ordering_rationale || "No ordering rationale recorded.")}</p>
-        </section>
+        ${executionWaveSectionHtml}
+
+        ${implementedSummaryHtml}
+        <details class="detail-disclosure"><summary class="disclosure-title">Links and topology</summary><div class="detail-disclosure-body">
+          <section class="block">
+            <h3>Traceability</h3>
+            <div class="links">
+              <a href="${escapeHtml(selected.idea_ui_href || selected.idea_href)}">Workstream Spec</a>
+              ${
+                selected.promoted_to_plan_ui_href
+                  ? `<a href="${escapeHtml(selected.promoted_to_plan_ui_href)}" data-radar-view="plan" data-radar-workstream="${escapeHtml(selected.idea_id)}">Technical Implementation Plan</a>`
+                  : ""
+              }
+              <a href="${escapeHtml(compassScopeHref(selected.idea_id))}" target="_top">Compass Scope</a>
+              <a href="${escapeHtml(registryHrefForRow(selected))}" target="_top">Registry</a>
+            </div>
+            ${activeReleaseLabel ? `<p class="trace-subhead">Release Target</p><p>${escapeHtml(activeReleaseLabel)}</p>` : ""}
+          </section>
+          <section class="block">
+            <h3>Topology</h3>
+            ${topologyBoardHtml}
+          </section>
+        </div></details>
+
+        ${orderingRationaleBlockHtml(selected)}
 
         <section class="block">
           <h3>Impacted Parts</h3>
@@ -3093,36 +3112,72 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       `;
     }
 
+    function createBacklogSelection({ detail, empty, sourceCount, loadDetail, renderDetail, onOutcome }) {
+      let revision = 0;
+      empty.setAttribute("role", "status");
+      return async function selectWorkstream(selectedId, filtered) {
+        const currentRevision = ++revision;
+        const summary = filtered.find(row => row.idea_id === selectedId);
+        detail.innerHTML = "";
+        detail.hidden = !summary;
+        empty.hidden = Boolean(summary);
+        if (!summary) {
+          empty.innerHTML = sourceCount === 0
+            ? `<h2>No workstreams yet</h2><p>Radar will show the work planned for this project.</p><p><a href="../index.html?tab=project" target="_top">Open Project</a> to start from your project intent.</p>`
+            : `<h2>No matching workstreams</h2><p>Change your search or filters to see workstreams already in Radar.</p>`;
+          onOutcome({ id: "", outcome: "empty" });
+          return;
+        }
+        onOutcome({ id: "", outcome: "loading" });
+        let loaded;
+        try { loaded = await loadDetail(summary.idea_id); } catch (_error) { loaded = null; }
+        if (currentRevision !== revision) return;
+        const complete = loaded && typeof loaded === "object";
+        renderDetail(complete ? { ...summary, ...loaded } : summary);
+        if (!complete) detail.innerHTML += '<p role="status">Workstream detail unavailable. The available summary is shown.</p>';
+        onOutcome({ id: summary.idea_id, outcome: complete ? "ready" : "degraded" });
+      };
+    }
+    const renderSelectedWorkstream = createBacklogSelection({
+      detail: el.detail, empty: el.detailEmpty, sourceCount: all.length,
+      loadDetail: id => backlogDataSource.loadDetail(id), renderDetail,
+      onOutcome: ({ id, outcome }) => {
+        frameSnapshot = { requested: requestedRoute, rendered: { tab: "radar", workstream: id, view: "" }, outcome };
+        frameBridge.publish();
+      },
+    });
+
     function render(options = {}) {
       const filtered = sortRows(applyFilters());
-      if (filtered.length && !filtered.some((item) => item.idea_id === state.selectedIdeaId)) {
+      if (filtered.length && !state.selectedIdeaId) {
         state.selectedIdeaId = String(filtered[0].idea_id || "");
       }
       const executionWaveSummary = executionWavePayload().summary || {};
       el.stats.innerHTML = summaryStatRows(filtered, executionWaveSummary).join("");
 
-      el.meta.textContent = `Showing ${filtered.length} of ${all.length} workstreams · Source: ${DATA.index_file}`;
+      el.meta.textContent = `Showing ${filtered.length} of ${all.length} workstreams`;
       void renderAnalytics(filtered);
       renderList(filtered, { preserveListScroll: Boolean(options.preserveListScroll) });
-      void renderDetail(filtered);
+      const selectedId = state.selectedIdeaId;
+      void renderSelectedWorkstream(selectedId, filtered).then(() => {
+        if (options.revealDetail && state.selectedIdeaId === selectedId && !el.detail.hidden
+            && !document.activeElement?.closest(".controls") && window.matchMedia("(max-width: 1100px)").matches) {
+          el.detail.focus({ preventScroll: true });
+          el.detail.scrollIntoView({ block: "start" });
+        }
+      });
       el.empty.hidden = true;
-      if (!filtered.length) {
-        el.detail.hidden = true;
-        el.detailEmpty.hidden = true;
-      }
-
-      syncParentShellSelection();
     }
 
     function bind(element, key) {
-      element.addEventListener("input", () => {
+      const update = () => {
+        // Blur can repeat an input value while a row click is in progress.
+        if (state[key] === element.value) return;
         state[key] = element.value;
         render();
-      });
-      element.addEventListener("change", () => {
-        state[key] = element.value;
-        render();
-      });
+      };
+      element.addEventListener("input", update);
+      element.addEventListener("change", update);
     }
 
     bind(el.query, "query");

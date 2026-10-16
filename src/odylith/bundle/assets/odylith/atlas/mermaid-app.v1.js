@@ -37,9 +37,6 @@ const __ODYLITH_SHELL_REDIRECT_IN_PROGRESS__ = (function enforceShellOwnedSurfac
     }
     window.__ODYLITH_SHELL_REDIRECTING__ = true;
     window.__ODYLITH_SHELL_REDIRECT_TARGET__ = shellUrl.toString();
-    if (typeof window.stop === "function") {
-      window.stop();
-    }
     targetWindow.location.replace(shellUrl.toString());
     return true;
   } catch (_error) {
@@ -68,6 +65,7 @@ const payload = window["__ODYLITH_MERMAID_DATA__"] || {};
 
     const workstreamTitleLookup = sanitizeLookupObject(tooltipLookup.workstream_titles);
     const diagramTitleLookup = sanitizeLookupObject(tooltipLookup.diagram_titles);
+    const componentTitleLookup = sanitizeLookupObject(tooltipLookup.component_titles);
 
     const searchEl = document.getElementById("search");
     const kindFiltersEl = document.getElementById("kindFilters");
@@ -93,6 +91,9 @@ const payload = window["__ODYLITH_MERMAID_DATA__"] || {};
     const sidebarCloseEl = document.getElementById("sidebarClose");
     const staleAlertEl = document.getElementById("staleAlert");
     const summaryEl = document.getElementById("diagramSummary");
+    const readGuideEl = document.getElementById("diagramReadGuide");
+    const diagramBoxesSectionEl = document.getElementById("diagramBoxesSection");
+    const diagramBoxListEl = document.getElementById("diagramBoxList");
     const componentListEl = document.getElementById("componentList");
 
     const backlogLinksEl = document.getElementById("backlogLinks");
@@ -111,6 +112,406 @@ const payload = window["__ODYLITH_MERMAID_DATA__"] || {};
     const stageEl = document.getElementById("viewerStage");
     const imageEl = document.getElementById("viewerImage");
     const zoomReadoutEl = document.getElementById("zoomReadout");
+    function createAtlasViewport({ stageEl, imageEl, zoomReadoutEl, controls }) {
+      let diagram = null;
+      let ready = false;
+      let scale = 1;
+      let offsetX = 0;
+      let offsetY = 0;
+      let dragging = false;
+      let dragStartX = 0;
+      let dragStartY = 0;
+      let panPointerId = null;
+      let pinchState = null;
+      const activePointers = new Map();
+      const MIN_SCALE = 0.05;
+      const MAX_SCALE = 5;
+
+      function clamp(value, low, high) {
+        return Math.min(high, Math.max(low, value));
+      }
+
+      function applyTransform() {
+        imageEl.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) scale(${scale})`;
+        zoomReadoutEl.textContent = `Zoom ${Math.round(scale * 100)}%`;
+      }
+
+      function resetView() {
+        scale = 1;
+        offsetX = 0;
+        offsetY = 0;
+        applyTransform();
+      }
+
+      function diagramDimensions() {
+        const vbw = Number(diagram && diagram.svg_viewbox_width ? diagram.svg_viewbox_width : 0);
+        const vbh = Number(diagram && diagram.svg_viewbox_height ? diagram.svg_viewbox_height : 0);
+        if (Number.isFinite(vbw) && Number.isFinite(vbh) && vbw > 0 && vbh > 0) {
+          return { width: vbw, height: vbh };
+        }
+        const iw = imageEl.naturalWidth || 0;
+        const ih = imageEl.naturalHeight || 0;
+        return iw && ih ? { width: iw, height: ih } : null;
+      }
+
+      function applyImageBoxSizing() {
+        const dims = diagramDimensions();
+        // Percentage-sized SVGs need their viewBox size, not tiny intrinsic img dimensions.
+        imageEl.style.width = dims ? `${dims.width}px` : "";
+        imageEl.style.height = dims ? `${dims.height}px` : "";
+      }
+
+      function stageFitPadding() {
+        const shortSide = Math.min(stageEl.clientWidth || 0, stageEl.clientHeight || 0);
+        return shortSide ? clamp(shortSide * 0.045, 18, 54) : 18;
+      }
+
+      function computedFitScale() {
+        const dims = diagramDimensions();
+        if (!dims) return null;
+        const padding = stageFitPadding();
+        const sw = Math.max(1, (stageEl.clientWidth || 1) - padding * 2);
+        const sh = Math.max(1, (stageEl.clientHeight || 1) - padding * 2);
+        return Math.min(sw / dims.width, sh / dims.height);
+      }
+
+      function applyInitialView() {
+        const rawFitScale = computedFitScale();
+        if (rawFitScale === null) {
+          resetView();
+          return;
+        }
+        let initialFactor = 1.0;
+        const MIN_INITIAL_FIT_FACTOR = 0.94;
+        const rawOverrideFactor = Number(diagram && diagram.initial_view_fit_factor ? diagram.initial_view_fit_factor : 0);
+        if (Number.isFinite(rawOverrideFactor) && rawOverrideFactor > 0) {
+          initialFactor = clamp(rawOverrideFactor, MIN_INITIAL_FIT_FACTOR, initialFactor);
+        }
+        const target = rawFitScale * initialFactor;
+        scale = clamp(target, MIN_SCALE, 1);
+        offsetX = 0;
+        offsetY = 0;
+        applyTransform();
+      }
+
+      function fitView() {
+        if (!ready) return;
+        const rawFitScale = computedFitScale();
+        if (rawFitScale === null) {
+          resetView();
+          return;
+        }
+        scale = clamp(rawFitScale, MIN_SCALE, MAX_SCALE);
+        offsetX = 0;
+        offsetY = 0;
+        applyTransform();
+      }
+
+      function readAtFullSize() {
+        if (!ready) return;
+        resetView();
+        stageEl.focus({ preventScroll: true });
+        stageEl.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
+      }
+
+      function zoomTo(targetScale, centerX, centerY) {
+        if (!ready) return;
+        const oldScale = scale;
+        const newScale = clamp(targetScale, MIN_SCALE, MAX_SCALE);
+        if (newScale === oldScale) return;
+        const px = centerX - stageEl.clientWidth / 2;
+        const py = centerY - stageEl.clientHeight / 2;
+        offsetX = px - ((px - offsetX) / oldScale) * newScale;
+        offsetY = py - ((py - offsetY) / oldScale) * newScale;
+        scale = newScale;
+        applyTransform();
+      }
+
+      function zoomBy(factor, centerX = stageEl.clientWidth / 2, centerY = stageEl.clientHeight / 2) {
+        zoomTo(scale * factor, centerX, centerY);
+      }
+
+      function pointerRecord(event) {
+        return { x: event.clientX, y: event.clientY, type: event.pointerType };
+      }
+
+      function touchPointers() {
+        return [...activePointers.values()].filter((item) => item.type === "touch");
+      }
+
+      function distance(a, b) {
+        return Math.hypot(a.x - b.x, a.y - b.y);
+      }
+
+      function endPan() {
+        dragging = false;
+        panPointerId = null;
+        stageEl.classList.remove("dragging");
+      }
+
+      function setReady(value) {
+        ready = value;
+        Object.values(controls).forEach((button) => { button.disabled = !ready; });
+        stageEl.tabIndex = ready ? 0 : -1;
+        stageEl.setAttribute("aria-disabled", String(!ready));
+        if (!ready) {
+          endPan();
+          activePointers.clear();
+          pinchState = null;
+        }
+      }
+
+      controls.zoomIn.addEventListener("click", () => zoomBy(1.14));
+      controls.zoomOut.addEventListener("click", () => zoomBy(0.88));
+      controls.fit.addEventListener("click", fitView);
+      controls.reset.addEventListener("click", readAtFullSize);
+
+      stageEl.addEventListener("pointerdown", (event) => {
+        if (!ready) return;
+        activePointers.set(event.pointerId, pointerRecord(event));
+        stageEl.setPointerCapture(event.pointerId);
+        const touches = touchPointers();
+        if (touches.length >= 2) {
+          endPan();
+          pinchState = {
+            startDistance: Math.max(1, distance(touches[0], touches[1])),
+            startScale: scale,
+          };
+          return;
+        }
+        if (!pinchState) {
+          dragging = true;
+          panPointerId = event.pointerId;
+          dragStartX = event.clientX - offsetX;
+          dragStartY = event.clientY - offsetY;
+          stageEl.classList.add("dragging");
+        }
+      });
+
+      stageEl.addEventListener("pointermove", (event) => {
+        if (!ready) return;
+        if (activePointers.has(event.pointerId)) {
+          activePointers.set(event.pointerId, pointerRecord(event));
+        }
+        const touches = touchPointers();
+        if (touches.length >= 2) {
+          const [a, b] = touches;
+          if (!pinchState) {
+            pinchState = { startDistance: Math.max(1, distance(a, b)), startScale: scale };
+          }
+          const rect = stageEl.getBoundingClientRect();
+          const ratio = distance(a, b) / Math.max(1, pinchState.startDistance);
+          zoomTo(pinchState.startScale * ratio, (a.x + b.x) / 2 - rect.left, (a.y + b.y) / 2 - rect.top);
+          return;
+        }
+        pinchState = null;
+        if (dragging && event.pointerId === panPointerId) {
+          offsetX = event.clientX - dragStartX;
+          offsetY = event.clientY - dragStartY;
+          applyTransform();
+        }
+      });
+
+      function stopPointer(event) {
+        activePointers.delete(event.pointerId);
+        if (event.pointerId === panPointerId) endPan();
+        if (touchPointers().length < 2) pinchState = null;
+        if (stageEl.hasPointerCapture(event.pointerId)) stageEl.releasePointerCapture(event.pointerId);
+      }
+
+      stageEl.addEventListener("pointerup", stopPointer);
+      stageEl.addEventListener("pointercancel", stopPointer);
+      // Trackpad pinch arrives as wheel+ctrlKey; ordinary page scrolling must not zoom.
+      stageEl.addEventListener("wheel", (event) => {
+        if (!ready || !event.ctrlKey) return;
+        event.preventDefault();
+        const rect = stageEl.getBoundingClientRect();
+        zoomBy(event.deltaY < 0 ? 1.08 : 0.92, event.clientX - rect.left, event.clientY - rect.top);
+      }, { passive: false });
+
+      stageEl.addEventListener("keydown", (event) => {
+        if (!ready || document.activeElement !== stageEl || event.ctrlKey || event.metaKey || event.altKey) return;
+        const step = event.shiftKey ? 240 : 80;
+        if (event.key === "ArrowLeft") offsetX += step;
+        else if (event.key === "ArrowRight") offsetX -= step;
+        else if (event.key === "ArrowUp") offsetY += step;
+        else if (event.key === "ArrowDown") offsetY -= step;
+        else return;
+        event.preventDefault();
+        event.stopPropagation();
+        applyTransform();
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (!ready || event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey) return;
+        const target = event.target;
+        if (target instanceof Element && (target.closest("input, textarea, select") || target.isContentEditable)) return;
+        const key = event.key;
+        if (key === "+" || key === "=") zoomBy(1.14);
+        else if (key === "-") zoomBy(0.88);
+        else if (key === "0") readAtFullSize();
+        else if (key.toLowerCase() === "f") fitView();
+        else return;
+        event.preventDefault();
+      });
+      window.addEventListener("resize", fitView);
+      setReady(false);
+
+      return {
+        setDiagram(nextDiagram) {
+          if (diagram === nextDiagram && ready) return;
+          setReady(false);
+          diagram = nextDiagram;
+          applyImageBoxSizing();
+        },
+        imageLoaded() {
+          if (!diagram || ready) return;
+          setReady(true);
+          applyImageBoxSizing();
+          applyInitialView();
+        },
+        clear() {
+          setReady(false);
+          diagram = null;
+          resetView();
+        },
+      };
+    }
+    const viewport = createAtlasViewport({
+      stageEl, imageEl, zoomReadoutEl,
+      controls: {
+        zoomIn: document.getElementById("zoomIn"),
+        zoomOut: document.getElementById("zoomOut"),
+        fit: document.getElementById("fit"),
+        reset: document.getElementById("reset"),
+      },
+    });
+    function createAtlasViewer({ mainEl, stageEl, imageEl, listEl, viewport, catalogCount, projectHref, onOutcome }) {
+      let loadedDiagram = null;
+      let outcome = "empty";
+      const emptyEl = mainEl.querySelector("#atlasEmptyState");
+      const emptyTitleEl = emptyEl.querySelector("#atlasEmptyTitle");
+      const emptyMessageEl = emptyEl.querySelector("#atlasEmptyMessage");
+      const projectLinkEl = emptyEl.querySelector("#atlasProjectLink");
+      projectLinkEl.href = projectHref;
+      const selectedSections = [...mainEl.children].filter((section) => section !== emptyEl);
+      const listStatusEl = document.getElementById("diagramListStatus");
+      const navigation = [document.getElementById("prevDiagram"), document.getElementById("nextDiagram")];
+      const imageErrorEl = document.createElement("div");
+      imageErrorEl.id = "viewerAssetError";
+      imageErrorEl.className = "alert";
+      imageErrorEl.setAttribute("role", "alert");
+      imageErrorEl.setAttribute("aria-live", "assertive");
+      imageErrorEl.hidden = true;
+      stageEl.appendChild(imageErrorEl);
+
+      const viewerShellEl = stageEl.closest(".viewer-shell");
+      const selectionWarningEl = document.createElement("div");
+      selectionWarningEl.id = "viewerSelectionWarning";
+      selectionWarningEl.className = "alert";
+      selectionWarningEl.setAttribute("role", "status");
+      selectionWarningEl.hidden = true;
+      viewerShellEl.before(selectionWarningEl);
+      viewerShellEl.tabIndex = -1;
+      viewerShellEl.setAttribute("aria-labelledby", "diagramTitle");
+      // Explicit compact-layout catalog activation hands focus to the viewer controls.
+      listEl.addEventListener("click", (event) => {
+        if (!event.target.closest("button[data-diagram]")) return;
+        if (!window.matchMedia("(max-width: 1180px)").matches) return;
+        viewerShellEl.focus({ preventScroll: true });
+        viewerShellEl.scrollIntoView({ block: "start", inline: "nearest", behavior: "instant" });
+      });
+
+      function setSelectionAvailable(available) {
+        mainEl.dataset.selectionEmpty = String(!available);
+        emptyEl.hidden = available;
+        selectedSections.forEach((section) => { section.hidden = !available; });
+        navigation.forEach((button) => { button.disabled = !available; });
+      }
+
+      function clearError() {
+        imageErrorEl.hidden = true;
+        imageErrorEl.classList.remove("visible");
+        imageErrorEl.textContent = "";
+      }
+
+      function publishOutcome(next) {
+        outcome = next;
+        onOutcome(outcome === "ready" && !selectionWarningEl.hidden ? "degraded" : outcome);
+      }
+
+      function setSelectionWarning(message) {
+        selectionWarningEl.textContent = message;
+        selectionWarningEl.hidden = !message;
+        selectionWarningEl.classList.toggle("visible", Boolean(message));
+      }
+
+      return {
+        setSelectionWarning,
+        clear() {
+          loadedDiagram = null;
+          setSelectionAvailable(false);
+          emptyTitleEl.textContent = catalogCount ? "No matching diagrams" : "No diagrams yet";
+          emptyMessageEl.textContent = catalogCount
+            ? "Change or clear the filters to browse diagrams."
+            : "Atlas will show the architecture diagrams created for your project. Open Project to define what you want to build.";
+          projectLinkEl.hidden = catalogCount > 0;
+          imageEl.onload = null;
+          imageEl.onerror = null;
+          imageEl.hidden = true;
+          imageEl.removeAttribute("src");
+          imageEl.dataset.fallbackApplied = "";
+          clearError();
+          setSelectionWarning("");
+          viewport.clear();
+          publishOutcome("empty");
+        },
+        show(diagram) {
+          setSelectionAvailable(true);
+          if (diagram === loadedDiagram && outcome !== "degraded") {
+            publishOutcome(outcome);
+            return;
+          }
+          loadedDiagram = diagram;
+          const onLoad = () => {
+            if (loadedDiagram !== diagram || imageEl.onload !== onLoad) return;
+            imageEl.hidden = false;
+            clearError();
+            viewport.imageLoaded();
+            publishOutcome("ready");
+          };
+          const onError = () => {
+            if (loadedDiagram !== diagram || imageEl.onerror !== onError) return;
+            const fallback = String(diagram.source_png_href || "").trim();
+            if (!fallback || imageEl.dataset.fallbackApplied === "1") {
+              imageEl.hidden = true;
+              viewport.clear();
+              imageErrorEl.textContent = "Diagram preview unavailable. Use Prev or Next to open another diagram, or review the diagram summary and source links on this page.";
+              imageErrorEl.hidden = false;
+              imageErrorEl.classList.add("visible");
+              publishOutcome("degraded");
+              return;
+            }
+            imageEl.dataset.fallbackApplied = "1";
+            imageEl.src = fallback;
+          };
+          imageEl.onload = onLoad;
+          imageEl.onerror = onError;
+          imageEl.hidden = true;
+          clearError();
+          imageEl.dataset.fallbackApplied = "";
+          viewport.setDiagram(diagram);
+          publishOutcome("loading");
+          imageEl.src = diagram.source_svg_href;
+        },
+        setResults({ matches, hasSelection }) {
+          listStatusEl.hidden = catalogCount === 0 || matches > 0;
+          listStatusEl.textContent = hasSelection
+            ? "No diagrams match these filters. The selected diagram is still shown."
+            : "No diagrams match these filters. Change or clear the filters to browse diagrams.";
+        },
+      };
+    }
 
     let activeList = allDiagrams.slice();
     let activeIndex = 0;
@@ -121,23 +522,28 @@ const payload = window["__ODYLITH_MERMAID_DATA__"] || {};
     let workstreamFilter = "all";
     let activeDiagram = null;
 
-    let scale = 1;
-    let offsetX = 0;
-    let offsetY = 0;
-    let dragging = false;
-    let dragStartX = 0;
-    let dragStartY = 0;
-    let panPointerId = null;
-    let pinchState = null;
-    const activePointers = new Map();
-
-    const MIN_SCALE = 0.05;
-    const MAX_SCALE = 5;
     const WORKSTREAM_ID_RE = /^B-\d{3,}$/;
     const DIAGRAM_ID_RE = /^D-\d{3,}$/;
     const DIAGRAM_COMPACT_RE = /^D(\d{3,})$/;
     const SIDEBAR_PREF_KEY = "mermaid.sidebar.collapsed";
     const TOOLING_BASE_HREF = "../index.html";
+    const params = new URLSearchParams(window.location.search);
+    const paramWorkstream = (params.get("workstream") || "").trim();
+    const paramDiagram = (params.get("diagram") || "").trim();
+    const requestedAtlasRoute = Object.freeze({
+      tab: "atlas",
+      workstream: WORKSTREAM_ID_RE.test(paramWorkstream) ? paramWorkstream : "",
+      diagram: canonicalizeDiagramId(paramDiagram),
+    });
+    let atlasOutcome = "loading";
+    const atlasBridge = window.OdylithFrameBridge.surface({
+      readSnapshot: () => ({ requested: requestedAtlasRoute, rendered: currentAtlasNavigationState(), outcome: atlasOutcome }),
+    });
+    const viewer = createAtlasViewer({
+      mainEl: document.querySelector(".main"), stageEl, imageEl, listEl, viewport,
+      catalogCount: allDiagrams.length, projectHref: `${TOOLING_BASE_HREF}?tab=project`,
+      onOutcome(outcome) { atlasOutcome = outcome; atlasBridge.publish(); },
+    });
     const SORT_DEFAULT = "newest";
     const SORT_TOKENS = new Set(["newest", "oldest", "reviewed", "title", "freshness"]);
     function initSharedQuickTooltips() {
@@ -285,6 +691,24 @@ initSharedQuickTooltips();
       return "";
     }
 
+    function diagramSearchTokens(value) {
+      const canonical = canonicalizeDiagramId(value);
+      if (!canonical) return [];
+      const match = canonical.match(/^D-(\d+)$/);
+      if (!match) return [canonical, canonical.replace("-", "")];
+      const numeric = match[1];
+      const unpadded = numeric.replace(/^0+/, "") || "0";
+      return [canonical, canonical.replace("-", ""), numeric, unpadded];
+    }
+
+    function diagramMatchesExactSearchToken(diagram, needle, normalizedNeedle) {
+      if (!needle && !normalizedNeedle) return false;
+      const tokens = diagramSearchTokens(diagram && diagram.diagram_id).map((token) => String(token || "").toLowerCase());
+      if (needle && tokens.includes(needle)) return true;
+      if (!normalizedNeedle) return false;
+      return tokens.map(normalizeSearchToken).includes(normalizedNeedle);
+    }
+
     function canonicalizeSortToken(value) {
       const token = String(value || "").trim().toLowerCase();
       return SORT_TOKENS.has(token) ? token : SORT_DEFAULT;
@@ -324,12 +748,9 @@ initSharedQuickTooltips();
       });
     }
 
-    function ownerWorkstreamsForDiagram(diagram) {
+    function normalizedWorkstreamList(rawValues) {
       const values = new Set();
-      const listed = Array.isArray(diagram && diagram.related_workstreams)
-        ? diagram.related_workstreams
-        : [];
-      listed.forEach((token) => {
+      (Array.isArray(rawValues) ? rawValues : []).forEach((token) => {
         const workstream = String(token || "").trim();
         if (WORKSTREAM_ID_RE.test(workstream)) {
           values.add(workstream);
@@ -338,33 +759,11 @@ initSharedQuickTooltips();
       return Array.from(values).sort();
     }
 
-    function activeWorkstreamsForDiagram(diagram) {
-      const values = new Set();
-      const listed = Array.isArray(diagram && diagram.active_workstreams)
-        ? diagram.active_workstreams
-        : [];
-      listed.forEach((token) => {
-        const workstream = String(token || "").trim();
-        if (WORKSTREAM_ID_RE.test(workstream)) {
-          values.add(workstream);
-        }
-      });
-      return Array.from(values).sort();
-    }
+    function ownerWorkstreamsForDiagram(diagram) { return normalizedWorkstreamList(diagram && diagram.related_workstreams); }
 
-    function historicalWorkstreamsForDiagram(diagram) {
-      const values = new Set();
-      const listed = Array.isArray(diagram && diagram.historical_workstreams)
-        ? diagram.historical_workstreams
-        : [];
-      listed.forEach((token) => {
-        const workstream = String(token || "").trim();
-        if (WORKSTREAM_ID_RE.test(workstream)) {
-          values.add(workstream);
-        }
-      });
-      return Array.from(values).sort();
-    }
+    function activeWorkstreamsForDiagram(diagram) { return normalizedWorkstreamList(diagram && diagram.active_workstreams); }
+
+    function historicalWorkstreamsForDiagram(diagram) { return normalizedWorkstreamList(diagram && diagram.historical_workstreams); }
 
     function relatedWorkstreamsForDiagram(diagram) {
       const values = new Set();
@@ -400,6 +799,7 @@ initSharedQuickTooltips();
       if (diagramMatchesWorkstream(selectedDiagram, workstreamFilter)) {
         return;
       }
+      viewer.setSelectionWarning(`Diagram ${selectedDiagram.diagram_id} is not linked to workstream ${workstreamFilter}. Showing the diagram with All Workstreams.`);
       workstreamFilter = "all";
       workstreamFilterEl.value = "all";
     }
@@ -410,14 +810,14 @@ initSharedQuickTooltips();
       sidebarToggleEl.setAttribute("aria-expanded", String(!collapsed));
     }
 
-    function currentAtlasNavigationState() {
+    function currentAtlasNavigationState(diagramRow = activeDiagram) {
       const rawWorkstream = workstreamFilter === "all" ? "" : String(workstreamFilter || "").trim();
       const workstream = WORKSTREAM_ID_RE.test(rawWorkstream) ? rawWorkstream : "";
-      const diagram = canonicalizeDiagramId(activeDiagram && activeDiagram.diagram_id);
-      return { workstream, diagram };
+      const diagram = canonicalizeDiagramId(diagramRow && diagramRow.diagram_id);
+      return { tab: "atlas", workstream, diagram };
     }
 
-    function syncAtlasNavigation(options = {}) {
+    function syncAtlasNavigation() {
       const state = currentAtlasNavigationState();
       const query = new URLSearchParams(window.location.search);
       query.delete("workstream");
@@ -432,145 +832,10 @@ initSharedQuickTooltips();
         window.history.replaceState(null, "", `${window.location.pathname}${suffix}`);
       }
 
-      if (options.notifyParent === false) return;
-      try {
-        if (window.parent && window.parent !== window) {
-          window.parent.postMessage(
-            {
-              type: "odylith-atlas-navigate",
-              state: {
-                tab: "atlas",
-                workstream: state.workstream,
-                diagram: state.diagram,
-              },
-            },
-            "*",
-          );
-        }
-      } catch (_error) {
-        // Fall open: local URL remains canonical for direct Atlas browsing.
-      }
     }
 
     function clamp(value, low, high) {
       return Math.min(high, Math.max(low, value));
-    }
-
-    function applyTransform() {
-      imageEl.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) scale(${scale})`;
-      zoomReadoutEl.textContent = `Zoom ${Math.round(scale * 100)}%`;
-    }
-
-    function resetView() {
-      scale = 1;
-      offsetX = 0;
-      offsetY = 0;
-      applyTransform();
-    }
-
-    function diagramDimensions(diagram) {
-      const vbw = Number(diagram && diagram.svg_viewbox_width ? diagram.svg_viewbox_width : 0);
-      const vbh = Number(diagram && diagram.svg_viewbox_height ? diagram.svg_viewbox_height : 0);
-      if (Number.isFinite(vbw) && Number.isFinite(vbh) && vbw > 0 && vbh > 0) {
-        return { width: vbw, height: vbh };
-      }
-      const iw = imageEl.naturalWidth || 0;
-      const ih = imageEl.naturalHeight || 0;
-      if (!iw || !ih) {
-        return null;
-      }
-      return { width: iw, height: ih };
-    }
-
-    function applyImageBoxSizing(diagram) {
-      const dims = diagramDimensions(diagram);
-      if (!dims) {
-        imageEl.style.width = "";
-        imageEl.style.height = "";
-        return;
-      }
-      // SVGs that declare percentage sizing report tiny intrinsic dimensions in
-      // <img>. Keep the image box aligned with Atlas's viewBox-based fit math.
-      imageEl.style.width = `${dims.width}px`;
-      imageEl.style.height = `${dims.height}px`;
-    }
-
-    function computedFitScale(diagram) {
-      const dims = diagramDimensions(diagram);
-      if (!dims) {
-        return null;
-      }
-      const padding = stageFitPadding();
-      const sw = Math.max(1, (stageEl.clientWidth || 1) - padding * 2);
-      const sh = Math.max(1, (stageEl.clientHeight || 1) - padding * 2);
-      return Math.min(sw / dims.width, sh / dims.height);
-    }
-
-    function stageFitPadding() {
-      const shortSide = Math.min(stageEl.clientWidth || 0, stageEl.clientHeight || 0);
-      if (!shortSide) {
-        return 18;
-      }
-      return clamp(shortSide * 0.045, 18, 54);
-    }
-
-    function applyInitialView(diagram) {
-      const dims = diagramDimensions(diagram);
-      if (!dims) {
-        resetView();
-        return;
-      }
-      const rawFitScale = computedFitScale(diagram);
-      if (rawFitScale === null) {
-        resetView();
-        return;
-      }
-
-      // Start near the full-bounds fit with a small safety margin so diagrams
-      // feel snug on first paint without clipping at the edges.
-      let initialFactor = 1.0;
-      const MIN_INITIAL_FIT_FACTOR = 0.94;
-
-      const rawOverrideFactor = Number(diagram && diagram.initial_view_fit_factor ? diagram.initial_view_fit_factor : 0);
-      if (Number.isFinite(rawOverrideFactor) && rawOverrideFactor > 0) {
-        initialFactor = clamp(rawOverrideFactor, MIN_INITIAL_FIT_FACTOR, initialFactor);
-      }
-
-      const target = rawFitScale * initialFactor;
-      scale = clamp(target, MIN_SCALE, 1);
-      offsetX = 0;
-      offsetY = 0;
-      applyTransform();
-    }
-
-    function fitView() {
-      const rawFitScale = computedFitScale(activeDiagram);
-      if (rawFitScale === null) {
-        resetView();
-        return;
-      }
-      scale = clamp(rawFitScale, MIN_SCALE, MAX_SCALE);
-      offsetX = 0;
-      offsetY = 0;
-      applyTransform();
-    }
-
-    function zoomBy(factor, centerX, centerY) {
-      zoomTo(scale * factor, centerX, centerY);
-    }
-
-    function zoomTo(targetScale, centerX, centerY) {
-      const oldScale = scale;
-      const newScale = clamp(targetScale, MIN_SCALE, MAX_SCALE);
-      if (newScale === oldScale) {
-        return;
-      }
-      const px = centerX - stageEl.clientWidth / 2;
-      const py = centerY - stageEl.clientHeight / 2;
-      offsetX = px - ((px - offsetX) / oldScale) * newScale;
-      offsetY = py - ((py - offsetY) / oldScale) * newScale;
-      scale = newScale;
-      applyTransform();
     }
 
     function clearNode(node) {
@@ -614,6 +879,88 @@ initSharedQuickTooltips();
       const title = String(diagram.title || "").trim();
       if (title) return title;
       return diagramId || "Diagram";
+    }
+
+        function renderDiagramBoxes(diagram, sectionEl, listEl) {
+      listEl.replaceChildren();
+      const boxes = Array.isArray(diagram.diagram_boxes)
+        ? diagram.diagram_boxes.filter((box) => box && typeof box === "object" && typeof box.description === "string"
+          && (box.description.trim() || (box.description === "" && typeof box.node_id === "string" && box.node_id)))
+        : [];
+      sectionEl.hidden = !boxes.length;
+      boxes.forEach((box, index) => {
+        const row = document.createElement("article");
+        row.className = "diagram-box-row";
+
+        const number = document.createElement("span");
+        number.className = "diagram-box-index";
+        number.textContent = String(index + 1);
+
+        const name = document.createElement("div");
+        name.className = "diagram-box-name";
+        const heading = document.createElement("strong");
+        heading.textContent = String(box.label ?? "");
+        name.appendChild(heading);
+        const roleText = String(box.role ?? "");
+
+        const content = document.createElement("div");
+        content.className = "diagram-box-content";
+        if (box.description) {
+          const description = document.createElement("p");
+          description.className = "diagram-box-description";
+          description.textContent = String(box.description ?? "");
+          content.appendChild(description);
+        }
+        const detailRows = Array.isArray(box.details) && box.details.length ? [
+          ...(roleText.trim() ? [{label: "Role", text: roleText}] : []),
+          ...box.details,
+        ] : [];
+        if (detailRows.length) {
+          const disclosure = document.createElement("details");
+          disclosure.className = "diagram-box-details";
+          const summary = document.createElement("summary");
+          summary.textContent = "Supporting details";
+          const entries = document.createElement("dl");
+          detailRows.forEach((detail) => {
+            const label = document.createElement("dt");
+            label.textContent = String(detail.label ?? "");
+            const text = document.createElement("dd");
+            text.textContent = String(detail.text ?? "");
+            entries.appendChild(label);
+            entries.appendChild(text);
+          });
+          disclosure.appendChild(summary);
+          disclosure.appendChild(entries);
+          content.appendChild(disclosure);
+        }
+
+        row.appendChild(number);
+        row.appendChild(name);
+        row.appendChild(content);
+        listEl.appendChild(row);
+      });
+    }
+
+    function componentLookupKey(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
+
+    function componentDisplayName(value) {
+      const token = String(value || "").trim();
+      if (!token) return "";
+      const exact = String(componentTitleLookup[token] || "").trim();
+      if (exact) return exact;
+      const normalized = componentLookupKey(token);
+      return String(componentTitleLookup[normalized] || "").trim() || token;
+    }
+
+    function diagramReadGuide(diagram) {
+      const catalogGuide = String(diagram && diagram.read_guide ? diagram.read_guide : "").trim();
+      return catalogGuide;
     }
 
     function normalizeWorkstreamId(value) {
@@ -688,20 +1035,42 @@ initSharedQuickTooltips();
       });
     }
 
+    function displayText(value) {
+      return String(value || "")
+        .replace(/\*\*/g, "")
+        .replace(/__/g, "")
+        .replace(/`([^`\n]*)`/g, "$1")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
     function renderComponents(diagram) {
       clearNode(componentListEl);
       (diagram.components || []).forEach((component) => {
+        const rawName = String(component.name || "").trim();
+        const displayName = componentDisplayName(rawName);
         const card = document.createElement("article");
         card.className = "component-card";
+        const headingGroup = document.createElement("div");
+        headingGroup.className = "component-heading";
 
         const heading = document.createElement("strong");
-        heading.textContent = component.name;
+        heading.textContent = displayText(displayName || rawName);
 
         const body = document.createElement("p");
-        body.textContent = component.description;
+        body.className = "component-description";
+        const description = String(component.description || "");
+        body.textContent = description;
 
-        card.appendChild(heading);
-        card.appendChild(body);
+        headingGroup.appendChild(heading);
+        if (rawName && displayName && rawName !== displayName) {
+          const token = document.createElement("span");
+          token.className = "component-token";
+          token.textContent = displayText(rawName);
+          headingGroup.appendChild(token);
+        }
+        card.appendChild(headingGroup);
+        if (description.trim()) card.appendChild(body);
         componentListEl.appendChild(card);
       });
     }
@@ -718,33 +1087,7 @@ initSharedQuickTooltips();
 
     function clearActiveDiagram() {
       activeDiagram = null;
-      titleEl.textContent = "";
-      idEl.textContent = "";
-      kindEl.textContent = "";
-      statusEl.textContent = "";
-      ownerEl.textContent = "";
-      reviewedEl.textContent = "";
-      freshnessEl.textContent = "";
-      freshnessCardEl?.classList.remove("ok", "warn");
-      summaryEl.textContent = "";
-      clearNode(sourceLinksEl);
-      clearNode(componentListEl);
-      clearNode(backlogLinksEl);
-      clearNode(planLinksEl);
-      clearNode(docLinksEl);
-      clearNode(codeLinksEl);
-      clearNode(registryLinksEl);
-      clearNode(surfaceLinksEl);
-      clearNode(ownerWorkstreamLinksEl);
-      clearNode(activeWorkstreamLinksEl);
-      clearNode(historicalWorkstreamLinksEl);
-      historicalWorkstreamGroupEl.hidden = true;
-      historicalWorkstreamDisclosureEl.open = false;
-      historicalWorkstreamSummaryEl.textContent = "";
-      staleAlertEl.classList.remove("visible");
-      staleAlertEl.textContent = "";
-      imageEl.removeAttribute("src");
-      imageEl.dataset.fallbackApplied = "";
+      viewer.clear();
     }
 
     function applyMeta(diagram) {
@@ -760,20 +1103,12 @@ initSharedQuickTooltips();
       freshnessCardEl?.classList.toggle("ok", diagram.freshness !== "stale");
 
       summaryEl.textContent = diagram.summary;
+      readGuideEl.textContent = diagramReadGuide(diagram);
 
-      imageEl.onload = () => applyInitialView(diagram);
-      imageEl.onerror = () => {
-        const fallback = String(diagram.source_png_href || "").trim();
-        if (!fallback) return;
-        if (imageEl.dataset.fallbackApplied === "1") return;
-        imageEl.dataset.fallbackApplied = "1";
-        imageEl.src = fallback;
-      };
-      imageEl.dataset.fallbackApplied = "";
-      applyImageBoxSizing(diagram);
-      imageEl.src = diagram.source_svg_href;
+      viewer.show(diagram);
 
       renderSourceLinks(diagram);
+      renderDiagramBoxes(diagram, diagramBoxesSectionEl, diagramBoxListEl);
       renderComponents(diagram);
       renderAlert(diagram);
 
@@ -786,15 +1121,20 @@ initSharedQuickTooltips();
       renderWorkstreamContext(diagram);
     }
 
-    function setActive(index) {
+    function setActive(index, userIntent = false) {
+      const nextIndex = clamp(index, 0, activeList.length - 1);
+      const diagram = activeList[nextIndex] || null;
+      if (userIntent) {
+        atlasBridge.navigate({ route: currentAtlasNavigationState(diagram), replaceDocument: false });
+        viewer.setSelectionWarning("");
+      }
       if (!activeList.length) {
         selectedDiagramId = "";
         clearActiveDiagram();
         syncAtlasNavigation();
         return;
       }
-      activeIndex = clamp(index, 0, activeList.length - 1);
-      const diagram = activeList[activeIndex];
+      activeIndex = nextIndex;
       selectedDiagramId = canonicalizeDiagramId(diagram.diagram_id) || String(diagram.diagram_id || "").trim();
       applyMeta(diagram);
 
@@ -821,12 +1161,10 @@ initSharedQuickTooltips();
       statStaleEl.textContent = String(stale);
     }
 
-    function renderList() {
+    function renderList(userIntent = false) {
       clearNode(listEl);
       if (!activeList.length) {
-        selectedDiagramId = "";
-        clearActiveDiagram();
-        syncAtlasNavigation();
+        setActive(0);
         return;
       }
 
@@ -855,11 +1193,18 @@ initSharedQuickTooltips();
           <div class="diagram-owner">${diagram.owner}</div>
         `;
 
-        button.addEventListener("click", () => setActive(idx));
+        button.addEventListener("click", () => setActive(idx, true));
         li.appendChild(button);
         listEl.appendChild(li);
       });
 
+      if (!userIntent && selectedDiagramId && !allDiagrams.some(
+        (diagram) => canonicalizeDiagramId(diagram.diagram_id) === canonicalizeDiagramId(selectedDiagramId)
+      )) {
+        clearActiveDiagram();
+        syncAtlasNavigation();
+        return;
+      }
       setActive(Math.min(activeIndex, activeList.length - 1));
     }
 
@@ -873,9 +1218,10 @@ initSharedQuickTooltips();
         chip.className = "chip" + (kindToken === kindFilter ? " active" : "");
         chip.textContent = kindToken;
         chip.addEventListener("click", () => {
+          viewer.setSelectionWarning("");
           kindFilter = kindToken;
           buildKindFilters();
-          applyFilters();
+          applyFilters({ userIntent: true });
         });
         kindFiltersEl.appendChild(chip);
       });
@@ -928,6 +1274,7 @@ initSharedQuickTooltips();
         const textParts = [
           diagram.diagram_id,
           diagramToken,
+          ...diagramSearchTokens(diagram.diagram_id),
           diagram.title,
           diagram.summary,
           diagram.kind,
@@ -948,81 +1295,48 @@ initSharedQuickTooltips();
         return normalizedText.includes(normalizedNeedle);
       }));
 
+      const matchingCount = activeList.length;
       if (!activeList.length && selectedToken) {
         const fallback = allDiagrams.find(
           (diagram) => canonicalizeDiagramId(diagram.diagram_id) === selectedToken
         );
         if (fallback) {
           if (workstreamFilter !== "all" && !diagramMatchesWorkstream(fallback, workstreamFilter)) {
-            workstreamFilter = "all";
-            workstreamFilterEl.value = "all";
-            applyFilters();
+            normalizeSelectedDiagramWorkstreamFilter();
+            applyFilters(options);
             return;
           }
           activeList = [fallback];
         }
       }
 
+      const exactSearchIndex = needle
+        ? activeList.findIndex((diagram) => diagramMatchesExactSearchToken(diagram, needle, normalizedNeedle))
+        : -1;
       const selectedIndex = selectedToken
         ? activeList.findIndex((diagram) => canonicalizeDiagramId(diagram.diagram_id) === selectedToken)
         : -1;
-      activeIndex = selectedIndex >= 0 ? selectedIndex : 0;
+      activeIndex = selectedIndex >= 0 ? selectedIndex : (exactSearchIndex >= 0 ? exactSearchIndex : 0);
+      if (options.userIntent === true) atlasBridge.navigate({ route: currentAtlasNavigationState(activeList[activeIndex] || null), replaceDocument: false });
+      viewer.setResults({ matches: matchingCount, hasSelection: activeList.length > 0 });
       updateStats(activeList);
-      renderList();
+      renderList(options.userIntent === true);
     }
 
     function moveSelection(delta) {
       if (!activeList.length) {
         return;
       }
-      setActive(clamp(activeIndex + delta, 0, activeList.length - 1));
-    }
-
-    function pointerRecord(event) {
-      return {
-        x: event.clientX,
-        y: event.clientY,
-        type: event.pointerType,
-      };
-    }
-
-    function touchPointers() {
-      return [...activePointers.values()].filter((item) => item.type === "touch");
-    }
-
-    function distance(a, b) {
-      const dx = a.x - b.x;
-      const dy = a.y - b.y;
-      return Math.sqrt((dx * dx) + (dy * dy));
-    }
-
-    function center(a, b) {
-      return {
-        x: (a.x + b.x) / 2,
-        y: (a.y + b.y) / 2,
-      };
-    }
-
-    function beginPan(event) {
-      dragging = true;
-      panPointerId = event.pointerId;
-      dragStartX = event.clientX - offsetX;
-      dragStartY = event.clientY - offsetY;
-      stageEl.classList.add("dragging");
-    }
-
-    function endPan() {
-      dragging = false;
-      panPointerId = null;
-      stageEl.classList.remove("dragging");
+      setActive(clamp(activeIndex + delta, 0, activeList.length - 1), true);
     }
 
     document.querySelectorAll("[data-freshness]").forEach((chip) => {
       chip.addEventListener("click", () => {
+        viewer.setSelectionWarning("");
         freshnessFilter = chip.getAttribute("data-freshness") || "all";
         document.querySelectorAll("[data-freshness]").forEach((node) => node.classList.remove("active"));
         chip.classList.add("active");
-        applyFilters();
+        applyFilters({ userIntent: true });
       });
     });
 
@@ -1045,138 +1359,36 @@ initSharedQuickTooltips();
       }
     });
 
-    searchEl.addEventListener("input", applyFilters);
+    searchEl.addEventListener("input", () => {
+      viewer.setSelectionWarning("");
+      applyFilters({ userIntent: true });
+    });
     sortFilterEl.addEventListener("change", () => {
+      viewer.setSelectionWarning("");
       sortFilter = canonicalizeSortToken(sortFilterEl.value || SORT_DEFAULT);
       sortFilterEl.value = sortFilter;
-      applyFilters();
+      applyFilters({ userIntent: true });
     });
     workstreamFilterEl.addEventListener("change", () => {
+      viewer.setSelectionWarning("");
       workstreamFilter = workstreamFilterEl.value || "all";
-      applyFilters({ normalizeWorkstreamFilter: false });
-      syncAtlasNavigation();
+      applyFilters({ normalizeWorkstreamFilter: false, userIntent: true });
     });
 
-    document.getElementById("zoomIn").addEventListener("click", () => {
-      zoomBy(1.14, stageEl.clientWidth / 2, stageEl.clientHeight / 2);
-    });
-
-    document.getElementById("zoomOut").addEventListener("click", () => {
-      zoomBy(0.88, stageEl.clientWidth / 2, stageEl.clientHeight / 2);
-    });
-
-    document.getElementById("fit").addEventListener("click", fitView);
-    document.getElementById("reset").addEventListener("click", resetView);
     document.getElementById("prevDiagram").addEventListener("click", () => moveSelection(-1));
     document.getElementById("nextDiagram").addEventListener("click", () => moveSelection(1));
 
-    stageEl.addEventListener("pointerdown", (event) => {
-      activePointers.set(event.pointerId, pointerRecord(event));
-      stageEl.setPointerCapture(event.pointerId);
-
-      const touches = touchPointers();
-      if (touches.length >= 2) {
-        endPan();
-        const a = touches[0];
-        const b = touches[1];
-        pinchState = {
-          startDistance: Math.max(1, distance(a, b)),
-          startScale: scale,
-        };
-        return;
-      }
-
-      if (!pinchState) {
-        beginPan(event);
-      }
-    });
-
-    stageEl.addEventListener("pointermove", (event) => {
-      if (activePointers.has(event.pointerId)) {
-        activePointers.set(event.pointerId, pointerRecord(event));
-      }
-
-      const touches = touchPointers();
-      if (touches.length >= 2) {
-        if (!pinchState) {
-          const a = touches[0];
-          const b = touches[1];
-          pinchState = {
-            startDistance: Math.max(1, distance(a, b)),
-            startScale: scale,
-          };
-        }
-        const a = touches[0];
-        const b = touches[1];
-        const rect = stageEl.getBoundingClientRect();
-        const midpoint = center(a, b);
-        const ratio = distance(a, b) / Math.max(1, pinchState.startDistance);
-        zoomTo(pinchState.startScale * ratio, midpoint.x - rect.left, midpoint.y - rect.top);
-        return;
-      }
-
-      if (pinchState) {
-        pinchState = null;
-      }
-
-      if (dragging && event.pointerId === panPointerId) {
-        offsetX = event.clientX - dragStartX;
-        offsetY = event.clientY - dragStartY;
-        applyTransform();
-      }
-    });
-
-    function stopPointer(event) {
-      activePointers.delete(event.pointerId);
-      if (event.pointerId === panPointerId) {
-        endPan();
-      }
-
-      if (touchPointers().length < 2) {
-        pinchState = null;
-      }
-
-      try {
-        stageEl.releasePointerCapture(event.pointerId);
-      } catch (err) {
-        // no-op
-      }
-    }
-
-    stageEl.addEventListener("pointerup", stopPointer);
-    stageEl.addEventListener("pointercancel", stopPointer);
-
-    // Desktop trackpad pinch commonly arrives as wheel+ctrlKey.
-    // Accept only that path; plain wheel scrolling must not zoom.
-    stageEl.addEventListener("wheel", (event) => {
-      if (!event.ctrlKey) {
-        return;
-      }
-      event.preventDefault();
-      const rect = stageEl.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      zoomBy(event.deltaY < 0 ? 1.08 : 0.92, x, y);
-    }, { passive: false });
-
     window.addEventListener("keydown", (event) => {
+      if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey) return;
+      const target = event.target;
+      if (target instanceof Element && (target.closest("input, textarea, select") || target.isContentEditable)) return;
       const key = event.key;
-      if (key === "+" || key === "=") {
-        zoomBy(1.14, stageEl.clientWidth / 2, stageEl.clientHeight / 2);
-      } else if (key === "-") {
-        zoomBy(0.88, stageEl.clientWidth / 2, stageEl.clientHeight / 2);
-      } else if (key === "0") {
-        resetView();
-      } else if (key.toLowerCase() === "f") {
-        fitView();
-      } else if (key === "ArrowUp") {
+      if (key === "ArrowUp") {
         moveSelection(-1);
       } else if (key === "ArrowDown") {
         moveSelection(1);
       }
     });
-
-    window.addEventListener("resize", () => fitView());
 
     let sidebarCollapsed = false;
     try {
@@ -1186,9 +1398,6 @@ initSharedQuickTooltips();
     }
     setSidebarCollapsed(sidebarCollapsed);
 
-    const params = new URLSearchParams(window.location.search);
-    const paramWorkstream = (params.get("workstream") || "").trim();
-    const paramDiagram = (params.get("diagram") || "").trim();
     sortFilter = canonicalizeSortToken(params.get("sort") || SORT_DEFAULT);
     sortFilterEl.value = sortFilter;
     if (WORKSTREAM_ID_RE.test(paramWorkstream)) {

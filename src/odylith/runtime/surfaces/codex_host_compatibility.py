@@ -20,7 +20,7 @@ def _report_notes(report: CodexCompatibilityReport) -> list[str]:
     notes = [
         "Core Odylith support on Codex is the repo-root AGENTS.md contract plus `./.odylith/bin/odylith`.",
         "Repo-scoped `.codex/` and `.agents/skills/` surfaces are best-effort enhancements and must not be required for core operation.",
-        "Trusted-project approval is required before `.codex/hooks.json` and `.codex/agents/*.toml` activate in Codex.",
+        "Project trust loads `.codex/` assets; Codex also requires review of each exact non-managed hook definition in `/hooks` before it runs. Changed definitions require review again.",
         "Existing Codex sessions may not hot-reload changed hooks, guidance, or source-local runtime code; restart the session or render `odylith codex visible-intervention` directly before claiming another open chat is visibly active.",
         "`odylith codex intervention-status` is the low-latency session proof for static readiness, active UX lanes, delivery-ledger state, and the visible recovery smoke command.",
         "Version compatibility is capability-based and does not pin a maximum Codex version.",
@@ -31,11 +31,11 @@ def _report_notes(report: CodexCompatibilityReport) -> list[str]:
         notes.append("Local Codex CLI was not detected on PATH during this compatibility check.")
     if report.hooks_feature_known:
         notes.append(
-            "Local feature registry reports `features.codex_hooks = "
+            f"Local feature registry reports `features.{report.hooks_feature_key or 'codex_hooks'} = "
             + ("true`." if report.hooks_feature_enabled else "false`.")
         )
     else:
-        notes.append("Local feature registry did not expose a trusted `codex_hooks` capability signal.")
+        notes.append("Local feature registry did not expose a recognized hooks capability signal.")
     if (
         report.supports_user_prompt_submit_hook
         and report.supports_post_bash_checkpoint_hook
@@ -58,7 +58,7 @@ def _report_notes(report: CodexCompatibilityReport) -> list[str]:
         notes.append("Codex intervention hook wiring is incomplete: missing " + ", ".join(missing) + ".")
     if report.prompt_input_probe_passed and report.repo_guidance_detected:
         notes.append(
-            "A live `codex debug prompt-input` probe succeeded and included the repo-root AGENTS contract; hook wiring above is the separate visibility proof for intervention output."
+            "A live `codex debug prompt-input` probe succeeded and included the repo-root AGENTS contract; hook configuration is separate from execution and chat-visibility proof."
         )
     elif report.prompt_input_probe_passed:
         notes.append("A live `codex debug prompt-input` probe succeeded, but the repo-root AGENTS token was not detected verbatim.")

@@ -1,0 +1,1050 @@
+"""Closed source relations and distinctly provisional Greenfield design custody."""
+
+from __future__ import annotations
+
+from collections.abc import Mapping, Sequence
+from copy import deepcopy
+import hashlib
+import json
+from typing import Any
+
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
+    provisional_proof_assumption,
+    require_provisional_proof_decision,
+)
+from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
+    intent_terminal_result_values,
+    intent_text_rows,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_relation_validation import (
+    FIRST_PATH_ACTOR_KINDS,
+    FIRST_PATH_RELATION_FIELDS,
+    GreenfieldAuthoredSemanticsError,
+    MAX_FIRST_PATH_RELATIONS,
+    canonical_product_owner_projection_values,
+    require_first_path_actor_binding,
+    validate_first_path_relations,
+)
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import validate_provisional_design, require_source_design_pair
+from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
+    validate_first_run, validate_source_precedence,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import recurring_source_event_orders
+from odylith.runtime.domain_intelligence.greenfield_source_event_graph import (
+    AUTHORED_SEMANTICS_VERSION, PASSIVE_AUTHORED_SEMANTICS_VERSION,
+    COMPONENT_RESPONSIBILITY_RELATION_FIELDS, FIRST_PATH_CONTEXT_RELATION_FIELDS,
+    VERIFIED_COMPONENT_PROVENANCE_FIELDS, authored_semantics_mapping,
+    authored_relation_set_sha256, declared_source_path, source_event_relation_key,
+)
+from odylith.runtime.governance.artifact_tribunal import _bind_verified_source_custody
+
+AUTHORED_SEMANTICS_KEY = "authored_semantics"
+AUTHORED_RELATION_SET_SHA256_KEY = "authored_relation_set_sha256"
+AUTHORED_PROJECTION_ORIGIN = "model_authored_typed_intent"
+AUTHORED_SEMANTIC_ROOT = f"intent.{AUTHORED_SEMANTICS_KEY}"
+GREENFIELD_PRECONFIRM_STAGING_MARKER = "<!-- odylith:preconfirm-staging -->"
+ATOMIC_FACT_CATEGORIES = (
+    "actors",
+    "actions",
+    "states",
+    "outputs",
+    "constraints",
+    "dependencies",
+    "assumptions",
+    "ambiguities",
+    "non_goals",
+)
+ATOMIC_POLARITIES = ("affirmed", "required", "prohibited")
+AUTHORED_RELATION_ROLES = (
+    "actor_fact_quote",
+    "action_verb_quote",
+    "target_quote",
+    "visible_result_quote",
+)
+FIRST_PATH_CONTEXT_KINDS = (
+    "state_object",
+    "external_system",
+    "operational_constraint",
+)
+COMPONENT_RESPONSIBILITY_SOURCES = ("accepted_fact",)
+MAX_COMPONENT_RESPONSIBILITY_RELATIONS = 32
+
+
+def combined_prompt_evidence_source(*, prompt: str, edit_evidence: str) -> str:
+    """Return the exact, versioned byte frame presented to model authoring."""
+
+    return combined_prompt_evidence_segment(prompt=prompt, edit_evidence=edit_evidence)[0]
+
+
+def combined_prompt_evidence_segment(*, prompt: str, edit_evidence: str) -> tuple[str, dict[str, Any]]:
+    """Expose the known embedded UTF8 segment while constructing the existing frame."""
+    prefix = "\n".join([GREENFIELD_PRECONFIRM_STAGING_MARKER, "", "# Operator prompt evidence", "", ""])
+    retained = prompt.strip()
+    framed = prefix + retained
+    if edit_evidence:
+        framed += "\n\n# Operator edit evidence\n\n" + edit_evidence.strip()
+    framed = framed.rstrip() + "\n"
+    return framed, {
+        "prior_source_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
+        "byte_length": len(prompt.encode("utf-8")),
+        "embedded_start": len(prefix.encode("utf-8")),
+        "embedded_end": len((prefix + retained).encode("utf-8")),
+        "removed_prefix": prompt[:len(prompt) - len(prompt.lstrip())],
+        "removed_suffix": prompt[len(prompt.rstrip()):],
+    }
+
+
+def overlapping_first_path_event_orders(
+    *,
+    source_start: Any,
+    source_end: Any,
+    first_path_relations: Sequence[Mapping[str, Any]],
+) -> frozenset[int]:
+    """Return event orders whose exact source ranges overlap one accepted fact."""
+
+    if (
+        not isinstance(source_start, int)
+        or isinstance(source_start, bool)
+        or not isinstance(source_end, int)
+        or isinstance(source_end, bool)
+        or source_start < 0
+        or source_end <= source_start
+    ):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authored relation source custody is malformed"
+        )
+    orders: set[int] = set()
+    for relation in first_path_relations:
+        order = relation.get("order")
+        event_start = relation.get("source_start_byte")
+        event_end = relation.get("source_end_byte")
+        if (
+            not isinstance(order, int)
+            or isinstance(order, bool)
+            or order < 1
+            or not isinstance(event_start, int)
+            or isinstance(event_start, bool)
+            or not isinstance(event_end, int)
+            or isinstance(event_end, bool)
+            or event_start < 0
+            or event_end <= event_start
+        ):
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authored relation source custody is malformed"
+            )
+        if source_start < event_end and event_start < source_end:
+            orders.add(order)
+    return frozenset(orders)
+
+
+def expected_first_path_context_event_order(
+    *, source_start: Any, source_end: Any, first_path_relations: Sequence[Mapping[str, Any]]
+) -> int:
+    orders = overlapping_first_path_event_orders(
+        source_start=source_start, source_end=source_end, first_path_relations=first_path_relations
+    )
+    return next(iter(orders)) if len(orders) == 1 else 0
+
+
+def _canonical_owner_path(path: str) -> bool:
+    if path == "/title":
+        return True
+    prefix = "/internal_systems/"
+    index_text = path.removeprefix(prefix) if path.startswith(prefix) else ""
+    if not index_text.isdigit():
+        return False
+    index = int(index_text)
+    return path == f"{prefix}{index}"
+
+
+def _positive_index(value: Any) -> int:
+    return value if isinstance(value, int) and not isinstance(value, bool) and value >= 1 else 0
+
+
+def authored_component_relation_facts(
+    *,
+    title: str,
+    internal_systems: Sequence[str],
+    relations: Sequence[Mapping[str, Any]],
+    component_responsibility_relations: Sequence[Mapping[str, Any]],
+) -> tuple[dict[str, Any], ...]:
+    """Group exact product-event relations into the sole authored component contract."""
+
+    owner_values = canonical_product_owner_projection_values(
+        title=title,
+        internal_systems=internal_systems,
+    )
+    grouped_events: dict[str, list[Mapping[str, Any]]] = {}
+    grouped_responsibilities: dict[str, list[str]] = {}
+    events_by_order = {
+        _positive_index(relation.get("order")): relation
+        for relation in relations
+        if _positive_index(relation.get("order"))
+    }
+    for relation in component_responsibility_relations:
+        owner_path = str(relation.get("owner_system_path") or "")
+        owner = str(relation.get("owner_system_quote") or "")
+        responsibility = str(relation.get("responsibility_quote") or "")
+        event_order = relation.get("first_path_event_order")
+        if (
+            not owner
+            or owner_values.get(owner_path) != owner
+            or not responsibility
+            or not isinstance(event_order, int)
+            or isinstance(event_order, bool)
+            or event_order < 0
+        ):
+            raise GreenfieldAuthoredSemanticsError(
+                "model-authored component responsibility is missing its typed owner"
+            )
+        linked_event = events_by_order.get(event_order) if event_order else None
+        if event_order and linked_event is None:
+            raise GreenfieldAuthoredSemanticsError(
+                "model-authored component responsibility references an unknown first-path event"
+            )
+        if linked_event is not None and str(linked_event.get("actor_kind") or "") == "product":
+            if str(linked_event.get("owner_system_path") or "") != owner_path:
+                raise GreenfieldAuthoredSemanticsError(
+                    "model-authored component responsibility contradicts its product event owner"
+                )
+        grouped_responsibilities.setdefault(owner_path, []).append(responsibility)
+    for relation in relations:
+        if str(relation.get("actor_kind") or "") != "product":
+            continue
+        owner_path = str(relation.get("owner_system_path") or "")
+        owner = str(relation.get("owner_system_quote") or "")
+        if not owner or owner_values.get(owner_path) != owner:
+            raise GreenfieldAuthoredSemanticsError(
+                "model-authored product event is missing its typed component owner"
+            )
+        grouped_events.setdefault(owner_path, []).append(relation)
+    referenced_owners = set(grouped_responsibilities) | set(grouped_events)
+    ordered_owners: list[str] = []
+    for owner_path in owner_values:
+        if owner_path in referenced_owners:
+            ordered_owners.append(owner_path)
+    if referenced_owners != set(ordered_owners):
+        raise GreenfieldAuthoredSemanticsError(
+            "model-authored component relation references an unselected owner"
+        )
+    rows: list[dict[str, Any]] = []
+    for owner_path in ordered_owners:
+        owner = owner_values[owner_path]
+        events = grouped_events.get(owner_path, [])
+        event_text = list(
+            dict.fromkeys(
+                str(event.get("event_quote") or "")
+                for event in events
+                if str(event.get("event_quote") or "")
+            )
+        )
+        responsibilities = list(grouped_responsibilities.get(owner_path, ())) or event_text
+        if not responsibilities:
+            raise GreenfieldAuthoredSemanticsError(
+                f"model-authored component `{owner or title}` is missing an owner-bound responsibility"
+            )
+        rows.append(
+            {
+                "owner_system": owner or title,
+                "responsibility_facts": responsibilities,
+                "owner_bound_events": event_text,
+                "event_targets": list(
+                    dict.fromkeys(
+                        str(event.get("target_quote") or "")
+                        for event in events
+                        if str(event.get("target_quote") or "")
+                    )
+                ),
+                "visible_results": list(
+                    dict.fromkeys(
+                        str(event.get("visible_result_quote") or "")
+                        for event in events
+                        if str(event.get("visible_result_quote") or "")
+                    )
+                ),
+            }
+        )
+    return tuple(rows)
+
+
+def validate_first_path_context_relations(
+    value: Any,
+    *,
+    intent: Mapping[str, Any],
+    first_path_relations: Sequence[Mapping[str, Any]],
+) -> tuple[dict[str, Any], ...]:
+    """Require one explicit path adjudication for every selected context fact."""
+
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authored first-path context relations are malformed"
+        )
+    expected: list[tuple[str, str, str]] = []
+    state_object = intent.get("state_object")
+    if isinstance(state_object, str) and state_object:
+        expected.append(("state_object", "/state_object", state_object))
+    for field, kind in (
+        ("external_systems", "external_system"),
+        ("operational_constraints", "operational_constraint"),
+    ):
+        rows = intent.get(field)
+        if not isinstance(rows, Sequence) or isinstance(rows, (str, bytes, bytearray)):
+            if rows in (None, ()):
+                continue
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authored first-path context facts are malformed"
+            )
+        expected.extend(
+            (kind, f"/{field}/{index}", row)
+            for index, row in enumerate(rows)
+            if isinstance(row, str) and row
+        )
+    if len(value) != len(expected):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authored semantics left first-path context facts unadjudicated"
+        )
+    sealed: list[dict[str, Any]] = []
+    for raw, (expected_kind, expected_path, expected_quote) in zip(value, expected, strict=True):
+        if not isinstance(raw, Mapping) or set(raw) != FIRST_PATH_CONTEXT_RELATION_FIELDS:
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authored first-path context relations are malformed"
+            )
+        source_start = raw.get("source_start_byte")
+        source_end = raw.get("source_end_byte")
+        event_order = raw.get("first_path_event_order")
+        expected_event_order = expected_first_path_context_event_order(
+            source_start=source_start,
+            source_end=source_end,
+            first_path_relations=first_path_relations,
+        )
+        if (
+            raw.get("context_kind") != expected_kind
+            or raw.get("fact_path") != expected_path
+            or raw.get("fact_quote") != expected_quote
+            or not isinstance(source_start, int)
+            or isinstance(source_start, bool)
+            or not isinstance(source_end, int)
+            or isinstance(source_end, bool)
+            or source_start < 0
+            or source_end <= source_start
+            or not isinstance(event_order, int)
+            or isinstance(event_order, bool)
+            or event_order < 0
+            or event_order != expected_event_order
+        ):
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authored first-path context relation does not match its accepted fact"
+            )
+        sealed.append(dict(raw))
+    return tuple(sealed)
+
+
+def require_authored_relation_source_custody(
+    relations: Sequence[Mapping[str, Any]],
+    *,
+    context_relations: Sequence[Mapping[str, Any]],
+    source_bytes: bytes,
+    source_spans: Sequence[Mapping[str, Any]],
+    source_duty: Mapping[str, Any] | None = None,
+) -> None:
+    """Bind sealed event projections to their exact selected source segments."""
+
+    path_spans = sorted(
+        (
+            span
+            for span in source_spans
+            if span.get("classification") == "product_claim"
+            and span.get("section_key") == "first_path"
+        ),
+        key=lambda span: int(span.get("row_index") or 0),
+    )
+    if not path_spans:
+        raise GreenfieldAuthoredSemanticsError(
+            "model-authored Product Intent relation source custody is missing first-path segments"
+        )
+    projection_cursor = 0
+    for expected_row, span in enumerate(path_spans, start=1):
+        text = str(span.get("text") or "")
+        projected_text = str(span.get("projection_text") or text)
+        projection_start = span.get("projection_start_byte")
+        projection_end = span.get("projection_end_byte")
+        if (
+            span.get("row_index") != expected_row
+            or span.get("projection_path") != "/first_path"
+            or projection_start != projection_cursor
+            or not isinstance(projection_end, int)
+            or isinstance(projection_end, bool)
+            or projection_end != projection_start + len(projected_text.encode("utf-8"))
+        ):
+            raise GreenfieldAuthoredSemanticsError(
+                "model-authored Product Intent first-path segment projection custody is malformed"
+            )
+        projection_cursor = projection_end + 1
+
+    supporting_spans = sorted(
+        (
+            span for span in source_spans
+            if span.get("classification") == "product_claim"
+            and span.get("section_key") == "supporting_events"
+        ),
+        key=lambda span: int(span.get("row_index") or 0),
+    )
+    for expected_row, span in enumerate(supporting_spans, start=1):
+        text = str(span.get("text") or "")
+        projected_text = str(span.get("projection_text") or text)
+        if (
+            span.get("row_index") != expected_row
+            or span.get("projection_path") != f"/supporting_events/{expected_row - 1}"
+            or span.get("projection_start_byte") != 0
+            or span.get("projection_end_byte") != len(projected_text.encode("utf-8"))
+        ):
+            raise GreenfieldAuthoredSemanticsError(
+                "model-authored Product Intent supporting-event projection custody is malformed"
+            )
+
+    event_spans = (*path_spans, *supporting_spans)
+    bound_spans: dict[int, Mapping[str, Any]] = {}
+    if source_duty is not None:
+        binding = source_duty.get("binding")
+        if not isinstance(binding, Mapping):
+            raise GreenfieldAuthoredSemanticsError("Greenfield source-duty event binding is malformed")
+        path_row = supporting_row = 0
+        orders: list[tuple[int, str]] = []
+        for section in ("first_path_actions", "supporting_human_actions", "system_duties"):
+            rows = binding.get(section)
+            if not isinstance(rows, Sequence) or isinstance(rows, (str, bytes, bytearray)):
+                raise GreenfieldAuthoredSemanticsError("Greenfield source-duty event binding is malformed")
+            for row in rows:
+                if not isinstance(row, Mapping) or type(row.get("event_order")) is not int:
+                    raise GreenfieldAuthoredSemanticsError("Greenfield source-duty event binding is malformed")
+                orders.append((row["event_order"], section))
+        for order, section in sorted(orders):
+            if order in bound_spans:
+                raise GreenfieldAuthoredSemanticsError("Greenfield source-duty event binding is malformed")
+            if section == "first_path_actions":
+                path_row += 1
+                if path_row > len(path_spans):
+                    raise GreenfieldAuthoredSemanticsError("Greenfield source-duty event binding is malformed")
+                bound_spans[order] = path_spans[path_row - 1]
+            else:
+                supporting_row += 1
+                if supporting_row > len(supporting_spans):
+                    raise GreenfieldAuthoredSemanticsError("Greenfield source-duty event binding is malformed")
+                bound_spans[order] = supporting_spans[supporting_row - 1]
+        if path_row != len(path_spans) or supporting_row != len(supporting_spans):
+            raise GreenfieldAuthoredSemanticsError("Greenfield source-duty event binding is malformed")
+    covered_rows: set[tuple[str, int]] = set()
+    for relation in relations:
+        source_start = relation.get("source_start_byte")
+        source_end = relation.get("source_end_byte")
+        event_start = relation.get("event_start_byte")
+        event_end = relation.get("event_end_byte")
+        quote = str(relation.get("event_quote") or "")
+        if not _valid_source_range(source_start, source_end, limit=len(source_bytes)):
+            raise GreenfieldAuthoredSemanticsError(
+                "model-authored Product Intent relation source custody does not match the exact envelope source"
+            )
+        matching_segments = [
+            span
+            for span in event_spans
+            if (not bound_spans or span is bound_spans.get(relation.get("order")))
+            if isinstance(event_start, int)
+            and not isinstance(event_start, bool)
+            and isinstance(event_end, int)
+            and not isinstance(event_end, bool)
+            and span["projection_start_byte"] <= event_start
+            and event_end <= span["projection_end_byte"]
+            and span.get("source_start_byte") <= source_start
+            and source_end <= span.get("source_end_byte")
+        ]
+        if len(matching_segments) != 1:
+            raise GreenfieldAuthoredSemanticsError(
+                "model-authored Product Intent relation source custody does not match one selected event segment"
+            )
+        segment = matching_segments[0]
+        local_start = event_start - int(segment["projection_start_byte"])
+        normalized = segment.get("entailment_relationship") == "verified_source_action"
+        expected_source_start = (
+            int(segment["source_start_byte"])
+            if normalized else int(segment["source_start_byte"]) + local_start
+        )
+        quote_bytes = quote.encode("utf-8")
+        if (
+            not quote
+            or (normalized and quote != segment.get("projection_text"))
+            or source_start != expected_source_start
+            or source_end != expected_source_start + len(
+                str(segment["text"]).encode("utf-8") if normalized else quote_bytes
+            )
+            or source_bytes[source_start:source_end] != (
+                str(segment["text"]).encode("utf-8") if normalized else quote_bytes
+            )
+        ):
+            raise GreenfieldAuthoredSemanticsError(
+                "model-authored Product Intent relation source custody does not match the exact envelope source"
+            )
+        covered_rows.add((str(segment["section_key"]), int(segment["row_index"])))
+    if covered_rows != {
+        (str(span["section_key"]), int(span["row_index"])) for span in event_spans
+    }:
+        raise GreenfieldAuthoredSemanticsError(
+            "model-authored Product Intent left a selected event segment without event custody"
+        )
+
+    span_identity = {
+        (
+            str(span.get("section_key") or ""),
+            int(span.get("row_index") or 0),
+            str(span.get("text") or ""),
+            span.get("source_start_byte"),
+            span.get("source_end_byte"),
+        )
+        for span in source_spans
+        if span.get("classification") == "product_claim"
+    }
+    field_by_kind = {
+        "state_object": "state_object",
+        "external_system": "external_systems",
+        "operational_constraint": "operational_constraints",
+    }
+    for relation in context_relations:
+        kind = str(relation.get("context_kind") or "")
+        path = str(relation.get("fact_path") or "")
+        quote = str(relation.get("fact_quote") or "")
+        source_start = relation.get("source_start_byte")
+        source_end = relation.get("source_end_byte")
+        field = field_by_kind.get(kind, "")
+        if path == f"/{field}":
+            row_index = 1
+        else:
+            prefix = f"/{field}/"
+            index_text = path.removeprefix(prefix) if path.startswith(prefix) else ""
+            row_index = int(index_text) + 1 if index_text.isdigit() else 0
+        if (
+            not field
+            or not row_index
+            or not quote
+            or not _valid_source_range(source_start, source_end, limit=len(source_bytes))
+            or source_bytes[source_start:source_end] != quote.encode("utf-8")
+            or (field, row_index, quote, source_start, source_end) not in span_identity
+        ):
+            raise GreenfieldAuthoredSemanticsError(
+                "model-authored Product Intent context source custody does not match the exact envelope source"
+            )
+
+
+def _valid_source_range(start: Any, end: Any, *, limit: int) -> bool:
+    return bool(
+        isinstance(start, int)
+        and not isinstance(start, bool)
+        and isinstance(end, int)
+        and not isinstance(end, bool)
+        and 0 <= start < end <= limit
+    )
+
+
+def _authored_relations_from_intent(
+    intent: Mapping[str, Any] | None,
+) -> tuple[
+    tuple[dict[str, Any], ...],
+    tuple[dict[str, Any], ...],
+    tuple[dict[str, Any], ...],
+]:
+    """Read and validate the complete closed authoring relation contract."""
+
+    if not isinstance(intent, Mapping):
+        return (), (), ()
+    semantics = intent.get(AUTHORED_SEMANTICS_KEY)
+    if semantics is None:
+        return (), (), ()
+    if (
+        not isinstance(semantics, Mapping)
+        or semantics.get("version") not in {AUTHORED_SEMANTICS_VERSION, PASSIVE_AUTHORED_SEMANTICS_VERSION}
+        or set(semantics)
+        != {
+            "version",
+            source_event_relation_key(semantics.get("version")),
+            "first_path_context_relations",
+            "component_responsibility_relations",
+            "source_precedence",
+            "source_duty",
+            "provisional_design",
+        }
+    ):
+        raise GreenfieldAuthoredSemanticsError("Greenfield authored semantics are malformed")
+    relations = semantics.get(source_event_relation_key(semantics["version"]))
+    if not isinstance(relations, Sequence) or isinstance(relations, (str, bytes, bytearray)):
+        raise GreenfieldAuthoredSemanticsError("Greenfield authored semantics are malformed")
+    actor_values = intent.get("human_actors", ())
+    if not isinstance(actor_values, Sequence) or isinstance(actor_values, (str, bytes, bytearray)):
+        raise GreenfieldAuthoredSemanticsError("Greenfield authored semantics are missing typed human actors")
+    try:
+        require_provisional_proof_decision(intent)
+    except ValueError as exc:
+        raise GreenfieldAuthoredSemanticsError(str(exc)) from exc
+    has_provisional_proof = bool(
+        provisional_proof_assumption(intent.get("assumptions", []))
+    )
+    source_duty = semantics.get("source_duty")
+    selected_orders: tuple[int, ...] | None = None
+    if source_duty is not None:
+        if not isinstance(source_duty, Mapping) or not isinstance(source_duty.get("binding"), Mapping):
+            raise GreenfieldAuthoredSemanticsError("Greenfield source-duty custody is malformed")
+        receipt = source_duty.get("ledger_receipt")
+        ledger = receipt.get("ledger") if isinstance(receipt, Mapping) else None
+        supported_ledgers = ({"odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}
+                             if semantics["version"] == AUTHORED_SEMANTICS_VERSION else
+                             {"odylith.greenfield.source-duty-ledger.v5", "odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7"})
+        if not isinstance(ledger, Mapping) or ledger.get("version") not in supported_ledgers:
+            raise GreenfieldAuthoredSemanticsError("Greenfield authored/source-ledger version pair is unsupported")
+        bindings = source_duty["binding"].get("first_path_actions")
+        if not isinstance(bindings, Sequence) or isinstance(bindings, (str, bytes, bytearray)):
+            raise GreenfieldAuthoredSemanticsError("Greenfield source-duty custody is malformed")
+        bound_orders = tuple(row.get("event_order") for row in bindings if isinstance(row, Mapping))
+        if (
+            len(bound_orders) != len(bindings)
+            or any(type(order) is not int for order in bound_orders)
+        ):
+            raise GreenfieldAuthoredSemanticsError("Greenfield source-duty custody is malformed")
+        selected_orders = tuple(dict.fromkeys(bound_orders))
+    elif intent_text_rows(intent.get("supporting_events")):
+        raise GreenfieldAuthoredSemanticsError("Greenfield supporting events lack source-duty custody")
+    first_path_relations = validate_first_path_relations(
+        relations,
+        first_path=str(intent.get("first_path") or ""),
+        human_actors=tuple(str(row) for row in actor_values if str(row)),
+        external_systems=intent_text_rows(intent.get("external_systems")),
+        internal_systems=intent_text_rows(intent.get("internal_systems")),
+        product_title=str(intent.get("title") or ""),
+        terminal_result_facts=intent_terminal_result_values(intent),
+        require_visible_result=not has_provisional_proof,
+        intent=intent,
+        first_path_event_orders=selected_orders,
+        source_event_graph=semantics["version"] == AUTHORED_SEMANTICS_VERSION,
+    )
+    if source_duty is not None and semantics["version"] == AUTHORED_SEMANTICS_VERSION:
+        from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import require_verified_source_action_relations
+        require_verified_source_action_relations(first_path_relations, source_duty=source_duty, source_text=intent.get("prompt", ""))
+    if has_provisional_proof and any(
+        row["visible_result_quote"] for row in first_path_relations
+    ):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield provisional proof cannot carry a source terminal result"
+        )
+    context_relations = validate_first_path_context_relations(
+        semantics.get("first_path_context_relations"),
+        intent=intent,
+        first_path_relations=first_path_relations,
+    )
+    component_relations = validate_component_responsibility_relations(
+        semantics.get("component_responsibility_relations"),
+        intent=intent,
+        first_path_relations=first_path_relations,
+    )
+    try:
+        source_precedence = validate_source_precedence(
+            semantics["source_precedence"],
+            event_orders=tuple(row["order"] for row in first_path_relations),
+            operational_constraints=intent_text_rows(intent.get("operational_constraints")),
+        )
+        require_source_design_pair(
+            semantics["provisional_design"], source_duty=source_duty,
+            semantics_version=semantics["version"],
+        )
+        validate_provisional_design(
+            semantics["provisional_design"],
+            event_orders=tuple(row["order"] for row in first_path_relations),
+            source_precedence=source_precedence,
+            result_event_order=next(
+                (
+                    row["order"]
+                    for row in first_path_relations
+                    if row["visible_result_quote"]
+                ),
+                None,
+            ),
+        )
+        if selected_orders is not None and source_duty["ledger_receipt"]["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}:
+            from odylith.runtime.domain_intelligence.greenfield_source_run_plan import require_source_run_projection
+            require_source_run_projection(source_duty["ledger_receipt"]["ledger"], evidence_text=intent["prompt"],
+                facts=intent, source_precedence=source_precedence,
+                first_run=semantics["provisional_design"]["first_run"], relations=first_path_relations)
+        elif selected_orders is not None:
+            validate_first_run(
+                semantics["provisional_design"]["first_run"],
+                event_orders=tuple(row["order"] for row in first_path_relations),
+                source_precedence=source_precedence,
+                result_event_order=None,
+                first_path_event_orders=selected_orders,
+                recurring_event_orders=recurring_source_event_orders(source_duty["ledger_receipt"]["ledger"], source_duty["binding"]),
+            )
+    except ValueError as exc:
+        raise GreenfieldAuthoredSemanticsError(str(exc)) from exc
+    return first_path_relations, context_relations, component_relations
+
+
+def source_event_relations_from_intent(intent: Mapping[str, Any] | None) -> tuple[dict[str, Any], ...]:
+    """Return the complete validated source graph, including supporting duties."""
+    relations, _context, _components = _authored_relations_from_intent(intent)
+    return relations
+
+
+def first_path_relations_from_intent(intent: Mapping[str, Any] | None) -> tuple[dict[str, Any], ...]:
+    """Return only the exact source-declared path, preserving its stable event IDs."""
+    relations = source_event_relations_from_intent(intent)
+    if not relations:
+        return ()
+    return declared_source_path(relations, intent[AUTHORED_SEMANTICS_KEY]["source_duty"])
+
+
+def first_path_context_relations_from_intent(
+    intent: Mapping[str, Any] | None,
+) -> tuple[dict[str, Any], ...]:
+    """Return the exact path-context adjudications after full contract validation."""
+
+    _relations, context_relations, _component_relations = _authored_relations_from_intent(intent)
+    return context_relations
+
+
+def component_responsibility_relations_from_intent(
+    intent: Mapping[str, Any] | None,
+) -> tuple[dict[str, Any], ...]:
+    """Return exact owner bindings for all selected component responsibilities."""
+
+    _relations, _context_relations, component_relations = _authored_relations_from_intent(intent)
+    return component_relations
+
+
+def validate_component_responsibility_relations(
+    value: Any,
+    *,
+    intent: Mapping[str, Any],
+    first_path_relations: Sequence[Mapping[str, Any]],
+    require_verified_duties: bool = False,
+) -> tuple[dict[str, Any], ...]:
+    """Bind responsibility owners, including receipt-selected derived duty provenance."""
+
+    if (
+        not isinstance(value, Sequence)
+        or isinstance(value, (str, bytes, bytearray))
+        or len(value) > MAX_COMPONENT_RESPONSIBILITY_RELATIONS
+    ):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authored component-responsibility relations are malformed"
+        )
+    responsibility_values = intent.get("component_responsibilities")
+    if responsibility_values is None:
+        responsibilities: tuple[str, ...] = ()
+    elif (
+        isinstance(responsibility_values, Sequence)
+        and not isinstance(responsibility_values, (str, bytes, bytearray))
+        and all(isinstance(row, str) and row for row in responsibility_values)
+    ):
+        responsibilities = tuple(responsibility_values)
+    else:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authored component-responsibility facts are malformed"
+        )
+    expected_paths = tuple(
+        f"/component_responsibilities/{index}" for index in range(len(responsibilities))
+    )
+    if len(value) != len(expected_paths):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authored semantics left component responsibilities without typed owners"
+        )
+    systems_value = intent.get("internal_systems")
+    systems = (
+        tuple(str(row) for row in systems_value)
+        if isinstance(systems_value, Sequence)
+        and not isinstance(systems_value, (str, bytes, bytearray))
+        else ()
+    )
+    owner_values = canonical_product_owner_projection_values(
+        title=str(intent.get("title") or ""),
+        internal_systems=systems,
+    )
+    events_by_order = {
+        _positive_index(row.get("order")): row
+        for row in first_path_relations
+        if _positive_index(row.get("order"))
+    }
+    source_duty = intent.get(AUTHORED_SEMANTICS_KEY, {}).get("source_duty")
+    verified_rows = any(isinstance(row, Mapping) and VERIFIED_COMPONENT_PROVENANCE_FIELDS & set(row)
+                        for row in value)
+    duties_by_order: dict[int, Mapping[str, Any]] = {}
+    receipt: Mapping[str, Any] = {}
+    if verified_rows or require_verified_duties:
+        if not isinstance(source_duty, Mapping):
+            raise GreenfieldAuthoredSemanticsError("Greenfield derived responsibilities lack source duties")
+        from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+            require_verified_source_action_relations,
+        )
+        source_text = intent.get("prompt")
+        if not isinstance(source_text, str) or not source_text:
+            raise GreenfieldAuthoredSemanticsError("Greenfield derived responsibilities lack exact source evidence")
+        duties = require_verified_source_action_relations(
+            first_path_relations, source_duty=source_duty, source_text=source_text,
+        )
+        duties_by_order = {duty["event_order"]: duty for duty in duties.values()}
+        receipt = source_duty["ledger_receipt"]
+    rows: list[dict[str, Any]] = []
+    seen_paths: set[str] = set()
+    for index, raw in enumerate(value):
+        if (
+            not isinstance(raw, Mapping)
+            or set(raw) != (COMPONENT_RESPONSIBILITY_RELATION_FIELDS
+                           | (VERIFIED_COMPONENT_PROVENANCE_FIELDS if verified_rows or require_verified_duties else set()))
+        ):
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authored component-responsibility relations are malformed"
+            )
+        responsibility_path = str(raw.get("responsibility_path") or "")
+        owner_path = str(raw.get("owner_system_path") or "")
+        owner_quote = str(raw.get("owner_system_quote") or "")
+        event_order = raw.get("first_path_event_order")
+        responsibility_source = str(raw.get("responsibility_source") or "")
+        if not _canonical_owner_path(owner_path):
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authored component responsibility has an invalid system owner"
+            )
+        if (
+            not isinstance(event_order, int)
+            or isinstance(event_order, bool)
+            or event_order < 0
+            or responsibility_source not in COMPONENT_RESPONSIBILITY_SOURCES
+            or owner_values.get(owner_path) != owner_quote
+        ):
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authored component-responsibility relations do not match accepted facts"
+            )
+        linked_event = events_by_order.get(event_order) if event_order else None
+        if event_order and linked_event is None:
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authored component responsibility references an unknown first-path event"
+            )
+        if linked_event is not None and str(linked_event.get("actor_kind") or "") == "product":
+            if str(linked_event.get("owner_system_path") or "") != owner_path:
+                raise GreenfieldAuthoredSemanticsError(
+                    "Greenfield authored semantics assign contradictory owners to one product event"
+                )
+        if verified_rows or require_verified_duties:
+            duty = duties_by_order.get(event_order)
+            if (duty is None or linked_event is None or linked_event.get("actor_kind") != "product"
+                or raw.get("source_duty_id") != duty.get("id")
+                or raw.get("decision_set_sha256") != receipt.get("decision_set_sha256")
+                or raw.get("responsibility_quote") != duty.get("statement")
+                or linked_event.get("event_quote") != duty.get("statement")
+                or linked_event.get("action_verb_quote") != duty.get("action")
+                or linked_event.get("target_quote") != duty.get("target")
+                or linked_event.get("actor_fact_quote") != duty.get("actor_ref", {}).get("quote")
+                or owner_quote != linked_event.get("actor_fact_quote")
+                or (duty.get("binding_role") == "first_path_actions"
+                    and duty.get("performer_role") not in {"internal_system", "product_title"})
+                or duty.get("binding_role") == "supporting_human_actions"):
+                raise GreenfieldAuthoredSemanticsError("Greenfield derived responsibility differs from its verified duty")
+        expected_path = expected_paths[index] if index < len(expected_paths) else ""
+        responsibility = responsibilities[index] if index < len(responsibilities) else ""
+        if (
+            responsibility_path != expected_path
+            or responsibility_path in seen_paths
+            or str(raw.get("responsibility_quote") or "") != responsibility
+            or responsibility_source != "accepted_fact"
+        ):
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authored component-responsibility relations do not match accepted facts"
+            )
+        seen_paths.add(responsibility_path)
+        rows.append(dict(raw))
+    if verified_rows or require_verified_duties:
+        product_orders = {row["order"] for row in first_path_relations if row.get("actor_kind") == "product"}
+        if len(rows) != len(product_orders) or {row["first_path_event_order"] for row in rows} != product_orders:
+            raise GreenfieldAuthoredSemanticsError("Greenfield derived responsibilities do not cover exact product duties")
+    return tuple(rows)
+
+
+def require_authored_relation_authority(
+    intent: Mapping[str, Any],
+    authority: Mapping[str, Any],
+) -> tuple[dict[str, Any], ...]:
+    """Require exact authored relations to match the sealed Product Intent authority."""
+
+    relations = require_relation_authority_parity(intent, authority)
+    if not relations:
+        raise GreenfieldAuthoredSemanticsError(
+            "model-authored Greenfield custody is missing verified first-path relations"
+        )
+    return relations
+
+
+def require_relation_authority_parity(
+    intent: Mapping[str, Any],
+    authority: Mapping[str, Any],
+) -> tuple[dict[str, Any], ...]:
+    """Prevent authored relation custody from being added or removed as a route switch."""
+
+    from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
+        require_product_intent_authority_structure,
+    )
+
+    require_product_intent_authority_structure(authority)
+    relations, context_relations, component_relations = _authored_relations_from_intent(intent)
+    sealed_digest = authority.get(AUTHORED_RELATION_SET_SHA256_KEY)
+    empty_digest = authored_relation_set_sha256((), (), first_path_context_relations=())
+    if not relations:
+        if AUTHORED_SEMANTICS_KEY in intent or sealed_digest != empty_digest:
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authoredness does not match sealed Product Intent relation authority"
+            )
+        return ()
+    expected = authored_relation_set_sha256(
+        relations,
+        component_relations,
+        first_path_context_relations=context_relations,
+        source_precedence=intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
+        source_duty=intent[AUTHORED_SEMANTICS_KEY]["source_duty"],
+        provisional_design=intent[AUTHORED_SEMANTICS_KEY]["provisional_design"],
+        semantics_version=intent[AUTHORED_SEMANTICS_KEY]["version"],
+    )
+    if sealed_digest != expected:
+        raise GreenfieldAuthoredSemanticsError(
+            "model-authored Greenfield relations do not match sealed Product Intent authority"
+        )
+    return relations
+
+
+def authored_source_custody(
+    *,
+    intent: Mapping[str, Any],
+    authority: Mapping[str, Any],
+) -> Mapping[str, str]:
+    """Return an issued Tribunal receipt bound to verified authored relations."""
+
+    relations = require_authored_relation_authority(intent, authority)
+    context_relations = first_path_context_relations_from_intent(intent)
+    component_relations = component_responsibility_relations_from_intent(intent)
+    return _bind_verified_source_custody(
+        projection_origin=AUTHORED_PROJECTION_ORIGIN,
+        semantic_root=AUTHORED_SEMANTIC_ROOT,
+        semantic_version=intent[AUTHORED_SEMANTICS_KEY]["version"],
+        authored_relation_set_sha256=authored_relation_set_sha256(
+            relations,
+            component_relations,
+            first_path_context_relations=context_relations,
+            source_precedence=intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
+            source_duty=intent[AUTHORED_SEMANTICS_KEY]["source_duty"],
+            provisional_design=intent[AUTHORED_SEMANTICS_KEY]["provisional_design"],
+            semantics_version=intent[AUTHORED_SEMANTICS_KEY]["version"],
+        ),
+    )
+
+
+def authored_projection_relations(
+    proposal: Mapping[str, Any] | None,
+) -> tuple[dict[str, Any], ...]:
+    """Validate the authored projection marker without falling back to legacy meaning."""
+
+    if not isinstance(proposal, Mapping) or proposal.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN:
+        return ()
+    intent = proposal.get("intent")
+    relations = first_path_relations_from_intent(intent if isinstance(intent, Mapping) else None)
+    if not relations:
+        raise GreenfieldAuthoredSemanticsError(
+            "model-authored Greenfield projection is missing verified first-path relations"
+        )
+    return relations
+
+
+def authored_visible_result(relations: Sequence[Mapping[str, Any]]) -> str:
+    """Return the terminal source-quoted result without interpreting proof prose."""
+
+    for row in reversed(tuple(relations)):
+        result = str(row.get("visible_result_quote") or "").strip()
+        if result:
+            return result
+    return ""
+
+
+FIRST_PATH_RELATION_SCHEMA: dict[str, Any] = {
+    "type": "array",
+    "minItems": 0,
+    "maxItems": MAX_FIRST_PATH_RELATIONS,
+    "items": {
+        "type": "object",
+        "additionalProperties": False,
+        "required": sorted(FIRST_PATH_RELATION_FIELDS),
+        "properties": {
+            "order": {"type": "integer", "minimum": 1},
+            "source_start_byte": {"type": "integer", "minimum": 0},
+            "source_end_byte": {"type": "integer", "minimum": 1},
+            "event_start_byte": {"type": "integer", "minimum": 0},
+            "event_end_byte": {"type": "integer", "minimum": 1},
+            "actor_kind": {"type": "string", "enum": list(FIRST_PATH_ACTOR_KINDS)},
+            "actor_fact_path": {"type": "string"},
+            "actor_fact_quote": {"type": "string"},
+            "owner_system_path": {"type": "string"},
+            "owner_system_quote": {"type": "string"},
+            "event_quote": {"type": "string"},
+            "action_verb_quote": {"type": "string"},
+            "target_quote": {"type": "string"},
+            "visible_result_quote": {"type": "string"},
+        },
+    },
+}
+
+FIRST_PATH_CONTEXT_RELATION_SCHEMA: dict[str, Any] = {
+    "type": "array",
+    "minItems": 0,
+    "maxItems": 96,
+    "items": {
+        "type": "object",
+        "additionalProperties": False,
+        "required": sorted(FIRST_PATH_CONTEXT_RELATION_FIELDS),
+        "properties": {
+            "context_kind": {"type": "string", "enum": list(FIRST_PATH_CONTEXT_KINDS)},
+            "fact_path": {"type": "string"},
+            "fact_quote": {"type": "string"},
+            "source_start_byte": {"type": "integer", "minimum": 0},
+            "source_end_byte": {"type": "integer", "minimum": 1},
+            "first_path_event_order": {"type": "integer", "minimum": 0},
+        },
+    },
+}
+
+
+__all__ = [
+    "AUTHORED_PROJECTION_ORIGIN",
+    "AUTHORED_RELATION_SET_SHA256_KEY",
+    "AUTHORED_SEMANTICS_KEY",
+    "AUTHORED_SEMANTIC_ROOT",
+    "AUTHORED_SEMANTICS_VERSION",
+    "ATOMIC_FACT_CATEGORIES",
+    "ATOMIC_POLARITIES",
+    "AUTHORED_RELATION_ROLES",
+    "COMPONENT_RESPONSIBILITY_RELATION_FIELDS",
+    "FIRST_PATH_CONTEXT_RELATION_FIELDS",
+    "FIRST_PATH_CONTEXT_RELATION_SCHEMA",
+    "FIRST_PATH_RELATION_SCHEMA",
+    "GREENFIELD_PRECONFIRM_STAGING_MARKER",
+    "GreenfieldAuthoredSemanticsError",
+    "authored_relation_set_sha256",
+    "authored_component_relation_facts",
+    "authored_semantics_mapping",
+    "authored_source_custody",
+    "authored_projection_relations",
+    "authored_visible_result",
+    "canonical_product_owner_projection_values",
+    "combined_prompt_evidence_source",
+    "component_responsibility_relations_from_intent",
+    "expected_first_path_context_event_order",
+    "first_path_context_relations_from_intent",
+    "first_path_relations_from_intent",
+    "source_event_relations_from_intent",
+    "overlapping_first_path_event_orders",
+    "require_first_path_actor_binding",
+    "require_authored_relation_authority",
+    "require_authored_relation_source_custody",
+    "require_relation_authority_parity",
+    "validate_component_responsibility_relations",
+    "validate_first_path_context_relations",
+    "validate_first_path_relations",
+]

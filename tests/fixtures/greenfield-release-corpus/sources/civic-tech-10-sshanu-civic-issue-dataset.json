@@ -1,0 +1,60 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "civic",
+    "government",
+    "public",
+    "municipal",
+    "election",
+    "democracy"
+  ],
+  "matched_description_evidence_terms": [
+    "civic"
+  ],
+  "repository": {
+    "default_branch": "master",
+    "description": "Civic Issue Detection Dataset from Adversarial Adaptation of Scene Graph Models for Understanding Civic Issues",
+    "full_name": "Sshanu/civic_issue_dataset",
+    "id": 172065975,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "civic_issue_dataset",
+    "node_id": "MDEwOlJlcG9zaXRvcnkxNzIwNjU5NzU=",
+    "pushed_at": "2020-06-12T14:38:07Z",
+    "topics": [
+      "adversarial-learning",
+      "civic-issue",
+      "civic-issue-dataset",
+      "civic-issue-detection",
+      "civic-tech",
+      "dataset",
+      "deep-learning",
+      "domain-adaptation",
+      "garbage-detection",
+      "ms-coco",
+      "object-detection",
+      "pothole-detector",
+      "scene-graph-models",
+      "unsupervised-learning"
+    ]
+  },
+  "response_item_index": 49,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Acivic-tech&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:16:00 GMT",
+    "x-github-request-id": "D12B:6E34A:14D2390:1535BBB:6A5B606D"
+  },
+  "search_response_path": "responses/civic-tech.json",
+  "search_response_sha256": "4cd163f4ae63ceae48f75353ad5950efec51551b14c5cd8a2c853d5ba2c4e1df",
+  "selection_index": 10,
+  "source_family": "civic-tech",
+  "source_id": "github-repository:172065975",
+  "source_uri": "https://github.com/Sshanu/civic_issue_dataset",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

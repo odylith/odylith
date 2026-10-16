@@ -1,0 +1,53 @@
+{
+  "status": "terminal_ACCEPT_all_four_source_only",
+  "final_predeclaration": {
+    "path": "/private/tmp/odylith-new-high4-source-adjudication-20261010/final-predeclaration.json",
+    "sha256": "c0c4800ab6094bc5f694e93d529dc507b78d14175b13d864642546fd2e817c3a"
+  },
+  "census": {
+    "path": "/private/tmp/odylith-new-high4-source-adjudication-20261010/adjudicated-census-capacity.json",
+    "sha256": "99caa7900360ae69e66787ca9a5f3b9c1977e65dfbf70c0fdc27882dc828cc7b"
+  },
+  "validation": {
+    "path": "/private/tmp/odylith-new-high4-source-adjudication-20261010/validation.json",
+    "sha256": "afaaabb8e5e6858e4c69c6fac310e02f4152fbc8dbf74e25ce60a39469240b5d"
+  },
+  "report": {
+    "path": "/private/tmp/odylith-new-high4-source-adjudication-20261010/report.md",
+    "sha256": "2423c6140dc5120bd625a6cb693e3e10b4011f58c1035ce1b9f8a8afeee79f8a"
+  },
+  "freeze_manifest": {
+    "path": "/private/tmp/odylith-new-high4-source-adjudication-20261010/freeze-manifest.json",
+    "sha256": "aa55b4142b8cb58ac815c2bc66f03778f385627a4c03c84b7846454a867b731a"
+  },
+  "H1_required_performed_totals": [
+    26,
+    31,
+    25,
+    26
+  ],
+  "H1_conservative_with_permissions": [
+    26,
+    32,
+    26,
+    27
+  ],
+  "H1_bands": [
+    "high",
+    "high",
+    "high",
+    "high"
+  ],
+  "H0_bands": [
+    "moderate",
+    "moderate",
+    "moderate",
+    "moderate"
+  ],
+  "formal_v2_issues": [],
+  "qualification_credit": false,
+  "source_case_relative_path": "tests/fixtures/greenfield-release-corpus/source-annotations/high4-20261010/source-cases.json",
+  "root_next_action": "Copy exact source/annotation bytes and independently verify before any output; root owns governance, complete regression and dispatch.",
+  "unresolved_source_blockers": [],
+  "terminal_no_more_writes": true
+}

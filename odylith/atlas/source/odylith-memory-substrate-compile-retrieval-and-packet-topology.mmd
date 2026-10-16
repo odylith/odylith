@@ -1,8 +1,9 @@
-%% Reviewed 2026-04-17 for v0.1.11 to make compiler read models, session memory, delivery-ledger visibility, Execution Engine snapshots, Tribunal summaries, and packet-safe memory contracts explicit in Atlas.
+%% Current authority and useful history share one Context Engine policy; tracked truth remains authoritative.
 flowchart TB
     Truth["Tracked product truth<br/>Radar + Plans + Casebook + Registry + Atlas + guidance"] --> Compiler["Context Engine compiler/store<br/>projection build + retained packet assembly"]
 
     subgraph ReadModels["1. Compiler-owned read models"]
+        RecordPolicy["Shared memory record policy<br/>source refs + evidence time + derivation<br/>current truth / historical learning / observation"]
         Bundle["Projection Bundle<br/>manifest + documents.v1.jsonl + edges.v1.jsonl"]
         Snapshot["Projection Snapshot<br/>projection-snapshot.v1.json"]
     end
@@ -10,6 +11,8 @@ flowchart TB
     subgraph Retrieval["2. Retrieval and memory lanes"]
         Backend["Memory Backend<br/>LanceDB + Tantivy + judgment memory"]
         Remote["Remote Retrieval<br/>optional Vespa augment / remote_only"]
+        Selection["Evidence selection<br/>admit authority and validity first<br/>then relevance, evidence and age"]
+        Continuity["Judgment continuity<br/>verify current source and derivation<br/>before raising routing confidence"]
     end
 
     subgraph Contracts["3. Packet-safe memory contract"]
@@ -33,14 +36,20 @@ flowchart TB
         Conversation["Router + Orchestrator + Odylith Chatter"]
     end
 
-    Compiler --> Bundle
-    Compiler --> Snapshot
+    Compiler --> RecordPolicy
+    RecordPolicy --> Bundle
+    RecordPolicy --> Snapshot
     Bundle --> Backend
     Bundle --> Remote
-    Bundle --> MemoryContracts
-    Snapshot --> MemoryContracts
-    Backend --> MemoryContracts
-    Remote --> MemoryContracts
+    Bundle --> Selection
+    Snapshot --> Selection
+    Backend --> Selection
+    Remote --> Selection
+    RecordPolicy -. same policy .-> Selection
+    Selection --> MemoryContracts
+    Backend --> Continuity
+    RecordPolicy -. same admission .-> Continuity
+    Continuity --> MemoryContracts
     MemoryContracts --> SessionStream
     SessionStream --> DeliveryLedger
     Bundle --> CompilerState

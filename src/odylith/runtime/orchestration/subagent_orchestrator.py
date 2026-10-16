@@ -2007,7 +2007,7 @@ def orchestrate_prompt(
         budget_notes.append("parallel fan-out stays conservative and requires a main-thread merge barrier")
     if request.needs_write and assessment.feature_implementation:
         budget_notes.append(
-            "feature implementation remains accuracy-first and will bias leaves toward stronger coding-optimized or GPT-5.4 tiers"
+            "feature implementation remains accuracy-first and will bias leaves toward stronger writing or frontier tiers"
         )
     budget_notes.extend(decomposition_notes)
     budget_notes.extend(followup_notes)
@@ -2058,12 +2058,12 @@ def orchestrate_prompt(
                 request=request.as_dict(),
             ),
         )
-    if any(subtask.route_model == "gpt-5.4-mini" for subtask in routed_subtasks):
-        budget_notes.append("lighter read-only leaves were routed toward GPT-5.4-mini when the bounded analysis did not justify a larger tier")
+    if any(subtask.route_model == "gpt-5.6-luna" for subtask in routed_subtasks):
+        budget_notes.append("lighter read-only leaves were routed toward Luna when the bounded analysis did not justify a larger tier")
     if any(subtask.route_model == "gpt-5.3-codex-spark" for subtask in routed_subtasks):
         budget_notes.append("lighter mechanical support leaves were routed toward Spark to conserve token budget")
-    if any(subtask.route_model == "gpt-5.3-codex" for subtask in routed_subtasks):
-        budget_notes.append("mid-tier coding leaves were routed toward write-focused profiles before escalating to GPT-5.4")
+    if any(subtask.route_model == "gpt-5.6-terra" for subtask in routed_subtasks):
+        budget_notes.append("mid-tier coding leaves were routed toward Terra before escalating to Sol")
 
     rationale = {
         OrchestrationMode.SINGLE_LEAF: "delegated as one bounded leaf because the grounded scope did not justify decomposition",

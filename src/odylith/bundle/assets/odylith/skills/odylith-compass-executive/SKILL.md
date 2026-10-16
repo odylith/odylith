@@ -1,5 +1,8 @@
 # odylith-compass-executive
 
+## Governance-Learning Default
+Before acting on a durable error, escaped defect, failed mechanism, failed simulation, bad generated artifact, semantic drift, quality-gate miss, latency breach, architecture decision, validation result, or release-risk learning, search Casebook and related governance truth first. Read prior failed mechanisms, failed fix attempts, rejected approaches, guardrails, and validation history; do not repeat a fix path that already failed. Capture new mechanism-level learning in Casebook or Compass, and update Radar or plans, Registry, and Atlas when the learning changes planned work, component contracts, or flows.
+
 ## CLI-First Non-Negotiable
 - CLI-first is non-negotiable for both Codex and Claude Code. Remove all hand-authoring for places where Odylith CLI should be doing the heavy-lifting. When an Odylith CLI command exists for an operation, you must call the CLI command and you must not hand-edit governed files the CLI owns. Hand-authoring governed truth where a CLI exists is a hard policy violation, not a stylistic preference. The authoritative policy, CLI surface enumeration, allowed hand-edit surfaces, and failure-mode handling live in `odylith/agents-guidelines/CLI_FIRST_POLICY.md`, anchored by Casebook learning `CB-104`. The rule travels through routed `spawn_agent` leaves on Codex and Task-tool subagents on Claude Code, so delegated work inherits the same contract.
 
@@ -20,6 +23,10 @@ odylith sync --repo-root . --force
 
 - Follow the canonical brief contract in [Briefs Voice Contract](../registry/source/components/briefs-voice-contract/CURRENT_SPEC.md).
 - Keep Compass narrative concise, execution-meaningful, grounded in local repo truth, and in friendly grounded maintainer narration.
+- Compass brief, status, unavailable-state, timeout, and dashboard copy must
+  be simple, legible, grammatically coherent, and clear before it is voiceful.
+  Rewrite any clever, clipped, or dashboard-wise line into plain language that
+  tells the reader what changed, what is trusted, and what should happen next.
 - `LLM writes, local code thinks` is the brief-generation rule. Build the
   winning local story first; do not ask the provider to rediscover it from a
   raw packet.
@@ -34,7 +41,7 @@ odylith sync --repo-root . --force
 - If a Compass summary sounds templated, rhythmic, or dashboard-polished, treat that as a product regression in governed truth or narrator policy, not as a copy-polish pass.
 - Keep the normal refresh path cheap. Timeline material should be reused from deterministic Compass state, and the blocking path must stay exact-cache or truthful explicit state only.
 - Cheap also means selective. Reuse the last validated live brief only when the exact narration-substrate fingerprint is unchanged, rebuild local runtime only when repo truth actually moved, and leave fresh narration to the background warmer.
-- Background brief warming must detect the active local host, stay on `medium` reasoning, and use the governed ladder: Codex = `gpt-5.3-codex-spark` -> `gpt-5.3-codex` -> `gpt-5.4-mini`; Claude = `haiku` -> `sonnet`.
+- Background brief warming must detect the active local host, stay on `medium` reasoning, and use the governed ladder: Codex = `gpt-5.3-codex-spark` -> `gpt-5.6-luna` -> `gpt-5.6-terra`; Claude = `haiku` -> `sonnet`.
 - Advance one rung only after a provider budget, rate-limit, or model-availability failure. Do not keep retrying the same exhausted cheap rung indefinitely.
 - Provider payloads should be compact delta substrates:
   - top winner facts

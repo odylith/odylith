@@ -8,6 +8,7 @@ from odylith.runtime.context_engine import odylith_context_engine_projection_ent
 from odylith.runtime.context_engine import odylith_context_engine_store as context_engine_store
 from odylith.runtime.governance import proof_state
 from odylith.runtime.governance import sync_casebook_bug_index
+from odylith.runtime.governance.proof_state import ledger as proof_state_ledger
 from odylith.runtime.governance.proof_state import resolver as proof_state_resolver
 
 
@@ -75,6 +76,13 @@ def _write_stream_event(repo_root: Path, payload: dict[str, object]) -> None:
     stream_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
 
 
+def _append_stream_event(repo_root: Path, payload: dict[str, object]) -> None:
+    stream_path = repo_root / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl"
+    stream_path.parent.mkdir(parents=True, exist_ok=True)
+    with stream_path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(payload) + "\n")
+
+
 def _scope() -> dict[str, object]:
     return {
         "scope_key": "workstream:B-062",
@@ -116,6 +124,7 @@ def test_annotate_scopes_with_proof_state_merges_live_falsification_and_persists
                 "lane_id": "proof-state-control-plane",
                 "failure_fingerprint": "aws:lambda:Permission doesn't support update",
                 "recent_work_categories": ["observability"],
+                "repeated_fingerprint_count": 1381,
             }
         },
     )
@@ -145,6 +154,7 @@ def test_annotate_scopes_with_proof_state_merges_live_falsification_and_persists
     assert resolved["proof_status"] == "falsified_live"
     assert resolved["frontier_phase"] == "manifests-deploy"
     assert resolved["repeated_fingerprint_count"] == 1
+    assert "event_stream_cursor" not in resolved
     assert resolved["deployment_truth"] == {
         "local_head": "unknown",
         "pushed_head": "def456",
@@ -157,11 +167,104 @@ def test_annotate_scopes_with_proof_state_merges_live_falsification_and_persists
 
     live_lanes = proof_state.load_live_proof_lanes(repo_root=tmp_path)
     assert live_lanes["proof-state-control-plane"]["repeated_fingerprint_count"] == 1
+    assert live_lanes["proof-state-control-plane"]["event_stream_cursor"]["count"] == 1
     assert live_lanes["proof-state-control-plane"]["last_falsification"] == {
         "recorded_at": "2026-04-08T18:42:00Z",
         "failure_fingerprint": "aws:lambda:Permission doesn't support update",
         "frontier_phase": "manifests-deploy",
     }
+
+    ledger_path = proof_state_ledger.proof_surfaces_path(repo_root=tmp_path)
+    first_ledger = ledger_path.read_text(encoding="utf-8")
+    repeated = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])
+    assert repeated[0]["proof_state"]["repeated_fingerprint_count"] == 1
+    assert ledger_path.read_text(encoding="utf-8") == first_ledger
+
+
+def test_proof_event_cursor_applies_fingerprint_free_append_once(tmp_path: Path) -> None:
+    _write_casebook_bug(tmp_path)
+    _write_stream_event(
+        tmp_path,
+        {
+            "proof_lane": "proof-state-control-plane",
+            "proof_fingerprint": "aws:lambda:Permission doesn't support update",
+            "proof_status": "falsified_live",
+            "work_category": "primary_blocker",
+        },
+    )
+    proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])
+    _append_stream_event(
+        tmp_path,
+        {
+            "proof_lane": "proof-state-control-plane",
+            "proof_status": "unit_tested",
+            "proof_phase": "bounded-repair",
+            "work_category": "test_hardening",
+        },
+    )
+
+    first = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])[0]
+    ledger_path = proof_state_ledger.proof_surfaces_path(repo_root=tmp_path)
+    first_ledger = ledger_path.read_text(encoding="utf-8")
+    second = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])[0]
+
+    assert first["proof_state"]["repeated_fingerprint_count"] == 1
+    assert first["proof_state"]["frontier_phase"] == "bounded-repair"
+    assert second == first
+    assert ledger_path.read_text(encoding="utf-8") == first_ledger
+
+
+def test_proof_event_cursor_counts_explicit_repeat_once(tmp_path: Path) -> None:
+    _write_casebook_bug(tmp_path)
+    event = {
+        "proof_lane": "proof-state-control-plane",
+        "proof_fingerprint": "aws:lambda:Permission doesn't support update",
+        "proof_status": "falsified_live",
+    }
+    _write_stream_event(tmp_path, event)
+    proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])
+    _append_stream_event(tmp_path, event)
+
+    first = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])[0]
+    second = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])[0]
+
+    assert first["proof_state"]["repeated_fingerprint_count"] == 2
+    assert second == first
+
+
+def test_proof_event_cursor_rebuilds_changed_prefix_once(tmp_path: Path) -> None:
+    _write_casebook_bug(tmp_path)
+    original = {
+        "proof_lane": "proof-state-control-plane",
+        "proof_fingerprint": "aws:lambda:Permission doesn't support update",
+        "proof_status": "falsified_live",
+        "work_category": "primary_blocker",
+    }
+    _write_stream_event(tmp_path, original)
+    _append_stream_event(tmp_path, original)
+    before = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])[0]
+    assert before["proof_state"]["repeated_fingerprint_count"] == 2
+
+    _write_stream_event(
+        tmp_path,
+        {
+            "proof_lane": "proof-state-control-plane",
+            "proof_fingerprint": "replacement-fingerprint",
+            "proof_status": "unit_tested",
+            "proof_phase": "replacement-proof",
+            "work_category": "test_hardening",
+        },
+    )
+    rebuilt = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])[0]
+    ledger_path = proof_state_ledger.proof_surfaces_path(repo_root=tmp_path)
+    rebuilt_ledger = ledger_path.read_text(encoding="utf-8")
+    repeated = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])[0]
+
+    assert rebuilt["proof_state"].get("repeated_fingerprint_count", 0) == 0
+    assert rebuilt["proof_state"]["failure_fingerprint"] == "replacement-fingerprint"
+    assert rebuilt["proof_state"]["frontier_phase"] == "replacement-proof"
+    assert repeated == rebuilt
+    assert ledger_path.read_text(encoding="utf-8") == rebuilt_ledger
 
 
 def test_claim_enforcement_rewrites_unqualified_resolution_terms() -> None:
@@ -436,6 +539,76 @@ def test_annotate_scopes_infers_single_live_lane_without_tracked_truth(monkeypat
     }
 
 
+def test_persisted_proof_identity_excludes_workspace_observation_but_live_context_keeps_it(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    _write_casebook_bug(tmp_path)
+    observed = []
+
+    def current_head(repo_root):
+        observed.append(repo_root)
+        return "current-workspace-revision"
+
+    monkeypatch.setattr(proof_state_resolver, "_current_local_head", current_head)
+    persisted = proof_state.annotate_scopes_with_proof_state(
+        repo_root=tmp_path, scopes=[_scope()], observe_workspace_head=False,
+    )[0]
+    assert observed == []
+    assert persisted["proof_state"]["deployment_truth"]["local_head"] == "unknown"
+    live = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])[0]
+    assert observed == [tmp_path.resolve()]
+    assert live["proof_state"]["deployment_truth"]["local_head"] == "current-workspace-revision"
+    assert live["claim_guard"] == persisted["claim_guard"]
+    live["proof_state"]["deployment_truth"]["local_head"] = "unknown"
+    assert live == persisted
+
+
+def test_recorded_snapshot_tracks_changed_source_blocker(tmp_path: Path) -> None:
+    _write_casebook_bug(tmp_path, blocker="Readback lacks the expected receipt.")
+    before = proof_state.annotate_scopes_with_proof_state(
+        repo_root=tmp_path, scopes=[_scope()], observe_workspace_head=False,
+    )[0]
+    assert before["proof_state"]["current_blocker"] == "Readback lacks the expected receipt."
+    _write_casebook_bug(tmp_path, blocker="Readback reports a mismatched receipt.")
+    after = proof_state.annotate_scopes_with_proof_state(
+        repo_root=tmp_path, scopes=[_scope()], observe_workspace_head=False,
+    )[0]
+    assert after["proof_state"]["current_blocker"] == "Readback reports a mismatched receipt."
+    assert after["proof_state"]["deployment_truth"]["local_head"] == "unknown"
+    assert after["claim_guard"] == before["claim_guard"]
+
+
+def test_snapshot_and_live_resolution_preserve_explicit_proof_identity_and_claim_guards(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    _write_casebook_bug(tmp_path)
+
+    def unexpected_workspace_lookup(_repo_root):
+        raise AssertionError("Recorded proof identity must not be replaced by workspace state")
+
+    monkeypatch.setattr(proof_state_resolver, "_current_local_head", unexpected_workspace_lookup)
+    proof_state.persist_live_proof_lanes(
+        repo_root=tmp_path,
+        live_proof_lanes={
+            "proof-state-control-plane": {
+                "lane_id": "proof-state-control-plane",
+                "proof_status": "fixed_in_code",
+                "workstreams": ["B-062"],
+                "deployment_truth": {"local_head": "recorded-proof-revision", "pushed_head": "recorded-push"},
+            },
+        },
+    )
+    persisted = proof_state.annotate_scopes_with_proof_state(
+        repo_root=tmp_path, scopes=[_scope()], observe_workspace_head=False,
+    )[0]
+    live = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])[0]
+    assert live == persisted
+    assert persisted["proof_state"]["deployment_truth"]["local_head"] == "recorded-proof-revision"
+    assert persisted["proof_state"]["deployment_truth"]["pushed_head"] == "recorded-push"
+    assert persisted["claim_guard"]["highest_truthful_claim"] == "fixed in code"
+    assert set(persisted["claim_guard"]["blocked_terms"]) >= {"fixed", "cleared", "resolved"}
+
+
 def test_annotate_scopes_merges_deployment_truth_and_promotes_advanced_frontier_live(monkeypatch, tmp_path: Path) -> None:
     _write_casebook_bug(tmp_path)
     monkeypatch.setattr(proof_state_resolver, "_current_local_head", lambda _repo_root: "abc123")
@@ -513,7 +686,9 @@ def test_annotate_scopes_marks_multiple_inferred_live_lanes_ambiguous(tmp_path: 
     }
 
 
-def test_load_bug_snapshot_enriches_rows_with_proof_state_and_claim_guard(tmp_path: Path) -> None:
+def test_load_bug_snapshot_enriches_rows_with_proof_state_and_claim_guard(monkeypatch, tmp_path: Path) -> None:
+    workspace_head = ["current-context-first"]
+    monkeypatch.setattr(proof_state_resolver, "_current_local_head", lambda _root: workspace_head[0])
     _write_casebook_bug(tmp_path)
     _write_casebook_index(tmp_path)
     _write_stream_event(
@@ -535,12 +710,18 @@ def test_load_bug_snapshot_enriches_rows_with_proof_state_and_claim_guard(tmp_pa
 
     assert bug["proof_state"]["lane_id"] == "proof-state-control-plane"
     assert bug["proof_state"]["current_blocker"] == "Lambda permission lifecycle on ecs-drift-monitor invoke"
+    assert bug["proof_state"]["deployment_truth"]["local_head"] == "current-context-first"
     assert bug["proof_state_resolution"] == {
         "state": "resolved",
         "lane_ids": ["proof-state-control-plane"],
     }
     assert bug["claim_guard"]["highest_truthful_claim"] == "fixed in code"
     assert bug["claim_guard"]["blocked_terms"] == ["fixed", "cleared", "resolved"]
+    workspace_head[0] = "current-context-second"
+    refreshed = projection_backlog.load_bug_snapshot(repo_root=tmp_path, runtime_mode="standalone")
+    refreshed_bug = next(row for row in refreshed if row["bug_id"] == "CB-077")
+    assert refreshed_bug["proof_state"]["deployment_truth"]["local_head"] == "current-context-second"
+    assert refreshed_bug["claim_guard"] == bug["claim_guard"]
 
 
 def test_casebook_index_and_bug_snapshot_ignore_claude_companion_files(tmp_path: Path) -> None:

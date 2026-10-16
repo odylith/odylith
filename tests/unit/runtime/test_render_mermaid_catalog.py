@@ -4,8 +4,12 @@ import datetime as dt
 import json
 from pathlib import Path
 
+from odylith.runtime.surfaces import atlas_box_explanations
+from odylith.runtime.surfaces import atlas_detail_layout
+from odylith.runtime.surfaces import atlas_diagram_intelligence
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import render_mermaid_catalog as renderer
+from odylith.runtime.surfaces import scaffold_mermaid_diagram
 
 
 def test_render_mermaid_catalog_uses_relative_tooling_shell_href_for_workstream_pills() -> None:
@@ -83,6 +87,11 @@ def test_render_mermaid_catalog_indexes_diagram_ids_for_short_search_tokens() ->
 
     assert "diagram.diagram_id," in html
     assert "diagramToken," in html
+    assert "function diagramSearchTokens(value)" in html
+    assert "function diagramMatchesExactSearchToken(diagram, needle, normalizedNeedle)" in html
+    assert "...diagramSearchTokens(diagram.diagram_id)," in html
+    assert "exactSearchIndex >= 0 ? exactSearchIndex : 0" in html
+    assert 'const unpadded = numeric.replace(/^0+/, "") || "0";' in html
 
 
 def test_render_mermaid_catalog_defaults_to_newest_diagram_sort_filter() -> None:
@@ -100,12 +109,13 @@ def test_render_mermaid_catalog_defaults_to_newest_diagram_sort_filter() -> None
     assert 'id="sortWorkstreamFilters"' in html
     assert "grid-template-columns: 400px minmax(0, 1fr);" in html
     assert "grid-template-columns: minmax(150px, 0.78fr) minmax(190px, 1fr);" in html
-    assert "justify-content: flex-end;" in html
+    assert ".main {\n        order: 1;" in html
+    assert ".sidebar {\n        order: 2;" in html
     assert '<option value="newest">Newest Diagram</option>' in html
     assert 'let sortFilter = "newest";' in html
     assert 'const SORT_TOKENS = new Set(["newest", "oldest", "reviewed", "title", "freshness"]);' in html
     assert "function sortDiagrams(rows)" in html
-    assert "applyFilters({ normalizeWorkstreamFilter: false });" in html
+    assert "applyFilters({ normalizeWorkstreamFilter: false, userIntent: true });" in html
     assert "activeList = sortDiagrams(allDiagrams.filter((diagram) => {" in html
     assert 'button.setAttribute("data-diagram-reviewed", diagram.last_reviewed_utc || "");' in html
 
@@ -162,7 +172,7 @@ def test_render_mermaid_catalog_uses_specific_surface_header_copy() -> None:
     assert "Living Diagram System" not in html
 
 
-def test_render_mermaid_catalog_uses_casebook_style_detail_fact_cards() -> None:
+def test_render_mermaid_catalog_prioritizes_narrative_and_discloses_exact_diagram_facts() -> None:
     html = renderer._render_html(  # noqa: SLF001
         diagrams=[],
         stats={"total": 0, "fresh": 0, "stale": 0},
@@ -182,10 +192,196 @@ def test_render_mermaid_catalog_uses_casebook_style_detail_fact_cards() -> None:
     assert 'button.setAttribute("data-diagram", diagram.diagram_id);' in html
     assert ".hero {" in html
     assert "display: grid;" in html
-    assert "justify-content: flex-end;" in html
     assert "width: 100%;" in html
     assert html.index('data-fact="diagram-id"') < html.index('data-fact="kind"')
     assert html.index('data-fact="diagram-id"') < html.index('data-fact="status"')
+    assert html.count('id="diagramSummary"') == 1
+    assert html.index('id="diagramTitle"') < html.index('id="staleAlert"') < html.index('id="diagramSummary"')
+    assert html.index('id="diagramSummary"') < html.index('<section class="viewer-shell">') < html.index('id="diagramBoxList"')
+    assert html.index('id="diagramBoxList"') < html.index('<details class="section diagram-metadata">')
+    metadata = html.split('<details class="section diagram-metadata">', 1)[1].split(
+        '<details class="section linked-context-section">', 1,
+    )[0]
+    assert '<summary class="artifact-label">Diagram details</summary>' in metadata
+    for field in ('diagramId', 'diagramKind', 'diagramStatus', 'diagramOwner', 'diagramReviewed',
+                  'diagramFreshness', 'sourceLinks', 'ownerWorkstreamLinks', 'activeWorkstreamLinks',
+                  'historicalWorkstreamDisclosure', 'historicalWorkstreamLinks'):
+        assert html.count(f'id="{field}"') == 1
+        assert f'id="{field}"' in metadata
+    assert html.index('id="sidebarToggle"') < html.index('<details class="section diagram-metadata">')
+
+
+def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_list() -> None:
+    html = renderer._render_html(  # noqa: SLF001
+        diagrams=[],
+        stats={"total": 0, "fresh": 0, "stale": 0},
+        max_review_age_days=21,
+        tooltip_lookup={"component_titles": {"credit-liquidity-core": "Credit And Liquidity Core"}},
+        generated_utc="2026-03-27T05:42:32Z",
+        brand_head_html="",
+        tooling_base_href="../index.html",
+    )
+
+    assert "What This Diagram Shows" not in html
+    assert '<summary class="artifact-label">How to read this diagram</summary>' in html
+    assert '<details class="diagram-guide-panel read-guide">' in html
+    assert 'id="diagramReadGuide"' in html
+    assert "function diagramReadGuide(diagram)" in html
+    assert "const catalogGuide = String(diagram && diagram.read_guide ? diagram.read_guide : \"\").trim();" in html
+    assert "return catalogGuide;" in html
+    assert "Read this as a first-path rehearsal" not in html
+    assert "Read this as a boundary map" not in html
+    assert ".diagram-guide-panel:has(> .read-guide-body:empty)" in html
+    assert ".artifact-group:has(> #ownerWorkstreamLinks:empty)" in html
+    assert ".artifact-group:has(> #activeWorkstreamLinks:empty)" in html
+    assert ".workstream-context:has(> .artifact-group > #ownerWorkstreamLinks:empty):has(> .artifact-group > #activeWorkstreamLinks:empty):has(> #historicalWorkstreamGroup[hidden])" in html
+    assert "component cards to decode" not in html
+
+
+    assert ".summary {" in html
+    assert ".read-guide-body {" in html
+    assert "Boxes In This Diagram" in html
+    assert 'id="diagramBoxList"' in html
+    assert "function renderDiagramBoxes(diagram, sectionEl, listEl)" in html
+    assert "diagram-box-row" in html
+    assert ".diagram-box-role {\n  --label-bg: #f6faf7;" in html
+    assert "border-radius: 4px;" in html
+    assert "padding: 3px 8px;" in html
+    assert "font-size: 11px;" in html
+    assert "white-space: normal;" in html
+    assert "border-radius: 999px;\n      padding: 1px 7px;\n      color: #446179;" not in html
+    assert '<details class="ownership-section">' in html
+    assert '<summary class="artifact-label">Owning components</summary>' in html
+    assert '<div id="componentList" class="component-list"></div>' in html
+    assert "const componentTitleLookup = sanitizeLookupObject(tooltipLookup.component_titles);" in html
+    assert "function componentDisplayName(value)" in html
+    assert all(name not in html for name in ("componentResponsibilityText", "componentNameWords", "stripLeadingComponentName", "escapeRegExp"))
+    assert "Named responsibility in this diagram." not in html
+    assert "body.textContent = description;" in html
+    assert "component-token" in html
+    assert "component-description" in html
+    assert "grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));" in html
+    assert "diagram-guide-grid" not in html
+    assert ".diagram-box-section[hidden]" in html
+    assert '<details class="section linked-context-section">' in html
+    assert '<summary class="artifact-label">Linked records</summary>' in html
+    assert '<div class="engineering-context-list">' in html
+    assert ".details-grid {" in html
+    assert "grid-template-columns: minmax(0, 1fr);" in html
+    assert ".linked-context-section .artifact-group {" in html
+    assert "grid-template-columns: minmax(150px, 210px) minmax(0, 1fr);" in html
+    assert ".linked-context-section .artifact-group:last-child" in html
+    assert ".linked-context-section .artifact-list {\n      max-height: none;" in html
+    assert "grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));" not in html
+    assert html.index('<article class="section diagram-explanation-section">') < html.index(
+        '<details class="section linked-context-section">'
+    )
+
+    from tests.integration.runtime.surface_browser_test_support import (
+        _assert_clean_page, _browser, _new_page,
+    )
+
+    narrative = "Keeps café review receipts intact.\nReturns the exact Ω result."
+    source = "for café evidence\nand exact APIv7 receipts"
+    boxes = [
+        {"node_id": "registry", "label": "Receipt registry", "role": "Proposed support",
+         "description": narrative, "details": [
+             {"label": "Source actions", "text": "1, 3"},
+             {"label": "Boundary verification", "text": "Retrieve both intact receipts."},
+         ]},
+        {"node_id": "product", "label": "Review workspace", "role": "Accepted evidence excerpt",
+         "description": "", "details": [{"label": "Accepted evidence excerpt", "text": source}]},
+        {"label": "Unexplained box", "description": ""},
+        {"node_id": "invalid", "label": "Invalid description", "description": 0},
+    ]
+    for _pw, browser in _browser():
+        context = browser.new_context()
+        try:
+            with _new_page(context) as (page, observation):
+                page.set_content('<section id="boxes"><div id="box-list"></div></section>')
+                page.add_script_tag(content=atlas_detail_layout.DETAIL_RUNTIME_HELPERS_JS)
+                page.evaluate("""boxes => renderDiagramBoxes({diagram_boxes: boxes},
+                    document.getElementById('boxes'), document.getElementById('box-list'))""", boxes)
+                rows = page.locator(".diagram-box-row")
+                assert rows.count() == 2
+                assert rows.locator(".diagram-box-name strong").all_text_contents() == [
+                    "Receipt registry", "Review workspace",
+                ]
+                assert rows.nth(0).locator(".diagram-box-description").text_content() == narrative
+                assert rows.nth(1).locator(".diagram-box-description").count() == 0
+                assert "Accepted evidence excerpt" not in rows.nth(1).inner_text()
+                assert "exact APIv7 receipts" not in rows.nth(1).inner_text()
+                for index, expected_labels, expected_texts in (
+                    (0, ["Role", "Source actions", "Boundary verification"],
+                     ["Proposed support", "1, 3", "Retrieve both intact receipts."]),
+                    (1, ["Role", "Accepted evidence excerpt"], ["Accepted evidence excerpt", source]),
+                ):
+                    details = rows.nth(index).locator("details")
+                    assert details.evaluate("node => node.open") is False
+                    summary = details.locator("summary")
+                    assert summary.inner_text() == "Supporting details"
+                    summary.focus()
+                    summary.press("Enter")
+                    assert details.evaluate("node => node.open") is True
+                    assert details.locator("dt").all_text_contents() == expected_labels
+                    assert details.locator("dd").all_text_contents() == expected_texts
+                    summary.press("Space")
+                    assert details.evaluate("node => node.open") is False
+                page.evaluate("""() => renderDiagramBoxes({diagram_boxes: []},
+                    document.getElementById('boxes'), document.getElementById('box-list'))""")
+                assert page.locator("#boxes").is_hidden()
+                assert page.locator(".diagram-box-row").count() == 0
+                _assert_clean_page(page, observation)
+        finally:
+            context.close()
+
+
+def test_load_catalog_requires_png_for_catalog_diagrams(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
+    mmd_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "sample.mmd"
+    svg_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "sample.svg"
+    catalog_path = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    for path in (mmd_path, svg_path, catalog_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    mmd_path.write_text("flowchart TD\n  A-->B\n", encoding="utf-8")
+    svg_path.write_text("<svg viewBox='0 0 1200 800'></svg>\n", encoding="utf-8")
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "diagrams": [
+                    {
+                        "diagram_id": "D-404",
+                        "slug": "missing-png",
+                        "title": "Missing PNG",
+                        "kind": "flowchart",
+                        "status": "draft",
+                        "owner": "freedom-research",
+                        "summary": "Catalog record should fail when PNG is missing.",
+                        "source_mmd": "odylith/atlas/source/diagrams/sample.mmd",
+                        "source_svg": "odylith/atlas/source/diagrams/sample.svg",
+                        "source_png": "odylith/atlas/source/diagrams/sample.png",
+                        "last_reviewed_utc": dt.date.today().isoformat(),
+                        "change_watch_paths": ["odylith/atlas/source/diagrams/sample.mmd"],
+                        "components": [{"name": "atlas", "description": "Atlas rendered diagram contract."}],
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    _diagrams, errors, _stats = renderer._load_catalog(  # noqa: SLF001
+        repo_root=repo_root,
+        catalog_path=catalog_path,
+        output_path=repo_root / "odylith" / "atlas" / "atlas.html",
+        max_review_age_days=21,
+        component_index={},
+    )
+
+    assert any("source_png does not exist" in error for error in errors)
 
 
 def test_render_mermaid_catalog_sizes_image_box_from_diagram_dimensions() -> None:
@@ -199,10 +395,10 @@ def test_render_mermaid_catalog_sizes_image_box_from_diagram_dimensions() -> Non
         tooling_base_href="../index.html",
     )
 
-    assert "function applyImageBoxSizing(diagram)" in html
-    assert 'imageEl.style.width = `${dims.width}px`;' in html
-    assert 'imageEl.style.height = `${dims.height}px`;' in html
-    assert "applyImageBoxSizing(diagram);" in html
+    assert "function applyImageBoxSizing()" in html
+    assert 'imageEl.style.width = dims ? `${dims.width}px` : "";' in html
+    assert 'imageEl.style.height = dims ? `${dims.height}px` : "";' in html
+    assert "applyImageBoxSizing();" in html
 
 
 def test_render_mermaid_catalog_omits_empty_placeholder_copy() -> None:
@@ -306,6 +502,14 @@ def test_load_catalog_enriches_related_backlog_entries_with_front_matter_metadat
                         "status": "active",
                         "owner": "freedom-research",
                         "summary": "Keep atlas render latency low.",
+                        "read_guide": "Start at Atlas, then follow the freshness checks into the linked implementation paths.",
+                        "diagram_boxes": [
+                                {
+                                    "label": "**Atlas renderer**",
+                                    "role": "Surface",
+                                    "description": "Builds the **operator-facing catalog** from governed diagram source.",
+                                }
+                        ],
                         "source_mmd": "odylith/atlas/source/diagrams/sample.mmd",
                         "source_svg": "odylith/atlas/source/diagrams/sample.svg",
                         "last_reviewed_utc": dt.date.today().isoformat(),
@@ -340,6 +544,41 @@ def test_load_catalog_enriches_related_backlog_entries_with_front_matter_metadat
             "title": "Atlas Hot Path",
         }
     ]
+    assert diagrams[0]["read_guide"] == (
+        "Start at Atlas, then follow the freshness checks into the linked implementation paths."
+    )
+    assert diagrams[0]["diagram_boxes"] == [
+        {
+            "label": "Atlas renderer",
+            "role": "Surface",
+            "description": "Builds the operator-facing catalog from governed diagram source.",
+        }
+    ]
+
+
+def test_attach_workstream_relationships_preserves_backlog_derived_owners() -> None:
+    diagrams = [
+        {
+            "diagram_id": "D-321",
+            "related_workstreams": [],
+            "related_backlog": [
+                {
+                    "file": "odylith/radar/source/ideas/2026-04/sample.md",
+                    "idea_id": "B-321",
+                    "title": "Atlas Hot Path",
+                }
+            ],
+        }
+    ]
+
+    renderer._attach_diagram_workstream_relationships(  # noqa: SLF001
+        diagrams=diagrams,
+        traceability_graph={},
+        delivery_intelligence={},
+    )
+
+    assert diagrams[0]["owner_workstreams"] == ["B-321"]
+    assert diagrams[0]["related_workstreams"] == ["B-321"]
 
 
 def test_load_catalog_allows_atlas_first_draft_without_related_links(tmp_path: Path) -> None:
@@ -398,6 +637,574 @@ def test_load_catalog_allows_atlas_first_draft_without_related_links(tmp_path: P
     assert diagrams[0]["related_backlog"] == []
     assert diagrams[0]["related_plans"] == []
     assert diagrams[0]["related_docs"] == []
+
+
+def test_atlas_scaffold_default_read_guide_names_diagram_and_components() -> None:
+    guide = scaffold_mermaid_diagram._default_read_guide(  # noqa: SLF001
+        title="Checkout Settlement Flow",
+        kind="flowchart",
+        components=[
+            {"name": "checkout", "description": "Checkout surface"},
+            {"name": "settlement", "description": "Settlement ledger"},
+        ],
+    )
+
+    assert "Checkout Settlement Flow" in guide
+    assert "boundary map" in guide
+    assert "product-owned responsibilities" in guide
+    assert "Key owned boundaries: checkout, settlement." in guide
+    assert "component cards to decode" not in guide
+
+
+def test_load_catalog_omits_unauthored_box_explanations(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
+    mmd_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "sample.mmd"
+    svg_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "sample.svg"
+    catalog_path = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    for path in (mmd_path, svg_path, catalog_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    mmd_path.write_text(
+        "\n".join(
+            [
+                "flowchart TB",
+                "  subgraph SourceTruth[Source truth]",
+                "    A[Catalog] --> B[Renderer]",
+                "  end",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    svg_path.write_text("<svg viewBox='0 0 1200 800'></svg>\n", encoding="utf-8")
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "diagrams": [
+                    {
+                        "diagram_id": "D-322",
+                        "slug": "atlas-box-rules",
+                        "title": "Atlas Box Rules",
+                        "kind": "flowchart",
+                        "status": "active",
+                        "owner": "freedom-research",
+                        "summary": "Shows the Atlas box explanation rule.",
+                        "source_mmd": "odylith/atlas/source/diagrams/sample.mmd",
+                        "source_svg": "odylith/atlas/source/diagrams/sample.svg",
+                        "last_reviewed_utc": dt.date.today().isoformat(),
+                        "change_watch_paths": ["odylith/atlas/source/diagrams/sample.mmd"],
+                        "components": [{"name": "atlas", "description": "Atlas surface."}],
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    diagrams, errors, _stats = renderer._load_catalog(  # noqa: SLF001
+        repo_root=repo_root,
+        catalog_path=catalog_path,
+        output_path=repo_root / "odylith" / "atlas" / "atlas.html",
+        max_review_age_days=21,
+        component_index={},
+    )
+
+    assert errors == []
+    assert [box["label"] for box in diagrams[0]["diagram_boxes"]] == ["Source truth", "Catalog", "Renderer"]
+    assert all(box["role"] == box["description"] == "" for box in diagrams[0]["diagram_boxes"])
+    assert diagrams[0]["summary"] == "Shows the Atlas box explanation rule."
+    assert diagrams[0]["read_guide"] == ""
+
+
+def test_load_catalog_strips_markdown_emphasis_from_visible_payload_fields(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
+    mmd_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "emphasis.mmd"
+    svg_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "emphasis.svg"
+    catalog_path = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    for path in (mmd_path, svg_path, catalog_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    mmd_path.write_text(
+        "\n".join(
+            [
+                "flowchart LR",
+                '  A["**Primary actor**"] --> B["__Review record__"]',
+                '  B --> C["Outcome evidence"]',
+            ]
+        ),
+        encoding="utf-8",
+    )
+    svg_path.write_text("<svg viewBox='0 0 1200 800'></svg>\n", encoding="utf-8")
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "diagrams": [
+                    {
+                        "diagram_id": "D-425",
+                        "slug": "emphasis-cleanup",
+                        "title": "**Evidence Flow**",
+                        "kind": "flowchart",
+                        "status": "active",
+                        "owner": "product",
+                        "summary": "**Primary actor** moves a reviewed record into evidence.",
+                        "read_guide": "Read from **Primary actor** to __Outcome evidence__.",
+                        "diagram_boxes": [
+                            {
+                                "label": "**Primary actor**",
+                                "role": "__Actor__",
+                                "description": "**Primary actor** starts with a concrete request and needs a visible outcome.",
+                            }
+                        ],
+                        "source_mmd": "odylith/atlas/source/diagrams/emphasis.mmd",
+                        "source_svg": "odylith/atlas/source/diagrams/emphasis.svg",
+                        "last_reviewed_utc": dt.date.today().isoformat(),
+                        "change_watch_paths": ["odylith/atlas/source/diagrams/emphasis.mmd"],
+                        "components": [
+                            {
+                                "name": "**Review record**",
+                                "description": "__Owns__ the reviewed state and evidence needed for release proof.",
+                            }
+                        ],
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    diagrams, errors, _stats = renderer._load_catalog(  # noqa: SLF001
+        repo_root=repo_root,
+        catalog_path=catalog_path,
+        output_path=repo_root / "odylith" / "atlas" / "atlas.html",
+        max_review_age_days=21,
+        component_index={},
+    )
+
+    assert errors == []
+    rendered = json.dumps(diagrams[0])
+    assert "**" not in rendered
+    assert "__" not in rendered
+    assert diagrams[0]["title"] == "Evidence Flow"
+    assert diagrams[0]["summary"] == "Primary actor moves a reviewed record into evidence."
+    assert diagrams[0]["read_guide"] == "Read from Primary actor to Outcome evidence."
+    assert diagrams[0]["components"] == [
+        {
+            "name": "Review record",
+            "description": "Owns the reviewed state and evidence needed for release proof.",
+        }
+    ]
+    by_label = {box["label"]: box for box in diagrams[0]["diagram_boxes"]}
+    assert set(by_label) == {"Primary actor", "Review record", "Outcome evidence"}
+    assert by_label["Primary actor"]["role"] == "Actor"
+    assert by_label["Primary actor"]["description"] == (
+        "Primary actor starts with a concrete request and needs a visible outcome."
+    )
+    assert all(by_label[label]["role"] == by_label[label]["description"] == "" for label in ("Review record", "Outcome evidence"))
+
+
+def test_load_catalog_sanitizes_legacy_greenfield_component_descriptions(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
+    mmd_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "legacy.mmd"
+    svg_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "legacy.svg"
+    catalog_path = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    for path in (mmd_path, svg_path, catalog_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    mmd_path.write_text(
+        "\n".join(
+            [
+                "flowchart LR",
+                "  Audio[Audio Capture And Pre-processing Service]",
+                "  Pitch[Pitch And Onset Detection Engine]",
+                "  Proof[Proof boundary]",
+                "  Audio --> Pitch --> Proof",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    svg_path.write_text("<svg viewBox='0 0 1200 800'></svg>\n", encoding="utf-8")
+    long_path = (
+        "For release 0.0.1, it receives or produces the domain information needed by this first path: "
+        "1. User opens the product and starts a take. Reviewers trust it only when the proof boundary is visible."
+    )
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "diagrams": [
+                    {
+                        "diagram_id": "D-424",
+                        "slug": "legacy-greenfield",
+                        "title": "First Path Sequence",
+                        "kind": "flowchart",
+                        "status": "active",
+                        "owner": "repo",
+                        "summary": "Shows the first path.",
+                        "source_mmd": "odylith/atlas/source/diagrams/legacy.mmd",
+                        "source_svg": "odylith/atlas/source/diagrams/legacy.svg",
+                        "last_reviewed_utc": dt.date.today().isoformat(),
+                        "change_watch_paths": ["odylith/atlas/source/diagrams/legacy.mmd"],
+                        "components": [
+                            {
+                                "name": "Audio Capture And Pre-processing Service",
+                                "description": (
+                                    "Audio capture and pre-processing owns microphone or line-in to mono PCM. "
+                                    + long_path
+                                ),
+                            },
+                            {
+                                "name": "Pitch And Onset Detection Engine",
+                                "description": (
+                                    "Pitch and onset detection engine owns performs frame-level pitch tracking. "
+                                    + long_path
+                                ),
+                            },
+                        ],
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    diagrams, errors, _stats = renderer._load_catalog(  # noqa: SLF001
+        repo_root=repo_root,
+        catalog_path=catalog_path,
+        output_path=repo_root / "odylith" / "atlas" / "atlas.html",
+        max_review_age_days=21,
+        component_index={},
+    )
+
+    assert errors == []
+    rendered = json.dumps(diagrams[0])
+    assert "User opens the product" not in rendered
+    assert "For release 0.0.1, it receives or produces" not in rendered
+    assert "owns performs" not in rendered
+    assert diagrams[0]["components"] == [
+        {
+            "name": "Audio Capture And Pre-processing Service",
+            "description": "Owns microphone or line-in to mono PCM.",
+        },
+        {
+            "name": "Pitch And Onset Detection Engine",
+            "description": "Performs frame-level pitch tracking.",
+        },
+    ]
+    assert [box["label"] for box in diagrams[0]["diagram_boxes"]] == [
+        "Audio Capture And Pre-processing Service", "Pitch And Onset Detection Engine", "Proof boundary",
+    ]
+    assert all(box["role"] == box["description"] == "" for box in diagrams[0]["diagram_boxes"])
+
+
+def test_atlas_inventory_keeps_labeled_relationships_as_graph_facts() -> None:
+    source = '\n'.join(
+        [
+            'flowchart LR',
+            '  w1["B-119 W1"] -->|proves| w2["B-120 W2"]',
+            '  w1 --> runner["Benchmark runner"]',
+            '  w2 -->|closes| w3["B-121 W3"]',
+        ]
+    )
+    found = atlas_box_explanations.extract_diagram_boxes_from_mermaid(source)
+    graph = atlas_diagram_intelligence.parse_mermaid_graph(source)
+
+    assert [box.label for box in found] == ["B-119 W1", "B-120 W2", "Benchmark runner", "B-121 W3"]
+    assert all(box.role == box.description == "" for box in found)
+    assert [(edge.source_id, edge.target_id, edge.label) for edge in graph.edges] == [
+        ("w1", "w2", "proves"), ("w1", "runner", ""), ("w2", "w3", "closes"),
+    ]
+
+
+def test_atlas_diagram_intelligence_preserves_authored_state_model_copy() -> None:
+    source = "\n".join(
+        [
+            "stateDiagram-v2",
+            "  [*] --> Unknown",
+            "  Unknown --> Monitored: sensor calibrated",
+            "  Monitored --> NeedsWater: moisture below target",
+            "  NeedsWater --> Blocked: sensor fault",
+        ]
+    )
+    summary = "Defines the first plant status transitions."
+    read_guide = "Stable status requires evidence."
+    narrative = atlas_diagram_intelligence.build_diagram_narrative(
+        title="Plant Care State Model",
+        kind="state",
+        summary=summary,
+        read_guide=read_guide,
+        source_text=source,
+    )
+
+    assert vars(narrative) == {"summary": summary, "read_guide": read_guide}
+    assert len(atlas_diagram_intelligence.parse_mermaid_graph(source).edges) == 4
+
+
+def test_atlas_diagram_intelligence_preserves_useful_authored_migration_copy() -> None:
+    source = "\n".join(
+        [
+            "flowchart TB",
+            '  operator["Operator command<br/>install / upgrade / reinstall / doctor / release migration-gate"]',
+            '  resolver["Resolve target release<br/>version, manifest, schema, verification inputs"]',
+            '  classifier["Repo scenario classifier<br/>pin, launcher, state, runtime pointer, ledger, source-local, legacy roots"]',
+            '  registry["Migration registry<br/>MigrationDefinition contracts"]',
+            '  planner["MigrationPlan<br/>selected, skipped, blocked, satisfied-unrecorded, ledger-stale"]',
+            '  dryrun["Dry-run and JSON report<br/>scenario, write set, rollback scope, plan fingerprint"]',
+            '  apply["Upgrade/apply execution<br/>uses the same plan"]',
+            '  ledger["Durable migration ledger<br/>predicate evidence, planned/actual writes, verification"]',
+            '  doctor["Doctor observability<br/>pending, blocked, stale, repair-only cleanup"]',
+            '  gate["Release migration gate<br/>manifest coverage, fixtures, bypass scan"]',
+            '  block["Fail closed before runtime mutation"]',
+            '  surfaces["Post-upgrade surfaces<br/>dashboard refresh is separate from migration"]',
+            "  operator --> resolver --> classifier --> registry --> planner",
+            "  planner --> dryrun",
+            "  planner --> apply",
+            "  planner --> doctor",
+            "  planner --> gate",
+            '  planner -->|"blocked or ledger_stale"| block',
+            '  apply -->|"selected automatic migration"| ledger',
+            '  apply -->|"satisfied_unrecorded"| ledger',
+            "  apply --> surfaces",
+            '  gate -->|"missing definition, missing fixture, direct bypass"| block',
+        ]
+    )
+    summary = (
+        "Install, upgrade, reinstall, doctor, and release gate commands all resolve to one migration plan "
+        "before any runtime mutation."
+    )
+    read_guide = (
+        "Read the center column from top to bottom first. It turns an operator command into one shared "
+        "MigrationPlan. Then read the branches from MigrationPlan: dry-run previews the plan, upgrade applies it, "
+        "doctor explains current health, the release gate checks release readiness, and any unsafe state stops before "
+        "runtime files change."
+    )
+
+    narrative = atlas_diagram_intelligence.build_diagram_narrative(
+        title="Migration Runtime Upgrade Transaction Flow",
+        kind="flowchart",
+        summary=summary,
+        read_guide=read_guide,
+        source_text=source,
+    )
+    boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(source)
+    assert narrative.summary == summary
+    assert narrative.read_guide == read_guide
+    assert {box.label for box in boxes} >= {
+        "Operator command", "MigrationPlan", "Upgrade/apply execution",
+        "Durable migration ledger", "Fail closed before runtime mutation",
+    }
+    assert all(box.role == box.description == "" for box in boxes)
+
+
+def test_atlas_diagram_intelligence_does_not_invent_flow_copy_from_graph() -> None:
+    source = "\n".join(
+        [
+            "flowchart LR",
+            '  source["Source verification note: bytes and mode 0640"] --> copier',
+            '  copier["Archive Copier: write exact bytes"] --> target',
+            '  target["New target note: current mode 0644"] --> verify',
+            '  verify["Compare SHA-256 and permission mode"] --> pass',
+            '  verify --> fail["Mode preservation fails: planned fix"]',
+        ]
+    )
+    narrative = atlas_diagram_intelligence.build_diagram_narrative(
+        title="Archive record copy and permission verification",
+        kind="flowchart",
+        summary="",
+        read_guide="",
+        source_text=source,
+    )
+
+    assert narrative == atlas_diagram_intelligence.DiagramNarrative("", "")
+    assert len(atlas_diagram_intelligence.parse_mermaid_graph(source).edges) == 5
+
+
+def test_atlas_diagram_intelligence_keeps_d001_source_summary_without_label_matching() -> None:
+    source = "\n".join(
+        [
+            "flowchart LR",
+            '  source["Source verification note: bytes and mode 0640"] --> copier',
+            '  copier["Archive Copier: write exact bytes"] --> target',
+            '  target["New target note: current mode 0644"] --> verify',
+            '  verify["Compare SHA-256 and permission mode"] --> pass',
+        ]
+    )
+    summary = (
+        "A local single-file copy moves exact note bytes to a target, then compares permissions "
+        "against the source. The observed current mode mismatch remains an explicit verification failure."
+    )
+    narrative = atlas_diagram_intelligence.build_diagram_narrative(
+        title="Archive record copy and permission verification",
+        kind="flowchart",
+        summary=summary,
+        read_guide="",
+        source_text=source,
+    )
+
+    assert narrative.summary == summary
+    assert narrative.read_guide == ""
+    assert "controlled decision at" not in narrative.summary
+
+
+def test_atlas_diagram_intelligence_preserves_legacy_greenfield_source_facts() -> None:
+    summary = (
+        "Walk the accepted first path in product terms: The first complete path the product must prove is the solo "
+        "monophonic instrument single take, offline analysis flow: 1. User opens LiveScore and taps Record. "
+        "2. User plays a roughly 30-second monophonic line. 3. User taps Stop."
+    )
+    read_guide = (
+        "Read First Path Sequence from top to bottom. Each lane is an actor or component; messages are calls, "
+        "handoffs, or proof events. Use the component cards to decode Audio Capture before following the links."
+    )
+    narrative = atlas_diagram_intelligence.build_diagram_narrative(
+        title="First Path Sequence",
+        kind="sequenceDiagram",
+        summary=summary,
+        read_guide=read_guide,
+        source_text="sequenceDiagram\n  participant A as User\n  participant B as Product\n  A->>B: start\n",
+    )
+
+    assert narrative.summary == summary
+    assert narrative.read_guide == read_guide
+    assert "User opens LiveScore and taps Record" in narrative.summary
+    assert "Start with the first product action" not in narrative.read_guide
+
+
+def test_atlas_diagram_intelligence_does_not_claim_control_or_proof_for_empty_source_copy() -> None:
+    source = "\n".join(
+        [
+            "flowchart TB",
+            '  input["Selected source"] --> control',
+            '  control{"Control choice?"} -->|"ready"| proof',
+            '  control -->|"blocked"| stop',
+            '  proof["Proof receipt"] --> outcome',
+        ]
+    )
+    narrative = atlas_diagram_intelligence.build_diagram_narrative(
+        title="Release path",
+        kind="flowchart",
+        summary="",
+        read_guide="",
+        source_text=source,
+    )
+
+    assert narrative.summary == ""
+    assert narrative.read_guide == ""
+
+
+def test_load_catalog_rejects_thin_diagram_box_copy(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
+    mmd_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "thin.mmd"
+    svg_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "thin.svg"
+    catalog_path = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    for path in (mmd_path, svg_path, catalog_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    mmd_path.write_text("flowchart TB\n  A[Catalog]\n", encoding="utf-8")
+    svg_path.write_text("<svg viewBox='0 0 1200 800'></svg>\n", encoding="utf-8")
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "diagrams": [
+                    {
+                        "diagram_id": "D-323",
+                        "slug": "thin-box-copy",
+                        "title": "Thin Box Copy",
+                        "kind": "flowchart",
+                        "status": "active",
+                        "owner": "freedom-research",
+                        "summary": "Shows thin box copy rejection.",
+                        "source_mmd": "odylith/atlas/source/diagrams/thin.mmd",
+                        "source_svg": "odylith/atlas/source/diagrams/thin.svg",
+                        "last_reviewed_utc": dt.date.today().isoformat(),
+                        "change_watch_paths": ["odylith/atlas/source/diagrams/thin.mmd"],
+                        "components": [{"name": "atlas", "description": "Atlas surface."}],
+                        "diagram_boxes": [
+                            {
+                                "label": "Catalog",
+                                "role": "Source",
+                                "description": "Catalog.",
+                            }
+                        ],
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    _diagrams, errors, _stats = renderer._load_catalog(  # noqa: SLF001
+        repo_root=repo_root,
+        catalog_path=catalog_path,
+        output_path=repo_root / "odylith" / "atlas" / "atlas.html",
+        max_review_age_days=21,
+        component_index={},
+    )
+
+    assert any("description must explain the box in a complete sentence" in error for error in errors)
+
+
+def test_load_catalog_rejects_mechanical_diagram_box_copy(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
+    mmd_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "mechanical.mmd"
+    svg_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "mechanical.svg"
+    catalog_path = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    for path in (mmd_path, svg_path, catalog_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    mmd_path.write_text("flowchart TB\n  Owner[Product owner] --> Core[Record core]\n", encoding="utf-8")
+    svg_path.write_text("<svg viewBox='0 0 1200 800'></svg>\n", encoding="utf-8")
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "diagrams": [
+                    {
+                        "diagram_id": "D-324",
+                        "slug": "mechanical-box-copy",
+                        "title": "Mechanical Box Copy",
+                        "kind": "flowchart",
+                        "status": "active",
+                        "owner": "freedom-research",
+                        "summary": "Shows mechanical box copy rejection.",
+                        "source_mmd": "odylith/atlas/source/diagrams/mechanical.mmd",
+                        "source_svg": "odylith/atlas/source/diagrams/mechanical.svg",
+                        "last_reviewed_utc": dt.date.today().isoformat(),
+                        "change_watch_paths": ["odylith/atlas/source/diagrams/mechanical.mmd"],
+                        "components": [{"name": "atlas", "description": "Atlas surface."}],
+                        "diagram_boxes": [
+                            {
+                                "label": "Product owner",
+                                "role": "Start",
+                                "description": (
+                                    "Product owner is part of the path; incoming arrows show what must "
+                                    "be true before it runs, and outgoing arrows show what it enables next."
+                                ),
+                            }
+                        ],
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    _diagrams, errors, _stats = renderer._load_catalog(  # noqa: SLF001
+        repo_root=repo_root,
+        catalog_path=catalog_path,
+        output_path=repo_root / "odylith" / "atlas" / "atlas.html",
+        max_review_age_days=21,
+        component_index={},
+    )
+
+    assert any("description must explain project meaning, not diagram mechanics" in error for error in errors)
 
 
 def test_load_catalog_uses_reviewed_watch_fingerprints_over_mtime_for_freshness(tmp_path: Path) -> None:

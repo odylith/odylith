@@ -1,0 +1,499 @@
+"""Keep source citation identity separate from a proposed executable first run."""
+
+from copy import deepcopy
+
+import pytest
+
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_event_display_text,
+    authored_first_run_relations,
+    authored_first_run_text,
+)
+from odylith.runtime.domain_intelligence.artifact_graph import canonical_graph_from_workstream
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    first_path_relations_from_intent, source_event_relations_from_intent,
+    require_relation_authority_parity,
+)
+from odylith.runtime.domain_intelligence.greenfield_candidate_intent_stage import (
+    candidate_intent_stage_paths,
+)
+from odylith.runtime.domain_intelligence.greenfield_experience import (
+    build_next_steps,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
+    render_product_intent_preview,
+)
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    PRODUCT_INTENT_AUTHORITY_KEY,
+    product_facts_payload,
+)
+from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_semantic_alignment import (
+    semantic_diagram_alignment_issues,
+)
+from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    authored_response,
+    host_candidate_response,
+    materialize_complete_host_candidate,
+    structural_design_fixture,
+)
+
+
+def _result_first_response(*, include_precedence=True, archive_after_result=False):
+    events = [
+        dict(actor_kind="product", owner_system_quote="Receipt Desk",
+             event_quote="Receipt Desk publishes the review receipt", action_verb_quote="publishes",
+             target_quote="the review receipt", visible_result_quote="the review receipt"),
+        dict(actor_kind="human", actor_fact_quote="Reviewer Mara",
+             event_quote="Reviewer Mara records one draft", action_verb_quote="records",
+             target_quote="one draft", visible_result_quote=""),
+        dict(actor_kind="product", owner_system_quote="Receipt Desk",
+             event_quote="Receipt Desk validates one draft", action_verb_quote="validates",
+             target_quote="one draft", visible_result_quote=""),
+    ]
+    if archive_after_result:
+        events[2] = dict(actor_kind="product", owner_system_quote="Receipt Desk",
+            event_quote="Receipt Desk archives the review receipt", action_verb_quote="archives",
+            target_quote="the review receipt", visible_result_quote="")
+    constraints = ([
+        "Reviewer Mara must record one draft before Receipt Desk publishes the review receipt",
+        "Receipt Desk must publish the review receipt before it archives the review receipt",
+    ] if archive_after_result else [
+        "Reviewer Mara must record one draft before Receipt Desk validates one draft",
+    ])
+    precedence = ([
+        {"before_event": 2, "after_event": 1, "constraint_index": 1},
+        {"before_event": 1, "after_event": 3, "constraint_index": 2},
+    ] if archive_after_result else [{"before_event": 2, "after_event": 3, "constraint_index": 1}])
+    component_responsibilities = [
+        events[0]["event_quote"],
+        events[2]["event_quote"],
+        *([constraints[1]] if archive_after_result else []),
+    ]
+    intent = dict(
+        title="Receipt Desk", product_story="Receipt Desk supports a complete draft review",
+        state_object="one draft", first_path=". ".join(row["event_quote"] for row in events),
+        proof_boundary="the review receipt", problem="Scattered drafts delay reviews",
+        customer="Reviewer Mara", opportunity="A shared receipt would reduce rework",
+        product_view="Receipt Desk keeps a complete review trail", human_actors=["Reviewer Mara"],
+        external_systems=[], internal_systems=[],
+        component_responsibilities=component_responsibilities, assumptions=[],
+        ambiguities=[], success_metrics=[], evidence_requirements=[], non_goals=[],
+        operational_constraints=constraints,
+    )
+    source = ". ".join(str(row) for value in intent.values()
+                       for row in (value if isinstance(value, list) else [value]) if row)
+    design = structural_design_fixture((1, 2, 3), project_name="Receipt Desk",
+        first_run_event_orders=(2, 1, 3) if archive_after_result else (2, 3, 1))
+    design["first_run"]["rationale"] = (
+        "Record the draft, publish its receipt, then archive it as the source requires."
+        if archive_after_result else
+        "Propose recording the draft, validating it, then publishing the receipt; "
+        "the source only explicitly orders recording before validation."
+    )
+    response = authored_response(
+        intent, evidence_text=source, first_path_relations=events, provisional_design=design,
+        component_responsibility_owners=["Receipt Desk"] * len(component_responsibilities),
+        **({"source_precedence": precedence}
+           if include_precedence else {}),
+    )
+    return source, response, events
+
+
+def _compiler_event_orders(candidate, authored_events):
+    """Map candidate-local event positions to frozen compiler event IDs."""
+
+    order_by_quote = {
+        row["event_quote"]: row["order"]
+        for row in first_path_relations_from_intent(candidate)
+    }
+    return [order_by_quote[row["event_quote"]] for row in authored_events]
+
+
+def _compiler_ordered_events(candidate, authored_events):
+    by_quote = {row["event_quote"]: row for row in authored_events}
+    return [
+        by_quote[row["event_quote"]]
+        for row in first_path_relations_from_intent(candidate)
+    ]
+
+
+def test_post_result_action_survives_authoring_custody_and_all_projections(tmp_path):
+    source, response, events = _result_first_response(archive_after_result=True)
+    candidate = materialize_complete_host_candidate(
+        prompt=source,
+        repo_root=tmp_path,
+        host_candidate=host_candidate_response(response, evidence_text=source),
+    )
+    assert candidate["component_responsibilities"][:2] == [
+        events[0]["event_quote"],
+        events[2]["event_quote"],
+    ]
+    product_constraint = candidate["operational_constraints"][1]
+    assert product_constraint not in candidate["component_responsibilities"]
+    compiler_orders = _compiler_event_orders(candidate, events)
+    assert compiler_orders == [2, 1, 3]
+    assert candidate["authored_semantics"]["source_precedence"][1] == {
+        "before_event": compiler_orders[0],
+        "after_event": compiler_orders[2],
+        "constraint_index": 2,
+    }
+    assert candidate["operational_constraints"][0] not in candidate["component_responsibilities"]
+    relations = require_relation_authority_parity(candidate, candidate[PRODUCT_INTENT_AUTHORITY_KEY])
+    assert relations[compiler_orders[0] - 1]["visible_result_quote"] == "the review receipt"
+    assert not relations[compiler_orders[2] - 1]["visible_result_quote"]
+    proposal = build_greenfield_proposal(repo_root=tmp_path, prompt=source,
+        release_selector="0.0.1", confirmed_intent=candidate, require_completion_ready=False)
+    validate_host_reasoned_proposal(proposal)
+    assert semantic_diagram_alignment_issues(proposal, proposal["semantic_model"]) == []
+    run = proposal["semantic_model"]["first_path_contract"]["events"]
+    assert [row["source_event_order"] for row in run] == [
+        compiler_orders[index - 1] for index in (2, 1, 3)
+    ]
+    assert [row["visible_result"] for row in run] == [False, True, False]
+    atlas = proposal["diagrams"][1]["mermaid_source"]
+    assert f'event{compiler_orders[0]} --> event{compiler_orders[2]}' in atlas
+    assert {"label": "Source prerequisite", "text": f"before_event={compiler_orders[0]}; after_event={compiler_orders[2]}; constraint_index=2"} in next(
+        box for box in proposal["diagrams"][1]["diagram_boxes"] if box["node_id"] == f"event{compiler_orders[2]}")["details"]
+    assert 'event3 -.-> event1' not in atlas
+    for owner, contract in (("components", "component_contract"), ("backlog", "provisional_workstream_contract")):
+        supported = [event["event_quote"] for row in proposal[owner] for event in row[contract]["supporting_events"]]
+        assert events[2]["event_quote"] in supported
+    created = [{"idea_id": f"B-{index:03d}", "title": row["title"], "idea_path": str(tmp_path / f"workstream-{index}.md")}
+               for index, row in enumerate(proposal["backlog"], 1)]
+    handoff = build_next_steps(proposal=proposal, backlog_result={"created": created},
+        first_release_workstreams=tuple(row["idea_id"] for row in created), release_selector="0.0.1")
+    proposed = authored_first_run_text(candidate)
+    assert proposed.endswith(events[2]["event_quote"])
+    assert handoff["coding_readiness_contract"]["source_facts"]["accepted_first_path"] == candidate["first_path"]
+    assert candidate["first_path"] in render_product_intent_preview(candidate)
+
+
+@pytest.fixture
+def ordered_package(tmp_path):
+    source, response, events = _result_first_response()
+    candidate = materialize_complete_host_candidate(
+        prompt=source,
+        repo_root=tmp_path,
+        host_candidate=host_candidate_response(response, evidence_text=source),
+    )
+    compiler_orders = _compiler_event_orders(candidate, events)
+    assert compiler_orders == [3, 1, 2]
+    canonical_events = _compiler_ordered_events(candidate, events)
+    assert candidate["component_responsibilities"] == [
+        canonical_events[1]["event_quote"],
+        canonical_events[2]["event_quote"],
+    ]
+    assert candidate["authored_semantics"]["component_responsibility_relations"] == [
+        {
+            "responsibility_path": "/component_responsibilities/0",
+            "responsibility_quote": canonical_events[1]["event_quote"],
+            "owner_system_path": "/internal_systems/0",
+            "owner_system_quote": "Receipt Desk",
+            "responsibility_source": "accepted_fact",
+            "first_path_event_order": 2,
+            "source_duty_id": "fixture-first-path-2",
+            "decision_set_sha256": candidate["authored_semantics"]["source_duty"]["ledger_receipt"]["decision_set_sha256"],
+        },
+        {
+            "responsibility_path": "/component_responsibilities/1",
+            "responsibility_quote": canonical_events[2]["event_quote"],
+            "owner_system_path": "/internal_systems/0",
+            "owner_system_quote": "Receipt Desk",
+            "responsibility_source": "accepted_fact",
+            "first_path_event_order": 3,
+            "source_duty_id": "fixture-first-path-3",
+            "decision_set_sha256": candidate["authored_semantics"]["source_duty"]["ledger_receipt"]["decision_set_sha256"],
+        },
+    ]
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path, prompt=source, release_selector="0.0.1",
+        confirmed_intent=candidate, require_completion_ready=False,
+    )
+    validate_host_reasoned_proposal(proposal)
+    assert candidate["authored_semantics"]["provisional_design"]["first_run"]["event_orders"] == [
+        compiler_orders[index - 1] for index in (2, 3, 1)
+    ]
+    assert candidate["prompt"].endswith(source + "\n")
+    return candidate["prompt"], candidate, proposal, canonical_events
+
+
+def test_citation_identity_survives_compiler_id_remap_and_sealed_custody(ordered_package):
+    source, candidate, _, events = ordered_package
+    source_relations = first_path_relations_from_intent(candidate)
+    proposed_relations = authored_first_run_relations(candidate)
+    assert [row["order"] for row in source_relations] == [1, 2, 3]
+    assert [row["order"] for row in proposed_relations] == [1, 2, 3]
+    assert candidate["first_path"] == "\n".join(row["event_quote"] for row in events)
+    assert candidate["authored_semantics"]["source_precedence"] == [
+        {"before_event": 1, "after_event": 2, "constraint_index": 1},
+    ]
+    assert source_relations[2]["visible_result_quote"] == "the review receipt"
+    assert all(not row["visible_result_quote"] for row in source_relations[:2])
+    for row in source_relations:
+        assert source.encode()[row["source_start_byte"]:row["source_end_byte"]].decode() == row["event_quote"]
+    assert require_relation_authority_parity(
+        candidate, candidate[PRODUCT_INTENT_AUTHORITY_KEY],
+    ) == source_relations
+    assert "source_precedence" not in product_facts_payload(candidate)
+    assert "first_run" not in product_facts_payload(candidate)
+
+    changed = deepcopy(candidate)
+    changed["authored_semantics"]["source_precedence"] = []
+    with pytest.raises(ValueError, match="canonical complete run differs from its verified source plan"):
+        require_relation_authority_parity(changed, candidate[PRODUCT_INTENT_AUTHORITY_KEY])
+
+
+def test_supporting_prerequisite_interleaves_first_path_across_all_projections(tmp_path):
+    """Keep first-path order while a cited system prerequisite runs between its steps."""
+
+    from odylith.runtime.domain_intelligence.greenfield_host_candidate_materialization import (
+        materialize_host_authored_intent,
+    )
+    from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
+        prepare_model_authoring_evidence,
+    )
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+        synthetic_source_duty_receipt,
+    )
+    from tests.unit.runtime.test_greenfield_host_candidate import _response, _source
+
+    source = _source()
+    prepared = prepare_model_authoring_evidence(prompt=source)
+    response = _response(prepared.evidence_source)
+    response["result"]["facts"]["operational_constraints"].append({
+        "quote": "the product records berth occupancy before the berth map shows the placement",
+        "occurrence": 1,
+    })
+    response["result"]["source_precedence"] = [{
+        "before_event": 2, "after_event": 3, "constraint_index": 2,
+    }]
+    # Build the immutable source ledger before selecting the complete proposed walk.
+    response["result"]["provisional_design"]["first_run"]["event_orders"] = [1, 3]
+    host_candidate = host_candidate_response(response, evidence_text=prepared.evidence_source,
+        first_path_event_orders=(1, 3), source_run_event_orders=(1, 2, 3))
+    receipt = synthetic_source_duty_receipt(
+        host_candidate, evidence_text=prepared.evidence_source,
+    )
+    candidate = materialize_host_authored_intent(
+        prompt=source,
+        repo_root=tmp_path,
+        host_candidate=host_candidate,
+        source_duty_receipt=receipt,
+        prepared_evidence=prepared,
+    )
+
+    source_relations = source_event_relations_from_intent(candidate)
+    proposed_relations = authored_first_run_relations(candidate)
+    assert [row["order"] for row in source_relations] == [1, 2, 3]
+    assert [row["order"] for row in proposed_relations] == [1, 3, 2]
+    source_bytes = candidate["prompt"].encode()
+    exact_source_events = [
+        "Dock attendant Ivo enters a vessel tag",
+        "the berth map shows the placement",
+        "the product records berth occupancy",
+    ]
+    for row, exact_source_event in zip(source_relations, exact_source_events, strict=True):
+        observed = source_bytes[row["source_start_byte"]:row["source_end_byte"]].decode()
+        assert observed == exact_source_event
+        assert row["event_quote"].endswith(exact_source_event)
+    assert require_relation_authority_parity(
+        candidate, candidate[PRODUCT_INTENT_AUTHORITY_KEY],
+    ) == source_relations
+
+    source_duty = candidate["authored_semantics"]["source_duty"]
+    assert [row["event_order"] for row in source_duty["binding"]["first_path_actions"]] == [1, 2]
+    assert [row["event_order"] for row in source_duty["binding"]["system_duties"]] == [3]
+    assert candidate["authored_semantics"]["source_precedence"] == [
+        {"before_event": 3, "after_event": 2, "constraint_index": 1},
+    ]
+    assert [row["order"] for row in proposed_relations if row["order"] in {1, 2}] == [1, 2]
+
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=source,
+        release_selector="0.0.1",
+        confirmed_intent=candidate,
+        require_completion_ready=False,
+    )
+    validate_host_reasoned_proposal(proposal)
+    assert semantic_diagram_alignment_issues(proposal, proposal["semantic_model"]) == []
+    proposed = authored_first_run_text(candidate)
+    assert proposal["project_intelligence"]["scope"] == [candidate["first_path"]]
+    assert any(
+        row["section"] == "Proposed walkthrough" and row["must_capture"].startswith(proposed)
+        for row in proposal["project_brief"]["blueprint_sections"]
+    )
+    contract = proposal["semantic_model"]["first_path_contract"]
+    assert [row["source_event_order"] for row in contract["events"]] == [1, 2]
+    assert [row["text"] for row in contract["events"]] == [
+        row["event_quote"] for row in first_path_relations_from_intent(candidate)
+    ]
+    sequence = next(
+        row for row in proposal["diagrams"] if row["slug"].endswith("first-run")
+    )
+    assert 'event3 --> event2' in sequence["mermaid_source"]
+    assert {"label": "Source prerequisite", "text": "before_event=3; after_event=2; constraint_index=1"} in next(
+        box for box in sequence["diagram_boxes"] if box["node_id"] == "event2")["details"]
+    assert "event1 -.-> event3" in sequence["mermaid_source"]
+    assert candidate["first_path"] in render_product_intent_preview(candidate)
+    assert candidate["first_path"] in candidate_intent_stage_paths(tmp_path).markdown.read_text()
+
+    created = [
+        {
+            "idea_id": f"B-{index:03d}",
+            "title": row["title"],
+            "idea_path": str(tmp_path / f"support-workstream-{index}.md"),
+        }
+        for index, row in enumerate(proposal["backlog"], 1)
+    ]
+    handoff = build_next_steps(
+        proposal=proposal,
+        backlog_result={"created": created},
+        first_release_workstreams=tuple(row["idea_id"] for row in created),
+        release_selector="0.0.1",
+    )
+    assert proposed in handoff["implementation_prompt"]
+    assert handoff["coding_readiness_contract"]["source_facts"]["accepted_first_path"] == candidate["first_path"]
+
+
+def test_project_and_semantic_views_use_the_labeled_proposed_run(ordered_package):
+    _, candidate, proposal, events = ordered_package
+    proposed = " ".join(relation["event_quote"] for relation in authored_first_run_relations(candidate))
+    assert authored_first_run_text(candidate) == proposed
+    assert proposal["project_intelligence"]["scope"] == [candidate["first_path"]]
+    assert any(row["section"] == "Proposed walkthrough" and row["must_capture"].startswith(proposed) for row in proposal["project_brief"]["blueprint_sections"])
+    assert any(row["section"] == "First path" and row["must_capture"] == candidate["first_path"] for row in proposal["project_brief"]["blueprint_sections"])
+    contract = proposal["semantic_model"]["first_path_contract"]
+    assert contract["raw_path"] == candidate["first_path"]
+    assert contract["capability"] == candidate["first_path"]
+    assert [row["text"] for row in contract["events"]] == [row["event_quote"] for row in events]
+    assert [row["source_event_order"] for row in contract["events"]] == [1, 2, 3]
+    assert [row["index"] for row in contract["events"]] == [1, 2, 3]
+    assert contract["events"][-1]["visible_result"] is True
+    assert len(proposal["components"]) == len(proposal["backlog"]) == 4
+    assert len(proposal["diagrams"]) >= 5
+
+
+def test_cli_and_staged_markdown_show_the_proposed_run_without_rewriting_source_facts(
+    ordered_package, tmp_path,
+):
+    _, candidate, _, _ = ordered_package
+    proposed = authored_first_run_text(candidate)
+    stage = candidate_intent_stage_paths(tmp_path)
+    for view in (render_product_intent_preview(candidate), stage.markdown.read_text()):
+        assert "## First complete path\n" + candidate["first_path"] in view
+        assert "## First complete path\nProposed first run:\n" not in view
+
+
+def test_atlas_proposes_order_but_registry_and_radar_keep_source_support_ids(ordered_package):
+    _, _, proposal, events = ordered_package
+    sequence = next(row for row in proposal["diagrams"] if row["slug"] == "receipt-desk-first-run")
+    assert sequence["authority_kind"] == "provisional_design"
+    mermaid = sequence["mermaid_source"]
+    assert "event1 --> event2" in mermaid
+    assert {"label": "Source prerequisite", "text": "before_event=1; after_event=2; constraint_index=1"} in next(
+        box for box in proposal["diagrams"][1]["diagram_boxes"] if box["node_id"] == "event2")["details"]
+    assert 'event2 -.-> event3' in mermaid
+    assert 'event1 -.-> event2' not in mermaid
+    assert "event3 --> event1" not in mermaid
+    assert 'event1 -->|"source constraint' not in mermaid
+    assert "source order" not in sequence["summary"].casefold()
+    assert "dotted arrows show additional proposed next steps" in sequence["read_guide"]
+    boxes = {box["node_id"]: box for box in sequence["diagram_boxes"]}
+    for order, event in enumerate(events, 1):
+        assert event["event_quote"] in boxes[f"event{order}"]["description"]
+    for owner, contract_key in (("components", "component_contract"), ("backlog", "provisional_workstream_contract")):
+        for row in proposal[owner]:
+            contract = row[contract_key]
+            for ref, support in zip(contract["support_event_refs"], contract["supporting_events"], strict=True):
+                assert ref == f"/authored_semantics/source_event_relations/{support['order'] - 1}"
+                assert support["event_quote"] == events[support["order"] - 1]["event_quote"]
+
+
+def test_implementation_handoffs_follow_the_same_proposed_walk(ordered_package, tmp_path):
+    _, candidate, proposal, _ = ordered_package
+    proposed = authored_first_run_text(candidate)
+    created = [{"idea_id": f"B-{index:03d}", "title": row["title"], "idea_path": str(tmp_path / f"workstream-{index}.md")}
+               for index, row in enumerate(proposal["backlog"], 1)]
+    workstreams = tuple(row["idea_id"] for row in created)
+    handoff = build_next_steps(
+        proposal=proposal, backlog_result={"created": created},
+        first_release_workstreams=workstreams, release_selector="0.0.1",
+    )
+    assert proposed in handoff["implementation_prompt"]
+    assert handoff["coding_readiness_contract"]["source_facts"]["accepted_first_path"] == candidate["first_path"]
+
+
+def test_shared_fixture_never_derives_source_precedence_from_delivery_dependencies():
+    _, response, _ = _result_first_response(include_precedence=False)
+    assert response["result"]["provisional_design"]["workstreams"][1]["depends_on"]
+    assert response["result"]["source_precedence"] == []
+    assert response["result"]["terminal"]["event_order"] == 1
+
+
+def test_artifact_workflow_uses_the_canonical_proposed_walk(ordered_package):
+    _, candidate, proposal, _ = ordered_package
+    row = proposal["backlog"][0]
+    graph = canonical_graph_from_workstream(row=row, proposal=proposal)
+
+    assert graph.workflows == (
+        authored_first_run_text(candidate), row["recommended_first_slice"],
+    )
+    assert candidate["first_path"] not in graph.workflows
+
+
+def test_non_authored_artifact_workflow_preserves_its_existing_projection():
+    graph = canonical_graph_from_workstream(
+        proposal={"intent": {"title": "Existing project", "first_path": "Record a draft\nthen review it"}},
+        row={"recommended_first_slice": "  Review one draft  "},
+    )
+
+    assert graph.workflows == ("Record a draft then review it", "Review one draft")
+
+
+def test_preconfirm_event_alignment_accepts_the_canonical_proposed_run(ordered_package):
+    _, _, proposal, _ = ordered_package
+
+    assert semantic_diagram_alignment_issues(proposal, proposal["semantic_model"]) == []
+
+
+@pytest.mark.parametrize("damage", ["order", "text", "source_id", "source_kind", "boolean_id"])
+def test_synchronized_event_drift_cannot_pass_by_agreeing_with_itself(ordered_package, damage):
+    _, _, proposal, _ = ordered_package
+    semantic = deepcopy(proposal["semantic_model"])
+    changed = deepcopy(semantic["first_path_contract"]["events"])
+    if damage == "order":
+        changed = list(reversed(changed))
+        for index, row in enumerate(changed, 1):
+            row["index"] = index
+    elif damage == "text":
+        changed[0]["text"] = "A different, unsupported event"
+    elif damage == "source_id":
+        changed[0]["source_event_order"] = 3
+    elif damage == "source_kind":
+        changed[0]["source_kind"] = "accepted_first_path"
+    else:
+        changed[-1]["source_event_order"] = True
+    semantic["first_path_contract"]["events"] = changed
+    semantic["diagram_event_graph"]["events"] = deepcopy(changed)
+
+    issues = semantic_diagram_alignment_issues(proposal, semantic)
+
+    assert any("FirstPathContract events" in issue for issue in issues)
+    assert any("DiagramEventGraph events" in issue for issue in issues)
+
+
+@pytest.mark.parametrize("damage", ["authority", "precedence", "design"])
+def test_preconfirm_rejects_reinterpreted_order_authority(ordered_package, damage):
+    _, _, proposal, _ = ordered_package
+    semantic = deepcopy(proposal["semantic_model"])
+    if damage == "authority":
+        semantic["first_path_contract"]["authority_kind"] = "provisional_design"
+    elif damage == "precedence":
+        semantic["source_precedence"] = []
+    else:
+        semantic["provisional_design"]["first_run"]["rationale"] = "A different proposed rationale"
+
+    assert semantic_diagram_alignment_issues(proposal, semantic)

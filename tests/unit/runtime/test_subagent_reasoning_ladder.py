@@ -716,6 +716,10 @@ def test_route_request_spawn_payloads_never_inherit_parent_defaults(tmp_path: Pa
     assert decision.host_tool_contract["native_spawn_transport_supported"] is True
     assert decision.host_tool_contract["native_spawn_policy_status"] == "not_inspectable"
     assert decision.host_tool_contract["native_spawn_effective"] is False
+    assert decision.host_tool_contract["spawn_executable"] is False
+    assert decision.host_tool_contract["spawn_execution_status"] == "planned_host_dispatch_required"
+    assert decision.native_spawn_payload["spawn_executable"] is False
+    assert decision.native_spawn_payload["spawn_execution_status"] == "planned_host_dispatch_required"
     assert "active host policy" in decision.host_tool_contract["host_policy_note"]
     assert any("HOST POLICY:" in line and "not_inspectable" in line for line in decision.runtime_banner_lines)
     assert ".codex/agents/*.toml" in decision.host_tool_contract["custom_agent_type_note"]
@@ -1438,6 +1442,22 @@ def test_orchestrator_leaf_payload_uses_routed_reasoning_without_parent_default_
         subtask.route_odylith_execution_profile["selected_reasoning_effort"]
         == subtask.route_reasoning_effort
     )
+
+
+def test_orchestrator_request_preserves_top_level_host_routing_hints() -> None:
+    request = orchestrator.orchestration_request_from_mapping(
+        {
+            "prompt": "Inspect the bounded subagent route.",
+            "host_runtime": "codex_cli",
+            "native_spawn_ready": True,
+            "route_ready": True,
+            "odylith_auto_ground": False,
+        }
+    )
+
+    assert request.context_signals["host_runtime"] == "codex_cli"
+    assert request.context_signals["native_spawn_ready"] is True
+    assert request.context_signals["route_ready"] is True
 
 
 def test_orchestrator_leaf_payload_emits_task_tool_payload_for_claude_host(

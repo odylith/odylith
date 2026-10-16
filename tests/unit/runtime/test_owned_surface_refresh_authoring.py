@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
+
+import pytest
 
 from odylith.runtime.common import log_compass_timeline_event
 from odylith.runtime.governance import backlog_authoring
@@ -23,6 +26,10 @@ def _grounded_backlog_args() -> list[str]:
         "The backlog should look like governed product truth on first render.",
         "--success-metrics",
         "- The record is grounded.\n- Radar refresh picks it up.",
+        "--domain-risk",
+        "Domain and compliance risk is limited to Radar truth quality and dashboard visibility.",
+        "--security-posture",
+        "Security posture: no credentials change; agent-assisted risk is ungrounded governance memory.",
     ]
 
 
@@ -121,12 +128,12 @@ def test_owned_surface_refresh_hides_successful_refresh_internals(
     monkeypatch,
     capsys,
 ) -> None:
-    def fake_refresh_owned_surface(**_kwargs) -> int:
+    def fake_refresh_owned_surfaces(**_kwargs) -> int:
         print("dashboard refresh plan")
         print("- noisy internals")
         return 0
 
-    monkeypatch.setattr(owned_surface_refresh, "refresh_owned_surface", fake_refresh_owned_surface)
+    monkeypatch.setattr(owned_surface_refresh, "refresh_owned_surfaces", fake_refresh_owned_surfaces)
 
     owned_surface_refresh.raise_for_failed_refresh(
         repo_root=tmp_path,
@@ -135,6 +142,141 @@ def test_owned_surface_refresh_hides_successful_refresh_internals(
     )
 
     assert capsys.readouterr().out == ""
+
+
+def test_owned_surface_refresh_captures_fd_level_failure_output(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    def fake_refresh_owned_surfaces(**_kwargs) -> int:
+        os.write(1, b"fd stdout renderer progress\n")
+        os.write(2, b"fd stderr browser failure\n")
+        return 2
+
+    monkeypatch.setattr(owned_surface_refresh, "refresh_owned_surfaces", fake_refresh_owned_surfaces)
+
+    try:
+        owned_surface_refresh.raise_for_failed_refresh(
+            repo_root=tmp_path,
+            surface="atlas",
+            operation_label="Atlas update",
+        )
+    except RuntimeError as exc:
+        message = str(exc)
+    else:
+        raise AssertionError("expected refresh failure")
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+    assert "fd stdout renderer progress" in message
+    assert "fd stderr browser failure" in message
+
+
+def test_owned_surface_refresh_compacts_verbose_renderer_failure_output(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    def fake_refresh_owned_surfaces(**_kwargs) -> int:
+        print("browser stack " + ("noise " * 300))
+        print("atlas auto-update failed")
+        print("- outcome: failed")
+        print("- error: Mermaid render failed after worker fallback")
+        print("dashboard refresh completed")
+        print("- outcome: failed")
+        print("- atlas: failed")
+        return 2
+
+    monkeypatch.setattr(owned_surface_refresh, "refresh_owned_surfaces", fake_refresh_owned_surfaces)
+
+    try:
+        owned_surface_refresh.raise_for_failed_refresh(
+            repo_root=tmp_path,
+            surface="atlas",
+            operation_label="Atlas update",
+        )
+    except RuntimeError as exc:
+        message = str(exc)
+    else:
+        raise AssertionError("expected refresh failure")
+
+    assert "Mermaid render failed after worker fallback" in message
+    assert "dashboard refresh completed" in message
+    assert "browser stack" not in message
+    assert len(message) < 1400
+
+
+def test_owned_surface_refresh_batches_multiple_surfaces_once(tmp_path: Path, monkeypatch) -> None:
+    calls: list[dict[str, object]] = []
+    clears: list[Path] = []
+
+    monkeypatch.setattr(
+        owned_surface_refresh,
+        "_policy_for_surface",
+        lambda surface: owned_surface_refresh.OwnedSurfaceRefreshPolicy(surface=str(surface), atlas_sync=str(surface) == "atlas"),
+    )
+
+    def fake_clear_runtime_process_caches(**kwargs) -> None:  # noqa: ANN001
+        clears.append(kwargs["repo_root"])
+
+    def fake_refresh_dashboard_surfaces(**kwargs) -> int:  # noqa: ANN001
+        calls.append(dict(kwargs))
+        return 0
+
+    from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
+    from odylith.runtime.governance import sync_workstream_artifacts
+
+    monkeypatch.setattr(
+        odylith_context_engine_projection_search_runtime,
+        "clear_runtime_process_caches",
+        fake_clear_runtime_process_caches,
+    )
+    monkeypatch.setattr(sync_workstream_artifacts, "refresh_dashboard_surfaces", fake_refresh_dashboard_surfaces)
+
+    rc = owned_surface_refresh.refresh_owned_surfaces(repo_root=tmp_path, surfaces=("radar", "atlas", "radar"))
+
+    assert rc == 0
+    assert clears == [tmp_path.resolve()]
+    assert calls == [
+        {
+            "repo_root": tmp_path.resolve(),
+            "surfaces": ("radar", "atlas"),
+            "runtime_mode": "auto",
+            "atlas_sync": True,
+        }
+    ]
+
+
+def test_owned_surface_refresh_supports_tooling_shell_project_surface(tmp_path: Path, monkeypatch) -> None:
+    calls: list[dict[str, object]] = []
+
+    from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
+    from odylith.runtime.governance import sync_workstream_artifacts
+
+    monkeypatch.setattr(
+        odylith_context_engine_projection_search_runtime,
+        "clear_runtime_process_caches",
+        lambda **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "refresh_dashboard_surfaces",
+        lambda **kwargs: calls.append(dict(kwargs)) or 0,
+    )
+
+    rc = owned_surface_refresh.refresh_owned_surface(repo_root=tmp_path, surface="tooling_shell")
+
+    assert rc == 0
+    assert calls == [
+        {
+            "repo_root": tmp_path.resolve(),
+            "surfaces": ("tooling_shell",),
+            "runtime_mode": "auto",
+            "atlas_sync": False,
+        }
+    ]
+    assert owned_surface_refresh.dashboard_handoff(surface="project") == "odylith/index.html?tab=project"
 
 
 def test_backlog_create_refreshes_radar_surface(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -165,7 +307,7 @@ def test_backlog_create_refreshes_radar_surface(tmp_path: Path, monkeypatch, cap
             "operation_label": "Backlog create",
         }
     ]
-    assert "view: odylith/index.html?tab=radar&workstream=B-001 (refresh if already open)" in output
+    assert "view: odylith/index.html?tab=radar&workstream=B-001 (reload browser tab if already open)" in output
 
 
 def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -188,6 +330,18 @@ def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypat
             "registry-refresh",
             "--path",
             "src/odylith/runtime/governance",
+            "--responsibility",
+            "Own Registry refresh authoring proof for governed component capture.",
+            "--boundary",
+            "Registry authoring boundary for this test component and its dashboard refresh.",
+            "--dependency",
+            "Depends on Registry source validation and dashboard rendering.",
+            "--interface",
+            "component register CLI and Registry dashboard read model.",
+            "--validation",
+            "Registry validation and dashboard refresh pass after capture.",
+            "--risk",
+            "Security/compliance risk is stale agent-authored component truth entering durable Registry memory.",
         ]
     )
 
@@ -202,7 +356,7 @@ def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypat
     ]
     assert (
         "view: odylith/index.html?tab=registry&component=registry-refresh "
-        "(refresh if already open)"
+        "(reload browser tab if already open)"
     ) in output
     registry_path = tmp_path / "odylith" / "registry" / "source" / "component_registry.v1.json"
     registry = json.loads(registry_path.read_text(encoding="utf-8"))
@@ -210,11 +364,10 @@ def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypat
     assert entry["category"] == "governance_engine"
     assert entry["qualification"] == "candidate"
     assert entry["sources"] == ["manifest"]
-    assert entry["what_it_is"] == (
-        "Logical component registered through `odylith component register` "
-        "with `src/odylith/runtime/governance` as its initial evidence anchor."
-    )
-    assert "path prefixes seed the intended boundary" in entry["why_tracked"]
+    assert "Registry refresh authoring proof" in entry["what_it_is"]
+    assert "keeps local result, blocked cases, recovery path, release proof, and review evidence together" in entry["what_it_is"]
+    assert "Initial source boundary: src/odylith/runtime/governance." in entry["what_it_is"]
+    assert "named ownership boundary" in entry["why_tracked"]
     spec_path = (
         tmp_path
         / "odylith"
@@ -225,8 +378,10 @@ def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypat
         / "CURRENT_SPEC.md"
     )
     spec_text = spec_path.read_text(encoding="utf-8")
-    assert "**Logical boundary**" in spec_text
-    assert "**Evidence anchor**: `src/odylith/runtime/governance`" in spec_text
+    assert "## Component Snapshot" in spec_text
+    assert "## Runtime Boundary" in spec_text
+    assert "Registry authoring boundary for this test component" in spec_text
+    assert "| First source boundary | `src/odylith/runtime/governance` |" in spec_text
     assert (
         validate_component_registry_contract.main(["--repo-root", str(tmp_path)])
         == 0
@@ -268,6 +423,8 @@ def test_atlas_scaffold_refreshes_atlas_with_shared_lane(tmp_path: Path, monkeyp
             "product",
             "--summary",
             "Atlas quick refresh path.",
+            "--component",
+            "AtlasRefresh::Diagram owner for Atlas quick refresh proof.",
             "--backlog",
             "odylith/radar/source/ideas/2026-04/example.md",
             "--plan",
@@ -285,9 +442,57 @@ def test_atlas_scaffold_refreshes_atlas_with_shared_lane(tmp_path: Path, monkeyp
             "repo_root": tmp_path.resolve(),
             "surface": "atlas",
             "operation_label": "Atlas scaffold",
+            "atlas_diagram_ids": ("D-999",),
         }
     ]
-    assert "view: odylith/index.html?tab=atlas&diagram=D-999 (refresh if already open)" in output
+    assert "view: odylith/index.html?tab=atlas&diagram=D-999 (reload browser tab if already open)" in output
+
+
+@pytest.mark.parametrize("mode", ["current", "old_date", "render_failure"])
+def test_atlas_scaffold_real_refresh_preserves_existing_review_debt_and_assets(tmp_path, monkeypatch, mode):
+    import datetime as dt
+    from odylith.runtime.surfaces import auto_update_mermaid_diagrams as auto
+    from tests.unit.runtime.test_atlas_update_batch import _scoped_refresh_fixture
+
+    catalog, before = _scoped_refresh_fixture(tmp_path, monkeypatch)
+    old_assets = {tmp_path / row[field]: (tmp_path / row[field]).read_bytes()
+                  for row in before["diagrams"] for field in ("source_mmd", "source_svg", "source_png")}
+    (tmp_path / "src/new-selected.py").write_text("CURRENT_OWNER = True\n")
+
+    def render(**kwargs):
+        assert [job["diagram_id"] for job in kwargs["render_jobs"]] == ["D-999"]
+        if mode == "render_failure":
+            raise RuntimeError("selected scaffold render unavailable")
+        for job in kwargs["render_jobs"]:
+            (tmp_path / job["source_svg"]).write_text("<svg />\n")
+            (tmp_path / job["source_png"]).write_bytes(b"png")
+
+    monkeypatch.setattr(auto, "_render_diagrams_batch", render)
+    date = "2000-01-01" if mode == "old_date" else dt.date.today().isoformat()
+    rc, logs = scaffold_mermaid_diagram.scaffold_diagram(
+        repo_root=tmp_path, catalog="odylith/atlas/source/catalog/diagrams.v1.json",
+        diagram_id="D-999", slug="new-selected", title="New selected diagram", kind="flowchart", owner="product",
+        summary="Shows the selected authoring scope.", read_guide="Read intake before review.",
+        components=[{"name": "Demo", "description": "Owns selected Atlas authoring."}],
+        related_backlog=[], related_plans=[], related_docs=[], related_code=[], watch_paths=["src/new-selected.py"],
+        review_date=date, starter_source='flowchart LR\n  A["Intake"] --> B["Review"]', refresh=True,
+    )
+
+    after = json.loads(catalog.read_text())
+    assert after["diagrams"][:3] == before["diagrams"]
+    assert all(path.read_bytes() == data for path, data in old_assets.items())
+    assert after["diagrams"][-1]["diagram_id"] == "D-999"
+    assert after["diagrams"][-1]["last_reviewed_utc"] == date
+    assert rc == (0 if mode == "current" else 1)
+    if rc:
+        recovery = " ".join(logs)
+        assert "--diagram-id D-999" in recovery
+        assert "--preserve-review-date" in recovery
+        assert "--fail-on-stale" in recovery
+        assert "--all-stale" not in recovery
+        assert "odylith atlas refresh --repo-root . --atlas-sync" not in recovery
+    else:
+        assert (tmp_path / "odylith/atlas/atlas.html").is_file()
 
 
 def test_atlas_scaffold_allows_atlas_first_draft_without_governance_links(
@@ -347,17 +552,18 @@ def test_atlas_scaffold_allows_atlas_first_draft_without_governance_links(
     assert 'subgraph intent_lane["Intent lane"]' in source_text
     assert 'subgraph component_lane["Component lane"]' in source_text
     assert 'subgraph evidence_lane["Evidence lane"]' in source_text
-    assert "classDef anchor fill:#e8fbf7" in source_text
-    assert "style component_lane fill:#f1f7ff" in source_text
+    assert "classDef primary fill:#EFF6FF" in source_text
+    assert "style component_lane fill:#FBFDFF,stroke:#A7E9E3" in source_text
     assert "Link Radar, plan, and docs<br/>as governance matures" in source_text
     assert calls == [
         {
             "repo_root": tmp_path.resolve(),
             "surface": "atlas",
             "operation_label": "Atlas scaffold",
+            "atlas_diagram_ids": ("D-100",),
         }
     ]
-    assert "view: odylith/index.html?tab=atlas&diagram=D-100 (refresh if already open)" in output
+    assert "view: odylith/index.html?tab=atlas&diagram=D-100 (reload browser tab if already open)" in output
 
 
 def test_atlas_scaffold_can_still_require_governance_links(tmp_path: Path, monkeypatch) -> None:
@@ -386,6 +592,8 @@ def test_atlas_scaffold_can_still_require_governance_links(tmp_path: Path, monke
             "product",
             "--summary",
             "Strict boundary draft.",
+            "--component",
+            "StrictBoundary::Strict boundary owner for link requirement proof.",
             "--require-links",
         ]
     )
@@ -425,4 +633,4 @@ def test_compass_log_refreshes_compass_surface(tmp_path: Path, monkeypatch, caps
             "operation_label": "Compass timeline append",
         }
     ]
-    assert "view: odylith/index.html?tab=compass (refresh if already open)" in output
+    assert "view: odylith/index.html?tab=compass (reload browser tab if already open)" in output

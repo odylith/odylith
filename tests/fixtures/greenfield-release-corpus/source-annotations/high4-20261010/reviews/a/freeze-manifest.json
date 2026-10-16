@@ -1,0 +1,24 @@
+{
+  "version": "odylith.independent-source-annotation-a.freeze.v1",
+  "created_on": "2026-10-10",
+  "status": "frozen",
+  "sources": {
+    "/private/tmp/odylith-new-high4-source-design-20261010/sourcecases-draft.json": "5da8ec8a344d3097ad5a65a14e4f0af0756943a03d6a22e4ff8557e67694e485",
+    "/private/tmp/odylith-new-high4-source-design-20261010/canonical-source-frames.json": "3020f24efae67a669b72574a24ed4f4146b235449180e91854faae32633a7c4a"
+  },
+  "artifacts": {
+    "source-predeclaration.json": "a69b5d154077b8a56c45198c1af3dcde4839287542aff2bfb8dac2dd463d9a0b",
+    "census-capacity.json": "3ee499907f56a15de24dfd1f51287d0e2e8742d77d2c210fbb95717ead98b05b",
+    "REPORT.md": "9c1bd2c9755c8920b8498184efc73244bb0a9b54580506e208ebb4b518bbd67b",
+    "validation.json": "87bc6e9e906ef31a793266c1438e0c5a46caeca50ec7b85abb7cf1c7ca48555a"
+  },
+  "case_count": 4,
+  "atom_count": 405,
+  "qualifications": {
+    "prospective-edit-climate-heat-response-window-20261010": "ACCEPT",
+    "prospective-edit-healthcare-trial-site-activation-20261010": "ACCEPT",
+    "prospective-edit-open-data-river-federation-transfer-20261010": "ACCEPT",
+    "prospective-edit-security-isolated-recovery-rehearsal-20261010": "ACCEPT"
+  },
+  "no_more_writes_after_handoff": true
+}

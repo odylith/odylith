@@ -1,29 +1,33 @@
 """Shared dashboard display-time helpers.
 
-The dashboard family stores freshness anchors in UTC-backed source contracts and
-stable-generated payload metadata. Visible KPI cards, however, should reflect
-the operator's San Francisco working day instead of the raw UTC calendar day.
+The dashboard family stores both calendar dates and UTC-backed freshness
+timestamps. Calendar dates are already product truth; timestamps are converted
+to the operator's San Francisco working day.
 
 Invariants:
-- input values remain UTC-backed source tokens; this helper does not change
-  stored contracts or rewrite source files.
-- plain `YYYY-MM-DD` UTC stamps are interpreted as UTC midnight, which lets a
-  UTC date bucket display as the corresponding Pacific calendar day.
+- input values remain source tokens; this helper does not change stored
+  contracts or rewrite source files.
+- plain `YYYY-MM-DD` values remain the same calendar date in every timezone.
+- timestamps are interpreted as UTC when no offset is present, then converted.
 - invalid or empty values fail calmly by returning the caller-provided default.
 """
 
 from __future__ import annotations
 
 import datetime as dt
-import re
 from zoneinfo import ZoneInfo
 
 DASHBOARD_DISPLAY_TIMEZONE = "America/Los_Angeles"
 _DASHBOARD_DISPLAY_TZ = ZoneInfo(DASHBOARD_DISPLAY_TIMEZONE)
-_DATE_ONLY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-_NAIVE_DATETIME_RE = re.compile(
-    r"^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?$"
-)
+
+
+def _calendar_date_token(value: object) -> dt.date | None:
+    raw = str(value or "").strip()
+    try:
+        parsed = dt.date.fromisoformat(raw)
+    except ValueError:
+        return None
+    return parsed if raw == parsed.isoformat() else None
 
 
 def parse_utc_token(value: object) -> dt.datetime | None:
@@ -40,11 +44,7 @@ def parse_utc_token(value: object) -> dt.datetime | None:
         return None
 
     candidate = raw.replace(" ", "T")
-    if _DATE_ONLY_RE.fullmatch(raw):
-        candidate = f"{raw}T00:00:00+00:00"
-    elif _NAIVE_DATETIME_RE.fullmatch(raw):
-        candidate = f"{candidate}+00:00"
-    elif candidate.endswith("Z"):
+    if candidate.endswith("Z"):
         candidate = f"{candidate[:-1]}+00:00"
 
     try:
@@ -58,7 +58,11 @@ def parse_utc_token(value: object) -> dt.datetime | None:
 
 
 def pacific_display_date_from_utc_token(value: object, *, default: str = "") -> str:
-    """Return the Pacific calendar date for a UTC-backed dashboard token."""
+    """Return a calendar date unchanged or convert a timestamp to Pacific."""
+
+    calendar_date = _calendar_date_token(value)
+    if calendar_date is not None:
+        return calendar_date.isoformat()
 
     parsed = parse_utc_token(value)
     if parsed is None:
@@ -67,7 +71,11 @@ def pacific_display_date_from_utc_token(value: object, *, default: str = "") -> 
 
 
 def pacific_date_from_utc_token(value: object) -> dt.date | None:
-    """Return the Pacific calendar date object for a UTC-backed dashboard token."""
+    """Return a calendar date unchanged or convert a timestamp to Pacific."""
+
+    calendar_date = _calendar_date_token(value)
+    if calendar_date is not None:
+        return calendar_date
 
     parsed = parse_utc_token(value)
     if parsed is None:

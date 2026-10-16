@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-05-01
 
-Updated: 2026-05-03
+Updated: 2026-09-09
 
 Backlog: B-141
 
@@ -14,6 +14,11 @@ path: host prompt-submit work stays bounded, Codex PostToolUse records cheap
 dirty events and settles them at Stop, install reruns behave as upgrades, and
 Casebook/Radar/Atlas migration evidence stays captured when legacy records,
 generated surfaces, topology links, or launcher repair states break.
+
+B-142 Plan Split: The greenfield typed-semantic compiler and PatchSet repair
+work now has its own active plan at
+`odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`.
+This B-141 plan remains the cross-host latency and migration-hardening record.
 
 Assumptions:
 - Claude and Codex have different native hook semantics, so performance wins
@@ -91,7 +96,197 @@ Related Bugs:
   diagnostic benchmark defaulted to warm cache and shell pipelines could leak
   BrokenPipe tracebacks.
 
+## Current completion evidence (2026-10-15)
+
+Both hosted suites at `433f0e38a` pass 11,209 tests and expose two
+generated-record gaps: missing CB-364 detail in the committed Casebook shard,
+and fourteen stale Registry forensics sidecars after a render-only selective
+sync. CB-305 and CB-270 retain the diagnoses. Finish the browser assertions
+and authored learning, publish the authored selective sync, then settle
+intended Compass logging before explicitly running the component-spec owner
+and check-only. Review the complete manifest-to-shard closure and all emitted
+sidecars before staging; verify check-only again after commit. The benchmark
+at this revision remains running with its source frozen. Preserve its
+identity and failed CI evidence; neither result establishes successor-source
+or release qualification.
+
+Full candidate A `81889b62b36af1fc` at `a160260365` completes 82 scenarios,
+328 warm/cold observations and the existing supplementary measurements. Its
+result is provisional pass, with all hard quality, secondary and advisory
+checks clear. Nine original archive members have exact readback. Both hosted
+CI suites at this checkpoint pass 11,045 tests with ten skips.
+
+The original predecessor comparison failed under
+[CB-364](../../../casebook/bugs/2026-10-15-release-benchmark-comparison-confuses-raw-baseline-variance-with-product-regress.md). Odylith's
+critical recall is 0.979 in both releases, and all 82 per-case recall values
+are unchanged. It confused a smaller On-versus-raw advantage with product
+regression and could select an interrupted baseline receipt. The corrected
+processor selects the completed predecessor with the interrupted receipt
+present, preserves every original report and threshold, and returns a
+nonblocking warning for the predecessor's HOLD. Critical recall change is
+zero; validation success improves by 0.027. Independent review is clear and
+148 focused tests pass, including stored-score tampering rejection. The final
+comparison, publication and graph slice subsequently passes 169 checks. The
+canonical publication now binds its six absolute quality values to their
+versioned evidence record. A remains measurement proof of a160 only; final
+H/B must prove the corrected source before package and release qualification.
+
+Canonical regeneration of three corrected publication captions is blocked by
+CB-116: the legacy overlay identity hashes modification times and does not
+retain the bytes of 438 copied ignored descendants. That legacy run cannot
+be recertified after restoration. The two-file correction uses versioned
+content identity for future proof and keeps exact legacy matching without a
+reconciliation fallback. All 210 affected tests pass and independent review
+is clear. Freeze and push the corrected source checkpoint, then run fresh
+content-bound proof before regenerating the publication. Preserve original A
+and every failed attempt; do not bypass the canonical validator.
+
+The real Codex closeout at pushed checkpoint 37ef99829 retains its summary in
+the separate private history journal without changing governed bytes. Startup
+succeeds. A normal foreground command publishes exactly the retained 357 bytes
+once and acknowledges the event only after complete immutable readback. Both
+queues are empty afterward, and all 38 frozen source/test files remain
+unchanged. Exact evidence is retained in
+`/Users/freedom/.codex/odylith-release-evidence/2026-10-14/v52/post-volume-recovery-20261015T0458Z/source37-native-exact-publication-and-ack.json`.
+This closes the actual source-local Codex journal check. Both full hosted CI
+runs for this checkpoint pass 11,045 tests, with ten skips. Installed-package,
+native Claude and release qualification remain open.
+
+The authentic v0.1.14 full proof completes all 328 main observations and its
+existing supplementary sampling. Its terminal result is HOLD: write-surface
+precision falls below the raw baseline. Original stdout, history, latest report
+and seed are retained with exact archive readback before reusing the same
+checkout. This is the predecessor result, not current-candidate qualification.
+Evidence is retained in
+`/Users/freedom/.codex/odylith-release-evidence/2026-10-14/v52/post-volume-recovery-20261015T0458Z/actual14-completed-archive-readback.json`.
+
+Keep candidate A/B unsharded. The existing shard merge omits singleton timing
+and adoption samples, changes On/raw scheduling, and has no demonstrated native
+concurrency isolation in the shared checkout. No new experiment or gate follows.
+
+The benchmark pairing audit preserves that authentic v0.1.14 proof.
+Both releases use 82 scenarios and matched On/raw host contracts. The current
+corpus adds four supporting paths to two existing cases, affecting their context
+and path-precision allowances while retaining prompts, required/write paths,
+validators and thresholds. Publish cross-release deltas with that input-change
+disclosure; causal product claims require the matched within-release pair.
+Exact hashes, affected cases and existing A/diagnostic commands are retained in
+`/Users/freedom/.codex/odylith-release-evidence/2026-10-14/v52/post-volume-recovery-20261015T0458Z/release-benchmark-pairing-37ef99829.md`.
+
+Compatibility review exposed loss during rollback to v0.1.14: its untyped
+checkpoint reader could delete new queued memory, and an unlocked replacement
+could erase an in-flight append. JSON framing alone was insufficient. The
+correction separates history from dirty-path checkpoints in the existing file
+owner and reuses its secure I/O. The exact predecessor probe changes from three
+losses to three byte-identical retained events; 190 focused tests and 39
+guidance/mirror checks pass, with independent review clear. The original queued
+development event was normally published and exactly acknowledged before the
+switch. At a160260365, both full hosted suites pass 11,045 tests with ten skips.
+Installed/native qualification remains open; the 6,908-test full runtime result
+below belongs to checkpoint 4c72f13b6.
+
+Hosted full CI at that checkpoint records 11,029 passes, ten skips and one
+D-038 browser-description failure. The corrected catalog narrative preserves
+the proposition-ledger decision flow and explains private history publication;
+all six affected browser tests pass. Both full suites at a160260365 also pass;
+the original failing checkpoint remains retained.
+
+The actual source-local Codex journey at 4c72f13b6 passes private Stop capture,
+healthy startup, normal foreground publication and exact acknowledgment. The
+real compiled store preserves the native event's source, session and transaction
+identity, and B-141 context retrieves the separately linked current proof event.
+Independent review is clear. Unanchored history stays out of unrelated context;
+missing authority metadata remains reference-only. Installed-package and Claude
+native qualification remain open.
+
+The final frozen source runtime suite passes all 6,908 tests with no failures,
+errors or skips; all 37 source/test hashes remain unchanged. Independent review
+of the published-memory correction finds no actionable issue. All 47 Atlas
+diagrams are fresh and the 30-component Registry forensics check reports no
+drift. Public source and annotation hashes are preserved, including genuine
+EDIT inputs restored from durable evidence. Source validation now permits the
+next stable checkpoint; installed-package, native-host and release proof remain
+open. The protected final holdout remains closed.
+
+A post-publication memory check finds a concrete retrieval gap: the existing
+Context Engine stream resolver doubles the product-directory prefix and misses
+successfully published summaries. The correction resolves from the repository
+root and shares the existing bounded publication selector through the common
+agent runtime owner. Five characterization cases fail before and pass after;
+all 87 owned controls pass without skips. Published and acknowledged Codex and
+Claude summaries remain retrievable through canonical projection and matching
+anchor context, with retained source, session and transaction identity. Failed
+working appends stay hidden. Missing authority metadata remains reference-only;
+explicit UNKNOWN annotations throughout compact delivery remain unproved. This
+is source proof; installed-package and release qualification remain open.
+No additional store or permanent pending-summary overlay is introduced.
+
+The current source addresses the Stop lifetime failure by retaining complete session-bound
+Stop events in the existing private host ledger. Session and judgment memory
+can read those historical, unverified claims before publication. Successful
+non-hook Compass log/sync commands publish at most four retained events through
+the normal continuation and immutable-generation owners, then acknowledge
+exact readback. Later maintenance failure preserves the original writer's
+success; successful sync retires only covered preexisting dirty-path records.
+Unrelated manual receipts block normal writers. Explicit completion can finish
+the original first append from an unchanged prepared receipt, without repeating
+an existing append. The old Stop settler and its unused grounding cache are
+removed; SessionStart grounding remains active. The Stop-only review and 214
+custody controls pass within their earlier scope. The full runtime run finishes
+with 6,853 passes and two failures: a missing required Claude guidance phrase
+and stale generated Release forensics. The later frozen run reported above
+passes after those corrections.
+
+Actual PostToolUse then exposes the shared intervention writer appending nine
+unpublished ambient events. The protected shared writer now requires admitted
+repository-lock ownership; other callers retain exact private events. External
+readers must select the published stream and merge pending intervention events,
+so a failed working append cannot become visible canonical history. Claude's
+separate SubagentStop writer requires the same rule. Preserve the nine original
+events and their exact failure evidence during reviewed restoration. Shared
+writer review and frozen source runtime proof pass as reported above. Installed
+same-package native proof and the remaining release gates are open.
+
+Native Codex Stop at pushed checkpoint 3a600b08c exposes a current integration
+failure under CB-305. Its 14-second lifetime can expire after a canonical
+Compass append and before successor publication. Existing exact restoration
+and abandonment restore startup while preserving the original receipt/event
+and published history. The source correction and actual Codex journey above
+address the lifetime ownership and session identity failure. Installed native
+release qualification remains pending.
+Do not raise the deadline, bypass publication, disable memory or add a second
+recovery mechanism. The authentic v0.1.14 benchmark remains a separate live run.
+
+B-142 explicitly depends on this workstream. The checked Must-Ship items record
+implementation; they do not replace current release proof or justify moving
+B-141 out of the release. Finish both from the actual H/package-D evidence
+after the required engine, host, installed-upgrade, pinned and consumer gates.
+
+CB-189 still reproduces on source checkpoint 727a8f9f3. Report 2c1e58ce8263f9f7
+passes hard quality but remains HOLD at +79.677 ms median latency, +927 prompt
+tokens and +1,416 total payload tokens. Caller review finds compact real host
+prompts already exist; the quick check counts the machine packet and includes
+fixture diagnostics that alone exceed its total-token ceiling. Keep the P2
+Open/HOLD and its limits unchanged. This does not establish a separate release
+gate or a fully low-latency claim. Current absolute host budgets, full proof
+and last-shipped comparison remain required on the exact release source.
+
+CB-242's actual Claude visibility remains open. Claude Code 2.1.202 is signed
+out in a fresh read-only check; authentication is requested while other work
+continues. Do not substitute static readiness or manual output for native
+delivery. Reconcile CB-149 through its actual Fixed In release, v0.1.13,
+using the governed closeout owner after the required current proof exists.
+Daemon, SDK-harness, MCP and further kernel-splitting proposals stay deferred.
+
 ## Learnings
+- [x] CB-242's broad-runtime child leak reproduces with a controlled scheduling
+      pause at cleanup entry. Separate command timeout and whole-hook alarm
+      ownership allowed the alarm to interrupt cleanup before it was protected.
+      One alarm-suspended command lifetime removes that window while retaining
+      the same monotonic budget and TERM/reap bounds. Sixteen ownership controls
+      and seventy cross-host controls pass; independent review and the fresh
+      broad gate remain open. Do not equate this local proof with native
+      intervention activation or Greenfield release qualification.
 - [x] The original Claude-led report was a symptom, not the product boundary:
       B-141 is cross-host because Codex shares the same hot-path risk class
       around prompt context, launcher dispatch, dirty-event settlement, and
@@ -145,6 +340,11 @@ Related Bugs:
       `odylith start` must be the first visible grounding gate on substantive
       turns; `odylith context`, `odylith query`, `git status`, and broad repo
       search run only after startup completes and an exact anchor is known.
+- [x] Startup target recognition must accept real implementation intent, not
+      just already-existing dirty files. Unquoted existing file paths and
+      planned new file paths under trusted repo roots now become explicit
+      startup anchors, successful startup prints the compact `target` line, and
+      untrusted planned suffixes still fail closed.
 - [x] Claude's measured surface issue was real: root `CLAUDE.md` duplicated the
       managed `AGENTS.md` contract before importing it, `.claude/CLAUDE.md`
       restated several root rules, SessionStart printed a brief already written
@@ -182,14 +382,17 @@ Related Bugs:
       both Codex and Claude because they own the serial startup/context rule.
 
 ## Must-Ship
+
+- [ ] Prevent routine native Stop logging from leaving an admitted Compass append unfinished when its hook budget expires; preserve the same event/session custody, normal publication owner, memory behavior and bounded hook lifetime. Prove exact interruption, completion, no duplicate append and healthy subsequent startup through the native launcher-shaped route (CB-305).
 - [x] Add shared prompt route locks so help/show/capabilities prompts bypass
       heavy context work without changing the user-visible command contract.
 - [x] Add `odylith claude prompt-bundle` so show/help route locks, prompt
       context, and teaser output run through one host path.
 - [x] Render Claude settings with one prompt-submit bundle hook, host-native
       Bash guard filters, and async PostToolUse checkpoints where supported.
-- [x] Keep Codex PostToolUse on a cheap dirty-event recorder and settle
-      governed refresh work during Stop or the next grounding cycle.
+- [x] Keep Codex PostToolUse on a cheap dirty-event recorder; successful
+      foreground sync retires covered records. Native Stop only retains
+      session memory and delivery-confirmation evidence.
 - [x] Keep Codex PostToolUse chat-visible for earned live intervention beats:
       Observation/Proposal payloads render in the hook response while the
       durable dirty-event record owns later governance settlement.
@@ -221,6 +424,11 @@ Related Bugs:
       `odylith dashboard refresh`, `odylith compass refresh --status`, and the
       owned Radar, Atlas, Registry, and Casebook refresh commands, including a
       no-provider credit-burn tripwire and multi-surface parallelism guard.
+- [x] Harden post-upgrade dashboard version truth: write a runtime sidecar from
+      `odylith version`, force the shell-facing dashboard refresh after
+      upgrade, warn when the rendered shell version lags the authoritative
+      runtime, and make `odylith sync --force` block dirty-overlap before
+      tracked Radar normalization with a narrow dashboard refresh recovery.
 - [x] Mark explicit-only Claude workflow skills as slash-invocable without
       removing automatic context, bug-capture, start, show, sync, or hygiene
       skills from model invocation.
@@ -296,6 +504,17 @@ Related Bugs:
       non-negotiable contracts: evidence separation, confirmation gates,
       required host-authored topology, no duplicated diagram bodies, release
       planning, and durable memory.
+- [x] Greenfield Registry component specs stay component-local. Apply now
+      gives each dossier the component's primary child workstream,
+      non-project-level diagrams, component-authored proof rows, and local
+      security/policy posture while leaving broad system context and program
+      topology in Radar/Atlas.
+- [x] Greenfield proposal/apply UX now keeps project shaping visibly ahead of
+      code. Proposal text renders a deeper project intelligence board,
+      project design board, host-independent customization examples, and the
+      full no-code-until-plan customization flow; apply/create closeouts now
+      label the child workstream as a future implementation lane after gates
+      instead of the next coding instruction.
 - [x] Engine-integrity checks need a dependency-light diagnostic lane. The
       diagnostic benchmark now defaults to cold cache so packet/prompt
       readiness can be proven in source-local posture without optional
@@ -319,116 +538,45 @@ Related Bugs:
       policy, release-gate proof, or migration-observer obligations.
 
 ## Risks & Mitigations
-- [x] Risk: Moving checkpoint work off the critical path could lose governance
-      evidence after edits or Bash commands.
-  - [x] Mitigation: Codex records durable dirty events synchronously and Stop
-        settlement replays governed refresh or keeps unsettled events for the
-        next prompt when refresh fails.
-- [x] Risk: The latency fix could make Codex checkpoint hooks silent and hide
-      live Intervention Engine output from the chat.
-  - [x] Mitigation: Codex post-bash now emits the earned live
-        Observation/Proposal payload from the existing intervention bundle
-        while continuing to exclude Assist from the hook-visible path and
-        defer heavy governance refresh.
-- [x] Risk: Claude prompt-bundle could accidentally drop visible teaser output
-      or hidden prompt context.
-  - [x] Mitigation: Prompt-bundle tests compare route-lock behavior and
-        hidden/visible output parity against the previous prompt-context and
-        prompt-teaser surfaces.
-- [x] Risk: Strict Casebook Status/Type validation could break legacy
-      consumer migrations.
-  - [x] Mitigation: Casebook sync migration backfills missing Type and compacts
-        prose Status before validation, with doctor and upgrade regression
-        coverage.
+
+- [x] Risk: Moving checkpoint work off the critical path could lose governance evidence after edits or Bash commands.
+  - [x] Mitigation: Codex records durable dirty events synchronously and Stop settlement replays governed refresh or keeps unsettled events for the next prompt when refresh fails.
+- [x] Risk: The latency fix could make Codex checkpoint hooks silent and hide live Intervention Engine output from the chat.
+  - [x] Mitigation: Codex post-bash now emits the earned live Observation/Proposal payload from the existing intervention bundle while continuing to exclude Assist from the hook-visible path and defer heavy governance refresh.
+- [x] Risk: Claude prompt-bundle could accidentally drop visible teaser output or hidden prompt context.
+  - [x] Mitigation: Prompt-bundle tests compare route-lock behavior and hidden/visible output parity against the previous prompt-context and prompt-teaser surfaces.
+- [x] Risk: Strict Casebook Status/Type validation could break legacy consumer migrations.
+  - [x] Mitigation: Casebook sync migration backfills missing Type and compacts prose Status before validation, with doctor and upgrade regression coverage.
 - [x] Risk: Skill-surface diet could remove automatic governance capture.
-  - [x] Mitigation: Explicit-only flags are limited to manual workflow skills;
-        tests assert automatic context and bug-capture skills remain
-        model-invokable.
-- [x] Risk: Consumer-lane guidance slimming could accidentally drop the
-      product philosophy: prompt context assessment, observations,
-      interventions, ambient assists, memory, execution, or governance capture.
-  - [x] Mitigation: The consumer hard-law kernel names the preserved engines,
-        keeps `start` as the serial first gate, keeps context/query ordering,
-        keeps intervention-status and visible-intervention proof, and routes
-        long-form behavior to the existing skills and guidance rather than
-        deleting it.
-- [x] Risk: Low-signal prompt optimization could bypass memory, Execution
-      Engine, Tribunal, or intervention alignment when the user is asking
-      Odylith about its own presence or visibility.
-  - [x] Mitigation: Generic low-signal prompts stay silent, while
-        Odylith-directed quiet prompts still build the compact local alignment
-        substrate. Tests assert the emitted context carries memory, execution,
-        and lane-proof evidence without constructing the full conversation
-        bundle.
-- [x] Risk: New generated launchers could look unhealthy to the shipped
-      v0.1.12 runtime during fresh install or repair.
-  - [x] Mitigation: Generated launchers now include a legacy health-check
-        fallback anchor and a regression test that mimics the v0.1.12 parser
-        while keeping the active direct-dispatch path.
-- [x] Risk: Current-source generated launchers could route Claude
-      prompt-bundle to a module missing from the shipped v0.1.12 runtime.
-  - [x] Mitigation: Generated launchers now detect the module in the active
-        runtime or source `PYTHONPATH`; if absent, they run the shipped
-        prompt-context and prompt-teaser commands and merge their outputs.
-- [x] Risk: Shipped v0.1.12 `claude intervention-status` could report
-      degraded when the current-source prompt-bundle hook is actually ready.
-  - [x] Mitigation: Current-source status treats prompt-bundle as the
-        prompt-submit readiness owner and the v0.1.13 settings renderer no
-        longer emits marker hooks that fork shells without doing product work.
-- [x] Risk: v0.1.13 could pass latest-runtime proof while older supported
-      installs fail during direct upgrade.
-  - [x] Mitigation: Added a lifecycle simulator matrix for 0.1.10 -> 0.1.13,
-        0.1.11 -> 0.1.13, and 0.1.12 -> 0.1.13. The 0.1.10 fixture removes
-        the value corpus and seeds a legacy signal-ranker artifact so the
-        value-engine migration applies, removes the old artifact, writes the
-        replacement corpus, activates 0.1.13, and records the result.
-- [x] Risk: Switching to dev-maintainer source-local could still leave the
-      UI looking pinned to 0.1.12 because stale active release lanes remained
-      visible beside the true 0.1.13 current/next target.
-  - [x] Mitigation: Compass Release Targets now defaults to current/next
-        alias groups when aliases exist, while preserving active/planned/draft
-        fallback for repos that have not adopted release aliases yet.
-- [x] Risk: Agents could optimize for lower wall-clock latency by launching
-      `start`, `context`, `git status`, and repo search together, making the
-      transcript imply the Context Engine ran before startup.
-  - [x] Mitigation: Cross-host guidance and skill surfaces now make startup a
-        serial gate. Tests pin root guidance, install-generated guidance,
-        Claude command assets, Codex/Claude skill shims, source skills, and
-        bundle mirrors to the same rule.
-- [x] Risk: Source-local maintainer posture could test unreleased runtime code
-      with the pinned managed interpreter and miss the target Lance/Tantivy
-      memory backend, making memory look degraded during the most important
-      product QA lane.
-  - [x] Mitigation: Source-local launchers now prefer the source checkout
-        `.venv` when present, then fall back to repo `.venv`, then host
-        Python. Consumer pinned runtime remains isolated and continues to rely
-        on the managed memory feature pack.
-- [x] Risk: Visibility feedback phrased as "I want to see Odylith Assist..."
-      could be treated as a normal prompt and skip the recovery line.
-  - [x] Mitigation: The shared prompt signal detector recognizes precise
-        Assist visibility phrases and keeps passthrough/help/show prompts
-        stdout-clean.
-- [x] Risk: Exact Assist visibility feedback could replay an older Observation
-      or Proposal before the recovery Assist and make the response look noisy or
-      mis-scoped.
-  - [x] Mitigation: Prompt-submit visible-intervention fallback now renders
-        Assist-only recovery for exact Assist visibility feedback unless the
-        caller explicitly forces proposal content.
-- [x] Risk: Operators could request Compass daemon mode for latency proof and
-      receive `mode_resolution_failed` whenever the local daemon had idled out.
-  - [x] Mitigation: Forced daemon mode starts the same local Context Engine
-        daemon contract and waits for readiness; `auto` still avoids spawning
-        a background process unless a daemon is already available.
-- [x] Risk: Engine-readiness proof could fail for the wrong reason if the
-      diagnostic benchmark default requires warm local-memory dependencies in
-      source-local posture.
-  - [x] Mitigation: Diagnostic benchmark runs now default to cold cache and the
-        Benchmark component spec documents warm cache as an explicit operator
-        choice for memory-substrate verification.
-- [x] Risk: Release proof scripts or shell consumers could make a healthy
-      Context Engine command look broken by closing stdout early.
-  - [x] Mitigation: The Context Engine CLI entrypoint catches closed-pipe
-        conditions at the command boundary and returns cleanly.
+  - [x] Mitigation: Explicit-only flags are limited to manual workflow skills; tests assert automatic context and bug-capture skills remain model-invokable.
+- [x] Risk: Consumer-lane guidance slimming could accidentally drop the product philosophy: prompt context assessment, observations, interventions, ambient assists, memory, execution, or governance capture.
+  - [x] Mitigation: The consumer hard-law kernel names the preserved engines, keeps `start` as the serial first gate, keeps context/query ordering, keeps intervention-status and visible-intervention proof, and routes long-form behavior to the existing skills and guidance rather than deleting it.
+- [x] Risk: Low-signal prompt optimization could bypass memory, Execution Engine, Tribunal, or intervention alignment when the user is asking Odylith about its own presence or visibility.
+  - [x] Mitigation: Generic low-signal prompts stay silent, while Odylith-directed quiet prompts still build the compact local alignment substrate. Tests assert the emitted context carries memory, execution, and lane-proof evidence without constructing the full conversation bundle.
+- [x] Risk: New generated launchers could look unhealthy to the shipped v0.1.12 runtime during fresh install or repair.
+  - [x] Mitigation: Generated launchers now include a legacy health-check fallback anchor and a regression test that mimics the v0.1.12 parser while keeping the active direct-dispatch path.
+- [x] Risk: Current-source generated launchers could route Claude prompt-bundle to a module missing from the shipped v0.1.12 runtime.
+  - [x] Mitigation: Generated launchers now detect the module in the active runtime or source `PYTHONPATH`; if absent, they run the shipped prompt-context and prompt-teaser commands and merge their outputs.
+- [x] Risk: Shipped v0.1.12 `claude intervention-status` could report degraded when the current-source prompt-bundle hook is actually ready.
+  - [x] Mitigation: Current-source status treats prompt-bundle as the prompt-submit readiness owner and the v0.1.13 settings renderer no longer emits marker hooks that fork shells without doing product work.
+- [x] Risk: v0.1.13 could pass latest-runtime proof while older supported installs fail during direct upgrade.
+  - [x] Mitigation: Added a lifecycle simulator matrix for 0.1.10 -> 0.1.13, 0.1.11 -> 0.1.13, and 0.1.12 -> 0.1.13. The 0.1.10 fixture removes the value corpus and seeds a legacy signal-ranker artifact so the value-engine migration applies, removes the old artifact, writes the replacement corpus, activates 0.1.13, and records the result.
+- [x] Risk: Switching to dev-maintainer source-local could still leave the UI looking pinned to 0.1.12 because stale active release lanes remained visible beside the true 0.1.13 current/next target.
+  - [x] Mitigation: Compass Release Targets now defaults to current/next alias groups when aliases exist, while preserving active/planned/draft fallback for repos that have not adopted release aliases yet.
+- [x] Risk: Agents could optimize for lower wall-clock latency by launching `start`, `context`, `git status`, and repo search together, making the transcript imply the Context Engine ran before startup.
+  - [x] Mitigation: Cross-host guidance and skill surfaces now make startup a serial gate. Tests pin root guidance, install-generated guidance, Claude command assets, Codex/Claude skill shims, source skills, and bundle mirrors to the same rule.
+- [x] Risk: Source-local maintainer posture could test unreleased runtime code with the pinned managed interpreter and miss the target Lance/Tantivy memory backend, making memory look degraded during the most important product QA lane.
+  - [x] Mitigation: Source-local launchers now prefer the source checkout `.venv` when present, then fall back to repo `.venv`, then host Python. Consumer pinned runtime remains isolated and continues to rely on the managed memory feature pack.
+- [x] Risk: Visibility feedback phrased as "I want to see Odylith Assist..." could be treated as a normal prompt and skip the recovery line.
+  - [x] Mitigation: The shared prompt signal detector recognizes precise Assist visibility phrases and keeps passthrough/help/show prompts stdout-clean.
+- [x] Risk: Exact Assist visibility feedback could replay an older Observation or Proposal before the recovery Assist and make the response look noisy or mis-scoped.
+  - [x] Mitigation: Prompt-submit visible-intervention fallback now renders Assist-only recovery for exact Assist visibility feedback unless the caller explicitly forces proposal content.
+- [x] Risk: Operators could request Compass daemon mode for latency proof and receive `mode_resolution_failed` whenever the local daemon had idled out.
+  - [x] Mitigation: Forced daemon mode starts the same local Context Engine daemon contract and waits for readiness; `auto` still avoids spawning a background process unless a daemon is already available.
+- [x] Risk: Engine-readiness proof could fail for the wrong reason if the diagnostic benchmark default requires warm local-memory dependencies in source-local posture.
+  - [x] Mitigation: Diagnostic benchmark runs now default to cold cache and the Benchmark component spec documents warm cache as an explicit operator choice for memory-substrate verification.
+- [x] Risk: Release proof scripts or shell consumers could make a healthy Context Engine command look broken by closing stdout early.
+  - [x] Mitigation: The Context Engine CLI entrypoint catches closed-pipe conditions at the command boundary and returns cleanly.
 
 ## Validation
 - [x] `PYTHONPATH=src pytest -q tests/unit/runtime/test_claude_host_prompt_context.py tests/unit/runtime/test_codex_host_post_bash_checkpoint.py tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_host_runtime_contract.py tests/unit/runtime/test_claude_cli_capabilities.py tests/unit/install/test_claude_effective_settings.py tests/unit/runtime/test_claude_host_compatibility.py tests/unit/test_claude_host_cli.py tests/unit/test_cli_audit.py tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_source_bundle_mirror.py tests/unit/runtime/test_hygiene.py tests/integration/install/test_manager.py::test_doctor_bundle_repair_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_upgrade_same_version_backfills_legacy_casebook_bug_ids tests/integration/install/test_manager.py::test_consumer_upgrade_backfills_legacy_casebook_bug_ids_during_runtime_activation`
@@ -597,3 +745,123 @@ Related Bugs:
       reported `ok: true`, `blocked: 0`, `ungated: 0` after the new
       migration-observer markers.
 - [x] `git diff --check`
+- [x] Engine-integrity follow-up: added `odylith validate engine-integrity`
+      as the cheap, dependency-light activation gate for Context Engine,
+      Execution Engine, Tribunal, Intervention Engine, Governance, Subagent
+      routing/orchestration, Discipline, Surface DAGs, Delivery, Analysis,
+      Memory, Topology, Taxonomies/FSMs, Greenfield Domain Intelligence, and
+      Overall UX. The capability inventory now exposes Topology Integrity,
+      Taxonomies/FSMs, Operator Experience, and the one-command
+      `greenfield create` path.
+- [x] Quick Execution Engine benchmark routing no longer invokes live raw-host
+      execution for the inner-loop family check. `execution_engine` joins the
+      local-only quick family set so the quick lane proves packet/handshake
+      integrity without waiting on host CLI baseline execution; full live
+      publication proof remains a separate `proof` lane.
+- [x] Final hardening proof for this pass:
+      `PYTHONPATH=src python -m pytest -q tests/unit/runtime`
+      (`2704 passed`), `PYTHONPATH=src python -m pytest -q tests/unit/test_cli.py`
+      (`179 passed`), `PYTHONPATH=src python -m pytest -q tests/unit/install`
+      (`350 passed`), and the comprehensive browser matrix
+      (`195 passed, 1 skipped`) across Radar, Registry, Atlas, Casebook,
+      Compass, Context/Execution alignment, intervention visibility, filters,
+      onboarding, and layout/UX audits.
+- [x] Component-spec topology proof:
+      `python3 -m pytest tests/unit/runtime/test_greenfield_proposals.py
+      tests/unit/runtime/test_component_authoring.py
+      tests/unit/runtime/test_governed_artifact_tribunal.py -q` (`39 passed`).
+- [x] Project-first UX proof:
+      `python3 -m pytest tests/unit/runtime/test_greenfield_proposals.py
+      tests/unit/runtime/test_greenfield_intelligence_schema.py
+      tests/unit/runtime/test_component_authoring.py
+      tests/unit/install/test_local_release_smoke.py -q` (`58 passed`) plus
+      `python3 -m py_compile` for touched greenfield UX modules and release
+      smoke script.
+- [x] Applied-Radar sludge proof:
+      source-local `greenfield propose` for an external-domain fixture rendered
+      270 lines with a project design board, no-code posture, three intact
+      customization prompts, and 24 project-intelligence layers; source-local
+      apply into a seeded temp repo wrote B-001..B-004 without shallow fragments
+      (`- R1.`, `- Q1.`, split `domain contract.`, split `command.`, or `?.`).
+      Regression coverage lives in
+      `tests/unit/runtime/test_greenfield_proposals.py`; the focused 58-test
+      greenfield/component/local-release smoke slice and `py_compile` passed.
+- [x] Atlas UX proof:
+      default greenfield Atlas rows now include `review_focus`,
+      `operator_question`, and `proof_gate`; the operator-facing proposal
+      renders per-diagram summary/review/question/gate guidance; default
+      Mermaid sources include evidence-boundary, code-gate, decision-lens,
+      proposal-state, unresolved-risk, and surface-agreement annotations inside
+      the diagrams. Source-local external-domain propose rendered 290 lines with those
+      diagram explanations. `python3 -m pytest
+      tests/unit/runtime/test_greenfield_atlas_contract.py
+      tests/unit/runtime/test_greenfield_proposals.py
+      tests/unit/runtime/test_greenfield_intelligence_schema.py
+      tests/unit/runtime/test_component_authoring.py
+      tests/unit/install/test_local_release_smoke.py -q` passed (`69 passed`)
+      plus `py_compile` for the touched proposal modules.
+- [x] Greenfield preview/write-gate proof:
+      default `greenfield propose` now renders a compact product-first preview
+      instead of dumping the deep accepted record, makes the next operator move
+      explicit, and preserves domain-bearing trailing title terms.
+      The full JSON path still carries deep workstream, component, architecture,
+      release, risk, validation, and memory records for confirmed apply. Proof
+      started with a source-local domain-bearing title repro, then covered
+      compact preview assertions, show/bundle guidance, profiled-domain
+      checks, Atlas contract checks, stale repair cleanup, `CB-194`, and a
+      green `release migration-gate --target-version 0.1.15 --json`.
+- [x] Greenfield product-repo guard proof:
+      stale consumer repair logic is consumer-lane only and must not rewrite
+      Odylith product governance source during product-repo refreshes.
+      Standalone Registry rendering now reads the source manifest rather than a
+      stale runtime snapshot. Proof: product-repo guard regression test,
+      standalone Registry source-manifest precedence test, and live
+      `radar refresh --runtime-mode standalone` leaving
+      `odylith/registry/source/component_registry.v1.json` at 30 source
+      components with zero external mock components. Rendered surface proof then
+      covered Radar, Registry, Atlas, Casebook, and Compass in desktop and
+      mobile headless browser viewports with no console warnings/errors and no
+      horizontal overflow.
+- [x] Greenfield architecture-title proof:
+      diagram titles now name the view instead of repeating the full project
+      prompt prefix. Generic and robot-swarm scaffolds keep
+      project identity in slugs, summaries, and context while rendering short
+      titles such as `System Overview`, `First Slice Flow`, and
+      `Telemetry Contract And Data Flow`. The Tribunal rejects confirmed
+      proposals whose diagram titles start with the project title. Proof:
+      `CB-195`, focused Atlas/profile tests, compact preview
+      repro, and source-local py_compile for the touched generator and
+      Tribunal modules.
+- [x] Activation validators passed after the engine-integrity slice:
+      `validate engine-integrity`, `validate discipline`,
+      `validate guidance-behavior`, `validate topology-integrity`,
+      `casebook validate`, `atlas render --fail-on-stale`,
+      `release migration-gate --target-version 0.1.15 --json`,
+      `sync --check-only --impact-mode selective`, `node --check` for the shell
+      controller, and `git diff --check`.
+- [x] `PYTHONPATH=src python -m odylith.cli benchmark --repo-root . --profile quick --family execution_engine --no-write-report --json`
+      now completes locally and clears the hard quality gate
+      (`report_id=c816bd2493538b2e`, `hard_quality_gate_cleared=true`), but
+      still reports `status=hold` because secondary latency/token guardrails
+      fail (`latency_delta_ms=40.072`, `prompt_token_delta=911`,
+      `total_payload_token_delta=1363`). `CB-189` tracks that remaining
+      efficiency debt; do not present the execution-engine quick lane as a clean
+      low-latency pass until that bug closes.
+
+## Traceability
+
+Host-asset repair and migration operations; these references do not qualify hook latency or native chat delivery.
+
+### Runbooks
+
+- `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
+
+### Developer Docs
+
+- `odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md`
+
+### Code References
+
+- `src/odylith/runtime/surfaces/claude_host_prompt_bundle.py`
+- `src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py`
+- `src/odylith/runtime/surfaces/codex_host_stop_summary.py`

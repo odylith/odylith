@@ -156,3 +156,21 @@ Related Bugs:
 - [ ] `PYTHONPATH=src python3 -m odylith.cli validate component-registry --repo-root .`
 - [ ] `PYTHONPATH=src python3 -m odylith.cli atlas render --repo-root . --diagram-id D-024`
 - [ ] `git diff --check`
+
+## Traceability
+
+Paired benchmark proof/publication, corpus coverage, and source-tree identity.
+
+### Runbooks
+
+- `odylith/MAINTAINER_RELEASE_RUNBOOK.md`
+
+### Developer Docs
+
+- `docs/benchmarks/FAMILIES_AND_EVALS.md`
+
+### Code References
+
+- `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`
+- `src/odylith/runtime/evaluation/odylith_benchmark_tree_identity.py`
+- `src/odylith/runtime/evaluation/odylith_benchmark_publication.py`

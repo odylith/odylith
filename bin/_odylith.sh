@@ -38,6 +38,10 @@ require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"
 }
 
+ensure_playwright_chromium() {
+  "$odylith_python" -m playwright install chromium >/dev/null
+}
+
 require_tag() {
   local tag="${1:-}"
   [[ -n "$tag" ]] || die "release tag is required (example: v0.1.0)"
@@ -141,7 +145,10 @@ require_current_release_branch() {
 }
 
 current_worktree_is_clean() {
-  git diff --quiet --ignore-submodules HEAD -- && git diff --quiet --ignore-submodules --cached --
+  local untracked
+  git diff --quiet --ignore-submodules HEAD -- && git diff --quiet --ignore-submodules --cached -- || return 1
+  untracked="$(git ls-files --others --exclude-standard)" || return 1
+  [[ -z "$untracked" ]]
 }
 
 require_clean_worktree() {
@@ -285,21 +292,44 @@ print(value)
 PY
 }
 
-run_release_proof_steps() {
-  local resolved_version="$1"
-  local dist_dir="$2"
-  local tag="v${resolved_version}"
-  require_version "$resolved_version"
-  [[ -n "$dist_dir" ]] || die "run_release_proof_steps requires dist_dir"
+greenfield_release_proof_root() {
+  local head_sha="$1"
+  [[ "$head_sha" =~ ^[0-9a-f]{40}$ ]] || die "Greenfield release proof requires a full Git revision"
+  printf '%s\n' "$(dirname "$odylith_release_session_file")/greenfield-release/$head_sha"
+}
 
-  "$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . sync
+require_current_component_forensics() {
+  local output
+  if ! output="$(PYTHONPATH="$odylith_repo_root/src${PYTHONPATH:+:$PYTHONPATH}" "$odylith_python" -m odylith.cli governance sync-component-spec-requirements --repo-root "$odylith_repo_root" --check-only 2>&1)"; then
+    printf '%s\n' "$output" >&2
+    die "Registry component forensics are stale for the checked-out source. Run: PYTHONPATH=src .venv/bin/python -m odylith.cli governance sync-component-spec-requirements --repo-root ."
+  fi
+}
+
+validate_release_proof_source() {
+  local resolved_version="$1"
+  local tag="v${resolved_version}"
+  "$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . check
   "$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . release-check --expected-version "$resolved_version"
   "$odylith_host_repo_root/bin/validate"
   git diff --quiet --ignore-submodules HEAD -- || die "release proof validation mutated tracked files; commit them before release"
   git diff --quiet --ignore-submodules --cached -- || die "release proof validation staged tracked files; commit them before release"
+  require_current_component_forensics
   odylith_cli validate self-host-posture --repo-root . --mode release --expected-tag "$tag"
-  "$odylith_python" -m hatch build --target wheel "$dist_dir"
-  "$odylith_python" scripts/release/publish_release_assets.py --repo odylith/odylith --tag "$tag" --dist-dir "$dist_dir" --allow-local
+}
+
+prepare_discovery_proof_package() {
+  local resolved_version="$1"
+  local dist_dir="$2"
+  local tag="v${resolved_version}"
+  require_version "$resolved_version"
+  [[ -n "$dist_dir" ]] || die "release package preparation requires dist_dir"
+  local package_logs="$(dirname "$dist_dir")/package-logs"
+  mkdir -p "$package_logs"
+  validate_release_proof_source "$resolved_version"
+  "$odylith_python" -m hatch build --target wheel "$dist_dir" 2>&1 | tee "$package_logs/wheel.log"
+  "$odylith_python" scripts/release/publish_release_assets.py --repo odylith/odylith --tag "$tag" --dist-dir "$dist_dir" --allow-local 2>&1 | tee "$package_logs/assets.log"
+  "$odylith_python" scripts/release/platform_domain_leakage_check.py --repo-root . --dist-dir "$dist_dir"
 
   ODYLITH_RELEASE_PREFLIGHT_DIST_DIR="$dist_dir" "$odylith_python" - <<'PY'
 from __future__ import annotations
@@ -333,5 +363,90 @@ if bad:
 print(f"release preflight wheel ok: {wheel}")
 PY
 
-  "$odylith_python" scripts/release/local_release_smoke.py --version "$resolved_version" --dist-dir "$dist_dir"
+  "$odylith_python" scripts/release/local_release_smoke.py --version "$resolved_version" --dist-dir "$dist_dir" 2>&1 | tee "$package_logs/smoke.log"
+}
+
+prepare_release_proof_package() {
+  local resolved_version="$1"
+  local dist_dir="$2"
+  require_version "$resolved_version"
+  [[ "${GREENFIELD_RELEASE_BUILD_RUN_ID:-}" =~ ^[1-9][0-9]*$ ]] || die "exact hosted candidate build run ID is required"
+  validate_release_proof_source "$resolved_version"
+  "$odylith_python" "$odylith_repo_root/scripts/release/hosted_release_custody.py" acquire \
+    --tag "v${resolved_version}" --revision "$(release_session_field head_sha)" \
+    --build-run-id "$GREENFIELD_RELEASE_BUILD_RUN_ID" --proof-root "$(dirname "$dist_dir")"
+  ODYLITH_RELEASE_REQUIRE_SIGSTORE_VERIFY=1 "$odylith_python" "$odylith_repo_root/scripts/release/local_release_smoke.py" \
+    --version "$resolved_version" --dist-dir "$dist_dir" 2>&1 | tee "$(dirname "$dist_dir")/package-logs/local-smoke.log"
+}
+
+run_release_proof_steps() {
+  local resolved_version="$1"
+  local dist_dir="$2"
+  local matrix_gate_mode="${3:-discovery}"
+  local matrix_release_intent="${GREENFIELD_MATRIX_RELEASE_INTENT:-0}"
+  case "$matrix_gate_mode" in
+    discovery)
+      [[ "$matrix_release_intent" == "0" ]] || die "release candidate proof is non-disclosing; terminal Greenfield release proof belongs to release-preflight"
+      prepare_discovery_proof_package "$resolved_version" "$dist_dir"
+      ;;
+    terminal)
+      [[ "$matrix_release_intent" == "1" ]] || die "terminal proof requires GREENFIELD_MATRIX_RELEASE_INTENT=1"
+      # The preflight owner authenticates and consumes the prepared package before this call.
+      ;;
+    *) die "run_release_proof_steps matrix mode must be discovery or terminal" ;;
+  esac
+  local matrix_temp_parent matrix_case_file release_audit_file release_audit_repo_root
+  local sealed_release_input_root semantic_annotations_file evaluation_split_manifest
+  local final_holdout_run_ledger implementation_revision distribution_provenance_file
+  local lower_capability_control_file evidence_output_dir
+  matrix_temp_parent="${ODYLITH_GREENFIELD_MATRIX_TEMP_PARENT:-$(dirname "$dist_dir")}"
+  matrix_case_file=""
+  release_audit_file=""
+  release_audit_repo_root=""
+  sealed_release_input_root=""
+  semantic_annotations_file=""
+  evaluation_split_manifest=""
+  final_holdout_run_ledger=""
+  implementation_revision=""
+  distribution_provenance_file=""
+  lower_capability_control_file=""
+  evidence_output_dir="${GREENFIELD_MATRIX_EVIDENCE_OUTPUT_DIR:-$dist_dir/greenfield-preconfirm-evidence}"
+  if [[ "$matrix_gate_mode" == "terminal" && "$matrix_release_intent" == "1" ]]; then
+    matrix_case_file="${GREENFIELD_MATRIX_CASE_FILE:-}"
+    release_audit_file="${GREENFIELD_MATRIX_RELEASE_AUDIT_FILE:-}"
+    release_audit_repo_root="${GREENFIELD_MATRIX_RELEASE_AUDIT_REPO_ROOT:-}"
+    sealed_release_input_root="${GREENFIELD_MATRIX_SEALED_RELEASE_INPUT_ROOT:-}"
+    semantic_annotations_file="${GREENFIELD_MATRIX_SEMANTIC_ANNOTATIONS_FILE:-}"
+    evaluation_split_manifest="${GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST:-}"
+    final_holdout_run_ledger="${GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER:-}"
+    implementation_revision="$(git -C "$odylith_repo_root" rev-parse HEAD)"
+    distribution_provenance_file="${GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE:-$dist_dir/build-provenance.v1.json}"
+    if [[ "$distribution_provenance_file" != "$dist_dir/build-provenance.v1.json" ]]; then
+      require_file "$dist_dir/build-provenance.v1.json"
+      mkdir -p "$(dirname "$distribution_provenance_file")"
+      cp "$dist_dir/build-provenance.v1.json" "$distribution_provenance_file"
+    fi
+    lower_capability_control_file="${GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE:-}"
+  else
+    matrix_release_intent=0
+  fi
+
+  GREENFIELD_MATRIX_RELEASE_INTENT="$matrix_release_intent" \
+  GREENFIELD_MATRIX_CASE_FILE="$matrix_case_file" \
+  GREENFIELD_MATRIX_RELEASE_AUDIT_FILE="$release_audit_file" \
+  GREENFIELD_MATRIX_RELEASE_AUDIT_REPO_ROOT="$release_audit_repo_root" \
+  GREENFIELD_MATRIX_SEALED_RELEASE_INPUT_ROOT="$sealed_release_input_root" \
+  GREENFIELD_MATRIX_SEMANTIC_ANNOTATIONS_FILE="$semantic_annotations_file" \
+  GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST="$evaluation_split_manifest" \
+  GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER="$final_holdout_run_ledger" \
+  GREENFIELD_MATRIX_IMPLEMENTATION_REVISION="$implementation_revision" \
+  GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE="$distribution_provenance_file" \
+  GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE="$lower_capability_control_file" \
+  GREENFIELD_MATRIX_EVIDENCE_OUTPUT_DIR="$evidence_output_dir" \
+  GREENFIELD_MATRIX_COMPOSED_PUBLIC_EVIDENCE="${GREENFIELD_MATRIX_COMPOSED_PUBLIC_EVIDENCE:-}" \
+  GREENFIELD_MATRIX_OUTPUT_JSON="${GREENFIELD_MATRIX_OUTPUT_JSON:-$dist_dir/greenfield-preconfirm-matrix.v1.json}" \
+  BROWSER_PROOF=1 \
+  COMMIT_RECOVERY_PROOF=1 \
+  TEMP_PARENT="$matrix_temp_parent" \
+  "$odylith_repo_root/bin/greenfield-preconfirm-matrix" "$resolved_version" "$dist_dir"
 }

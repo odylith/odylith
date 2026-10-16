@@ -230,3 +230,21 @@ Related Bugs:
 - [ ] `PYTHONPATH=src python3 -m pytest -q tests/unit/install/test_codex_project_assets.py tests/unit/runtime/test_subagent_reasoning_ladder.py tests/unit/test_cli.py`
 - [ ] `./.odylith/bin/odylith validate backlog-contract --repo-root .`
 - [ ] `git diff --check`
+
+## Traceability
+
+Target-versus-shipped release language and capability-gated Codex dispatch; native activation needs separate proof.
+
+### Runbooks
+
+- `odylith/MAINTAINER_RELEASE_RUNBOOK.md`
+
+### Developer Docs
+
+- `odylith/agents-guidelines/CODEX_HOST_CONTRACT.md`
+
+### Code References
+
+- `src/odylith/runtime/surfaces/codex_host_shared.py`
+- `src/odylith/runtime/common/codex_cli_capabilities.py`
+- `src/odylith/cli.py`

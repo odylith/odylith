@@ -23,15 +23,12 @@ from odylith.runtime.surfaces import compass_transaction_runtime
 _FRESHNESS_LIVE_MAX_MINUTES = 90
 _FRESHNESS_RECENT_MAX_MINUTES = 6 * 60
 _FRESHNESS_AGING_MAX_MINUTES = 24 * 60
-_OPERATOR_IMPACT_LEADS = (
-    "help operators ",
-    "let operators ",
-    "gives operators ",
-    "gives teams ",
-    "keeps operators ",
-)
 _WHY_PRIORITY_LEAD_RE = re.compile(
     r"^(?:for\s+)?(?:[-*]\s*)?(?:primary|secondary|tertiary)\s*:\s*",
+    re.IGNORECASE,
+)
+_DANGLING_FRAGMENT_END_RE = re.compile(
+    r"(?:\b(?:a|an|and|at|before|by|for|from|in|into|of|on|or|the|to|using|when|where|while|with)\s*)+$",
     re.IGNORECASE,
 )
 _CHECKLIST_RATIO_RE = re.compile(r"checklist\s+\d+\s*/\s*\d+\s+complete", re.IGNORECASE)
@@ -105,23 +102,81 @@ def _decapitalize_clause(text: str) -> str:
 def _risk_phrase(risk_posture: str) -> str:
     token = compass_base._normalize_sentence(risk_posture)
     if not token:
-        return "no critical blockers are currently surfaced"
+        return ""
     lowered = token.lower()
     if lowered.startswith("risk posture:"):
         token = token.split(":", 1)[1].strip()
-    return token.rstrip(" .")
+    token = token.rstrip(" .")
+    return "" if token.lower() == "no critical blockers are currently surfaced" else token
 
 
 def _sentence_without_period(text: str) -> str:
     return compass_base._normalize_sentence(text).rstrip(" .")
 
 
+def _trim_dangling_fragment(text: str) -> str:
+    token = compass_base._normalize_sentence(text).strip()
+    token = re.sub(r"\.{3}$", "", token).rstrip(" ,;:-")
+    while token:
+        cleaned = _DANGLING_FRAGMENT_END_RE.sub("", token).rstrip(" ,;:-")
+        if cleaned == token:
+            return token
+        token = cleaned
+    return ""
+
+
+def _complete_clause_excerpt(text: str, *, max_chars: int) -> str:
+    token = compass_base._normalize_sentence(text)
+    if not token:
+        return ""
+    sentences = re.split(r"(?<=[.!?])\s+", token)
+    sentence = next((part.strip() for part in sentences if part.strip()), "")
+    if not sentence:
+        return ""
+    if len(sentence) <= max_chars:
+        return sentence
+    for parts in (
+        [part.strip() for part in sentence.split(";") if part.strip()],
+        [
+            part.strip()
+            for part in re.split(r",\s+(?=(?:and|but|then|while|when|which|so)\b)", sentence)
+            if part.strip()
+        ],
+    ):
+        candidate = _join_complete_clause_parts(parts=parts, max_chars=max_chars)
+        if candidate:
+            return candidate
+    return ""
+
+
+def _join_complete_clause_parts(*, parts: Sequence[str], max_chars: int) -> str:
+    selected: list[str] = []
+    for part in parts:
+        cleaned = _trim_dangling_fragment(part)
+        if not cleaned:
+            continue
+        candidate = "; ".join([*selected, cleaned])
+        if selected and len(candidate) > max_chars:
+            break
+        if not selected and len(candidate) > max_chars:
+            return ""
+        selected.append(cleaned)
+    candidate = "; ".join(selected).strip()
+    return _trim_dangling_fragment(candidate)
+
+
+def _why_excerpt(text: str, *, max_chars: int) -> str:
+    return _normalize_why_fragment(_complete_clause_excerpt(text, max_chars=max_chars))
+
+
 def _use_story_text(*, customer: str, problem: str, fallback: str = "") -> str:
-    customer_token = _sentence_without_period(customer)
-    problem_token = _sentence_without_period(problem)
-    fallback_token = _sentence_without_period(fallback)
+    customer_token = _trim_dangling_fragment(_sentence_without_period(customer))
+    problem_token = _trim_dangling_fragment(_sentence_without_period(problem))
+    fallback_token = _trim_dangling_fragment(_sentence_without_period(fallback))
     if customer_token and problem_token:
         lowered_problem = problem_token.lower()
+        if re.match(r"^[A-Za-z][A-Za-z0-9 ,&'/-]{1,140}\s+needs?\b", problem_token):
+            return _periodize(problem_token)
         if lowered_problem.startswith("need "):
             return f"{customer_token} need {problem_token[5:]}."
         if lowered_problem.startswith("needs "):
@@ -135,29 +190,30 @@ def _use_story_text(*, customer: str, problem: str, fallback: str = "") -> str:
 
 
 def _normalize_why_fragment(text: str) -> str:
-    token = _sentence_without_period(text)
+    token = _trim_dangling_fragment(_sentence_without_period(text))
     while token:
         normalized = _WHY_PRIORITY_LEAD_RE.sub("", token, count=1).strip()
         if normalized == token:
-            return token
+            return _trim_dangling_fragment(token)
         token = normalized
     return ""
 
 
-def _architecture_consequence_text(*, proposed_solution: str, benefit: str) -> str:
-    solution_token = _sentence_without_period(proposed_solution)
-    benefit_token = _sentence_without_period(benefit)
-    if solution_token:
-        solution_clause = _decapitalize_clause(solution_token)
-        move_clause = solution_clause if solution_clause.lower().startswith("to ") else f"to {solution_clause}"
-        return (
-            f"The architecture move is {move_clause}, which gives operators a clearer contract and lower coordination risk."
-        )
-    if benefit_token:
-        benefit_clause = _decapitalize_clause(benefit_token)
-        if benefit_clause.lower().startswith(_OPERATOR_IMPACT_LEADS):
-            return f"This gives operators a clearer contract and {benefit_clause}."
-    return "This gives operators a clearer contract and lower coordination risk across dependent lanes."
+def _remove_implementation_lead(text: str) -> str:
+    token = compass_base._normalize_sentence(text).strip()
+    for prefix in (
+        "First implementation step:",
+        "Start with this implementation slice:",
+        "Implementation step:",
+    ):
+        if token.lower().startswith(prefix.lower()):
+            return token[len(prefix) :].strip()
+    return token
+
+
+def _architecture_consequence_text(*, proposed_solution: str) -> str:
+    solution_token = _trim_dangling_fragment(_sentence_without_period(_remove_implementation_lead(proposed_solution)))
+    return _periodize(solution_token) if solution_token else ""
 
 
 def _ws_why_context(row: Mapping[str, Any]) -> dict[str, str]:
@@ -175,34 +231,17 @@ def _ws_why_context(row: Mapping[str, Any]) -> dict[str, str]:
             "use_story": "",
             "architecture_consequence": "",
         }
-    problem = _normalize_why_fragment(
-        compass_base._narrative_excerpt(str(why.get("problem", "")).strip(), max_sentences=1, max_chars=220)
-    )
-    customer = _normalize_why_fragment(
-        compass_base._narrative_excerpt(str(why.get("customer", "")).strip(), max_sentences=1, max_chars=160)
-    )
-    proposed_solution = _normalize_why_fragment(
-        compass_base._narrative_excerpt(
-            str(why.get("proposed_solution", "")).strip(),
-            max_sentences=1,
-            max_chars=220,
-        )
-    )
-    why_now = _normalize_why_fragment(
-        compass_base._narrative_excerpt(str(why.get("why_now", "")).strip(), max_sentences=1, max_chars=280)
-    )
-    opportunity = _normalize_why_fragment(
-        compass_base._narrative_excerpt(str(why.get("opportunity", "")).strip(), max_sentences=1, max_chars=280)
-    )
-    founder = _normalize_why_fragment(
-        compass_base._narrative_excerpt(str(why.get("founder_pov", "")).strip(), max_sentences=1, max_chars=280)
-    )
+    problem = _why_excerpt(str(why.get("problem", "")).strip(), max_chars=280)
+    customer = _why_excerpt(str(why.get("customer", "")).strip(), max_chars=180)
+    proposed_solution = _why_excerpt(str(why.get("proposed_solution", "")).strip(), max_chars=300)
+    why_now = _why_excerpt(str(why.get("why_now", "")).strip(), max_chars=320)
+    opportunity = _why_excerpt(str(why.get("opportunity", "")).strip(), max_chars=320)
+    founder = _why_excerpt(str(why.get("founder_pov", "")).strip(), max_chars=320)
     purpose = why_now or opportunity or founder or problem
     benefit = opportunity or founder or why_now or purpose
     use_story = _use_story_text(customer=customer, problem=problem, fallback=purpose)
     architecture_consequence = _architecture_consequence_text(
         proposed_solution=proposed_solution,
-        benefit=benefit,
     )
     return {
         "problem": problem,
@@ -326,6 +365,8 @@ def _normalize_action_task(text: str) -> str:
     token = _clean_execution_clause(text)
     if not token:
         return ""
+    if token.casefold().strip(" .") == "prepare promotion plan and implementation breakdown":
+        return "define the first implementation step and how to verify it"
     match = _PASSIVE_ACTION_RE.match(token)
     if match is None:
         return token
@@ -371,7 +412,7 @@ def _sanitize_digest_summary(summary: str) -> str:
     token = compass_base._normalize_sentence(summary).rstrip(".")
     if not token:
         return ""
-    token = _CHECKLIST_RATIO_RE.sub("checklist progress updated", token)
+    token = _CHECKLIST_RATIO_RE.sub("implementation progress updated", token)
     token = re.sub(r"\b\d+\s*/\s*\d+\b", "", token)
     token = compass_base._normalize_sentence(token).rstrip(".")
     return token
@@ -720,12 +761,21 @@ def _forcing_function_text(*, action: str, label: str, purpose: str = "") -> str
     token = _action_clause_for_narrative(action)
     if not token:
         return ""
-    purpose_clause = _decapitalize_clause(purpose)
+    purpose_clause = _forcing_function_purpose_clause(purpose)
     if purpose_clause:
+        if purpose_clause.startswith("before "):
+            return f"Immediate forcing function is to {token} {purpose_clause}."
         return f"Immediate forcing function is to {token} so {purpose_clause}."
     if label:
         return f"Immediate forcing function is to {token} for {label}."
     return f"Immediate forcing function is to {token}."
+
+
+def _forcing_function_purpose_clause(value: str) -> str:
+    clause = _decapitalize_clause(value)
+    if clause.startswith("do this before "):
+        return f"before {clause.removeprefix('do this before ').strip()}"
+    return clause
 
 
 def _follow_on_text(*, action: str, label: str, benefit: str = "") -> str:
@@ -848,17 +898,19 @@ def _risk_facts(
         )
     if not facts:
         fallback = _periodize(compass_base._normalize_sentence(fallback_text)) if compass_base._normalize_sentence(fallback_text) else ""
-        facts.append(
-            _standup_fact(
-                section_key="risks_to_watch",
-                voice_hint="operator",
-                priority=72,
-                text=fallback or _periodize(_risk_phrase(risk_summary).capitalize()),
-                source="risk_summary",
-                kind="risk_posture",
-                workstreams=workstreams,
+        text = fallback or _periodize(_risk_phrase(risk_summary).capitalize())
+        if text:
+            facts.append(
+                _standup_fact(
+                    section_key="risks_to_watch",
+                    voice_hint="operator",
+                    priority=72,
+                    text=text,
+                    source="risk_summary",
+                    kind="risk_posture",
+                    workstreams=workstreams,
+                )
             )
-        )
     return facts[:3]
 
 
@@ -1015,23 +1067,7 @@ def _scoped_fallback_next_text(
     total_tasks: int,
     freshness_bucket: str,
 ) -> str:
-    purpose_clause = _decapitalize_clause(purpose)
-    remaining_tasks = max(0, int(total_tasks) - int(done_tasks))
-    if remaining_tasks > 0 and purpose_clause:
-        return (
-            f"Immediate forcing function is to turn the next open checklist item into a named checkpoint for {label} "
-            f"so {purpose_clause}."
-        )
-    if remaining_tasks > 0:
-        return f"Immediate forcing function is to turn the next open checklist item into a named checkpoint for {label}."
-    if freshness_bucket in {"aging", "stale"}:
-        return (
-            f"Immediate forcing function is to log the next concrete checkpoint for {label} "
-            "so Compass stops leaning on aging evidence."
-        )
-    if str(status or "").strip().lower() == "planning":
-        return f"Immediate forcing function is to define the first implementation checkpoint for {label}."
-    return f"Immediate forcing function is to capture the next verified checkpoint for {label}."
+    return ""
 
 
 def _global_fallback_next_text(
@@ -1041,17 +1077,7 @@ def _global_fallback_next_text(
     active_count: int,
     freshness_bucket: str,
 ) -> str:
-    purpose_clause = _decapitalize_clause(primary_purpose)
-    if primary_label and purpose_clause:
-        return f"Immediate forcing function is to name the next checkpoint on {primary_label} so {purpose_clause}."
-    if primary_label and freshness_bucket in {"aging", "stale"}:
-        return (
-            f"Immediate forcing function is to log the next checkpoint on {primary_label} "
-            "so portfolio steering stops leaning on aging proof."
-        )
-    if active_count > 0:
-        return "Immediate forcing function is to turn the active flagship lane into a named next checkpoint."
-    return "Immediate forcing function is to name the next concrete checkpoint before portfolio steering drifts."
+    return ""
 
 
 def _scoped_fallback_risk_text(
@@ -1066,18 +1092,8 @@ def _scoped_fallback_risk_text(
     freshness_bucket: str,
     freshness_text: str,
 ) -> str:
-    remaining_tasks = max(0, int(total_tasks) - int(done_tasks))
-    if remaining_tasks > 0 and wave_context:
-        return (
-            f"Primary watch item is sequencing discipline: {remaining_tasks} plan items remain open while "
-            f"{_wave_context_clause(wave_context)}."
-        )
-    if remaining_tasks > 0:
-        return f"Primary watch item is closure discipline: {remaining_tasks} plan items remain open for {label}."
     if freshness_bucket in {"aging", "stale"} and freshness_text:
         return freshness_text
-    if str(eta_source or "").strip().lower() == "heuristic":
-        return f"Primary watch item is timeline confidence: {label} is still projected heuristically at roughly {eta_days} days."
     return _periodize(_risk_phrase(risk_summary).capitalize())
 
 
@@ -1091,21 +1107,6 @@ def _global_fallback_risk_text(
     freshness_bucket: str,
     freshness_text: str,
 ) -> str:
-    active_labels = [
-        _ws_label(row)
-        for row in active_ws_rows
-        if isinstance(row, Mapping) and _ws_label(row)
-    ]
-    active_labels = list(dict.fromkeys(active_labels))
-    if len(active_labels) >= 2:
-        return (
-            f"Primary watch item is execution coherence across {active_labels[0]} and {active_labels[1]} "
-            "while shared dependencies remain open."
-        )
-    if active_labels:
-        return f"Primary watch item is keeping {active_labels[0]} tight so live execution does not diffuse into portfolio churn."
     if freshness_bucket in {"aging", "stale"} and freshness_text:
         return freshness_text
-    if str(eta_source or "").strip().lower() == "heuristic" and primary_label:
-        return f"Primary watch item is timeline confidence on {primary_label}: delivery is still projected heuristically at roughly {eta_days} days."
     return _periodize(_risk_phrase(risk_summary).capitalize())

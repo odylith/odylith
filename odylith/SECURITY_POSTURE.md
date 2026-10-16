@@ -1,5 +1,5 @@
 # Security Posture
-Last updated: 2026-05-04
+Last updated: 2026-09-09
 
 ## Purpose
 
@@ -8,7 +8,7 @@ first-class product boundaries. It hardens `.odylith/` against runtime drift,
 fails closed on insecure consumer-lane overrides, and keeps Odylith-owned
 Python helpers on a tight leash.
 
-This posture is authored for the `v0.1.14` release line prepared by this
+This posture is authored for the `v0.1.15` release line prepared by this
 branch.
 
 ## Threat Model
@@ -77,6 +77,10 @@ Odylith does not claim full protection against:
 - Manifest, wheel, provenance, SBOM, and managed-runtime assets must verify
   against the expected Sigstore signer identity and OIDC issuer.
 - Manifest SHA-256s and provenance digests are checked before activation.
+- Release qualification must use the final signed package. Publication must
+  recheck and preserve its complete asset set, including signatures, without
+  rebuilding or replacing it. Signing proves content identity; semantic and
+  independent review remain separate requirements.
 - Runtime archives are validated for path safety before extraction.
 - GitHub Actions in the release, release-candidate, and test workflows are
   pinned to immutable SHAs, run on a pinned runner image, and use a pinned
@@ -104,18 +108,39 @@ Odylith does not claim full protection against:
 - Launcher repair avoids recursive wrapper loops that previously left blocked
   Python shells behind.
 
+### Authored Radar content
+
+- The shared Markdown renderer formats source syntax without executing it.
+  Raw HTML is disabled; unsafe link schemes and all data URLs remain inert.
+- Images render their descriptions without fetching remote content. Row
+  previews contain no active links, form inputs or Mermaid activation inside
+  their selection buttons. Details retain safe links, disabled checklist
+  controls and the existing Mermaid display path; code fences are not commands.
+- Escaped and entity-encoded checklist markers remain literal text, not
+  evidence of completion. Section boundaries come from Markdown syntax tokens,
+  not headings inside fenced code or a second prose parser.
+- Source text is retained alongside rendered views. These controls establish
+  presentation safety, not semantic truth or sufficiency of proposed proof.
+  CB-303 carries the causal controls and release-proof boundary.
+
 ### Greenfield governance safety
 
 - Greenfield Domain Intelligence proposals separate observed source, user
   intent, and Odylith assumptions; missing source cannot become a source-backed
   governance claim.
-- `odylith greenfield apply` writes only after explicit confirmation and only
-  through owned Radar, Registry, Atlas, release-targeting, and Compass memory
-  paths.
-- Apply-time validation rejects missing host-authored Atlas Mermaid source,
-  duplicated topology, invalid evidence tiers, and incomplete proposal sections
-  before any governed file changes.
-- Host-specific Codex and Claude routes stay thin; the Odylith runtime owns
+- `odylith greenfield propose` builds and quality-gates the full
+  ProductCreateTransaction for read-only review. No qualified confirmation
+  interface is attached. Hosts must not append chat decisions, offer publication
+  or run create from chat approval; callback registration is not qualification.
+- Explicit operator `odylith greenfield create` only verifies the compiler receipt, transaction
+  hash, compiler identity, and unchanged repo preconditions; applies the sealed
+  write set under rollback guard; validates exact readback; and reports success.
+- Legacy proposal `apply` is not a confirmed write path; edited intent must be
+  treated as new evidence and compiled into a new transaction.
+- The greenfield proposal Tribunal rejects disconnected child topology, shallow
+  component ownership, and invisible release/program structures before durable
+  source truth changes.
+- Supported host routes stay thin; the Odylith runtime owns
   validation, confirmation, topology hygiene, and durable memory boundaries.
 
 ### Product Governed Harness safety
@@ -138,17 +163,28 @@ Odylith does not claim full protection against:
 
 ### Host and migration safety
 
+- Native hook registration is not trust or proof of visible delivery. Exact
+  definitions require the supported host review/trust flow; install and doctor
+  do not approve their own hooks. Detached source-local handlers remain mutable.
+- Deferred host dirty-event records store affected paths and event identity,
+  not shell command contents. This minimizes new duplicated sensitive input;
+  it does not redact historical logs or guarantee secret-free path names.
+- Codex Stop uses one 14-second foreground budget, with command-group ownership
+  shared by both host adapters and inherited by hook-scoped sync children.
+  Unsettled checkpoints survive expiry. Separately grouped browser cleanup and
+  native chat delivery remain open proof boundaries; ordinary child-group tests
+  do not establish those outcomes.
+
 - Managed Codex and Claude assets merge additively with user-owned host
   settings; Odylith must not replace a user's host config with an
   Odylith-only template.
 - Consumer-visible docs, browser-rendered governance surfaces, and
   install-managed assets are release-observed. `odylith release
-  migration-gate --target-version 0.1.14` must pass before release prep can
+  migration-gate --target-version 0.1.15` must pass before release prep can
   treat those surfaces as migration-safe.
-- The `v0.1.14` benchmark proof waiver is exact-version tracked release truth.
-  It keeps benchmark proof advisory for this release while preserving the
-  default release rule that benchmark proof is required without an explicit
-  maintainer override.
+- Historical benchmark proof waivers, including the exact-version `v0.1.14`
+  waiver, stay tracked release truth and do not create a standing bypass for
+  later releases.
 
 ## Recovery
 

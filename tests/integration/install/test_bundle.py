@@ -6,9 +6,35 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     root = bundle_root()
     assert (root / "AGENTS.md").is_file()
     agents_text = (root / "AGENTS.md").read_text(encoding="utf-8")
-    assert "host-reasoning evidence/schema contract" in agents_text
-    assert "host-authored Atlas Mermaid source" in agents_text
+    assert "odylith greenfield prepare --repo-root . --prompt" in agents_text
+    assert "One product-owned parent runs the authority gate, source-duty inventory, source-only verifier, and one candidate" in agents_text
+    assert "Admission checks citations, relations, invariants and hashes, then seals ProductCreateTransaction" in agents_text
+    assert "Manual commands keep source custody." in agents_text
+    assert "Clarification: show one question and stop; no candidate or transaction" in agents_text
+    assert "After candidate receipt, no model/semantic/provider call" in agents_text
+    assert "No full-candidate reviewer, parser/regex, repair, retry, fallback or model ladder" in agents_text
+    assert "90/120/150s advisory" in agents_text
+    assert "Standard shares 300s gate/candidate plus 15s completion" in agents_text
+    assert "The nonreplenishing 660s diagnostic parent" in agents_text
+    assert "Receipt delivery, guardian retirement and final preview serialization follow." in agents_text
+    assert "Cancellation grace: 2s; timing remains unqualified." in agents_text
+    assert "Terminal `odylith greenfield decide` CONFIRM/REJECT remain model-free" in agents_text
+    assert "Public chat has no qualified confirmation interface. Chat/hooks cannot authorize create" in agents_text
+    assert 'odylith greenfield prepare --transaction-hash HASH --completion-receipt PATH --edit "<correction>"' in agents_text
+    assert "old/equal seals retain their original receipt" in agents_text
+    assert "Bounded CONFIRM/create require the explicitly delivered --completion-receipt; stored digest/diagnostic records cannot authorize" in agents_text
+    assert "Late/error work delivers no proof, even if cleanup fails." in agents_text
+    assert "Receipt delivery failures are accepted-or-unknown, never cancellation; lost receipts cannot be reissued." in agents_text
+    assert "odylith greenfield create --transaction-file PATH --transaction-hash HASH --completion-receipt PATH --confirm" in agents_text
+    assert "verifies receipt, hash, and preconditions under rollback guard without model, generation, or repair" in agents_text
+    assert "Markdown is view, not truth; proposal or transaction JSON stays compiler-owned" in agents_text
+    assert "greenfield compile-transaction" not in agents_text
+    assert "confirmed-intent.json" not in agents_text
     assert "rerender only the owned surface" in agents_text
+    assert "Generated human-visible content has a non-negotiable clarity floor across all lanes" in agents_text
+    anti_slop_text = (root / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md").read_text(encoding="utf-8")
+    assert "grammatically coherent, and clear about the thing it describes" in anti_slop_text
+    assert "plain English before it tries to be expressive" in anti_slop_text
     assert "Codex-Only Optimizations When Supported" in (root / "agents-guidelines" / "CODEX_HOST_CONTRACT.md").read_text(encoding="utf-8")
     assert "./.odylith/bin/odylith codex compatibility --repo-root ." in (root / "README.md").read_text(encoding="utf-8")
     assert "./.odylith/bin/odylith radar refresh --repo-root ." in (root / "README.md").read_text(encoding="utf-8")
@@ -18,6 +44,15 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     assert (root / "agents-guidelines").is_dir()
     assert (root / "skills").is_dir()
     assert (root / "skills" / "odylith-diagram-catalog" / "SKILL.md").is_file()
+    greenfield_skill = (root / "skills" / "odylith-greenfield-governance" / "SKILL.md").read_text(encoding="utf-8")
+    assert "greenfield prepare --repo-root . --prompt" in greenfield_skill
+    assert "passes: authority gate, source-duty inventory, source-only verifier, and one" in greenfield_skill
+    assert "stops on one material question" in greenfield_skill
+    assert "After candidate receipt, no model, semantic or provider call is allowed" in greenfield_skill
+    assert "--completion-receipt '<path>'" in greenfield_skill
+    assert "CONFIRM without its delivered completion receipt" in greenfield_skill
+    assert "Lost receipts\n   cannot be regenerated" in greenfield_skill
+    assert "no compiler or model work" in greenfield_skill
 
     project_root = bundled_project_root_assets_root()
     assert (project_root / ".claude" / "CLAUDE.md").is_file()
@@ -64,7 +99,8 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     codex_hooks = (project_root / ".codex" / "hooks.json").read_text(encoding="utf-8")
     assert "python3 ./.agents/bin/odylith-host-launcher.py codex session-start-ground --repo-root ." in codex_hooks
     assert (project_root / ".agents" / "skills" / "odylith-start" / "SKILL.md").is_file()
-    assert not (project_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").exists()
+    assert (project_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").is_file()
+    assert (project_root / ".agents" / "skills" / "odylith-subagent-orchestrator" / "SKILL.md").is_file()
     assert "odylith-code-hygiene-guard" in (project_root / ".claude" / "CLAUDE.md").read_text(encoding="utf-8")
     assert "ANTI_SLOP_AND_DECOMPOSITION.md" in (project_root / ".claude" / "CLAUDE.md").read_text(encoding="utf-8")
     assert "odylith-code-hygiene-guard" in (project_root / ".claude" / "agents" / "odylith-reviewer.md").read_text(encoding="utf-8")

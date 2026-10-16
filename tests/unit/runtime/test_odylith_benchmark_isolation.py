@@ -15,6 +15,100 @@ def _write(path: Path, text: str = "x\n") -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def test_workspace_strip_paths_prunes_retained_state_before_traversal(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = tmp_path / "repo"
+    _write(root / "AGENTS.md")
+    _write(root / "src" / "feature" / "CLAUDE.md")
+    _write(root / ".odylith" / "runtime" / "greenfield" / "generations" / "retained" / "AGENTS.md")
+    _write(root / ".git" / "objects" / "AGENTS.md")
+    blocked = (root / ".odylith" / "runtime", root / ".git")
+    visited: list[Path] = []
+    real_scandir = os.scandir
+    real_rglob = Path.rglob
+
+    def guarded_scandir(path):  # type: ignore[no-untyped-def]
+        if isinstance(path, int):
+            return real_scandir(path)
+        current = Path(path)
+        assert not any(current.is_relative_to(parent) for parent in blocked)
+        visited.append(current)
+        return real_scandir(path)
+
+    def guarded_rglob(path, *args, **kwargs):  # type: ignore[no-untyped-def]
+        assert path != root, "An unpruned root rglob enters retained runtime state"
+        return real_rglob(path, *args, **kwargs)
+
+    monkeypatch.setattr(isolation.os, "scandir", guarded_scandir)
+    monkeypatch.setattr(Path, "rglob", guarded_rglob)
+
+    rows = isolation.workspace_strip_paths(repo_root=root)
+
+    assert set(rows) == {Path("AGENTS.md"), Path("src/feature/CLAUDE.md")}
+    assert len(visited) == len(set(visited))
+
+
+def test_workspace_strip_paths_scans_only_replayed_runtime_directories(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = tmp_path / "repo"
+    _write(root / ".odylith" / "bin" / "AGENTS.md")
+    selected = root / ".odylith" / "runtime" / "selected"
+    _write(selected / "AGENTS.md")
+    _write(selected / "nested" / "CLAUDE.md")
+    _write(root / ".odylith" / "runtime" / "unselected" / "AGENTS.md")
+    visited: list[Path] = []
+    real_scandir = os.scandir
+
+    def guarded_scandir(path):  # type: ignore[no-untyped-def]
+        if isinstance(path, int):
+            return real_scandir(path)
+        current = Path(path)
+        assert not current.is_relative_to(root / ".odylith" / "runtime" / "unselected")
+        visited.append(current)
+        return real_scandir(path)
+
+    monkeypatch.setattr(isolation.os, "scandir", guarded_scandir)
+
+    rows = isolation.workspace_strip_paths(
+        repo_root=root,
+        preserve_paths=[
+            ".odylith/runtime/selected",
+            ".odylith/runtime/selected/nested",
+            ".odylith/runtime/selected/nested/CLAUDE.md",
+        ],
+    )
+
+    assert set(rows) == {Path(".odylith/bin/AGENTS.md"), Path(".odylith/runtime/selected/AGENTS.md")}
+    assert len(visited) == len(set(visited))
+
+
+def test_workspace_strip_paths_does_not_follow_runtime_paths_outside_repository(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = tmp_path / "repo"
+    outside = tmp_path / "outside"
+    _write(root / "AGENTS.md")
+    _write(outside / "CLAUDE.md")
+    (root / ".odylith").mkdir()
+    (root / ".odylith" / "bin").symlink_to(outside, target_is_directory=True)
+    real_scandir = os.scandir
+
+    def guarded_scandir(path):  # type: ignore[no-untyped-def]
+        if isinstance(path, int):
+            return real_scandir(path)
+        assert not Path(path).resolve().is_relative_to(outside)
+        return real_scandir(path)
+
+    monkeypatch.setattr(isolation.os, "scandir", guarded_scandir)
+
+    assert isolation.workspace_strip_paths(
+        repo_root=root,
+        preserve_paths=[".odylith/bin", ".odylith/../../outside", str(outside)],
+    ) == [Path("AGENTS.md")]
+
+
 def test_scenario_workspace_self_reference_strip_paths_hide_benchmark_scaffold_but_preserve_explicit_paths(
     tmp_path: Path,
 ) -> None:
@@ -217,7 +311,7 @@ def test_provision_workspace_odylith_root_copies_context_engine_runtime_state(tm
     assert copied_json.read_text(encoding="utf-8") == state_json.read_text(encoding="utf-8")
 
 
-def test_temporary_workspace_checkout_hides_stripped_tracked_files_from_git_status(tmp_path: Path) -> None:
+def test_temporary_workspace_checkout_copies_git_objects_and_hides_stripped_tracked_files(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir(parents=True, exist_ok=True)
     subprocess.run(["git", "init"], cwd=repo_root, text=True, capture_output=True, check=True)
@@ -228,6 +322,10 @@ def test_temporary_workspace_checkout_hides_stripped_tracked_files_from_git_stat
     _write(repo_root / "docs" / "benchmarks" / "README.md", "benchmark doc\n")
     subprocess.run(["git", "add", "README.md", "AGENTS.md", "docs/benchmarks/README.md"], cwd=repo_root, check=True)
     subprocess.run(["git", "commit", "-m", "base"], cwd=repo_root, text=True, capture_output=True, check=True)
+    source_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo_root, text=True, capture_output=True, check=True,
+    ).stdout.strip()
+    source_object = repo_root / ".git" / "objects" / source_head[:2] / source_head[2:]
 
     with isolation.temporary_workspace_checkout(
         repo_root,
@@ -238,6 +336,13 @@ def test_temporary_workspace_checkout_hides_stripped_tracked_files_from_git_stat
         assert not (workspace_root / "AGENTS.md").exists()
         assert not (workspace_root / "docs" / "benchmarks" / "README.md").exists()
         assert (workspace_root / "README.md").read_text(encoding="utf-8") == "repo\n"
+        workspace_head = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=workspace_root, text=True, capture_output=True, check=True,
+        ).stdout.strip()
+        workspace_object = workspace_root / ".git" / "objects" / source_head[:2] / source_head[2:]
+        assert workspace_head == source_head
+        assert workspace_object.read_bytes() == source_object.read_bytes()
+        assert not workspace_object.samefile(source_object)
         status = subprocess.run(
             ["git", "-C", str(workspace_root), "status", "--short"],
             text=True,

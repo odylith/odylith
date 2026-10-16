@@ -5,7 +5,10 @@ from pathlib import Path
 
 import pytest
 
-from odylith.install import migration_observer, migration_runtime
+from odylith.install import migration_release_gate, migration_runtime
+from odylith.install.atlas_box_explanation_migration import (
+    MIGRATION_ID as ATLAS_BOX_EXPLANATION_MIGRATION_ID,
+)
 from odylith.install.atlas_surface_migration import (
     MIGRATION_ID as ATLAS_SURFACE_MIGRATION_ID,
 )
@@ -58,6 +61,12 @@ MIGRATION_FIXTURE_COVERAGE_MARKERS = (
     "v0.1.14-atlas-render-surface-polish:stale_ledger",
     "v0.1.14-atlas-render-surface-polish:skipped_version",
     "v0.1.14-atlas-render-surface-polish:historical_range",
+    "v0.1.15-atlas-box-explanation-contract:dry_run",
+    "v0.1.15-atlas-box-explanation-contract:apply",
+    "v0.1.15-atlas-box-explanation-contract:rerun",
+    "v0.1.15-atlas-box-explanation-contract:stale_ledger",
+    "v0.1.15-atlas-box-explanation-contract:skipped_version",
+    "v0.1.15-atlas-box-explanation-contract:historical_range",
 )
 HISTORICAL_0_1_RELEASES_BEFORE_0_1_14 = (
     "",
@@ -75,6 +84,10 @@ HISTORICAL_0_1_RELEASES_BEFORE_0_1_14 = (
     "0.1.11",
     "0.1.12",
     "0.1.13",
+)
+HISTORICAL_0_1_RELEASES_BEFORE_0_1_15 = (
+    *HISTORICAL_0_1_RELEASES_BEFORE_0_1_14,
+    "0.1.14",
 )
 
 
@@ -252,6 +265,18 @@ def test_registered_atlas_surface_definition_has_release_gate_fixture_coverage()
     assert definition.automatic is True
 
 
+def test_registered_atlas_box_explanation_definition_has_release_gate_fixture_coverage() -> None:
+    definition = next(
+        item for item in migration_runtime.registered_migrations()
+        if item.migration_id == ATLAS_BOX_EXPLANATION_MIGRATION_ID
+    )
+
+    assert definition.migration_id == ATLAS_BOX_EXPLANATION_MIGRATION_ID
+    assert definition.introduced_version == "0.1.15"
+    assert set(FIXTURE_COVERAGE_TOKENS).issubset(definition.coverage_fixtures)
+    assert definition.automatic is True
+
+
 def test_every_registered_upgrade_migration_has_full_lifecycle_fixture_coverage() -> None:
     expected_markers = set(MIGRATION_FIXTURE_COVERAGE_MARKERS)
 
@@ -289,6 +314,62 @@ def test_classifies_source_local_as_release_migration_blocked(tmp_path: Path) ->
     assert plan.scenario.scenario == migration_runtime.SCENARIO_DETACHED_SOURCE_LOCAL
     assert plan.blocked
     assert "source-local" in plan.blocked_reason
+
+
+def test_product_repo_can_realign_source_local_to_release_target(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="source-local")
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="product_repo",
+        previous_version="source-local",
+        target_version="0.1.15",
+        source_repo=False,
+        pinned_version="0.1.15",
+        release_manifest={"repo_schema_version": 1, "migration_required": True},
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_PRODUCT_REPO_PINNED_DOGFOOD
+    assert plan.blocked == ()
+    assert plan.selected == ()
+    assert plan.satisfies_manifest_requirement()
+    assert "realigning detached source-local runtime" in plan.scenario.reasons[0]
+
+
+def test_same_version_consumer_reinstall_does_not_block_on_migration_required_manifest(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="0.1.15")
+    runtime_root = _seed_current_runtime(tmp_path, version="0.1.15", verification={"wheel_sha256": "abc123"})
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.15",
+        target_version="0.1.15",
+        runtime_root=runtime_root,
+        runtime_verification={"wheel_sha256": "abc123"},
+        pinned_version="0.1.15",
+        release_manifest={"repo_schema_version": 1, "migration_required": True},
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_ALREADY_CURRENT_CONSUMER
+    assert plan.release_manifest_migration_required is True
+    assert plan.satisfies_manifest_requirement() is False
+    assert plan.blocked == ()
+
+
+def test_blocked_reason_deduplicates_repeated_migration_blockers(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="product_repo",
+        previous_version="source-local",
+        target_version="0.1.12",
+        source_repo=True,
+    )
+
+    reason = "release migrations are blocked while the product repo is in detached source-local posture"
+    assert plan.blocked_reason == reason
 
 
 def test_missing_pin_blocks_release_migration_with_repair_command(tmp_path: Path) -> None:
@@ -819,6 +900,39 @@ def test_migration_required_future_release_does_not_pass_on_noop_registered_migr
     assert "no registered migration" in plan.blocked_reason
 
 
+def test_migration_required_future_release_does_not_pass_on_historical_repairs(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="1.2.3")
+    _seed_casebook_bug(tmp_path)
+    _seed_atlas_catalog(tmp_path)
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="1.2.3",
+        target_version="1.2.4",
+        release_manifest={"migration_required": True, "repo_schema_version": 1},
+    )
+
+    assert plan.satisfies_manifest_requirement() is False
+    assert plan.blocked
+    assert "no registered migration" in plan.blocked_reason
+    assert _decision_for(plan, CASEBOOK_METADATA_MIGRATION_ID).state == migration_runtime.STATE_SELECTED
+    assert _decision_for(plan, CASEBOOK_STATUS_FSM_MIGRATION_ID).state == migration_runtime.STATE_SELECTED
+    assert _decision_for(plan, ATLAS_SURFACE_MIGRATION_ID).state == migration_runtime.STATE_SELECTED
+    assert _decision_for(plan, ATLAS_BOX_EXPLANATION_MIGRATION_ID).state == migration_runtime.STATE_SELECTED
+
+
+def test_release_migration_gate_blocks_migration_required_release_without_same_train_definition(tmp_path: Path) -> None:
+    report = migration_release_gate.validate_release_migration_gate(
+        repo_root=tmp_path,
+        target_version="1.2.4",
+        release_manifest={"version": "1.2.4", "migration_required": True, "repo_schema_version": 1},
+    )
+
+    assert report.ok is False
+    assert any("migration_required manifest for 1.2.4 has no registered migration definition" in note for note in report.blocked_manual_migrations)
+
+
 def test_casebook_metadata_migration_is_selected_for_prior_versions_to_v013(tmp_path: Path) -> None:
     for previous_version in ("0.1.10", "0.1.11", "0.1.12"):
         repo_root = tmp_path / previous_version.replace(".", "_")
@@ -882,6 +996,27 @@ def test_atlas_surface_migration_is_selected_for_supported_versions_to_v014(tmp_
         assert "no registered migration" not in plan.blocked_reason
 
 
+def test_atlas_box_explanation_migration_is_selected_for_supported_versions_to_v015(tmp_path: Path) -> None:
+    for previous_version in ("0.1.10", "0.1.11", "0.1.12", "0.1.13", "0.1.14"):
+        repo_root = tmp_path / f"atlas_boxes_{previous_version.replace('.', '_')}"
+        repo_root.mkdir()
+        _seed_repo(repo_root, active_version=previous_version)
+        _seed_atlas_catalog(repo_root)
+
+        plan = migration_runtime.plan_release_migrations(
+            repo_root=repo_root,
+            repo_role="consumer_repo",
+            previous_version=previous_version,
+            target_version="0.1.15",
+            release_manifest={"migration_required": True, "repo_schema_version": 1},
+        )
+
+        decision = _decision_for(plan, ATLAS_BOX_EXPLANATION_MIGRATION_ID)
+        assert decision.state == migration_runtime.STATE_SELECTED
+        assert plan.satisfies_manifest_requirement() is True
+        assert "no registered migration" not in plan.blocked_reason
+
+
 def test_release_migrations_cover_any_historical_0_1_release_to_v014(tmp_path: Path) -> None:
     value_engine_required_versions = {
         "",
@@ -925,6 +1060,29 @@ def test_release_migrations_cover_any_historical_0_1_release_to_v014(tmp_path: P
             else migration_runtime.STATE_SKIPPED
         )
         assert plan.ledger_state[MIGRATION_ID] == expected_value_state
+
+
+def test_release_migrations_cover_0_1_10_through_0_1_14_to_v015(tmp_path: Path) -> None:
+    for previous_version in HISTORICAL_0_1_RELEASES_BEFORE_0_1_15:
+        if previous_version not in {"0.1.10", "0.1.11", "0.1.12", "0.1.13", "0.1.14"}:
+            continue
+        repo_root = tmp_path / f"historical_v015_{previous_version.replace('.', '_')}"
+        repo_root.mkdir()
+        _seed_repo(repo_root, active_version=previous_version)
+        _seed_casebook_bug(repo_root)
+        _seed_atlas_catalog(repo_root)
+
+        plan = migration_runtime.plan_release_migrations(
+            repo_root=repo_root,
+            repo_role="consumer_repo",
+            previous_version=previous_version,
+            target_version="0.1.15",
+            release_manifest={"migration_required": True, "repo_schema_version": 1},
+        )
+
+        assert not plan.blocked, (previous_version, plan.blocked_reason)
+        assert plan.satisfies_manifest_requirement() is True
+        assert plan.ledger_state[ATLAS_BOX_EXPLANATION_MIGRATION_ID] == migration_runtime.STATE_SELECTED
 
 
 def test_casebook_metadata_migration_skips_index_only_repos_without_blocking_manifest(tmp_path: Path) -> None:
@@ -1004,380 +1162,37 @@ def test_atlas_surface_migration_ledger_stale_blocks_upgrade(tmp_path: Path) -> 
     assert "migration ledger is stale" in plan.blocked_reason
 
 
-def test_surface_migration_observer_classifies_consumer_visible_surface_paths(tmp_path: Path) -> None:
-    report = migration_observer.observe_surface_migration_needs(
-        repo_root=tmp_path,
-        target_version="0.1.12",
-        changed_paths=(
-            "odylith/skills/odylith-sync/SKILL.md",
-            "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
-            "src/odylith/install/agents.py",
-            "src/odylith/cli.py",
-            "README.md",
-            "odylith/radar/source/ideas/2026-04/generated.md",
-        ),
+
+@pytest.mark.parametrize("loaded_target", [False, True])
+def test_selected_atlas_render_runs_only_from_target_owner(tmp_path, monkeypatch, loaded_target):
+    from dataclasses import replace
+    from types import SimpleNamespace
+    _seed_repo(tmp_path, active_version="0.1.14")
+    _seed_atlas_catalog(tmp_path)
+    target_runtime = tmp_path / ".odylith/runtime/versions/0.1.15"
+    target_runtime.mkdir(parents=True, exist_ok=True)
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path, repo_role="consumer_repo", previous_version="0.1.14", target_version="0.1.15",
     )
-
-    assert report.ok is False
-    assert {need.need_id for need in report.needs} == {
-        "browser-surfaces",
-        "guidance-and-skills",
-        "install-managed-assets",
-        "operator-cli-contracts",
-        "public-docs-and-release-guidance",
-    }
-    assert "odylith/radar/source/ideas/2026-04/generated.md" not in report.changed_paths
-    assert all(need.governance_marker.startswith("migration-observer:0.1.12:") for need in report.needs)
-    assert all(need.governance_marker != need.marker_family for need in report.needs)
-    assert all(len(need.change_fingerprint) == 12 for need in report.needs)
-
-
-def test_surface_migration_observer_passes_only_completed_target_specific_records(tmp_path: Path) -> None:
-    first_report = migration_observer.observe_surface_migration_needs(
-        repo_root=tmp_path,
-        target_version="0.1.12",
-        changed_paths=("odylith/skills/odylith-sync/SKILL.md",),
-    )
-    marker = first_report.needs[0].governance_marker
-    record = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "migration.md"
-    record.parent.mkdir(parents=True)
-    record.write_text(
-        "\n".join(
-            [
-                "status: finished",
-                "idea_id: B-999",
-                "title: Surface migration proof",
-                "",
-                "## Migration Observer Needs",
-                f"- `{marker}`",
-                "- stale prose token `migration-observer:0.1.11:guidance-and-skills` should not satisfy 0.1.12",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-
-    report = migration_observer.observe_surface_migration_needs(
-        repo_root=tmp_path,
-        target_version="0.1.12",
-        changed_paths=("odylith/skills/odylith-sync/SKILL.md",),
-    )
-    stale_report = migration_observer.observe_surface_migration_needs(
-        repo_root=tmp_path,
-        target_version="0.1.13",
-        changed_paths=("odylith/skills/odylith-sync/SKILL.md",),
-    )
-
-    assert report.ok is True
-    assert report.blocked_need_ids == ()
-    assert report.records[0].workstream_id == "B-999"
-    assert stale_report.ok is False
-    assert stale_report.blocked_need_ids == ("guidance-and-skills",)
-
-
-def test_surface_migration_observer_requires_change_fingerprint_not_class_marker(tmp_path: Path) -> None:
-    record = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "class-marker.md"
-    record.parent.mkdir(parents=True)
-    record.write_text(
-        "\n".join(
-            [
-                "status: finished",
-                "idea_id: B-997",
-                "title: Class marker is not enough",
-                "",
-                "- `migration-observer:0.1.12:guidance-and-skills`",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-
-    report = migration_observer.observe_surface_migration_needs(
-        repo_root=tmp_path,
-        target_version="0.1.12",
-        changed_paths=("odylith/skills/odylith-sync/SKILL.md",),
-    )
-
-    assert report.ok is False
-    assert report.needs[0].marker_family in report.records[0].markers
-    assert report.needs[0].governance_marker not in report.records[0].markers
-    assert report.blocked_need_ids == ("guidance-and-skills",)
-
-
-def test_surface_migration_observer_rechecks_same_path_when_content_changes(tmp_path: Path) -> None:
-    skill_path = tmp_path / "odylith" / "skills" / "sample" / "SKILL.md"
-    skill_path.parent.mkdir(parents=True)
-    skill_path.write_text("first guidance contract\n", encoding="utf-8")
-    first_report = migration_observer.observe_surface_migration_needs(
-        repo_root=tmp_path,
-        target_version="0.1.12",
-        changed_paths=("odylith/skills/sample/SKILL.md",),
-    )
-    marker = first_report.needs[0].governance_marker
-    record = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "migration.md"
-    record.parent.mkdir(parents=True)
-    record.write_text(
-        "\n".join(
-            [
-                "status: finished",
-                "idea_id: B-996",
-                "title: Exact content marker",
-                "",
-                f"- `{marker}`",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-
-    covered_report = migration_observer.observe_surface_migration_needs(
-        repo_root=tmp_path,
-        target_version="0.1.12",
-        changed_paths=("odylith/skills/sample/SKILL.md",),
-    )
-    skill_path.write_text("second guidance contract\n", encoding="utf-8")
-    changed_report = migration_observer.observe_surface_migration_needs(
-        repo_root=tmp_path,
-        target_version="0.1.12",
-        changed_paths=("odylith/skills/sample/SKILL.md",),
-    )
-
-    assert covered_report.ok is True
-    assert changed_report.ok is False
-    assert changed_report.needs[0].governance_marker != marker
-    assert changed_report.blocked_need_ids == ("guidance-and-skills",)
-
-
-def test_surface_migration_observer_fingerprint_ignores_rendered_observer_markers(tmp_path: Path) -> None:
-    rendered = tmp_path / "odylith" / "radar" / "radar.html"
-    rendered.parent.mkdir(parents=True)
-    rendered.write_text(
-        "rendered release note migration-observer:0.1.12:browser-surfaces:aaaaaaaaaaaa\n"
-        '<script src="backlog-payload.v1.js?v=aaaaaaaaaaaa"></script>\n',
-        encoding="utf-8",
-    )
-    first_report = migration_observer.observe_surface_migration_needs(
-        repo_root=tmp_path,
-        target_version="0.1.12",
-        changed_paths=("odylith/radar/radar.html",),
-    )
-    marker = first_report.needs[0].governance_marker
-    record = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "migration.md"
-    record.parent.mkdir(parents=True)
-    record.write_text(
-        "\n".join(
-            [
-                "status: finished",
-                "idea_id: B-995",
-                "title: Rendered observer marker proof",
-                "",
-                f"- `{marker}`",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-    rendered.write_text(
-        f"rendered release note {marker}\n"
-        '<script src="backlog-payload.v1.js?v=bbbbbbbbbbbb"></script>\n',
-        encoding="utf-8",
-    )
-
-    covered_report = migration_observer.observe_surface_migration_needs(
-        repo_root=tmp_path,
-        target_version="0.1.12",
-        changed_paths=("odylith/radar/radar.html",),
-    )
-
-    assert covered_report.ok is True
-    assert covered_report.needs[0].governance_marker == marker
-    assert covered_report.blocked_need_ids == ()
-
-
-def test_surface_migration_observer_fingerprint_ignores_added_observer_marker_lines(tmp_path: Path) -> None:
-    rendered = tmp_path / "odylith" / "radar" / "radar.html"
-    rendered.parent.mkdir(parents=True)
-    rendered.write_text(
-        "rendered release note without observer marker\n"
-        '<script src="backlog-payload.v1.js?v=aaaaaaaaaaaa"></script>\n',
-        encoding="utf-8",
-    )
-    first_report = migration_observer.observe_surface_migration_needs(
-        repo_root=tmp_path,
-        target_version="0.1.12",
-        changed_paths=("odylith/radar/radar.html",),
-    )
-    marker = first_report.needs[0].governance_marker
-    record = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "migration.md"
-    record.parent.mkdir(parents=True)
-    record.write_text(
-        "\n".join(
-            [
-                "status: finished",
-                "idea_id: B-994",
-                "title: Added observer marker proof",
-                "",
-                "Assessment: generated browser refresh is covered by the renderer migration.",
-                f"- `{marker}`",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-    rendered.write_text(
-        "rendered release note without observer marker\n"
-        "Migration observer markers:\n"
-        f"- `{marker}`\n"
-        '<script src="backlog-payload.v1.js?v=bbbbbbbbbbbb"></script>\n',
-        encoding="utf-8",
-    )
-
-    covered_report = migration_observer.observe_surface_migration_needs(
-        repo_root=tmp_path,
-        target_version="0.1.12",
-        changed_paths=("odylith/radar/radar.html",),
-    )
-
-    assert covered_report.ok is True
-    assert covered_report.needs[0].governance_marker == marker
-    assert covered_report.blocked_need_ids == ()
-
-
-def test_surface_migration_observer_fingerprint_ignores_generated_derivative_churn(tmp_path: Path) -> None:
-    changed_paths = (
-        "odylith/runtime/delivery_intelligence.v4.json",
-        "odylith/atlas/source/catalog/diagrams.v1.json",
-        "odylith/registry/source/components/radar/FORENSICS.v1.json",
-    )
-    for index, token in enumerate(changed_paths, start=1):
-        path = tmp_path / token
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(
-            json.dumps({"generated": index, "marker": "migration-observer:0.1.12:browser-surfaces:aaaaaaaaaaaa"}),
-            encoding="utf-8",
-        )
-
-    first_report = migration_observer.observe_surface_migration_needs(
-        repo_root=tmp_path,
-        target_version="0.1.12",
-        changed_paths=changed_paths,
-    )
-    markers = [need.governance_marker for need in first_report.needs]
-    record = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "migration.md"
-    record.parent.mkdir(parents=True)
-    record.write_text(
-        "\n".join(
-            [
-                "status: finished",
-                "idea_id: B-994",
-                "title: Generated derivative churn proof",
-                "",
-                *(f"- `{marker}`" for marker in markers),
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-    for index, token in enumerate(changed_paths, start=10):
-        (tmp_path / token).write_text(
-            json.dumps({"generated": index, "marker": "migration-observer:0.1.12:browser-surfaces:bbbbbbbbbbbb"}),
-            encoding="utf-8",
-        )
-
-    covered_report = migration_observer.observe_surface_migration_needs(
-        repo_root=tmp_path,
-        target_version="0.1.12",
-        changed_paths=changed_paths,
-    )
-
-    assert covered_report.ok is True
-    assert {need.governance_marker for need in covered_report.needs} == set(markers)
-    assert covered_report.blocked_need_ids == ()
-
-
-def test_surface_migration_observer_rejects_incomplete_records_with_matching_markers(tmp_path: Path) -> None:
-    first_report = migration_observer.observe_surface_migration_needs(
-        repo_root=tmp_path,
-        target_version="0.1.12",
-        changed_paths=("src/odylith/cli.py",),
-    )
-    marker = first_report.needs[0].governance_marker
-    record = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "queued.md"
-    record.parent.mkdir(parents=True)
-    record.write_text(
-        "\n".join(
-            [
-                "status: queued",
-                "idea_id: B-998",
-                "title: Queued surface migration assessment",
-                "",
-                f"- `{marker}`",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-
-    report = migration_observer.observe_surface_migration_needs(
-        repo_root=tmp_path,
-        target_version="0.1.12",
-        changed_paths=("src/odylith/cli.py",),
-    )
-
-    assert report.ok is False
-    assert report.records[0].completed() is False
-    assert report.blocked_need_ids == ("operator-cli-contracts",)
-
-
-def test_release_gate_blocks_surface_changes_without_completed_observer_record(tmp_path: Path) -> None:
-    report = migration_runtime.validate_release_migration_gate(
-        repo_root=tmp_path,
-        target_version="0.1.12",
-        changed_paths=("src/odylith/install/agents.py",),
-    )
-
-    assert report.ok is False
-    assert report.surface_migration_observer.blocked_need_ids == ("install-managed-assets",)
-    assert any("surface migration assessment incomplete" in item for item in report.blocked_manual_migrations)
-
-
-def test_release_gate_reports_registered_migrations_and_no_lifecycle_bypass() -> None:
-    repo_root = Path(__file__).resolve().parents[3]
-
-    report = migration_runtime.validate_release_migration_gate(
-        repo_root=repo_root,
-        target_version="0.1.12",
-        changed_paths=(),
-    )
-
-    assert report.ok is True
-    assert not report.ungated_lifecycle_paths
-    assert report.fixture_matrix[migration_runtime.LEGACY_ROOT_MIGRATION_ID]["apply"] is True
-    assert report.fixture_matrix[MIGRATION_ID]["dry_run"] is True
-    assert report.fixture_matrix[MIGRATION_ID]["stale_ledger"] is True
-    assert report.destructive_write_matrix["host.claude.preverified-settings"][
-        "test_install_bundle_preserves_host_settings_when_runtime_download_fails"
-    ] is True
-    assert report.destructive_write_matrix["migration.legacy-product-conflict"][
-        "test_legacy_odyssey_product_conflict_blocks_before_overwrite"
-    ] is True
-    assert report.destructive_write_matrix["governance.first-install-authoring-order"][
-        "test_first_install_governance_records_can_be_created_in_every_surface_order"
-    ] is True
-    assert "destructive_write_scenarios" in report.as_dict()
-    assert report.surface_migration_observer.ok is True
-    assert report.as_dict()["surface_migration_observer"]["schema_version"] == (
-        migration_observer.OBSERVER_SCHEMA_VERSION
-    )
-
-
-def test_release_gate_blocks_migration_required_manifest_without_definition(tmp_path: Path) -> None:
-    report = migration_runtime.validate_release_migration_gate(
-        repo_root=tmp_path,
-        target_version="0.1.10",
-        release_manifest={"migration_required": True, "repo_schema_version": 1},
-    )
-
-    assert report.ok is False
-    assert any("no registered migration definition" in item for item in report.blocked_manual_migrations)
-    assert json.loads(json.dumps(report.as_dict()))["ok"] is False
+    decision = _decision_for(plan, ATLAS_SURFACE_MIGRATION_ID)
+    assert decision.state == migration_runtime.STATE_SELECTED
+    plan = replace(plan, selected=(decision,), blocked=())
+    calls = []
+    def target_producer(**arguments):
+        assert loaded_target
+        assert arguments == {"repo_root": tmp_path, "previous_version": "0.1.14", "target_version": "0.1.15"}
+        calls.append("target-render")
+        return SimpleNamespace(migration_id=ATLAS_SURFACE_MIGRATION_ID, applied=True, skipped_reason="",
+                               written_paths=(), removed_paths=(), ledger_path=decision.ledger_path,
+                               verification_result={"status": "passed"})
+    monkeypatch.setattr(migration_runtime, "migrate_atlas_surface_polish", target_producer)
+    if loaded_target:
+        monkeypatch.setattr(migration_runtime, "__file__", str(target_runtime / "lib/odylith/install/migration_runtime.py"))
+    before = {str(p.relative_to(tmp_path)): p.read_bytes() for p in (tmp_path / "odylith/atlas").rglob("*") if p.is_file()}
+    results = migration_runtime.apply_release_migrations(plan=plan, runtime_root=target_runtime)
+    assert len(results) == 1
+    assert results[0].state == (migration_runtime.STATE_APPLIED if loaded_target else migration_runtime.STATE_SELECTED)
+    assert results[0].verification_result == ({"status": "passed"} if loaded_target else {"status": "pending", "mode": "target_runtime_completion"})
+    assert results[0].written_paths == results[0].removed_paths == ()
+    assert calls == (["target-render"] if loaded_target else [])
+    assert {str(p.relative_to(tmp_path)): p.read_bytes() for p in (tmp_path / "odylith/atlas").rglob("*") if p.is_file()} == before

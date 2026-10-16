@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
+from odylith.runtime.governance import sync_workstream_artifacts
 from odylith.runtime.surfaces import source_bundle_mirror
 
 
@@ -9,6 +12,33 @@ def _product_repo_root(tmp_path: Path) -> Path:
     (tmp_path / "odylith").mkdir(parents=True, exist_ok=True)
     (tmp_path / "src" / "odylith" / "bundle" / "assets" / "odylith").mkdir(parents=True, exist_ok=True)
     return tmp_path
+
+
+@pytest.mark.parametrize("name", ("AGENTS.md", "README.md", "SECURITY_POSTURE.md"))
+def test_sync_mirrors_exact_shared_root_document(tmp_path: Path, monkeypatch, name: str) -> None:
+    repo_root = _product_repo_root(tmp_path)
+    live_path = repo_root / "odylith" / name
+    mirror_path = repo_root / "src/odylith/bundle/assets/odylith" / name
+    live_path.write_text("Consumer-safe shared guidance.\n", encoding="utf-8")
+    mirror_path.write_text("Previous guidance.\n", encoding="utf-8")
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "collect_git_changed_paths",
+        lambda **_: pytest.fail("explicit selection must not scan Git"),
+    )
+
+    assert sync_workstream_artifacts._sync_changed_source_truth_bundle_mirrors(
+        repo_root=repo_root, changed_paths=(f"odylith/{name}",)
+    ) == 0
+    assert mirror_path.read_bytes() == live_path.read_bytes()
+
+
+@pytest.mark.parametrize(
+    "path",
+    ("odylith/README.md.bak", "odylith/README.md/child", "odylith/INSTALL.md", "odylith/maintainer/AGENTS.md"),
+)
+def test_root_document_mirror_admission_does_not_expand_to_adjacent_paths(path: str) -> None:
+    assert not sync_workstream_artifacts._should_bundle_mirror_source_truth_path(path)
 
 
 def test_sync_live_paths_copies_live_surface_file_into_bundle_mirror(tmp_path: Path) -> None:
@@ -174,6 +204,209 @@ def test_repo_governance_docs_preserve_watcher_and_brief_contract_in_bundle_mirr
         assert live_text == mirror_text
 
 
+def test_human_visible_clarity_floor_travels_to_bundle_mirrors() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    checks = (
+        (
+            "odylith/AGENTS.md",
+            "src/odylith/bundle/assets/odylith/AGENTS.md",
+            "Generated human-visible content has a non-negotiable clarity floor across all lanes",
+        ),
+        (
+            "odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md",
+            "src/odylith/bundle/assets/odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md",
+            "grammatically coherent, and clear about the thing it describes",
+        ),
+        (
+            "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
+            "src/odylith/bundle/assets/odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
+            "what this is, why it matters, and what the reader should do or trust",
+        ),
+        (
+            "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+            "src/odylith/bundle/assets/odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+            "surface names, IDs, lifecycle states, and internal control-plane terms cannot",
+        ),
+        (
+            "odylith/skills/odylith-greenfield-governance/SKILL.md",
+            "src/odylith/bundle/assets/odylith/skills/odylith-greenfield-governance/SKILL.md",
+            "Relay the returned post-confirm navigation block exactly once",
+        ),
+        (
+            "odylith/skills/odylith-component-registry/SKILL.md",
+            "src/odylith/bundle/assets/odylith/skills/odylith-component-registry/SKILL.md",
+            "Component specs must be component-specific, not repeated template copy",
+        ),
+        (
+            "odylith/radar/source/AGENTS.md",
+            "src/odylith/bundle/assets/odylith/radar/source/AGENTS.md",
+            "Human-visible Radar copy must be plain-English",
+        ),
+        (
+            "odylith/registry/source/AGENTS.md",
+            "src/odylith/bundle/assets/odylith/registry/source/AGENTS.md",
+            "Human-visible Registry copy must be simple",
+        ),
+        (
+            "odylith/atlas/source/AGENTS.md",
+            "src/odylith/bundle/assets/odylith/atlas/source/AGENTS.md",
+            "Human-visible Atlas copy must explain",
+        ),
+        (
+            "odylith/compass/runtime/AGENTS.md",
+            "src/odylith/bundle/assets/odylith/compass/runtime/AGENTS.md",
+            "Human-visible Compass copy must be concise",
+        ),
+    )
+
+    for live_rel, mirror_rel, expected_snippet in checks:
+        live_text = (repo_root / live_rel).read_text(encoding="utf-8")
+        mirror_text = (repo_root / mirror_rel).read_text(encoding="utf-8")
+        assert expected_snippet in " ".join(live_text.split())
+        assert expected_snippet in " ".join(mirror_text.split())
+        assert live_text == mirror_text
+
+
+def test_governance_learning_rule_travels_to_guidance_skills_and_install_generators() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    per_file_snippets = (
+        "governance-learning",
+        "failed mechanism",
+        "prior failed mechanisms",
+        "do not repeat a fix path",
+    )
+    aggregate_snippets = (
+        *per_file_snippets,
+        "casebook",
+        "radar",
+        "registry",
+        "atlas",
+        "compass",
+    )
+    fixed_mirrored_pairs = (
+        ("odylith/AGENTS.md", "src/odylith/bundle/assets/odylith/AGENTS.md"),
+        ("odylith/CLAUDE.md", "src/odylith/bundle/assets/odylith/CLAUDE.md"),
+        (
+            ".claude/CLAUDE.md",
+            "src/odylith/bundle/assets/project-root/.claude/CLAUDE.md",
+        ),
+        (
+            ".claude/rules/odylith-governance.md",
+            "src/odylith/bundle/assets/project-root/.claude/rules/odylith-governance.md",
+        ),
+        (
+            "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+            "src/odylith/bundle/assets/odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+        ),
+        (
+            "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+            "src/odylith/bundle/assets/odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+        ),
+        (
+            "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
+            "src/odylith/bundle/assets/odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
+        ),
+        (
+            "odylith/agents-guidelines/CODING_STANDARDS.md",
+            "src/odylith/bundle/assets/odylith/agents-guidelines/CODING_STANDARDS.md",
+        ),
+    )
+    mirrored_skill_pairs = tuple(
+        (
+            str(path.relative_to(repo_root)),
+            str(
+                (
+                    repo_root
+                    / "src"
+                    / "odylith"
+                    / "bundle"
+                    / "assets"
+                    / path.relative_to(repo_root)
+                ).relative_to(repo_root)
+            ),
+        )
+        for path in sorted((repo_root / "odylith" / "skills").glob("*/SKILL.md"))
+    )
+    mirrored_governance_agent_pairs = tuple(
+        (
+            str(path.relative_to(repo_root)),
+            str(
+                (
+                    repo_root
+                    / "src"
+                    / "odylith"
+                    / "bundle"
+                    / "assets"
+                    / path.relative_to(repo_root)
+                ).relative_to(repo_root)
+            ),
+        )
+        for pattern in ("AGENTS.md", "CLAUDE.md")
+        for path in sorted((repo_root / "odylith").glob(f"**/{pattern}"))
+        if (
+            repo_root
+            / "src"
+            / "odylith"
+            / "bundle"
+            / "assets"
+            / path.relative_to(repo_root)
+        ).exists()
+    )
+    mirrored_pairs = (
+        *fixed_mirrored_pairs,
+        *mirrored_skill_pairs,
+        *mirrored_governance_agent_pairs,
+    )
+    mirrored_sources = {source_rel for source_rel, _ in mirrored_pairs}
+    unmirrored_governance_agent_paths = tuple(
+        str(path.relative_to(repo_root))
+        for pattern in ("AGENTS.md", "CLAUDE.md")
+        for path in sorted((repo_root / "odylith").glob(f"**/{pattern}"))
+        if str(path.relative_to(repo_root)) not in mirrored_sources
+    )
+    source_only_paths = (
+        "AGENTS.md",
+        "CLAUDE.md",
+        "odylith/maintainer/agents-guidelines/CODING_STANDARDS.md",
+        *unmirrored_governance_agent_paths,
+        *(
+            str(path.relative_to(repo_root))
+            for path in sorted(
+                (repo_root / "odylith" / "maintainer" / "skills").glob("*/SKILL.md")
+            )
+        ),
+    )
+
+    for source_rel, bundle_rel in mirrored_pairs:
+        source_text = (repo_root / source_rel).read_text(encoding="utf-8")
+        bundle_text = (repo_root / bundle_rel).read_text(encoding="utf-8")
+        assert source_text == bundle_text
+        normalized = " ".join(source_text.casefold().split())
+        for snippet in per_file_snippets:
+            assert snippet in normalized, source_rel
+
+    for source_rel in source_only_paths:
+        normalized = " ".join((repo_root / source_rel).read_text(encoding="utf-8").casefold().split())
+        for snippet in per_file_snippets:
+            assert snippet in normalized, source_rel
+
+    aggregate_text = " ".join(
+        (repo_root / source_rel).read_text(encoding="utf-8") for source_rel, _ in mirrored_pairs
+    ) + " ".join((repo_root / source_rel).read_text(encoding="utf-8") for source_rel in source_only_paths)
+    aggregate_normalized = " ".join(aggregate_text.casefold().split())
+    for snippet in aggregate_snippets:
+        assert snippet in aggregate_normalized
+
+    install_sources = (
+        repo_root / "src" / "odylith" / "install" / "agents.py",
+        repo_root / "src" / "odylith" / "install" / "bootstrap_assets.py",
+    )
+    for path in install_sources:
+        normalized = " ".join(path.read_text(encoding="utf-8").casefold().split())
+        for snippet in aggregate_snippets:
+            assert snippet in normalized, path.relative_to(repo_root)
+
+
 def test_migration_observer_agent_guidance_stays_maintainer_only() -> None:
     repo_root = Path(__file__).resolve().parents[3]
     forbidden_tokens = (
@@ -325,14 +558,10 @@ def test_github_issue_pipeline_guidance_stays_maintainer_only() -> None:
         assert not path.exists(), path
 
     source_readme = (repo_root / "odylith" / "README.md").read_text(encoding="utf-8")
-    assert "product-repo-only `maintainer/` subtree" in source_readme
-    assert "That subtree is excluded from consumer bundle assets." in source_readme
-    assert "Those live under `odylith/maintainer/`" not in source_readme
-    assert "- `maintainer/`" not in source_readme
-
     bundle_readme = (
         repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "README.md"
     ).read_text(encoding="utf-8")
+    assert source_readme == bundle_readme
     assert "maintainer/" not in bundle_readme
     assert "maintainer-only" not in bundle_readme
     assert "product-repo-only" not in bundle_readme

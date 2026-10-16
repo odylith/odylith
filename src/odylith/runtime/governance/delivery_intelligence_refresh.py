@@ -11,6 +11,7 @@ from odylith.runtime.common import generated_refresh_guard
 from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.governance.delivery_intelligence_support import current_local_head as _current_local_head
 from odylith.runtime.governance.delivery_intelligence_support import registry_delivery_watched_paths as _registry_delivery_watched_paths
+from odylith.runtime.governance.proof_state import ledger as proof_state_ledger
 
 DEFAULT_OUTPUT_PATH = "odylith/runtime/delivery_intelligence.v4.json"
 DEFAULT_CONTROL_POSTURE_PATH = "odylith/runtime/control-posture.v4.json"
@@ -55,6 +56,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "odylith/atlas/source/catalog/diagrams.v1.json",
                 "odylith/radar/traceability-graph.v1.json",
                 *agent_runtime_contract.candidate_stream_tokens(),
+                proof_state_ledger.proof_surfaces_path(repo_root=repo_root),
                 DEFAULT_CONTROL_POSTURE_PATH,
                 DEFAULT_ODYLITH_REASONING_PATH,
                 "src/odylith/runtime/governance",

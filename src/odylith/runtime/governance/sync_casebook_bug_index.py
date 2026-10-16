@@ -19,6 +19,7 @@ _BUG_METADATA_LINE_RE = re.compile(r"^-?\s*([A-Za-z0-9/() _.-]+):\s*(.*)$")
 _BUG_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _SLUG_DATE_RE = re.compile(r"^(?P<date>\d{4}-\d{2}-\d{2})-(?P<title>.+)$")
 _EXPLICIT_CASEBOOK_BUG_ID_RE = re.compile(r"^CB-(?P<number>\d{3,})$")
+_TITLE_TOKEN_RE = re.compile(r"[A-Za-z0-9]+")
 @dataclass(frozen=True)
 class BugIndexRow:
     """One rendered row in the authoritative Casebook bug index."""
@@ -70,33 +71,86 @@ def _slug_to_title(slug: str) -> str:
     return title[:1].upper() + title[1:] if title else "Untitled bug"
 
 
+def _compact_title_candidate(value: str | None) -> str:
+    """Return a one-line Casebook title candidate from a metadata field."""
+    lines = str(value or "").strip().splitlines()
+    first_line = lines[0].strip() if lines else ""
+    if not first_line:
+        return ""
+    return first_line.rstrip(".").strip()
+
+
+def _title_tokens(value: str) -> list[str]:
+    return [match.group(0).casefold() for match in _TITLE_TOKEN_RE.finditer(value)]
+
+
+def _slug_title_is_truncated_by_description(*, slug_title: str, description_title: str) -> bool:
+    slug_tokens = _title_tokens(slug_title)
+    description_tokens = _title_tokens(description_title)
+    if len(slug_tokens) < 2 or len(slug_tokens) > len(description_tokens):
+        return False
+    if slug_tokens[:-1] != description_tokens[: len(slug_tokens) - 1]:
+        return False
+    slug_tail = slug_tokens[-1]
+    description_tail = description_tokens[len(slug_tokens) - 1]
+    return bool(slug_tail and slug_tail != description_tail and description_tail.startswith(slug_tail))
+
+
+def _bug_title(*, fields: dict[str, str], path: Path) -> str:
+    """Choose a display title without leaking max-slug truncation into surfaces."""
+    explicit_title = _compact_title_candidate(fields.get("Title"))
+    if explicit_title:
+        return explicit_title
+    slug_title = _slug_to_title(path.name)
+    description_title = _compact_title_candidate(fields.get("Description"))
+    if description_title and _slug_title_is_truncated_by_description(
+        slug_title=slug_title,
+        description_title=description_title,
+    ):
+        return description_title
+    return slug_title
+
+
 def _parse_bug_fields(path: Path) -> dict[str, str]:
     """Parse the metadata fields from one Casebook markdown bug file."""
-    fields: dict[str, str] = {}
+    return {key: value for key, value, _raw in parse_bug_field_blocks(path.read_text(encoding="utf-8"))}
+
+
+def parse_bug_field_blocks(text: str) -> tuple[tuple[str, str, str], ...]:
+    """Keep field occurrences and source bytes alongside the index's field values.
+
+    Admission must distinguish duplicate metadata from a single field; the index
+    retains its historical last-field-wins projection through `_parse_bug_fields`.
+    """
+    fields: list[tuple[str, str, str]] = []
     current_key: str | None = None
     current_lines: list[str] = []
-    for raw in path.read_text(encoding="utf-8").splitlines():
+    source_lines: list[str] = []
+    for raw in text.splitlines(keepends=True):
         stripped = raw.strip()
         if stripped.startswith("#"):
             if current_key is not None:
-                fields[current_key] = "\n".join(line.rstrip() for line in current_lines).strip()
+                fields.append((current_key, "\n".join(current_lines).strip(), "".join(source_lines)))
                 current_key = None
                 current_lines = []
+                source_lines = []
             continue
         match = _BUG_METADATA_LINE_RE.fullmatch(stripped)
         if match is not None:
             if current_key is not None:
-                fields[current_key] = "\n".join(line.rstrip() for line in current_lines).strip()
+                fields.append((current_key, "\n".join(current_lines).strip(), "".join(source_lines)))
             current_key = str(match.group(1)).strip()
             initial = str(match.group(2)).rstrip()
             current_lines = [initial] if initial else []
+            source_lines = [raw]
             continue
         if current_key is None:
             continue
         current_lines.append(raw.rstrip())
+        source_lines.append(raw)
     if current_key is not None:
-        fields[current_key] = "\n".join(line.rstrip() for line in current_lines).strip()
-    return fields
+        fields.append((current_key, "\n".join(current_lines).strip(), "".join(source_lines)))
+    return tuple(fields)
 
 
 def _should_skip_bug_markdown(*, bug_root: Path, path: Path) -> bool:
@@ -133,7 +187,7 @@ def _build_bug_row(*, bug_root: Path, path: Path) -> BugIndexRow:
             seed=rel,
         ),
         date=date,
-        title=_slug_to_title(path.name),
+        title=_bug_title(fields=fields, path=path),
         severity=str(fields.get("Severity", "")).strip() or "Unknown",
         components=(
             str(fields.get("Components Affected", "")).strip()

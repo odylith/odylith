@@ -5,8 +5,6 @@ product repo it also carries source governance; installed repos receive the
 consumer-owned subset, while the managed runtime itself lives under
 `.odylith/`.
 
-In the product repo, maintainer-only release guidance and skills live under
-`odylith/maintainer/`. That subtree is excluded from consumer bundle assets.
 Shared consumer-safe guidance lives under `odylith/agents-guidelines/` and
 `odylith/skills/`.
 
@@ -19,9 +17,8 @@ three boundaries separate:
 
 `./.odylith/bin/odylith` uses the Odylith runtime. Repo code still validates on
 the repo's own `python`, `uv`, Poetry, Conda, or equivalent toolchain.
-Consumer repos stay on pinned runtime only; detached `source-local` is
-maintainer-only. Hosted install currently supports macOS (Apple Silicon) and
-Linux (`x86_64`, `ARM64`). For trust and release details, see
+Consumer repos stay on pinned runtime only. Hosted install currently supports
+macOS (Apple Silicon) and Linux (`x86_64`, `ARM64`). For trust and release details, see
 `SECURITY_POSTURE.md`.
 
 ## First Run
@@ -104,17 +101,88 @@ For an empty or thin repo where the project exists mostly as intent, use the
 greenfield proposal lane before source-backed governance exists:
 
 ```bash
-./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>"
+./.odylith/bin/odylith greenfield candidate-contract --repo-root . --prompt "<project intent>"
+# Write one authority_gate result outside the repository.
+./.odylith/bin/odylith greenfield authority-check --repo-root . --prompt "<project intent>" --gate-file "<gate-file>" --format json
+# On admission, author one source_ledger_schema inventory outside the repository.
+./.odylith/bin/odylith greenfield source-ledger-check --repo-root . --prompt "<project intent>" --ledger-file "<ledger-file>" --format json
+# The preflight returns a decision_task and decision_set_schema. Make one bounded
+# source-only verifier pass over every material duty, then save its decision set outside the repository.
+./.odylith/bin/odylith greenfield source-ledger-check --repo-root . --prompt "<project intent>" --ledger-file "<ledger-file>" --decision-file "<decision-file>" --format json
+# Save the compiler-emitted accepted receipt outside the repository, then author one candidate.
+./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>" --gate-file "<gate-file>" --candidate-file "<candidate-file>" --ledger-file "<receipt-file>"
 ```
 
-The active host model authors the project-specific proposal in chat. Odylith
-owns the evidence contract, topology requirements, validation, confirmation
-gate, and apply path. Accepted proposals can be applied only with explicit
-confirmation:
+The contract returns nested `authority_gate` and `source_ledger` tasks and
+schemas plus the candidate schema. The first `source-ledger-check` validates
+the inventory structure and returns one source-only decision task with a closed
+schema; it does not admit the inventory. The host makes one bounded verifier
+pass over every material duty row and the full source. Its single decision set
+must affirm every row and source completeness with no omitted duties. The second
+check admits only that complete source-bound decision set. If `authority-check` or either
+`source-ledger-check` asks for clarification, show its one question and stop
+without a candidate or transaction. A denied, uncertain, or missing duty, or
+a nonaffirmative source-completeness verdict, stops before candidate authoring.
+Only after both authority and source duty
+admit does the host reason once over the candidate contract. The accepted initial
+source-duty receipt binds the verified task and source roles; neither gate nor
+candidate may redefine them. `propose` then
+deterministically validates that untrusted candidate, compiles typed custody facts,
+and quality-gates the full staged
+ProductCreateTransaction for read-only review. The sectioned preview preserves
+Product story, State object, First complete path, Human actors, systems,
+assumptions, ambiguities, and proof boundary. It publishes nothing, but prints
+three full shell-quoted terminal commands: `odylith greenfield decide --repo-root
+'<path>' CONFIRM '<hash>'`, `odylith greenfield decide --repo-root '<path>' EDIT
+'<hash>' --edit '<corrections>'` (or `--edit-evidence '<file>'`), and `odylith
+greenfield decide --repo-root '<path>' REJECT '<hash>'`. No qualified confirmation
+interface comes from ordinary chat approval, host names, or registered hooks. No
+semantic, model, or provider call runs after candidate receipt; detached semantic
+and UX review qualifies frozen release evidence rather than consumer transactions.
+Do not append chat decision
+commands, offer publication, or run create from a chat approval.
 
-```bash
-./.odylith/bin/odylith greenfield apply --repo-root . --proposal-file <proposal.json> --confirm
-```
+Odylith asks one focused question only when an ambiguity materially changes the
+first release; other gaps become visible assumptions. Markdown is evidence and a
+human view, not product truth. Staging retains the compiled package and hash under
+`.odylith/runtime/greenfield/pending/` without changing governed product records.
+EDIT reruns `candidate-contract`, the gate pass, `authority-check`, source
+duty inventory, preflight, one bounded source-only verifier decision set, and
+the decision-file check against sealed original source plus the new untrusted
+correction. Both manual source checks require the prior `--transaction-hash`,
+exact retained source as `--prompt` and separate `--edit` or `--edit-evidence`.
+Bounded prior seals additionally require their delivered `--completion-receipt`.
+The verifier must give a disposition for every prior lifecycle duty. Preserved or
+changed duties need affirmative current carriers in the same typed section;
+changes and removals need exact correction evidence. Explicit compound carriers
+may support multiple prior duties, each judged separately. Missing or uncertain
+rows stop before the candidate. Use the fresh compiler-emitted task and accepted
+receipt; EDIT binds the prior seal and correction. Historical receipts permit
+passive sealed readback only. Prior rows are a comparison checklist, not current
+truth. Citation custody does not establish semantic accuracy.
+Clarification or a nonaffirmative duty stops before a new candidate or transaction.
+On admission, pass the correction, `--gate-file`, `--candidate-file`,
+and fresh accepted `--ledger-file` receipt to `decide EDIT`. It preserves
+the original tier and advisory 90/120/150 targets, retains the immutable old seal,
+and returns a new hash and preview. The standard proposal limit is 315 seconds
+with one shared 300-second gate/candidate model window. CONFIRM and REJECT use
+the shared bounded owner without compiler or model work.
+
+Explicit terminal operator invocation of `odylith greenfield create` with
+`--transaction-file`, `--transaction-hash`, and `--confirm` (plus the delivered
+`--completion-receipt` for bounded seals) remains a separate
+supported interface. It verifies the compiler receipt, hash and repo preconditions,
+applies only sealed bytes under rollback guard, validates readback and reports
+success or a transaction/environment failure. It must not parse evidence, call a
+model, generate artifacts or rebuild persistent projections after confirmation.
+This command is not permission for a host to reinterpret a chat approval.
+
+Use `greenfield propose --format json` for an explicitly requested audit view.
+Do not inspect source to discover either schema, add a full-candidate reviewer,
+parser, regex extraction pass, repair, retry, fallback or alternate model ladder,
+or make a model call after candidate receipt. Do not hand-author proposal JSON,
+narrate parser/schema retries or invent a confirmation path. Do not start coding until
+the product gates are accepted.
 
 For the common governance authoring fast paths, use:
 
@@ -123,6 +191,7 @@ For the common governance authoring fast paths, use:
 ./.odylith/bin/odylith backlog create --help
 ./.odylith/bin/odylith component register --help
 ./.odylith/bin/odylith atlas scaffold --help
+./.odylith/bin/odylith atlas update --help
 ./.odylith/bin/odylith compass log --help
 ```
 
@@ -180,7 +249,7 @@ Starter prompt for your agent when source-backed paths already exist:
 
 Starter prompt for a greenfield project:
 
-**Odylith, propose the first governed shape for this project. Give me a backlog tree, program waves, release plan, planned components, Atlas diagrams, assumptions, risks, validation obligations, and open questions. Do not claim source evidence. Ask for confirmation before writing anything.**
+**Odylith, propose the first governed shape for this project. Show the product story, first complete path, state object, backlog, planned components, Atlas diagrams, assumptions and proof boundary. Preserve the read-only preview and explain any confirmation blocker. Do not offer publication or invent source evidence.**
 
 Here are some starter prompt inspirations:
 
@@ -254,9 +323,6 @@ Silence is better than filler.
   Shared Odylith operating guidance.
 - `skills/`
   Shared Odylith specialist skills intended to stay consumer-safe.
-- product-repo-only `maintainer/` subtree
-  Maintainer-only release guidance and skills for Odylith release work. This
-  subtree is excluded from consumer bundles.
 - `FAQ.md`, `INSTALL.md`, `OPERATING_MODEL.md`, `PRODUCT_COMPONENTS.md`
   Product-level reference docs for this tree.
 - `SECURITY_POSTURE.md`

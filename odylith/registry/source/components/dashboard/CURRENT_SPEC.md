@@ -5,24 +5,170 @@
   benchmark proof, and release-gate indicators may surface when useful, but
   passing checks should stay quiet and no dashboard claim should imply shipped
   behavior before pinned dogfood and benchmark proof exist.
-Last updated: 2026-04-17
+Last updated: 2026-10-16
 
-
-Last updated (UTC): 2026-04-17
 
 ## Purpose
+
 Dashboard is the shell host for Odylith. It provides the top-level tabbed,
-deep-linkable parent surface that composes Radar, Atlas, Compass, Registry, and
-Casebook into one navigable product entrypoint without flattening each child
-surface into the shell renderer.
+deep-linkable parent surface that composes Project, Radar, Atlas, Compass,
+Registry, and Casebook into one navigable product entrypoint without flattening
+each child surface into the shell renderer.
+
+Project receives exact canonical provisional design alongside source facts.
+Both scalar and structured presenters
+show proposed capabilities and proposed logical boundaries; source-stated systems,
+external dependencies and exclusions remain separate. Job cards copy each proposed
+workstream's distinct deliverable. The presenter must not reconstruct capabilities
+from source responsibility relations or hide the proposed-authority label.
+Browser proof checks these visible values and source actors on desktop/mobile;
+unit or DOM-count success does not establish complete-package human quality.
+
+### Current information order (2026-10-09)
+
+Greenfield's source-declared path and its proposed implementation walkthrough must
+remain distinct. The proposed walkthrough may include cited supporting prerequisites;
+it cannot redefine accepted first-path membership. Fresh briefs lead with the
+candidate's direct project summary and keep evidence, assumptions and record
+metadata in closed details. Source authority and exact quotes remain available.
+The frozen v51 Project page still substitutes six proposed actions under First
+Path. Current source corrects that final renderer: 76 affected checks and eight
+model-free desktop/mobile normal, degraded, empty and unavailable views pass.
+The independent reader also rejects the contaminated proposed path and preserves
+historical behavior. Earlier v51 local coverage totals 4,174 selected checks;
+it predates this final renderer correction and retains its original scope.
+Fresh installed fidelity remains required. Lifecycle captions still need a
+coherent version change. CB-303 retains the failures and proof limits.
+
+Atlas leads with the selected explanation and diagram. Exact identifiers,
+freshness details, exports and linked work belong in closed, keyboard-accessible
+details; material stale warnings remain visible. Radar keeps search available,
+places optional analysis below the workspace and brings the selected narrative
+into view on mobile. Loading detail must not steal focus from a later search.
+Compass describes the next implementation step and how to verify it directly.
+
+The source-local Atlas change passes 170 checks and the Radar change passes 98,
+including normal, empty and degraded browser states. Parent visual review accepts
+the bounded layouts. These are source-level proofs; regenerated product pages,
+the next package and fresh native Greenfield output still require qualification.
+CB-303 retains the original failed output and the independent layout evidence.
+
+### V38 Greenfield Project trust projection
+
+Dashboard's Project view renders the authored Greenfield trust section whenever
+the payload supplies its trust signals. The section makes the projection's
+material delta, absence of source-backed implementation state, and degraded
+condition visible under complete human-readable headings before the host
+handoff at desktop and compact widths. These
+rows are authored project posture, not implementation facts, and they remain
+readable rather than being hidden when the normal and degraded Project views
+would otherwise look identical.
+
+Dashboard only projects this existing payload boundary. It does not create a
+second trust model, infer implementation evidence, alter Project semantics, or
+change the presenter, handoff, or browser-route ownership. Normal, empty or
+fallback, and degraded/error Project rendering remain proof obligations.
 
 ## Scope And Non-Goals
+
+### Project role and metadata visibility
+
+Project keeps actual roles and jobs visible. Current metadata and supporting
+records may be closed when they would displace the primary narrative; their
+absence from the first view does not erase source custody.
+
+### Project primary narrative order
+
+Project leads with the exact Current work title and human purpose. Generated
+counts, projected-state notes, next-action derivation, and runtime changelog
+remain supporting metadata or closed detail when supplied; they do not precede
+the primary narrative. Source links, warnings, and supporting records remain
+available without inventing a second Project state.
+
+### Project source narrative
+
+Project presents the supplied work title and human purpose directly. It does not
+synthesize a Desired state or treat “No active release detected” as a workflow
+name. Source links and warnings stay available in closed details, and the
+accepted authored route remains unchanged.
+
+### Project risk presentation
+
+Project shows the actual supplied risk in its default view. Its category stays
+in closed native detail. This preserves source authority and the existing
+fallback/error posture; no displayed category or summary is inferred.
+
+### Upgrade refresh scope
+
+An upgrade refresh regenerates all six owned surfaces. Ordinary refresh remains
+the three-surface default. The narrow dashboard entry path continues to
+regenerate its owned views without requiring a full sync.
+
+### Complete open-item text
+The Project open-items card preserves every supplied item and its complete text.
+Sentence budgeting must not drop questions or shorten their meaning. Browser
+proof checks five visible advisory questions, including a complete long question,
+as well as complete selectable prompts on desktop/mobile with and without
+JavaScript. This presentation guarantee does not require an expanded readiness
+schema or make optional design questions admission blockers.
+
+### Complete prompts, concise handoff
+Project keeps each standalone host prompt byte-for-byte complete behind a native
+details disclosure. Stage title, purpose, output and stop condition stay visible;
+the full prompt remains keyboard-accessible and selectable without JavaScript.
+The presenter escapes untrusted text and does not shorten or reinterpret source
+constraints, alter handoff contracts, or invent a second prompt-generation owner.
+Empty or unusable prompts produce no empty control. The shared responsive layout
+wraps expanded content without horizontal overflow. Model-free full-package
+replay and desktop/mobile browser checks prove this presentation boundary, not
+native confirmation, fresh semantic reliability or deadline qualification.
+
+### Complete release copy
+The upgrade spotlight must preserve complete authored titles, summaries and
+selected highlights through note loading, installer fallback and presentation.
+Character clipping is not a display policy: it can remove a publication constraint
+or create a fragment. Keep bounded item selection and responsive wrapping, without
+changing the frozen dashboard header. CB-340's four real-browser failures show
+that source-note correctness and mirror equality do not prove rendered fidelity.
+The shared release-text owner must normalize markup without shortening prose;
+desktop/mobile authored and fallback readback must prove the resulting contract.
+
+The first notice view presents one authored title and one complete summary at
+ordinary reading size. Longer release highlights and version/date metadata belong
+in closed native What changed details, with keyboard access and complete text.
+The release-notes action and normal Close control stay visible. Entrance motion
+must not make underlying page text compete with the notice narrative. This
+presentation obligation is separate from successful dismissal, and requires
+desktop/mobile normal, empty/fallback, and degraded evidence before acceptance.
+
+### Cross-surface experience proof
+Every generated-surface change requires desktop/mobile browser checks of normal,
+empty or fallback, and degraded/error states, followed by independent screenshot
+review. A heading, route or no-overflow pass alone is not UX acceptance. CB-330
+demonstrated this on a fresh installed repo. Each child owns its useful empty
+state; Dashboard owns the shared Project route, not a second record interpreter.
+The header remains frozen. Mobile KPI density and broader accessibility remain
+separate open obligations, not implied successes of the empty-state correction.
+The exact 4ca2f3d5 local distribution also passes 28 installed empty/invalid-route
+cells and six Project recoveries without changing installed or governed bytes.
+Screenshot review still finds the mobile Registry Diagnostics chip overlapping
+its empty heading. Keep that defect visible; installed automation alone does not
+close human-quality, positive creation, accessibility or 60/90/120 qualification.
+The subsequent source-local Registry correction restores unobstructed mobile
+headings and complete horizontal spec-prose bounds while preserving local table
+scrolling. Its browser and independent visual evidence do not update the earlier
+installed baseline or qualify touch/keyboard accessibility. Registry owns this
+layout; the dashboard header and shared sticky primitive remain unchanged.
+
 ### Dashboard owns
 - Shell-level routing and query-param deep links.
 - The parent iframe composition model.
 - Shared developer-note and cheatsheet drawers.
 - Shared branding, favicon, manifest, and tab lockup behavior.
 - Externalized shell asset bundling for the checked-in root surface.
+- Project view-model projection, Product Story semantic-slot rendering, and the
+  responsive Project child-surface contract.
+- Runtime version-state sidecar detection for stale generated shell payloads.
 - A hard product boundary that keeps internal diagnostics, provider-spend
   evidence, recorder tapes, cockpit panels, charts, and status slabs out of the
   dashboard DOM.
@@ -54,6 +200,10 @@ surface into the shell renderer.
   Compass, Radar, Registry, and Casebook top-line summary tiles must consume
   the shared KPI grid/card/label-value helpers instead of shipping local
   summary-card CSS forks.
+- Value presentation must distinguish zero from missing data. Radar's existing
+  HTML escape owner preserves numeric `0` and boolean `false`, while null,
+  undefined and empty input remain blank; escaping still treats values as text.
+  This is content fidelity, not a change to KPI layout or the dashboard header.
 - Shared interactive `B-###` workstream buttons also share one destination:
   Dashboard routes them to Radar's canonical workstream view. Child surfaces
   may keep their own local scope state, but they must not repurpose those
@@ -100,10 +250,33 @@ surface into the shell renderer.
   Shared template rendering helpers.
 - `src/odylith/runtime/surfaces/tooling_dashboard_frontend_contract.py`
   Source-owned tooling-shell frontend loader plus frozen header contract guard.
+- `src/odylith/runtime/surfaces/templates/tooling_dashboard/navigation.js`
+  Embedded route, history, frame activation and child-admission owner. The UI
+  controller delegates navigation here rather than adopting child URLs.
+- `src/odylith/runtime/surfaces/governance_frame_bridge.py`
+  Shared opaque MessageChannel transport and surface-actor lifetime. It does not
+  interpret routes, decide readiness or render child content.
 - `src/odylith/runtime/surfaces/dashboard_ui_primitives.py`
   Shared layout, typography, chip, panel, and dashboard UI CSS primitives.
 - `src/odylith/runtime/surfaces/brand_assets.py`
   Brand head injection, favicon, manifest, and lockup/icon asset plumbing.
+- `src/odylith/runtime/surfaces/tooling_dashboard_version_state.py`
+  Mutable runtime sidecar sourced from `odylith version` so an open or stale
+  shell can detect when the generated dashboard payload lags the authoritative
+  runtime version.
+- `src/odylith/runtime/project_intelligence/`
+  Project view-model and renderer ownership. Product Story cards carry one
+  typed semantic slot each, and accepted, blank, and degraded states must remain
+  fully readable at desktop and mobile widths.
+- `src/odylith/runtime/artifact_quality/greenfield_project_judgment.py`
+  Shared Project Story slot-custody and lexical repetition judgment used before
+  confirmation and by installed browser release proof. The five fixed display
+  labels are recognized case-insensitively because browser `innerText` includes
+  CSS case transformation; typed `data-semantic-slot` ownership and label-to-slot
+  matching remain mandatory.
+- `scripts/release/greenfield_browser_surface_proof.py`
+  Installed generated-surface proof for rendered semantic-slot identity and
+  Product Story distinctness.
 - `src/odylith/runtime/surfaces/templates/tooling_dashboard/`
   Shell HTML/CSS/JS template assets.
 
@@ -119,6 +292,8 @@ surface into the shell renderer.
 - `odylith/index.html`
 - `odylith/tooling-payload.v1.js`
 - `odylith/tooling-app.v1.js`
+- `.odylith/runtime/odylith-version-state.v1.json`
+- `.odylith/runtime/odylith-version-state.v1.js`
 
 ## Shell Architecture
 ### Composition model
@@ -166,8 +341,41 @@ Compass to refresh or wait for that refresh, but it must not invent or
 advertise a minute-scale `full` rerender path the child surface no longer
 supports.
 
+`odylith dashboard refresh --force` is the documented operator escape hatch for
+stale generated-surface cache suspicion. It bypasses generated refresh-guard
+reuse for the selected child renderers without changing source truth by itself.
+Default refresh may stay optimized, but a green check must never be based on a
+stale cache whose input fingerprint missed changed source bytes.
+
+After install or upgrade, Dashboard must write the runtime version sidecar and
+force the default shell-facing refresh. Published shells capture version state
+in their sealed payload; they do not request mutable runtime companions from
+an immutable generation. A direct-live export that still shows an
+older version than `odylith version` must surface a warning with the
+authoritative source, the shell generated timestamp, the version-state check
+timestamp, and the narrow recovery command:
+`odylith dashboard refresh --repo-root . --force`. It must not recommend broad
+`odylith sync --proceed-with-overlap` recovery for shell-only drift.
+
 ### Live-refresh policy contract
-Dashboard owns the shell-side policy that decides when a currently open tab may
+Dashboard classifies the complete generated HTML, payload and control bundle
+before canonical-path remapping. If any output belongs to the managed package,
+status acquisition belongs to that rendered snapshot, including first install,
+staging and custom HTML that shares the canonical payload filename. The payload
+captures version state and Context Engine last-update provenance; existing
+surface-status projection owns Compass warnings. This is not comprehensive
+engine-health evidence. Live telemetry files stay independently mutable and
+outside transaction fingerprints. Changed captured inputs invalidate the render
+cache, not admission against an unchanged published generation.
+
+Published views show a compact capture-time note. They do not poll missing
+sidecars or their own immutable payload, and they do not claim automatic
+successor discovery. Reopening the canonical entry resolves the current complete
+publication; an already-open or explicitly pinned predecessor remains coherent.
+Status warnings must not intercept the starter guide's Close control.
+
+When every generated output is outside managed ownership, the existing
+direct-live export contract applies. Dashboard owns the policy that decides when a currently open tab may
 reload against fresher local runtime state without mutating tracked Odylith
 truth.
 
@@ -244,7 +452,7 @@ the derived self-host posture without recomputing it independently of the
 install/runtime layer.
 
 ### Deep-link model
-`dashboard_shell_links.py` owns the URL contract for:
+`dashboard_shell_links.py` owns generated links and the URL contract for:
 - `tab`
 - `workstream`
 - `component`
@@ -255,8 +463,50 @@ install/runtime layer.
 - `view` for Radar-only workstream projections such as plan routes
 
 It also normalizes scope-level routes from delivery-intelligence scopes and
-renders proof-reference links consistently. This module is the single place to
-change shell link semantics.
+renders proof-reference links consistently. Change generated link semantics here
+and the corresponding runtime route contract in `navigation.js` together.
+
+### Embedded navigation and completion
+The parent navigation owner alone updates embedded history and chooses the
+active frame. Each child reports its original requested route, actual rendered
+selection and loading/ready/empty/degraded outcome through the shared bridge.
+The original request is captured before DATA-backed filter resolution, default selection or cache-query cleanup;
+neither a load event nor a matching URL proves that requested content rendered.
+Missing route fields may accept child defaults. Explicit unknown selections must
+retain truthful empty/degraded behavior, not be silently replaced by defaults.
+Children own canonical ancillary filters; the parent retains explicit primary
+record identity even when an empty/degraded result normalizes those filters.
+Changed history targets require replacement instead of reusing an old actor's
+original request echo. Pending replacement survives bootstrap and in-flight loads
+until reconciliation can navigate safely; ordinary same-target returns stay local.
+
+Child actions send explicit navigation intent before local selection changes.
+Same-Document actions retain their actor and existing selection-revision guards;
+Document replacement revokes the old port before navigation. A new actor clears
+parent admission before any snapshot or action callback, including when its
+Document commits before iframe load. Rebinding the same actor preserves accepted
+in-place selections while loading or degraded. Inactive panes cannot revive
+authority through a late load. Each port is pinned to its first actor; revoked
+ports and superseded async completions cannot advance parent state.
+
+Actor identity is opaque lifecycle metadata, not a route field, readiness signal
+or authentication of arbitrary child code. Local-file and HTTP operation remain
+supported without browser security overrides. Standalone child behavior remains
+local; Radar's same-Document replacement retains one bridge actor. Atlas keeps a
+useful conflicting-workstream preview but visibly explains its degraded fallback;
+Compass emits only its supported normalized query fields.
+Radar's input/change binding renders only actual value changes: a duplicate blur
+event must not retire a row between pointer-down and its native click.
+
+The September 15 source integration passes 263 focused controls, including native
+HTTP/file transport and real-controller Document-lifetime tests. Subsequent
+filter/history and click-loss corrections pass 176 focused source/native controls,
+the 20-case published regression replay, and four unchanged real history/reload
+and cancellation controls. The frozen 452-case desktop/mobile matrix at a2245e80b
+then reports 451 passes, no failures and one warning-audit skip, with unchanged
+source/publication custody and clean terminal resources. The skip is an incorrect
+test payload path despite six real scoped diagnostics; it needs a separate replay,
+not a waiver. Installed distribution and complete Greenfield release remain open.
 
 ## Intent And UX Contract
 The shell is meant to answer:
@@ -276,6 +526,9 @@ the child surfaces.
 - The bottom-right recovery dock is for global shell reopen actions such as the
   starter guide or upgrade spotlight. Do not add per-surface status reopen
   buttons there.
+- Returning focus when closing or opening a shell overlay belongs to that action.
+  A deferred callback must not override a later focus choice in a child surface
+  or the overlay itself. Preserve keyboard recovery without losing new input.
 - First-run Starter Guide is an activation path, not a marketing hero. It must
   keep one primary prompt obvious, keep repo-condition notices compact and near
   the decision they affect, and teach the Radar, Registry, Atlas, Casebook, and
@@ -344,25 +597,64 @@ artifacts to that header.
 ## Validation Playbook
 ### Shell
 - `odylith sync --repo-root . --check-only`
-- `PYTHONPATH=src python -m odylith.runtime.surfaces.render_tooling_dashboard --repo-root . --output odylith/index.html`
+- `odylith dashboard refresh --repo-root . --surfaces tooling_shell`
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_brand_assets.py tests/unit/runtime/test_tooling_dashboard_frontend_contract.py`
 - `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_shell_never_renders_internal_status_across_tabs`
+
+### Project
+- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_project_intelligence.py tests/unit/runtime/test_greenfield_project_judgment_quality.py tests/unit/install/test_greenfield_browser_surface_proof.py`
+- `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_project_tab_browser.py`
 
 ## Requirements Trace
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-03-23 · Decision:** Successor created: B-279 reopens B-278 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +3 more
-- **2026-03-20 · Decision:** Successor created: B-258 reopens B-256 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +1 more
-- **2026-03-05 · Implementation:** Refreshed Radar, Atlas, Compass, Registry, Odylith, and the tooling shell; auto-synced the stale Mermaid diagrams; and fixed Odylith dashboard rendering so the workstream sync completes.
-  - Evidence: odylith/compass/compass.html, odylith/index.html +2 more
-- **2026-03-05 · Decision:** treat stale Atlas diagrams and Odylith render errors as fail-closed blockers before accepting a dashboard refresh.
-  - Evidence: odylith/compass/compass.html, odylith/index.html +2 more
+- **2026-10-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `sha256:674e4dcf1279090b822ef14c228da2a688306fb096338d331c896c5034c7610b`, `sha256:f6f6644081399f8233ed84590606a8894096990f2fe98cebafc6ffdd34fd570e`, `sha256:0d8006c91a5f4a229a1c9734a745efc1544e418aa22e2ca40ea3b8d315a6ae11`, `sha256:e09e99afa961b3674632a6d6594cf6aa534cbc7f784af22e98200bb0a6d35fe1`, plus 2 more
+- **2026-10-15 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `sha256:1f89d08a54d74152e22e7841f2c5f838aa1c042d2ece651da1e4579a71542118`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_release_assembly.py`
+- **2026-10-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/atlas/source/greenfield-matrix-tiered-campaign-progress.mmd`, `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
+- **2026-10-10 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/project_intelligence/authored_fact_presenter.py`, `tests/fixtures/greenfield-release-corpus/source-annotations/public40-20261010/evidence-amendment.v1.json`
+- **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, plus 2 more
+- **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_local_release_smoke.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-10-06: Final Project source proof passes 54 focused checks and eight source-browser cells while preserving factual roles, jobs, warnings, and source custody. Installed and release proof remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+- 2026-10-06: Installed v39 inspection found redundant generated/projected/next-action notes and a runtime changelog above the exact Current work title. The pending owner change will restore primary-narrative order while retaining metadata, source links, warnings, and supporting records; this is not package or release proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+- 2026-10-06: Project now renders its exact source work title and human purpose without generic Desired-state synthesis or a no-active-release pseudo-name; warnings, closed sources, and the accepted authored route remain. Four source owners pass 8 source UI and 54 focused checks with a net 104-line reduction; independent review, package, installed, semantic, and release proof remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+- 2026-10-06: The r6 upgrade refresh correction passes 240 source checks with no input drift and independent CLEAR review. It keeps authenticated unfinished upgrade preservation, durable report/receipt order, stale/forged drift refusal, and historical-generation validity. Upgrade covers six surfaces; ordinary refresh remains three. This is source-only, not installed qualification. (Plan: [B-145](odylith/radar/radar.html?view=plan&workstream=B-145); Bug: `CB-347`)
+- 2026-10-06: Project now shows the actual supplied risk by default and keeps its category in closed native detail. Independent review is CLEAR and 60 focused unit checks pass. Evidence: `/private/tmp/odylith-project-risk-presentation-independent-review-20261006.json` (SHA-256 `221a3ed5ec073f21038227871e7d6fe85a282a785b0052c4c75db546c5cc7a91`). This is source UI evidence only; installed and release proof remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+- 2026-10-06: Adopted compact default disclosures in the 13 exact preceding CI failures without changing production behavior. Browser tests verify closed evidence and counts, open actual summaries by keyboard, and retain text, style, count and route checks. The Compass VM models nearest details and verifies genuine failure opens it. All 13 signatures pass focused tests; the original CI failure and the requirement for fresh full CI remain. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-347`)
+- 2026-10-06: Upgrade notices use one readable title and summary, complete keyboard-accessible details, and opaque entrance motion. Two presentation owners remove 98 lines; 12 focused checks and nine source-UI conditions pass, with three fresh real-copy readbacks and independent review. Installed and release gates remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+- 2026-10-06: Closed eight audited presentation findings and final mobile counter priority through existing owners. Atlas uses direct narratives; roles, owners, links, Registry evidence, and Compass counts are optional. Complete historical summaries, one empty-evidence explanation, populated timeline hours, fewer repeated fallback messages, and one exact Project risk rationale remain. Genuine runtime failure opens the counts disclosure automatically. Focused proof passes Atlas 130 plus 70 prefix checks, Registry 40, Compass 85 unique base checks plus 13 final counter checks, and Project 32; independent reviews are CLEAR. Final unchanged-oracle synthetic browser proof passes 44/44 states, zero issues, 111 screenshots, and 36 unchanged pins in 36.356 seconds. Manifest: `/private/tmp/odylith-cognitive-load-closure-20261006.json`. Exact facts, graph, warnings, history, roles, authority, navigation, and legacy seals remain. Retain all earlier stalls and setup failures. This is bounded current-source UI proof; populated Casebook, root publication, installed, semantic, native-host, holdout, migration, and release qualification remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-303`, `CB-347`)
+- 2026-10-05: Closed stale CI expectations through test-only corrections: exact authored summaries remain intact, source details open by keyboard, and readable labels retain IDs and routes. The 107 known e32 signatures map to 268 focused passes; the original full CI failure remains retained. No Dashboard runtime contract changed, and no installed, semantic, migration, native, holdout, or release qualification follows. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-347`)
+- 2026-10-05: The v34 Research H0 default-Radar duplicate Decision Basis/Opportunity P2 is cleared by existing ownership: exact authored Decision Basis is native-closed and Product View is one direct narrative. Browser proof passes `89` checks in `46.72s` across normal, empty, and runtime-fallback states with 18 screenshots; six affected unit modules pass `89` in `3.45s`. Generic provisional prefixes are removed while warnings, refs, authority, and typed custody remain unchanged; the earlier `88`-pass/one-fail Registry boilerplate assertion is retained. This clears only the default-view P2 and does not qualify semantic, installed, native, holdout, migration, or release evidence. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-347`)
+- 2026-10-05: Source checkpoints preserve the active dashboard publication while staging its exact logical shell for a clean release checkout. The maintainer-only observer checks whole-publication custody, staged bytes, and Git file mode. Root 35 tests pass in 2.39s; consumer and pinned-runtime checks remain strict. Installed release qualification remains open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+- 2026-10-05: Source UI implementation resolves five captured defects: repeated Accepted-focus content, source excerpt replacing Project summary, flattened risks, boilerplate Atlas narrative, and repeated Registry purpose copy. Registry search comes before optional Activity and coverage without hiding its actual unmapped warning; Radar human status precedes optional assessment and dates while exact fields remain; Atlas descriptions precede optional reading help; native keyboard helpers open ancestor details for original route/ID recovery. The 22 human-maintained UI owners/templates change `+539/-557` lines; root unit proof passes `385` checks. Final r6 UI44 passes `44/44` states with zero issues and `119` screenshots in `41.827595s`, source pins unchanged, plus four actual Atlas-guide keyboard controls (SHA-256 `d77f3c65653b0626d9abf3ed445aea401298ab0a875c41283de6b9a2da969eb6`). Screenshot scope and hashes remain in `/private/tmp/odylith-project-ui-feedback-20261005/feedback-inventory.json`. Preserve the original two-failure Radar lane as history. Existing CLI recovery backed up eight outputs, restored reviewed state `e7b9823c1deefee325239f6e9a31157a7c89a3f35a699276e7727ff7ffd0a9a2`, then passed forced Radar/Atlas refresh in `10s`: `47/47` Atlas records fresh, zero stale, Radar pass, and no runtime fallback. Bundle mirrors are regenerable outputs of unchanged renderers, not unique authored sources; 660 authoring pins stay unchanged. Current published-root Radar proof passes the original two tests in `2.34s` with default-closed details, native Enter, ten exact fields, route/ID recovery, and geometry. This is source-UI and published-root proof only; B-145 installed upgrade, v33 semantic/install, Public40, migration, holdout, and release gates remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+- 2026-09-15: Moved embedded route/history/admission ownership out of the UI controller and adopted one actor-bound transport across all five child surfaces. Preserved original requests, actual completion outcomes and standalone behavior; removed old unversioned notifications and direct parent-history bypasses. Native review caught and corrected admission inheritance before iframe load. The 263-control source integration is bounded proof; generated browser and release acceptance remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-305`)
+- 2026-09-09: Moved published-shell status acquisition into the sealed tooling payload while retaining independently mutable telemetry and direct-live exports. Whole-bundle ownership includes custom HTML sharing canonical assets. Captured status is labelled, canonical reopening advances coherently, and warning layers no longer block starter-guide dismissal. Source-local browser and admission controls qualify this bounded correction; new-distribution installed recovery and complete Greenfield release proof remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-305`)
+- 2026-08-04: Bound Product Boundary to the typed Greenfield visible result instead of a path-shaped project-brief outcome, and kept terminal deferred scope in Product Boundary rather than repeating it in First Path. The exact installed-matrix failure now yields five complete, semantically distinct cards in source-local proof; clean installed proof remains pending. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+- 2026-08-04: Corrected installed Project browser proof so intentional CSS uppercase labels retain their canonical five-card identity while unknown, missing, mismatched, and reused semantic slots still fail. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+- 2026-08-03: Bound each Project Product Story card to a distinct typed semantic slot, reused the same judgment in pre-confirm and installed browser proof, and expanded Playwright coverage to accepted, blank, and degraded desktop/mobile states with no overflow, line clamp, or hidden text. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+- 2026-06-30: Added release-proof custody for generated shell payload readback. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagram: D-046)
+  Greenfield release proof now treats generated shell payload globals as
+  persisted evidence, not incidental route files. Project implementation prompts
+  must come from the generated tooling payload, and Radar, Registry, Atlas,
+  Compass, Casebook, and tooling-shell payloads must parse with surface-owned
+  content before browser proof can contribute to a premium score.
+- 2026-06-29: Tightened generated surface asset custody for greenfield-created repos. `brand_assets.py` now owns seeding missing managed `odylith/surfaces/brand` assets from packaged product assets before greenfield dashboard refresh, and the greenfield rollback guard snapshots that managed brand tree so failed post-confirm writes do not leave partial browser dependencies. Static surface-health proof now checks local HTML asset references, including lockup images, instead of waiting for browser proof to discover 404s. The retained source-local surface replay seeded 22 brand assets, passed generated browser proof with zero issues, and scored 10/10 after previously failing on missing lockup requests. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+- 2026-05-04: Added `dashboard refresh --force` and byte-content generated refresh guard fingerprints so source manifest edits cannot receive a stale fingerprint-reuse success; older guard caches are invalidated by the v2 cache version. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-167`)
 - 2026-04-17: Remembered the Compass Programs card-shape contract in Dashboard governance so visible program records stay as release-like inner cards rather than borderless rows inside the outer Programs container. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-18: Hardened dashboard refresh structured-result handling so queued child refreshes remain non-failures, failed structured refresh payloads without an explicit `rc` fail closed, and selective sync no longer crashes or falsely passes when Compass or Radar refresh actions return dictionaries. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))
 - 2026-04-27: Reframed first-run Starter Guide as a compact activation panel with one primary prompt, compact repo-condition notices, and visible Radar/Registry/Atlas/Casebook/Compass mental model proof for 0.1.12 onboarding. (Plan: [B-030](odylith/radar/radar.html?view=plan&workstream=B-030))

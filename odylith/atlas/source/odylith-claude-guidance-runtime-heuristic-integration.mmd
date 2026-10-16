@@ -1,4 +1,4 @@
-%% Reviewed 2026-04-11 for B-083 to show where shared runtime heuristics now treat CLAUDE.md as first-class guidance alongside AGENTS.md, covering workstream inference, dirty-overlap, benchmark isolation, consumer profile, and context routing.
+%% Reviewed 2026-10-13 to show where CLAUDE.md is guidance: four runtime heuristics recognize it alongside AGENTS.md, while benchmark isolation applies a separate clean-room instruction policy to both matched lanes.
 flowchart LR
     subgraph GuidanceFiles["Repo guidance files"]
         AGENTS["AGENTS.md<br/>Canonical cross-host policy<br/>Always classified as guidance"]
@@ -6,11 +6,13 @@ flowchart LR
     end
 
     subgraph Classifier["Shared guidance classifier (extended for B-083)"]
-        IsGuidance["is_guidance_file(path)<br/>returns true for AGENTS.md AND CLAUDE.md<br/>Single source of truth for all heuristics"]
+        IsGuidance["is_guidance_file(path)<br/>returns true for AGENTS.md AND CLAUDE.md<br/>Shared classifier for four runtime heuristics"]
     end
 
     AGENTS --> IsGuidance
     CLAUDE --> IsGuidance
+    AGENTS --> BM_In
+    CLAUDE --> BM_In
 
     subgraph WorkstreamInference["workstream_inference.py"]
         WS_In["Changed-path set scanned<br/>CLAUDE.md changes counted as guidance anchors"]
@@ -25,8 +27,8 @@ flowchart LR
     end
 
     subgraph BenchmarkIsolation["benchmark_runner.py + benchmark_isolation.py"]
-        BM_In["Workspace snapshot and clean-room reset<br/>CLAUDE.md excluded from strip and reset scope"]
-        BM_Out["Benchmark workspace retains CLAUDE.md companion<br/>Isolation boundary matches real operator environment"]
+        BM_In["Clean-room instruction policy<br/>Both lanes strip auto-consumed AGENTS.md and CLAUDE.md<br/>before agent execution"]
+        BM_Out["Matched clean-room boundary<br/>Both lanes start without auto-consumed repo instructions<br/>Validator restoration happens only after execution"]
         BM_In --> BM_Out
     end
 
@@ -44,7 +46,6 @@ flowchart LR
 
     IsGuidance --> WS_In
     IsGuidance --> DO_In
-    IsGuidance --> BM_In
     IsGuidance --> CP_In
     IsGuidance --> RT_In
 
@@ -52,7 +53,7 @@ flowchart LR
         B1["CLAUDE.md treated as ordinary documentation"]
         B2["Claude-only repos failed root guidance detection"]
         B3["Workstream inference returned no_candidates"]
-        B4["Benchmark workspace could strip CLAUDE.md"]
+        B4["Benchmark isolation handled CLAUDE.md inconsistently"]
         B5["Consumer profile missed Claude Code host posture"]
     end
 
@@ -60,7 +61,7 @@ flowchart LR
         A1["CLAUDE.md classified as guidance across all heuristics"]
         A2["Claude-only repos bootstrap and detect correctly"]
         A3["Workstream inference narrows from CLAUDE.md anchor"]
-        A4["Benchmark workspace preserves CLAUDE.md companion"]
+        A4["Benchmark workspace strips CLAUDE.md in both lanes"]
         A5["Consumer profile includes Claude Code host posture"]
     end
 

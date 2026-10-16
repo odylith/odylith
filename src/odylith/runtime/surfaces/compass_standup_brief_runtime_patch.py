@@ -10,6 +10,7 @@ from typing import Mapping
 
 from odylith.common.json_objects import load_json_object as _load_json
 from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.domain_intelligence import greenfield_managed_mutation_boundary
 from odylith.runtime.surfaces import compass_standup_brief_narrator
 
 _RUNTIME_CURRENT_JSON = "odylith/compass/runtime/current.v1.json"
@@ -56,37 +57,6 @@ def apply_terminal_state_to_runtime_payload(
     return patched_payload
 
 
-def patch_current_runtime_from_terminal_state(
-    *,
-    repo_root: Path,
-    runtime_input_fingerprint: str,
-    state_entries: Mapping[str, Any],
-) -> bool:
-    current_path = repo_root / _RUNTIME_CURRENT_JSON
-    current_payload = _load_json(current_path)
-    if not isinstance(current_payload, Mapping) or not current_payload:
-        return False
-    global_failures = _terminal_global_failures_from_runtime_payload(
-        payload=current_payload,
-        state_entries=state_entries,
-    )
-    scoped_failures = _terminal_scoped_failures_from_runtime_payload(
-        payload=current_payload,
-        state_entries=state_entries,
-    )
-    if not global_failures and not scoped_failures:
-        return False
-    return patch_current_runtime_payload(
-        repo_root=repo_root,
-        runtime_input_fingerprint=runtime_input_fingerprint,
-        runtime_generated_utc=str(current_payload.get("generated_utc", "")).strip() or _now_utc_iso(),
-        global_results={},
-        scoped_results={},
-        global_failures=global_failures,
-        scoped_failures=scoped_failures,
-    )
-
-
 def patch_current_runtime_payload(
     *,
     repo_root: Path,
@@ -96,6 +66,41 @@ def patch_current_runtime_payload(
     scoped_results: Mapping[str, Mapping[str, Mapping[str, Any]]],
     global_failures: Mapping[str, Mapping[str, Any]] | None = None,
     scoped_failures: Mapping[str, Mapping[str, Mapping[str, Any]]] | None = None,
+) -> bool:
+    """Admit and publish already-computed results without running narration."""
+
+    changed = False
+
+    def apply_results(_repository_lock_fd: int | None) -> int:
+        nonlocal changed
+        changed = _patch_current_runtime_payload_locked(
+            repo_root=repo_root,
+            runtime_input_fingerprint=runtime_input_fingerprint,
+            runtime_generated_utc=runtime_generated_utc,
+            global_results=global_results,
+            scoped_results=scoped_results,
+            global_failures=global_failures,
+            scoped_failures=scoped_failures,
+        )
+        return 0
+
+    greenfield_managed_mutation_boundary.run_with_greenfield_managed_mutation_boundary(
+        repo_root=repo_root,
+        command_tokens=("compass", "standup-brief-maintenance"),
+        operation=apply_results,
+    )
+    return changed
+
+
+def _patch_current_runtime_payload_locked(
+    *,
+    repo_root: Path,
+    runtime_input_fingerprint: str,
+    runtime_generated_utc: str,
+    global_results: Mapping[str, Mapping[str, Any]],
+    scoped_results: Mapping[str, Mapping[str, Mapping[str, Any]]],
+    global_failures: Mapping[str, Mapping[str, Any]] | None,
+    scoped_failures: Mapping[str, Mapping[str, Mapping[str, Any]]] | None,
 ) -> bool:
     current_json_path = (repo_root / _RUNTIME_CURRENT_JSON).resolve()
     current_js_path = (repo_root / _RUNTIME_CURRENT_JS).resolve()
@@ -117,7 +122,7 @@ def patch_current_runtime_payload(
         global_failures=global_failures,
         scoped_failures=scoped_failures,
     )
-    if not changed:
+    if not changed or patched_payload == payload:
         return False
     if odylith_context_cache.path_signature(current_json_path) != current_json_signature:
         return False
@@ -175,8 +180,13 @@ def runtime_payload_with_brief_results(
         if not isinstance(brief, Mapping):
             continue
         window_token = str(window_key).strip()
-        mutable_standup_brief[window_token] = dict(brief)
-        mutable_digest[window_token] = compass_standup_brief_narrator.brief_to_digest_lines(brief)
+        patched_brief = _brief_preserving_ready_narrative(
+            existing=mutable_standup_brief.get(window_token),
+            failure=brief,
+            scope_kind="global",
+        )
+        mutable_standup_brief[window_token] = patched_brief
+        mutable_digest[window_token] = compass_standup_brief_narrator.brief_to_digest_lines(patched_brief)
         changed = True
     for window_key, window_results in scoped_results.items():
         if not isinstance(window_results, Mapping):
@@ -206,8 +216,13 @@ def runtime_payload_with_brief_results(
             scope_token = str(scope_id).strip()
             if not scope_token:
                 continue
-            scoped_window[scope_token] = dict(brief)
-            digest_window[scope_token] = compass_standup_brief_narrator.brief_to_digest_lines(brief)
+            patched_brief = _brief_preserving_ready_narrative(
+                existing=scoped_window.get(scope_token),
+                failure=brief,
+                scope_kind="scoped",
+            )
+            scoped_window[scope_token] = patched_brief
+            digest_window[scope_token] = compass_standup_brief_narrator.brief_to_digest_lines(patched_brief)
             changed = True
         mutable_standup_brief_scoped[window_token] = scoped_window
         mutable_digest_scoped[window_token] = digest_window
@@ -218,6 +233,71 @@ def runtime_payload_with_brief_results(
     patched_payload["standup_brief_scoped"] = mutable_standup_brief_scoped
     patched_payload["digest_scoped"] = mutable_digest_scoped
     return patched_payload, True
+
+
+def _brief_preserving_ready_narrative(
+    *,
+    existing: Any,
+    failure: Mapping[str, Any],
+    scope_kind: str,
+) -> dict[str, Any]:
+    if not isinstance(existing, Mapping):
+        return dict(failure)
+    if str(existing.get("status", "")).strip().lower() != "ready":
+        return dict(failure)
+    preserved = dict(existing)
+    preserved["notice"] = _failure_notice_for_ready_brief(
+        failure=failure,
+        scope_kind=scope_kind,
+    )
+    return preserved
+
+
+def _failure_notice_for_ready_brief(
+    *,
+    failure: Mapping[str, Any],
+    scope_kind: str,
+) -> dict[str, str]:
+    diagnostics = (
+        dict(failure.get("diagnostics"))
+        if isinstance(failure.get("diagnostics"), Mapping)
+        else {}
+    )
+    title = str(diagnostics.get("title", "")).strip() or "Brief unavailable right now"
+    message = str(diagnostics.get("message", "")).strip() or (
+        "The latest narration pass did not produce a usable standup brief."
+    )
+    if "last" not in message.lower() or "brief" not in message.lower():
+        message = f"{message} Showing the last known standup brief while Compass retries."
+    reason = _notice_reason_token(
+        str(diagnostics.get("reason", "")).strip()
+        or str(failure.get("source", "")).strip()
+        or "brief_unavailable"
+    )
+    prefix = "scoped" if str(scope_kind).strip().lower() == "scoped" else "global"
+    notice = {
+        "title": title,
+        "message": message,
+        "reason": f"{prefix}_{reason}_showing_previous",
+    }
+    next_retry_utc = str(diagnostics.get("next_retry_utc", "")).strip()
+    if next_retry_utc:
+        notice["next_retry_utc"] = next_retry_utc
+    return notice
+
+
+def _notice_reason_token(value: str) -> str:
+    token_chars: list[str] = []
+    previous_underscore = False
+    for char in str(value).strip().lower():
+        if char.isalnum():
+            token_chars.append(char)
+            previous_underscore = False
+        elif not previous_underscore:
+            token_chars.append("_")
+            previous_underscore = True
+    token = "".join(token_chars).strip("_")
+    return token or "brief_unavailable"
 
 
 def _terminal_global_failures_from_runtime_payload(

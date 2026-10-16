@@ -17,6 +17,7 @@ class ToolingDashboardTemplateContext:
     shell_title: str
     shell_subtitle: str
     shell_version_label: str
+    status_snapshot_captured_utc: str
     brand_head_html: str
     shell_brand_lockup_href: str
     shell_brand_icon_href: str
@@ -24,6 +25,7 @@ class ToolingDashboardTemplateContext:
     welcome_html: str
     maintainer_notes_html: str
     cheatsheet_html: str
+    project_html: str
     payload_json: str
     control_script: str
 
@@ -34,6 +36,7 @@ def build_template_context(
     welcome_html: str,
     maintainer_notes_html: str,
     cheatsheet_html: str,
+    project_html: str = "",
 ) -> ToolingDashboardTemplateContext:
     """Assemble the stable template context for one shell render."""
 
@@ -61,6 +64,7 @@ def build_template_context(
         shell_title=shell_title,
         shell_subtitle=shell_subtitle,
         shell_version_label=shell_version_label,
+        status_snapshot_captured_utc=str(payload.get("status_snapshot", {}).get("captured_utc", "")).strip(),
         brand_head_html=str(payload.get("brand_head_html", "")).strip(),
         shell_brand_lockup_href=str(payload.get("shell_brand_lockup_href", "")).strip(),
         shell_brand_icon_href=str(payload.get("shell_brand_icon_href", "")).strip(),
@@ -68,6 +72,7 @@ def build_template_context(
         welcome_html=welcome_html,
         maintainer_notes_html=maintainer_notes_html,
         cheatsheet_html=cheatsheet_html,
+        project_html=project_html,
         payload_json=payload_json,
         control_script=tooling_dashboard_frontend_contract.load_tooling_shell_control_js(),
     )

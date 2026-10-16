@@ -1,16 +1,27 @@
+    const RELEASE_TARGET_VERSION_RE = /\bv?(\d+(?:\.\d+){1,3})\b/i;
+    const MAX_RELEASE_TARGET_LABEL_CHARS = 18;
+
+    function compactReleaseTargetLabel(value) {
+      const text = String(value || "").trim().replace(/\s+/g, " ");
+      const match = RELEASE_TARGET_VERSION_RE.exec(text);
+      if (match && match[1]) return match[1];
+      if (text.length <= MAX_RELEASE_TARGET_LABEL_CHARS) return text;
+      return `${text.slice(0, MAX_RELEASE_TARGET_LABEL_CHARS - 3).trimEnd()}...`;
+    }
+
     function releaseHeroLabel(release) {
       const releaseRow = release && typeof release === "object" ? release : {};
-      const nameLabel = String(releaseRow.name || "").trim();
-      if (nameLabel) return nameLabel;
       const versionLabel = String(releaseRow.version || "").trim();
-      if (versionLabel) return versionLabel;
+      if (versionLabel) return compactReleaseTargetLabel(versionLabel);
+      const tagLabel = String(releaseRow.tag || "").trim();
+      if (tagLabel) return compactReleaseTargetLabel(tagLabel);
       const effectiveLabel = String(
         releaseRow.effective_name || releaseRow.display_label || ""
       ).trim();
-      if (effectiveLabel) return effectiveLabel;
-      const tagLabel = String(releaseRow.tag || "").trim();
-      if (tagLabel) return /^v\d/.test(tagLabel) ? tagLabel.slice(1) : tagLabel;
-      return String(release && (release.release_id || "") || "").trim();
+      if (effectiveLabel) return compactReleaseTargetLabel(effectiveLabel);
+      const nameLabel = String(releaseRow.name || "").trim();
+      if (nameLabel) return compactReleaseTargetLabel(nameLabel);
+      return compactReleaseTargetLabel(release && (release.release_id || "") || "");
     }
 
     function heroKpiRows(base, state, touchedIds, riskRows, scopedTouch, commitCount, localCount) {
@@ -57,14 +68,38 @@
       target.innerHTML = kpis.map(([label, value, cardClass]) => `
         <article class="stat${cardClass ? ` ${cardClass}` : ""}">
           ${label ? `<p class="kpi-label">${escapeHtml(label)}</p>` : ""}
-          <p class="kpi-value">${escapeHtml(value)}</p>
+          <p class="kpi-value" title="${escapeHtml(value)}">${escapeHtml(value)}</p>
         </article>
       `).join("");
     }
 
+    const ACTIVE_CRITICAL_RISK_STATUS_TOKENS = new Set(["open", "inprogress", "mitigated", "monitoring"]);
+
+    function compactStatusToken(value) {
+      return String(value || "").trim().replace(/[\s_-]+/g, "").toLowerCase();
+    }
+
+    function bugRequiresActiveRiskAttention(row) {
+      if (!row || row.is_open_critical !== true) return false;
+      return ACTIVE_CRITICAL_RISK_STATUS_TOKENS.has(compactStatusToken(row.status));
+    }
+
+    function renderRiskItem({ severity, title, meta = "" }) {
+      const metaLabel = String(meta || "").trim();
+      return `
+        <div class="risk">
+          <strong class="risk-severity">${escapeHtml(severity || "warning")}</strong>
+          <div class="risk-copy">
+            <span class="risk-title">${escapeHtml(title || "Risk needs attention.")}</span>
+            ${metaLabel ? `<span class="risk-meta">${escapeHtml(metaLabel)}</span>` : ""}
+          </div>
+        </div>
+      `;
+    }
+
     function resolveScopedRiskRows(payload, state) {
       const risks = payload.risks || {};
-      const bugs = Array.isArray(risks.bugs) ? risks.bugs.filter((row) => row.is_open_critical) : [];
+      const bugs = Array.isArray(risks.bugs) ? risks.bugs.filter(bugRequiresActiveRiskAttention) : [];
       const selfHost = Array.isArray(risks.self_host) ? risks.self_host : [];
       const traceCritical = Array.isArray(risks.traceability_critical)
         ? risks.traceability_critical
@@ -116,16 +151,20 @@
       const blocks = [];
 
       for (const row of scoped.bugs.slice(0, 6)) {
-        blocks.push(`<div class="risk"><strong>${escapeHtml(row.severity)}</strong> ${escapeHtml(row.title)} (${escapeHtml(row.status)})</div>`);
+        blocks.push(renderRiskItem({ severity: row.severity, title: row.title }));
       }
       for (const row of scoped.selfHost.slice(0, 3)) {
-        blocks.push(`<div class="risk"><strong>${escapeHtml(row.severity || "warning")}</strong> ${escapeHtml(row.message || "Self-host posture needs attention.")}</div>`);
+        blocks.push(renderRiskItem({ severity: row.severity || "warning", title: row.message || "Self-host posture needs attention." }));
       }
       for (const row of scoped.traceCritical.slice(0, 6)) {
-        blocks.push(`<div class="risk"><strong>${escapeHtml(row.severity)}</strong> ${escapeHtml(row.message || row.category)}</div>`);
+        blocks.push(renderRiskItem({ severity: row.severity, title: row.message || row.category }));
       }
       for (const row of scoped.stale.slice(0, 4)) {
-        blocks.push(`<div class="risk"><strong>stale diagram</strong> ${escapeHtml(row.diagram_id)} ${escapeHtml(row.title)} (${escapeHtml(`${row.age_days}d`)})</div>`);
+        blocks.push(renderRiskItem({
+          severity: "stale diagram",
+          title: `${row.diagram_id || ""} ${row.title || ""}`.trim(),
+          meta: `${row.age_days}d`,
+        }));
       }
 
       if (!blocks.length) {
@@ -251,16 +290,50 @@
     function briefNoticeBelongsInHeaderStatus(brief) {
       const notice = visibleBriefNotice(brief);
       const reason = String(notice.reason || "").trim().toLowerCase();
-      return reason === "skipped_not_worth_calling";
+      return reason === "skipped_not_worth_calling" || reason.includes("_showing_previous");
+    }
+
+    function compactPreviousBriefReason(message, reason) {
+      const text = String(message || "").replace(/\s+/g, " ").trim().toLowerCase();
+      const token = String(reason || "").trim().toLowerCase();
+      const suffix = "showing last ready brief until retry succeeds.";
+      if (token.includes("invalid_batch") || text.includes("not usable")) {
+        return `latest narration unusable; ${suffix}`;
+      }
+      if (token.includes("provider_error") || text.includes("provider failed")) {
+        return `provider failed; ${suffix}`;
+      }
+      if (token.includes("provider_unavailable") || text.includes("not reachable") || text.includes("unreachable")) {
+        return `provider unreachable; ${suffix}`;
+      }
+      if (token.includes("timeout") || text.includes("timed out") || text.includes("too long")) {
+        return `provider timed out; ${suffix}`;
+      }
+      if (token.includes("auth_error") || text.includes("rejected the request")) {
+        return `provider access failed; ${suffix}`;
+      }
+      if (token.includes("rate_limited") || token.includes("credits_exhausted") || text.includes("budget") || text.includes("capacity")) {
+        return `provider capacity limited; ${suffix}`;
+      }
+      if (token.includes("validation_failed") || text.includes("failed validation") || text.includes("invalid brief")) {
+        return `narration failed validation; ${suffix}`;
+      }
+      return `fresh narration unavailable; ${suffix}`;
     }
 
     function briefHeaderStatusNotice(brief) {
       if (!briefNoticeBelongsInHeaderStatus(brief)) return "";
       const notice = visibleBriefNotice(brief);
       const title = String(notice.title || "").trim();
-      const message = String(notice.message || "").trim();
+      const reason = String(notice.reason || "").trim().toLowerCase();
+      let message = String(notice.message || "").trim();
+      if (reason.includes("_showing_previous")) {
+        message = compactPreviousBriefReason(message, reason);
+      } else if (reason === "skipped_not_worth_calling") {
+        message = "Reused last validated brief.";
+      }
       if (title && message) return `${title}: ${message}`;
-      return title || message;
+      return `${title || message}`.trim();
     }
 
     function renderBriefNotice(brief) {
@@ -282,16 +355,28 @@
       const title = String(diagnostics.title || "").trim() || "Standup brief unavailable";
       const message = String(diagnostics.message || "").trim() || "No standup brief is available for this view.";
       const reason = String(diagnostics.reason || "").trim().toLowerCase();
-      const retryUtc = String(diagnostics.next_retry_utc || "").trim();
-      const retryCopy = retryUtc ? `Will retry after ${compactTimestamp(retryUtc)}.` : "";
+      const fallbackDigest = Array.isArray(diagnostics.fallback_digest)
+        ? diagnostics.fallback_digest.map((line) => String(line || "").trim()).filter(Boolean).slice(0, 3)
+        : [];
+      const diagnosticRows = Object.entries(diagnostics)
+        .filter(([key, value]) => !["fallback_digest", "title", "message"].includes(key) && value !== null && value !== "" && !(Array.isArray(value) && !value.length))
+        .map(([key, value]) => `<div class="brief-diagnostic-row"><span class="brief-diagnostic-key">${escapeHtml(key.replaceAll("_", " "))}</span><span class="brief-diagnostic-value">${escapeHtml(typeof value === "object" ? JSON.stringify(value) : String(value))}</span></div>`)
+        .join("");
       const toneClass = reason === "provider_unavailable" || reason === "transport_error" || reason === "provider_deferred"
         ? "brief-status-card--info"
         : "brief-status-card--warn";
       return `
         <div class="brief-status-card ${toneClass} brief-status-card--compact" role="status" aria-live="polite">
+          ${fallbackDigest.length ? `
+            <div class="brief-fallback-digest">
+              <ul>
+                ${fallbackDigest.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}
+              </ul>
+            </div>
+          ` : ""}
           <div class="brief-status-title">${escapeHtml(title)}</div>
           <div class="brief-status-copy">${escapeHtml(message)}</div>
-          ${retryCopy ? `<div class="brief-status-meta">${escapeHtml(retryCopy)}</div>` : ""}
+          ${diagnosticRows ? `<details class="brief-diagnostics"><summary>Summary details</summary><div class="brief-diagnostic-grid">${diagnosticRows}</div></details>` : ""}
         </div>
       `;
     }

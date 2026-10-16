@@ -30,10 +30,72 @@
   same workstream anchor. A missing B-110 anchor is treated as benchmark
   corpus drift because it can create false `requires_widening` advisory noise
   even when required-path recall and validation are green.
-Last updated: 2026-04-29
+Last updated: 2026-10-16
 
+## Release benchmark order (2026-10-16)
 
-Last updated (UTC): 2026-04-28
+Before package preparation, full proof on the frozen release commit and its
+current-tree comparison against the actual shipped predecessor remain blocking.
+After commit-bound release/hosted/consumer/GA commands finish, separate full
+pinned-dogfood proof and canonical comparison remain mandatory. Keep the actual
+selected baseline explicit; the post-publication comparison may select the new
+version and is not the earlier predecessor comparison.
+
+The final public snapshot uses that pinned report and a matching diagnostic,
+canonically rendered while the clean measured tree/runtime posture matches.
+Retain and read back all twelve generated files plus authored README before
+their reviewed metadata-only PR. Merge publication before release planning
+closeout; its new commit gains no benchmark or package credit. Source-local
+evidence, diagnostic advisories and prior failures remain separately visible.
+No quality, budget, corpus, model or identity rule changes. See the
+[release runbook](../../../../MAINTAINER_RELEASE_RUNBOOK.md).
+
+## Historical source433 benchmark evidence
+
+Full source-local report `ea0fbd0916ee9690` at `433f0e38a` completes 82 scenarios,
+328 warm/cold observations and 36 supplemental samples with provisional pass.
+Conservative required-path recall is 0.992, critical recall 0.979 and validation
+success 0.986. Quality, fairness and budget gates pass. Supplementary repeat
+quality consistency is 0.667 and latency remains unstable; these diagnostics
+stay visible. The matching packet diagnostic `b75f850362a680d2` remains HOLD.
+
+Canonical comparison selects the completed actual v0.1.14 report while retaining
+the interrupted report; its sole warning is predecessor HOLD. Recall is unchanged
+and validation increases by 0.027. Two changed scenarios add supporting paths,
+so this is not an identical-input causal claim. All original reports are retained.
+
+Both reports pass strict content-v1 identity before canonical publication. Twelve
+generated files transfer byte-exactly, README uses the same measurements, and
+21 graph checks pass using the project test toolchain importing frozen source.
+This proves that measured revision only. Later Greenfield source, final main
+H/B, installed package, native hosts and GA remain unqualified; CB-116 stays open.
+
+## Greenfield source-predicate release qualification
+
+Benchmark consumes the Release-owned evaluator's disclosed-public source mode,
+`odylith.greenfield.public-source-predicate-evaluation.v1`. Its source-only
+preflight preserves the independently frozen 40 cases and 425 IDs. Observed
+coverage is separate: many-to-many source mappings, complete reverse support,
+the exact output/snapshot/transaction and a retained independent review act
+must all bind to pinned hashes. Missing, partial, contradicted or unaudited
+evidence fails. Checksums and reviewer eligibility metadata do not establish
+natural-language entailment or reviewer authorship by themselves.
+
+The [Release contract](../release/CURRENT_SPEC.md) owns case scoring, canonical
+custody and native/protected compatibility. Benchmark distinguishes structural
+inventory from independently adjudicated source fidelity; repeated generated
+representations never increase the fixed source denominator or confidence.
+
+CB-347/B-142 Wave R2's unchanged public source-only preflight passes, and the
+retained civic reverse inventory has 219 entries. Final independent rereview
+passes 11 controls and reports no actionable P0/P1/P2 after canonical custody,
+clarification and malformed-material corrections. Exact review:
+/private/tmp/odylith-greenfield-r2-independent-rereview-20261004.md,
+SHA-256 2ebc3a1d8218449e0c8f3b8a7c8a70cca32146abe5f5376e0a9299aeadbf8efe.
+These results prove evaluation contracts and inventory completeness. Full
+frozen regression and fresh installed, independently adjudicated semantic
+proof remain open.
+
 
 ## Purpose
 Benchmark is Odylith's local proof subsystem for measuring whether Odylith-on
@@ -53,6 +115,8 @@ reviewer framing that explains how Odylith should be compared.
 - Maintained benchmark graph generation in
   `src/odylith/runtime/evaluation/odylith_benchmark_graphs.py`.
 - Public benchmark framing and reviewer guidance under `docs/benchmarks/`.
+- Research interpretation notes and validity contracts under
+  `docs/research/`, including the benchmark interpretation contract.
 - Local benchmark history under `.odylith/runtime/odylith-benchmarks/`.
 - The release-safe benchmark publication contract used by README and maintainer
   release proof.
@@ -256,9 +320,18 @@ reviewer framing that explains how Odylith should be compared.
   local-memory-first on LanceDB plus Tantivy, with Vespa intentionally
   disabled unless a run explicitly reports otherwise
 - Product-repo release-baseline posture:
-  the current passing proof is detached `source-local` posture, and
-  `benchmark_compare` still reports `warn` until there is a last-shipped
-  published release baseline in `docs/benchmarks/release-baselines.v1.json`
+  comparison requires current-tree candidate proof and completed last-shipped
+  observations. A completed HOLD remains eligible; interrupted execution or
+  missing authoritative quality measurements cannot authorize comparison.
+  Cross-release quality checks use conservative absolute Odylith measurements
+  with the existing thresholds. Each release retains its own On-versus-raw
+  hard gate, and relative advantages remain separately labeled diagnostics.
+  Published summaries bind all six absolute quality measurements to their
+  versioned source and completion evidence. Legacy or changed measurements
+  fail closed. Existing latency and token comparisons retain their basis.
+  New overlay identities bind relative input paths, content, modes and full
+  directory inventory through `content-v1`; legacy reports keep exact legacy
+  matching. Unknown or unsafe inputs cannot authorize current-tree proof.
 - Active release exception:
   `v0.1.10` currently carries a tracked `skip_proof_and_compare` override
   because pinned-dogfood proof run `0047192366d8bf1c` wedged mid-corpus and
@@ -275,7 +348,7 @@ reviewer framing that explains how Odylith should be compared.
   `v0.1.14` carries a tracked `skip_proof_and_compare` override after the
   maintainer explicitly waived full benchmark runs for GA. This release is
   benchmark-advisory while the shipped benchmark story is the product Turn Gate
-  formal model plus migration, browser, install, topology, guidance,
+  interpretation contract plus migration, browser, install, topology, guidance,
   discipline, and release-candidate proof. Do not describe `v0.1.14` as fresh
   benchmark proof.
 
@@ -520,6 +593,10 @@ generation.
   validation, they must be restored from a stash captured inside the scoped
   benchmark workspace snapshot, never from the ambient repo root. Restoring
   from repo root reintroduces unrelated dirty state and invalidates proof.
+- Disposable benchmark checkouts copy Git objects independently. A linked
+  source checkout's common object store and its temporary workspace may be on
+  different filesystems. The source revision, explicit snapshot overlay,
+  guidance stripping and scoped validator truth remain fixed.
 - The shared live-workspace snapshot may not materialize a partial dirty Python
   package. If a dirty selected Python file depends on dirty sibling modules in
   the same package, the snapshot must carry those same-package dirty siblings
@@ -823,15 +900,17 @@ Release-safe benchmark status is distinct from these eval-integrity gates:
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-04-25 · Implementation:** v0.1.11 benchmark reproof published proof report 44f2a3d83d2c9975 and diagnostic report 9dcae95d5bb62c75 on head 1cfca107 after fixing CB-125 and CB-126.
+- **2026-07-07 · Implementation:** Implementation evidence linked this component to governed work with 7 verifiable artifact references.
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_confirmed_title_extraction.py`, `src/odylith/runtime/evaluation/odylith_benchmark_graphs.py`, `src/odylith/runtime/evaluation/odylith_benchmark_marketing_graphs.py`, `src/odylith/runtime/project_intelligence/intent_confirmation.py`, plus 3 more
+- **2026-04-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-093
-  - Evidence: docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md, docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md +1 more
-- **2026-04-17 · Implementation:** B-110 Odylith Discipline hardening centralized signal/law policy, ranked open-world affordances, suppressed ephemeral practice refs, tagged Discipline benchmark scenarios to B-110, and proved zero-credit validators plus quick benchmark families with advisory widening at 0.0.
+  - Evidence: `sha256:3c2a6fcfb5326de23a7b7178445a1566528ca9801f9ee0f2acd0eac8c060689d`, `sha256:d2a3613a82c69c1dc55e36aa7d0dbefed902f0294897f248cb592980b24c5960`, `sha256:37ae69326ca6815a1168f2b79665afa17b99530711d53a56f1d78d63f3df42f6`
+- **2026-04-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-110
-  - Evidence: odylith/runtime/source/optimization-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md
-- **2026-04-05 · Implementation:** Refreshed the benchmark publication story to the April 5 source-local full proof pass 52aa3f76538cf12f: README, benchmark docs, registry spec, plans, and radar now reflect that odylith_on clears the hard gate and secondary guardrails against odylith_off while benchmark_compare still warns until the first shipped release baseline exists.
+  - Evidence: `odylith/runtime/source/optimization-evaluation-corpus.v1.json`, `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md`
+- **2026-04-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-021, B-022
-  - Evidence: README.md, docs/benchmarks/README.md +3 more
+  - Evidence: `sha256:b335630551682c19a781afebcf4d07bf978fb1f8ac04c6bf87428ed5106870f5`, `sha256:e25064ece33fba6568bfc992d2a9adbe1bbde7cb987e0e230116b03ecd63b68a`, `odylith/registry/source/components/benchmark/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md`, plus 1 more
 <!-- registry-requirements:end -->
 
 ## Feature History

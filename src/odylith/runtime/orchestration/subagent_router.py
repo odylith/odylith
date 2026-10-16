@@ -687,21 +687,21 @@ _TASK_CLASS_POLICIES: dict[str, TaskClassPolicy] = {
         default_profile=RouterProfile.CODEX_HIGH,
         minimum_profile=RouterProfile.CODEX_MEDIUM,
         default_agent_role="worker",
-        rationale="New bounded write behavior defaults to the write-high tier, with GPT-5.4 reserved for the riskier or more architecture-heavy cases.",
+        rationale="New bounded write behavior defaults to the write-high tier, with frontier profiles reserved for riskier or more architecture-heavy cases.",
     ),
     "analysis_review": TaskClassPolicy(
         task_family="analysis_review",
         default_profile=RouterProfile.MINI_HIGH,
         minimum_profile=RouterProfile.MINI_MEDIUM,
         default_agent_role="explorer",
-        rationale="Bounded read-only analysis defaults to a high-effort GPT-5.4 mini explorer tier and promotes only when ambiguity or risk demand more depth.",
+        rationale="Bounded read-only analysis defaults to the analysis-high explorer tier and promotes only when ambiguity or risk demand more depth.",
     ),
     "critical_change": TaskClassPolicy(
         task_family="critical_change",
         default_profile=RouterProfile.GPT54_HIGH,
         minimum_profile=RouterProfile.GPT54_HIGH,
         default_agent_role="worker",
-        rationale="Critical or hard-to-reverse changes default to GPT-5.4 high; `xhigh` stays gated behind explicit risk triggers.",
+        rationale="Critical or hard-to-reverse changes default to frontier-high; `xhigh` stays gated behind explicit risk triggers.",
     ),
     "coordination_heavy": TaskClassPolicy(
         task_family="coordination_heavy",
@@ -797,6 +797,20 @@ def _extract_context_signals_payload(payload: Mapping[str, Any]) -> dict[str, An
         value = payload.get(key)
         if isinstance(value, Mapping):
             extracted[key] = dict(value)
+    for key in (
+        "host_runtime",
+        "host_family",
+        "route_ready",
+        "native_spawn_ready",
+        "narrowing_required",
+        "odylith_execution_profile",
+        "odylith_execution_route_ready",
+        "odylith_execution_narrowing_required",
+        "odylith_execution_delegate_preference",
+        "odylith_execution_selection_mode",
+    ):
+        if key in payload:
+            extracted[key] = payload.get(key)
     diagram_watch_gaps = payload.get("diagram_watch_gaps")
     if isinstance(diagram_watch_gaps, list):
         extracted["diagram_watch_gaps"] = list(diagram_watch_gaps)
@@ -974,6 +988,8 @@ def _host_tool_contract(*, profile: RouterProfile, assessment: TaskAssessment) -
     native_spawn_policy = _normalize_string(host_capabilities.get("native_spawn_policy"))
     native_spawn_policy_status = _normalize_string(host_capabilities.get("native_spawn_policy_status"))
     native_spawn_effective = bool(host_capabilities.get("native_spawn_effective"))
+    spawn_executable = bool(native_spawn_supported and native_spawn_effective)
+    spawn_execution_status = "executable" if spawn_executable else "planned_host_dispatch_required"
     delegation_style = _delegation_style_for_assessment(assessment)
     requested_model = profile.model if delegation_style == "routed_spawn" else ""
     requested_reasoning_effort = profile.reasoning_effort if delegation_style == "routed_spawn" else ""
@@ -1007,6 +1023,8 @@ def _host_tool_contract(*, profile: RouterProfile, assessment: TaskAssessment) -
             "native_spawn_policy": native_spawn_policy,
             "native_spawn_policy_status": native_spawn_policy_status,
             "native_spawn_effective": native_spawn_effective,
+            "spawn_executable": spawn_executable,
+            "spawn_execution_status": spawn_execution_status,
             "preferred_subagent_type": _task_tool_subagent_type(assessment=assessment, agent_role=agent_role),
         }
         if preferred_project_subagent:
@@ -1043,6 +1061,8 @@ def _host_tool_contract(*, profile: RouterProfile, assessment: TaskAssessment) -
         "native_spawn_policy": native_spawn_policy,
         "native_spawn_policy_status": native_spawn_policy_status,
         "native_spawn_effective": native_spawn_effective,
+        "spawn_executable": spawn_executable,
+        "spawn_execution_status": spawn_execution_status,
     }
     if native_spawn_policy_status and native_spawn_policy_status != "assumed_available":
         contract["host_policy_note"] = (
@@ -1149,6 +1169,9 @@ def _native_spawn_payload(*, profile: RouterProfile, assessment: TaskAssessment,
         return {}
     delegation_style = _delegation_style_for_assessment(assessment)
     agent_role = _agent_role_for_assessment(assessment, profile=profile)
+    host_capabilities = _assessment_host_capabilities(assessment)
+    spawn_executable = bool(host_capabilities.get("native_spawn_effective"))
+    spawn_execution_status = "executable" if spawn_executable else "planned_host_dispatch_required"
     if delegation_style == "task_tool_subagents":
         payload = {
             "tool_name": "Task",
@@ -1156,6 +1179,8 @@ def _native_spawn_payload(*, profile: RouterProfile, assessment: TaskAssessment,
             "description": f"Bounded {agent_role} leaf for `{assessment.task_family}`",
             "prompt": message,
             "run_in_background": False,
+            "spawn_executable": spawn_executable,
+            "spawn_execution_status": spawn_execution_status,
         }
         if assessment.needs_write:
             payload["isolation"] = "worktree"
@@ -1170,6 +1195,8 @@ def _native_spawn_payload(*, profile: RouterProfile, assessment: TaskAssessment,
         "model": spawn_agent_overrides["model"],
         "reasoning_effort": spawn_agent_overrides["reasoning_effort"],
         "message": message,
+        "spawn_executable": spawn_executable,
+        "spawn_execution_status": spawn_execution_status,
     }
 
 

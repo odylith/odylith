@@ -1,0 +1,676 @@
+"""Build and verify the sealed Atlas view of model-authored Greenfield facts.
+
+The model-authoring response already owns semantic meaning.  This module makes
+one presentation projection from its typed actors, events, components, state,
+result, and proof.  Marked rows therefore carry exact display data and custody
+hashes; consumers must not reinterpret their Mermaid or prose.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Mapping, Sequence
+from copy import deepcopy
+import hashlib
+import json
+from typing import Any
+
+from odylith.runtime.domain_intelligence.greenfield_authored_atlas_design_views import (
+    atlas_box as _box,
+    atlas_box_details,
+    build_provisional_design_atlas_specs,
+    build_provisional_first_run_atlas_view,
+    required_atlas_string,
+    mermaid_label as _mermaid_label,
+    styled_mermaid as _styled_mermaid,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_event_display_text,
+)
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
+    PROVISIONAL_DESIGN_AUTHORITY_KIND, project_presentation_name,
+)
+
+AUTHORED_ATLAS_AUTHORITY_KEY = "authored_atlas_view_authority"
+AUTHORED_ATLAS_AUTHORITY_VERSION = "odylith.greenfield.authored-atlas-view.v3"
+SOURCE_GROUNDED_AUTHORITY_KIND = "source_grounded"
+AUTHORED_ATLAS_ROLES = (
+    "context",
+    "sequence",
+    "component_exchanges",
+    "delivery_dependencies",
+    "capability_support",
+)
+
+
+def build_authored_atlas_diagrams(
+    *,
+    title: str,
+    product_story: str,
+    diagram_slugs: Mapping[str, str],
+    human_actors: Sequence[str],
+    external_systems: Sequence[str],
+    non_goals: Sequence[str],
+    state_object: str,
+    visible_result: str,
+    proof_boundary: str,
+    components: Sequence[Mapping[str, Any]],
+    backlog: Sequence[Mapping[str, Any]],
+    relations: Sequence[Mapping[str, Any]],
+    provisional_design: Mapping[str, Any],
+    diagram_roles: Sequence[str] | None = None,
+    source_precedence: Sequence[Mapping[str, Any]] = (),
+    operational_constraints: Sequence[str] = (),
+    proof_is_provisional: bool = False,
+    source_lifecycle: Mapping[str, Any] | None = None,
+    neutral_context: bool = False, preserved_source_presentation: bool = False,
+) -> list[dict[str, Any]]:
+    """Project source facts and one separately authoritative provisional design."""
+
+    selected_roles = _selected_diagram_roles(diagram_roles)
+    title = required_atlas_string(title, "project title")
+    display_name = project_presentation_name(source_title=title, design=provisional_design)
+    product_story = required_atlas_string(product_story, "source product story")
+    state_object = required_atlas_string(state_object, "state object")
+    visible_result = required_atlas_string(visible_result, "visible result")
+    proof_boundary = required_atlas_string(proof_boundary, "proof boundary")
+    if bool(any(row.get("visible_result_quote") for row in relations)) == proof_is_provisional:
+        raise ValueError("authored Atlas checkpoint authority disagrees with source relations")
+
+    source_component_rows = [
+        {
+            "name": required_atlas_string(row.get("label"), "component label"),
+            "description": required_atlas_string(
+                row.get("responsibility"),
+                "component responsibility",
+            ),
+        }
+        for row in components
+    ]
+    backlog_titles = _workstream_titles(backlog)
+    first_run_orders = set(provisional_design["first_run"]["event_orders"])
+    first_run_relations = [
+        relation for relation in relations if relation["order"] in first_run_orders
+    ]
+
+    context_source, context_boxes = _context_view(
+        title=title,
+        product_story=product_story,
+        actors=human_actors,
+        externals=external_systems,
+        components=components,
+        relations=first_run_relations,
+        neutral_labels=neutral_context, display_name=display_name,
+    )
+    design_specs = build_provisional_design_atlas_specs(
+        provisional_design=provisional_design,
+        relations=relations,
+        state_object=state_object,
+        visible_result=visible_result,
+        proof_boundary=proof_boundary,
+        proof_is_provisional=proof_is_provisional,
+        non_goals=non_goals,
+        source_precedence=source_precedence,
+        source_lifecycle=source_lifecycle, preserved_source_presentation=preserved_source_presentation,
+    )
+    sequence_source, sequence_boxes = build_provisional_first_run_atlas_view(
+        relations,
+        design=provisional_design,
+        source_precedence=source_precedence,
+    )
+    design_workstream_titles = design_specs["delivery_dependencies"]["workstream_titles"]
+    if backlog_titles != design_workstream_titles:
+        raise ValueError("authored Atlas workstreams drifted from the provisional design")
+    design_component_ids = design_specs["component_exchanges"]["component_ids"]
+    specs = {
+        "context": {
+            "title": "System Context View",
+            "summary": (
+                f"Who does the work in {display_name}."
+            ),
+            "read_guide": (
+                "People are named participants, not necessarily product users. "
+                "First-run performers connect to their selected source events. Other named "
+                "participants remain context only. Human and external-system action groups connect to the candidate "
+                + ("product through a non-owning product interaction boundary; dotted participant-context "
+                   if neutral_context else
+                   "product through a non-owning first-path interaction boundary; dotted participant-context ")
+                + "links assign no action. The first-run view shows "
+                "one proposed walkthrough. Listing order does not establish execution order. Registry links identify proposed "
+                "support, not replacement of source ownership."
+            ),
+            "source": context_source,
+            "boxes": context_boxes,
+            "authority_kind": SOURCE_GROUNDED_AUTHORITY_KIND,
+            "components": source_component_rows,
+            "component_ids": design_component_ids,
+            "workstream_titles": backlog_titles,
+        },
+        "sequence": {
+            "title": "Proposed First Run",
+            "summary": "One proposed walkthrough respecting explicit source prerequisites.",
+            "read_guide": (
+                "Solid event arrows show source prerequisites; dotted arrows show additional "
+                "proposed next steps. Event IDs retain source identity, not execution rank. "
+                "Solid performer-to-action links retain source ownership. Action labels use exact source verb and target "
+                "references; select an action box in Read mode for the complete source event. "
+                "This is one first run, not all possible paths. "
+                "Declared exchange inputs and delivery prerequisites retain supporting components "
+                "without adding their actions to this walkthrough. Select a component box in Read "
+                "mode for its complete exchange contracts and delivery prerequisites. The Component "
+                "Exchanges and Delivery Dependencies views show those relationships separately. "
+                + provisional_design["first_run"]["rationale"]
+                + (" Source constraints: " + " ".join(
+                    f"{index}. {quote}" for index, quote in enumerate(operational_constraints, 1)
+                ) if source_precedence else " No source-stated execution order is asserted.")
+            ),
+            "source": sequence_source,
+            "boxes": sequence_boxes,
+            "authority_kind": PROVISIONAL_DESIGN_AUTHORITY_KIND,
+            "components": design_specs["component_exchanges"]["components"],
+            "component_ids": design_component_ids,
+            "workstream_titles": backlog_titles,
+        },
+        **design_specs,
+    }
+
+    rows: list[dict[str, Any]] = []
+    for key in selected_roles:
+        spec = specs[key]
+        row: dict[str, Any] = {
+            "slug": required_atlas_string(diagram_slugs.get(key), f"{key} diagram slug"),
+            "title": spec["title"],
+            "kind": "flowchart",
+            "summary": spec["summary"],
+            "read_guide": spec["read_guide"],
+            "owner": "repo",
+            "status": "draft",
+            "link_state": "atlas_first_draft",
+            "components": deepcopy(spec["components"]),
+            "related_workstream_titles": list(spec["workstream_titles"]),
+            "related_components": list(spec["component_ids"]),
+            "watch_paths": [],
+            "evidence_tier": "user_intent",
+            "authority_kind": spec["authority_kind"],
+            "projection_origin": AUTHORED_PROJECTION_ORIGIN,
+            "mermaid_source": spec["source"],
+            "diagram_boxes": deepcopy(spec["boxes"]),
+        }
+        row[AUTHORED_ATLAS_AUTHORITY_KEY] = _authority_for_row(row)
+        validate_authored_atlas_view(row, source_text=row["mermaid_source"])
+        rows.append(row)
+    return rows
+
+
+def _selected_diagram_roles(values: Sequence[str] | None) -> tuple[str, ...]:
+    if values is None:
+        return AUTHORED_ATLAS_ROLES
+    roles = tuple(values)
+    canonical = tuple(role for role in AUTHORED_ATLAS_ROLES if role in roles)
+    if not roles or roles != canonical or len(roles) != len(set(roles)):
+        raise ValueError(
+            "model-authored Atlas roles must be unique existing views in canonical order"
+        )
+    return roles
+
+
+def _workstream_titles(backlog: Sequence[Mapping[str, Any]]) -> list[str]:
+    titles = [
+        required_atlas_string(row.get("title"), "workstream title") for row in backlog
+    ]
+    if not titles:
+        raise ValueError("model-authored Atlas view requires at least one workstream")
+    if len(titles) != len(set(titles)):
+        raise ValueError("model-authored Atlas workstream titles must be unique")
+    return titles
+
+
+def is_authored_atlas_view(row: Mapping[str, Any]) -> bool:
+    """Return whether a row claims the sealed authored Atlas contract.
+
+    Projection origin is sufficient to enter the fail-closed branch.  A lost
+    marker must never silently reactivate legacy semantic interpretation.
+    """
+
+    return (
+        AUTHORED_ATLAS_AUTHORITY_KEY in row
+        or row.get("projection_origin") == AUTHORED_PROJECTION_ORIGIN
+    )
+
+
+def validate_authored_atlas_view(
+    row: Mapping[str, Any],
+    *,
+    source_text: str,
+) -> dict[str, Any]:
+    """Validate exact authored view custody and return its display projection.
+
+    This intentionally does not parse Mermaid or classify prose.  Construction
+    fixes the node/source relationship, while hashes and ordered IDs prove that
+    the same view reached staging and rendering.
+    """
+
+    authority = row.get(AUTHORED_ATLAS_AUTHORITY_KEY)
+    if not isinstance(authority, Mapping):
+        raise ValueError("authored Atlas view authority must be an object")
+    expected_keys = {
+        "version",
+        "projection_origin",
+        "source_sha256",
+        "surface_sha256",
+        "node_order",
+    }
+    if set(authority) != expected_keys:
+        raise ValueError("authored Atlas view authority has an invalid schema")
+    if authority.get("version") != AUTHORED_ATLAS_AUTHORITY_VERSION:
+        raise ValueError("authored Atlas view authority has an unsupported version")
+    if authority.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN:
+        raise ValueError("authored Atlas view authority has an invalid projection origin")
+    if row.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN:
+        raise ValueError("authored Atlas row has an invalid projection origin")
+    authority_kind = _authority_kind(row)
+
+    source = _required_source(source_text)
+    source_sha256 = _sha256_text(source)
+    if authority.get("source_sha256") != source_sha256:
+        raise ValueError("authored Atlas Mermaid source does not match its sealed hash")
+
+    node_order = _string_list(authority.get("node_order"), "authored Atlas node order")
+    if len(node_order) != len(set(node_order)):
+        raise ValueError("authored Atlas node order contains duplicate node IDs")
+
+    raw_boxes = row.get("diagram_boxes")
+    if not isinstance(raw_boxes, list) or not raw_boxes:
+        raise ValueError("authored Atlas diagram_boxes must be a non-empty list")
+    boxes: list[dict[str, Any]] = []
+    box_ids: list[str] = []
+    for index, raw_box in enumerate(raw_boxes):
+        if not isinstance(raw_box, Mapping):
+            raise ValueError(f"authored Atlas diagram_boxes[{index}] must be an object")
+        required_keys = {"node_id", "label", "role", "description"}
+        if set(raw_box) not in (required_keys, required_keys | {"details"}):
+            raise ValueError(f"authored Atlas diagram_boxes[{index}] has an invalid schema")
+        node_id = required_atlas_string(raw_box.get("node_id"), f"diagram_boxes[{index}].node_id")
+        box_ids.append(node_id)
+        boxes.append(
+            {
+                "node_id": node_id,
+                "label": required_atlas_string(raw_box.get("label"), f"diagram_boxes[{index}].label"),
+                "role": required_atlas_string(raw_box.get("role"), f"diagram_boxes[{index}].role"),
+                "description": "" if raw_box.get("description") == "" else required_atlas_string(
+                    raw_box.get("description"),
+                    f"diagram_boxes[{index}].description",
+                ),
+            }
+        )
+        if "details" in raw_box:
+            boxes[-1]["details"] = atlas_box_details(raw_box["details"])
+    if len(box_ids) != len(set(box_ids)):
+        raise ValueError("authored Atlas diagram_boxes contain duplicate node IDs")
+    if set(box_ids) != set(node_order):
+        missing = [node_id for node_id in node_order if node_id not in set(box_ids)]
+        unexpected = [node_id for node_id in box_ids if node_id not in set(node_order)]
+        detail = []
+        if missing:
+            detail.append(f"missing {', '.join(missing)}")
+        if unexpected:
+            detail.append(f"unmatched {', '.join(unexpected)}")
+        raise ValueError(
+            "authored Atlas diagram_boxes do not match sealed node IDs"
+            + (f": {'; '.join(detail)}" if detail else "")
+        )
+    if box_ids != node_order:
+        raise ValueError("authored Atlas diagram_boxes are reordered from sealed node IDs")
+
+    summary = required_atlas_string(row.get("summary"), "authored Atlas summary")
+    read_guide = required_atlas_string(row.get("read_guide"), "authored Atlas read guide")
+    components = _component_rows(row.get("components"), authority_kind=authority_kind)
+    surface_payload = _surface_payload(
+        source_sha256=source_sha256,
+        node_order=node_order,
+        boxes=boxes,
+        summary=summary,
+        read_guide=read_guide,
+        components=components,
+        authority_kind=authority_kind,
+    )
+    if authority.get("surface_sha256") != _sha256_json(surface_payload):
+        raise ValueError("authored Atlas display rows do not match their sealed hash")
+    return {
+        "summary": summary,
+        "read_guide": read_guide,
+        "diagram_boxes": deepcopy(boxes),
+        "components": deepcopy(components),
+    }
+
+
+def _authority_for_row(row: Mapping[str, Any]) -> dict[str, Any]:
+    source = _required_source(row.get("mermaid_source"))
+    boxes = row.get("diagram_boxes")
+    if not isinstance(boxes, list):
+        raise ValueError("authored Atlas diagram_boxes must be a list")
+    node_order = [
+        required_atlas_string(box.get("node_id"), "authored Atlas box node id")
+        for box in boxes
+        if isinstance(box, Mapping)
+    ]
+    source_sha256 = _sha256_text(source)
+    surface_payload = _surface_payload(
+        source_sha256=source_sha256,
+        node_order=node_order,
+        boxes=boxes,
+        summary=required_atlas_string(row.get("summary"), "authored Atlas summary"),
+        read_guide=required_atlas_string(row.get("read_guide"), "authored Atlas read guide"),
+        components=_component_rows(row.get("components"), authority_kind=_authority_kind(row)),
+        authority_kind=_authority_kind(row),
+    )
+    return {
+        "version": AUTHORED_ATLAS_AUTHORITY_VERSION,
+        "projection_origin": AUTHORED_PROJECTION_ORIGIN,
+        "source_sha256": source_sha256,
+        "surface_sha256": _sha256_json(surface_payload),
+        "node_order": node_order,
+    }
+
+
+def _surface_payload(
+    *,
+    source_sha256: str,
+    node_order: Sequence[str],
+    boxes: Sequence[Mapping[str, Any]],
+    summary: str,
+    read_guide: str,
+    components: Sequence[Mapping[str, Any]],
+    authority_kind: str,
+) -> dict[str, Any]:
+    return {
+        "version": AUTHORED_ATLAS_AUTHORITY_VERSION,
+        "projection_origin": AUTHORED_PROJECTION_ORIGIN,
+        "source_sha256": source_sha256,
+        "node_order": list(node_order),
+        "diagram_boxes": [dict(box) for box in boxes],
+        "narrative": {"summary": summary, "read_guide": read_guide},
+        "components": [dict(component) for component in components],
+        "authority_kind": authority_kind,
+    }
+
+
+def _context_view(
+    *,
+    title: str,
+    product_story: str,
+    actors: Sequence[str],
+    externals: Sequence[str],
+    components: Sequence[Mapping[str, Any]],
+    relations: Sequence[Mapping[str, Any]],
+    neutral_labels: bool = False, display_name: str | None = None,
+) -> tuple[str, list[dict[str, str]]]:
+    performer_events: dict[tuple[str, str], list[str]] = {}
+    for relation in relations:
+        kind = required_atlas_string(relation.get("actor_kind"), "first-path actor kind")
+        performer = required_atlas_string(relation.get("actor_fact_quote"), "first-path actor fact")
+        if kind == "product" and relation.get("owner_system_quote") != performer:
+            raise ValueError("authored Atlas product performer does not match its typed owner")
+        event = required_atlas_string(relation.get("event_quote"), "first-path event")
+        performer_events.setdefault((kind, performer), []).append(event)
+    lines = ["flowchart LR"]
+    boxes: list[dict[str, str]] = []
+    owner_nodes: dict[tuple[str, str], str] = {}
+    if actors:
+        lines.append('  subgraph people["People in product context"]')
+        boxes.append(
+            _box(
+                "people",
+                "People in product context",
+                "Container",
+                "",
+            )
+        )
+        for index, actor in enumerate(actors, start=1):
+            actor_id = f"actor{index}"
+            owner_nodes[("human", actor)] = actor_id
+            lines.append(f'    {actor_id}["{_mermaid_label(actor)}"]')
+            events = performer_events.get(("human", actor), ())
+            boxes.append(
+                _box(
+                    actor_id,
+                    actor,
+                    ("Source performer" if neutral_labels else "First-path actor") if events else "Participant",
+                    "",
+                    details=[] if events else [{"label": "Action assignment", "text":
+                        ("Named in project evidence; no selected action is assigned." if neutral_labels else
+                         "Named in project evidence; no first-path action is assigned.")}],
+                )
+            )
+        lines.append("  end")
+    product_lines, product_boxes, component_targets = _product_boundary_projection(
+        title=title,
+        product_story=product_story,
+        components=components, display_name=display_name,
+    )
+    lines.extend(product_lines)
+    boxes.extend(product_boxes)
+    for component, target in zip(components, component_targets, strict=True):
+        owner_nodes[("product", component["label"])] = target
+    if externals:
+        lines.append('  subgraph external_systems["Accepted external systems"]')
+        boxes.append(
+            _box(
+                "external_systems",
+                "Accepted external systems",
+                "Container",
+                "",
+            )
+        )
+        for index, external in enumerate(externals, start=1):
+            external_id = f"external{index}"
+            owner_nodes[("external_system", external)] = external_id
+            lines.append(f'    {external_id}["{_mermaid_label(external)}"]')
+            boxes.append(
+                _box(
+                    external_id,
+                    external,
+                    "External system",
+                    "",
+                )
+            )
+        lines.append("  end")
+    owner_action_counts: dict[str, int] = {}
+    for identity, events in performer_events.items():
+        owner_id = "product" if identity[0] == "product_wide" else owner_nodes.get(identity)
+        if owner_id is None:
+            raise ValueError("authored Atlas performer is missing its typed context owner")
+        group = owner_action_counts.get(owner_id, 0) + 1
+        owner_action_counts[owner_id] = group
+        action_id = f"{owner_id}_actions" + (str(group) if group > 1 else "")
+        event_label = "<br/><br/>".join(
+            "• " + _mermaid_label(event, width=42) for event in events
+        )
+        lines.append(f'  {action_id}["{event_label}"]')
+        lines.append(f'  {owner_id} -->|"performs"| {action_id}')
+        if identity[0] not in {"product", "product_wide"}:
+            interaction = "product interaction" if neutral_labels else "first-path interaction"
+            lines.append(
+                f'  {action_id} ---|"{interaction}"| product'
+            )
+        boxes.append(
+            _box(
+                action_id, "Selected source actions" if neutral_labels else "First-path actions",
+                "Grouped source actions" if neutral_labels else "Grouped first-path actions",
+                "\n\n".join(events),
+                details=[{"label": "Performer", "text": identity[1]},
+                         {"label": "Performer kind", "text": identity[0]}],
+            )
+        )
+    for index, actor in enumerate(actors, start=1):
+        if ("human", actor) not in performer_events:
+            lines.append(
+                f'  actor{index} -. "participant context; no action assigned" .-> product'
+            )
+    for external_index, component_index in _external_component_edges(
+        externals=externals,
+        components=components,
+    ):
+        target = component_targets[component_index - 1] if component_index else "product"
+        lines.append(f"  external{external_index} -.-> {target}")
+    return _styled_mermaid(lines), boxes
+
+
+def _product_boundary_projection(
+    *,
+    title: str,
+    product_story: str,
+    components: Sequence[Mapping[str, Any]],
+    display_name: str | None = None,
+) -> tuple[list[str], list[dict[str, str]], tuple[str, ...]]:
+    display_name = title if display_name is None else display_name
+    if not components:
+        return (
+            [f'  product["{_mermaid_label(display_name)}"]'],
+            [
+                _box(
+                    "product",
+                    display_name,
+                    "Accepted evidence excerpt",
+                    "",
+                    details=[{"label": "Accepted evidence excerpt", "text": product_story}],
+                )
+            ],
+            (),
+        )
+    rows = tuple(
+        (
+            required_atlas_string(component.get("label"), "component label"),
+            required_atlas_string(component.get("responsibility"), "component responsibility"),
+        )
+        for component in components
+    )
+    title_key = " ".join(title.split()).casefold()
+    sole_title_product = (
+        len(rows) == 1 and " ".join(rows[0][0].split()).casefold() == title_key
+    )
+    lines = [
+        f'  product["{_mermaid_label(display_name)}"]'
+        if sole_title_product
+        else f'  subgraph product["{_mermaid_label(display_name)}"]'
+    ]
+    boxes = [
+        _box(
+            "product",
+            display_name,
+            "Product boundary",
+            rows[0][1] if sole_title_product else "",
+        )
+    ]
+    component_targets: list[str] = []
+    for index, (label, responsibility) in enumerate(rows, start=1):
+        target = "product" if sole_title_product else f"component{index}"
+        component_targets.append(target)
+        if sole_title_product:
+            continue
+        lines.append(f'    {target}["{_mermaid_label(label)}"]')
+        boxes.append(
+            _box(
+                target,
+                label,
+                "Product-owned component",
+                responsibility,
+            )
+        )
+    if not sole_title_product:
+        lines.append("  end")
+    return lines, boxes, tuple(component_targets)
+
+
+def _external_component_edges(
+    *,
+    externals: Sequence[str],
+    components: Sequence[Mapping[str, Any]],
+) -> tuple[tuple[int, int], ...]:
+    edges: list[tuple[int, int]] = []
+    for external_index, external in enumerate(externals, start=1):
+        matched = False
+        for component_index, component in enumerate(components, start=1):
+            contract = component.get("component_contract")
+            dependencies = (
+                contract.get("external_dependencies")
+                if isinstance(contract, Mapping)
+                else component.get("dependencies")
+            )
+            if external in _string_sequence(dependencies):
+                edges.append((external_index, component_index))
+                matched = True
+        if not matched:
+            edges.append((external_index, 0))
+    return tuple(edges)
+
+
+def _component_rows(value: Any, *, authority_kind: str) -> list[dict[str, str]]:
+    if not isinstance(value, list) or (not value and authority_kind != SOURCE_GROUNDED_AUTHORITY_KIND):
+        raise ValueError("authored Atlas components must be a list, non-empty for proposed design")
+    rows: list[dict[str, str]] = []
+    for index, raw_row in enumerate(value):
+        if not isinstance(raw_row, Mapping) or set(raw_row) != {"name", "description"}:
+            raise ValueError(f"authored Atlas components[{index}] has an invalid schema")
+        rows.append(
+            {
+                "name": required_atlas_string(raw_row.get("name"), f"components[{index}].name"),
+                "description": required_atlas_string(
+                    raw_row.get("description"),
+                    f"components[{index}].description",
+                ),
+            }
+        )
+    return rows
+
+
+def _string_list(value: Any, name: str) -> list[str]:
+    if not isinstance(value, list) or not value:
+        raise ValueError(f"{name} must be a non-empty list")
+    return [required_atlas_string(item, f"{name} item") for item in value]
+
+
+def _string_sequence(value: Any) -> tuple[str, ...]:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        return ()
+    return tuple(item for item in value if isinstance(item, str) and item)
+
+
+def _authority_kind(row: Mapping[str, Any]) -> str:
+    value = row.get("authority_kind")
+    if value not in {SOURCE_GROUNDED_AUTHORITY_KIND, PROVISIONAL_DESIGN_AUTHORITY_KIND}:
+        raise ValueError("authored Atlas row has an invalid authority kind")
+    return str(value)
+
+
+def _required_source(value: Any) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError("authored Atlas Mermaid source must be non-empty")
+    if value != value.rstrip() + "\n":
+        raise ValueError("authored Atlas Mermaid source must end with exactly one newline")
+    return value
+
+
+def _sha256_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _sha256_json(value: Mapping[str, Any]) -> str:
+    encoded = json.dumps(
+        value,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+__all__ = [
+    "AUTHORED_ATLAS_AUTHORITY_KEY",
+    "AUTHORED_ATLAS_AUTHORITY_VERSION",
+    "build_authored_atlas_diagrams",
+    "is_authored_atlas_view",
+    "validate_authored_atlas_view",
+]

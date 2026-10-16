@@ -14,6 +14,13 @@ release.
   deterministic CLI and source contract.
 - Keep release planning separate from umbrella execution waves and separate
   from the canonical maintainer publication lane.
+- Governance-learning: release claims require fresh governance learning. Do not build, publish,
+  or claim release readiness while escaped defects, failed simulations,
+  contract changes, topology changes, or proof checkpoints are still only in
+  chat memory. Search existing Casebook and related governance truth first,
+  read prior failed mechanisms, do not repeat a fix path that already failed,
+  and route new mechanism-level learning through Casebook, Radar/plans,
+  Registry, Atlas, and Compass before release closeout.
 
 ## Keep It Separate
 - Use release planning when the question is "what release should this
@@ -71,6 +78,12 @@ release.
 - The current active release remains visible in governed read surfaces until it
   is explicitly updated to `shipped` or `closed`. Zero targeted workstreams is
   an empty state, not implicit GA.
+- Changing the `current` or `next` alias only changes the release selector. It
+  does not move any workstreams. Never bulk-retarget older active work just
+  because the target release changed.
+- Move only the explicit workstream ids that are part of the current release
+  slice. Older release workstreams, including completed work, keep their
+  original release history so Radar and Compass filters stay truthful.
 - Finished work removed during release closeout may still appear in governed
   read surfaces as completed release members; that history does not make the
   workstream an active target again.

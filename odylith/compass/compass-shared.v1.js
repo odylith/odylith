@@ -318,6 +318,44 @@ initQuickTooltips();
       return cloned;
     }
 
+    function globalFallbackNoticeFromFailedBrief(failedBrief, requestedWindow, fallbackWindow) {
+      const diagnostics = failedBrief && failedBrief.diagnostics && typeof failedBrief.diagnostics === "object" ? failedBrief.diagnostics : {};
+      const reason = String(diagnostics.reason || "brief_unavailable").trim().toLowerCase() || "brief_unavailable";
+      const title = String(diagnostics.title || "Standup brief unavailable").trim();
+      const message = String(diagnostics.message || "Compass could not build the requested standup brief.").trim();
+      const requestedLabel = requestedWindow === "48h" ? "48-hour" : "24-hour";
+      const fallbackLabel = fallbackWindow === "48h" ? "48-hour" : "24-hour";
+      const fallbackCopy = fallbackWindow && fallbackWindow !== requestedWindow
+        ? `Compass is showing the last ready ${fallbackLabel} standup brief while it retries the ${requestedLabel} brief.`
+        : "Compass is showing the last ready standup brief while it retries.";
+      return {
+        title,
+        message: `${message} ${fallbackCopy}`.trim(),
+        reason: `global_${reason}_showing_previous`,
+        next_retry_utc: String(diagnostics.next_retry_utc || "").trim(),
+      };
+    }
+
+    function globalFallbackToReadyBrief(globalReady, failedBrief, requestedWindow, fallbackWindow) {
+      const cloned = cloneStructuredBrief(globalReady);
+      cloned.notice = globalFallbackNoticeFromFailedBrief(failedBrief, requestedWindow, fallbackWindow);
+      cloned.global_fallback = {
+        mode: "previous_global_brief",
+        requested_window: String(requestedWindow || "").trim(),
+        window: String(fallbackWindow || "").trim(),
+      };
+      return cloned;
+    }
+
+    function globalBriefShouldStayUnavailableForWarmPoll(brief) {
+      const diagnostics = brief && brief.diagnostics && typeof brief.diagnostics === "object" ? brief.diagnostics : {};
+      const reason = String(diagnostics.reason || "").trim().toLowerCase();
+      return reason === "provider_deferred"
+        || reason === "rate_limited"
+        || reason === "timeout"
+        || reason === "transport_error";
+    }
+
     function scopedLiveBriefFallbackMessage(workstreamId, diagnostics, requestedWindow, fallbackWindow) {
       const scopedWorkstream = String(workstreamId || "This scope").trim() || "This scope";
       const safeDiagnostics = diagnostics && typeof diagnostics === "object" ? diagnostics : {};
@@ -493,6 +531,15 @@ initQuickTooltips();
             { reason: "scoped_brief_missing" },
           );
         }
+        if (
+          !hasScopedSelection
+          && globalBrief
+          && String(globalBrief.status || "").trim() !== "ready"
+          && globalReady
+          && !globalBriefShouldStayUnavailableForWarmPoll(globalBrief)
+        ) {
+          return globalFallbackToReadyBrief(globalReady, globalBrief, key, globalReadyWindow || key);
+        }
         if (globalBrief && String(globalBrief.status || "").trim() !== "ready") return globalBrief;
         if (globalReady && (globalReadySource === "provider" || globalReadySource === "cache")) return globalReady;
         if (globalReady) return globalReady;
@@ -502,18 +549,6 @@ initQuickTooltips();
         return unavailableStandupBrief("No structured standup brief is available for this view.");
       }
       return unavailableStandupBrief("No structured standup brief is available for this view.");
-    }
-
-    function radarWorkstreamHref(workstreamId, { view = "" } = {}) {
-      const code = String(workstreamId || "").trim();
-      if (!WORKSTREAM_RE.test(code)) return "";
-      const query = new URLSearchParams();
-      query.set("tab", "radar");
-      query.set("workstream", code);
-      if (String(view || "").trim()) {
-        query.set("view", String(view || "").trim());
-      }
-      return `../index.html?${query.toString()}`;
     }
 
     function atlasDiagramHref(diagramId, state, preferredWorkstream = "") {
@@ -1064,6 +1099,8 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     const waveTone = waveStatusChipClass(wave.status);
     const compactSummaryLine = String(wave.compact_summary_line || "").trim();
     const gatePreview = String(wave.gate_preview_summary || "").trim();
+    const exitGate = String(wave.exit_gate || "").trim();
+    const validationGateSummary = String(wave.validation_gate_summary || "").trim();
     const dependsOnLabels = Array.isArray(wave.depends_on_labels)
       ? wave.depends_on_labels.map((token) => String(token || "").trim()).filter(Boolean)
       : [];
@@ -1083,6 +1120,22 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
         <div class="execution-wave-highlight">
           <div class="execution-wave-highlight-label">Gate focus</div>
           <div class="execution-wave-highlight-copy">${escapeHtml(gatePreview)}</div>
+        </div>
+      `);
+    }
+    if (exitGate) {
+      supportBlocks.push(`
+        <div class="execution-wave-highlight">
+          <div class="execution-wave-highlight-label">Exit gate</div>
+          <div class="execution-wave-highlight-copy">${escapeHtml(exitGate)}</div>
+        </div>
+      `);
+    }
+    if (validationGateSummary) {
+      supportBlocks.push(`
+        <div class="execution-wave-highlight">
+          <div class="execution-wave-highlight-label">Validation</div>
+          <div class="execution-wave-highlight-copy">${escapeHtml(validationGateSummary)}</div>
         </div>
       `);
     }

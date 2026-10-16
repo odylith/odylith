@@ -97,13 +97,6 @@ _SELF_HOST_KEYS = (
     "launcher_present",
     "release_eligible",
 )
-_STORYLINE_CHAR_LIMITS = {
-    "flagship_lane": 120,
-    "direction": 180,
-    "proof": 180,
-    "forcing_function": 180,
-    "watch_item": 180,
-}
 _META_TEXT_PENALTIES = (
     ("verified plan closeouts landed across the window", 44),
     ("most concrete portfolio movement", 34),
@@ -136,14 +129,6 @@ def _normalize_text(value: Any) -> str:
     return " ".join(str(value or "").split()).strip()
 
 
-def _truncate_text(value: Any, *, max_chars: int) -> str:
-    text = _normalize_text(value)
-    if len(text) <= max(0, int(max_chars)):
-        return text
-    clipped = text[: max(0, int(max_chars) - 1)].rsplit(" ", 1)[0].strip()
-    return (clipped or text[: max(0, int(max_chars) - 1)].strip()) + "…"
-
-
 def _healthy_self_host(self_host: Mapping[str, Any]) -> bool:
     posture = str(self_host.get("posture", "")).strip().lower()
     runtime_source = str(self_host.get("runtime_source", "")).strip().lower()
@@ -170,7 +155,7 @@ def _storyline_view(storyline: Mapping[str, Any]) -> dict[str, str]:
     }
     payload: dict[str, str] = {}
     for key in _STORYLINE_KEYS:
-        text = _truncate_text(values.get(key), max_chars=_STORYLINE_CHAR_LIMITS.get(key, 180))
+        text = _normalize_text(values.get(key))
         if text:
             payload[key] = text
     return payload

@@ -1,8 +1,736 @@
 # Release
-Last updated: 2026-05-03
+Last updated: 2026-10-16
 
+## Required hosted package custody (2026-10-16)
 
-Last updated (UTC): 2026-04-09
+CB-347 records the earlier hosted rebuild and sealed-signature replacement
+defect. The corrected source implements the independently reviewed
+version 3 contract, which requires one canonical build and real signing before the
+complete package is sealed. The existing workflow's candidate operation stages
+a draft; normal preparation acquires it using the actual successful
+`GREENFIELD_RELEASE_BUILD_RUN_ID`, verifies every production signature and
+complete source/asset census, and retains actual build and local install proof.
+Missing build identity yields a dependency outcome after session/tag reservation
+and before proof-directory allocation. No prepared success is implied.
+Canonical preparation retains full source validation before acquisition and
+sealing. The existing advisory discovery command retains its single local
+producer, without a release session or hosted run; it cannot qualify canonical
+release custody. Both paths share the existing source-validation responsibility.
+Explicit Bash pipeline failure handling preserves hosted build and smoke errors.
+
+The closed hosted-candidate binding retains commit/tag, release identity,
+build run/attempt and exact safe asset identities, sizes and hashes. Prepared
+receipt and public composition advance to version 3 together. Qualification
+continues to use the original public, terminal and independent-review owners on
+that exact complete signed package. Local signature bypass or placeholders
+cannot supply this trust proof.
+
+After local qualification, dispatch authorizes a closed exact-candidate
+promotion tuple. The remote workflow revalidates all hosted bytes, signatures,
+source and build association, promotes the same release identity and verifies
+complete readback. It cannot build, regenerate, re-sign, clobber or substitute
+assets. A draft is mutable; stored success flags do not replace revalidation.
+The remote authority is an authenticated canonical maintainer's local-review
+statement plus independent byte/trust verification, not reconstruction of
+unavailable protected evidence. Protected review bodies remain local.
+
+The frozen source passes all 787 direct-consumer tests with no failures, errors
+or skips; all twenty owned and eight unchanged watch pins remain exact.
+Independent review passes seven real-shell/caller controls and clears the
+corrected source, retaining the initial three P1 findings and their reproductions
+(review SHA-256 7bb128313379df5b618bf43eaacd5cf05b3709dd55a65467ebac9f1048667b56).
+This is not release qualification. Current CI, canonical source/benchmark/package
+binding, real hosted signing/acquisition/promotion and the original final gates
+remain pending. The earlier local v2 checkpoint below remains historical.
+
+## Benchmark and publication order (2026-10-16)
+
+Full proof and current-tree comparison against the actual shipped predecessor
+block package preparation. Keep the measured canonical commit, main, session,
+tag and one package fixed through qualification, dispatch and hosted/consumer/GA
+commands. Then require separate full pinned-dogfood proof and canonical
+comparison on that clean release commit. Preserve the actual selected baseline;
+after publication it may be a report for the new version rather than the earlier
+predecessor. Both comparisons retain their original meaning and custody.
+
+After these gates, the matching diagnostic and canonical publication writer
+produce the final pinned snapshot while source/runtime identity still matches.
+Retain and read back the twelve generated files and authored README, then merge
+their reviewed metadata-only PR. Its new commit does not change the measured
+release commit, tag or package and gains no benchmark or build credit. GA target
+success alone is provisional: planning closeout follows pinned proof and merged
+publication. Archive the completed session before clearing it. CB-347/B-142 own
+this order correction; quality, budget and source-identity guards are unchanged.
+
+## Historical local package custody checkpoint (2026-10-15)
+
+Canonical preflight separates preparation from completion. Preparation initializes
+the fixed session and builds and checks one distribution. The version 2 prepared
+receipt binds that package to the committed source, its archive and complete
+export, the wheel contents, every distribution artifact, checksums, manifest,
+provenance and the three build logs. The safe primary repository root from the
+same Git object store is the explicit source anchor, so verification survives
+temporary build checkout cleanup. Preparation requires the actual build checkout
+to remain clean at the expected commit. Later checks read the original Git
+objects; the primary workspace's current branch and files are not source truth.
+Preparation grants no release qualification.
+
+The existing release assembly owner authenticates package custody for public
+qualification and completion. It compares actual bytes and complete membership;
+stored success flags cannot replace those checks. Verification never builds,
+exports, extracts, repairs or rewrites evidence. Duplicate or unsafe members,
+missing or extra artifacts, changed bindings and redirected Git state refuse.
+Local signature placeholders establish custody of their bytes only; release
+signature trust remains a later gate.
+
+Version 2 public composition binds the checkpoint, prepared receipt, activation
+and profile. The original Public40, High4 and separate genuine EDIT4 results must
+authenticate this same package through the existing composed evidence owner.
+Historical receipts and failed attempts retain their original bytes and
+verdicts; they cannot authorize a fresh version 2 run.
+
+Completion reauthenticates the prepared source, session, distribution and complete
+composition before exclusively claiming one terminal attempt. It never rebuilds
+the package. Each public family's original finite timing decision applies only
+to its exact public observations. Terminal rows retain their existing profile
+and whole-parent checks; no aggregate bound, extra terminal threshold or consumer
+timing claim is inferred. Independent onboarding review and dispatch
+reauthenticate the exact original composition reference and package again.
+Changed, missing, incomplete or mismatched evidence refuses. A failed terminal
+attempt is preserved rather than replayed. Source tests and independent review
+do not substitute for the actual pending family and protected-holdout gates.
+
+The supported maintainer commands are `make release-preflight-prepare` and
+`make release-preflight-complete`; `make release-preflight` aliases preparation.
+CB-347 and B-142 own this existing release integration slice.
+
+## Greenfield composition and diagnostic execution (2026-10-10)
+
+The release evaluator scores the unchanged Public40 plus four prospectively
+annotated high-complexity synthetic EDIT cases. Genuine EDIT4 remains a separate
+authenticated gate with zero scored contribution. All three families must share
+one frozen package, native profile and activation, with original source, command,
+result, retained case, phase and receipt custody. Independent source review and
+all published semantic, confidence, slice and timing floors remain required.
+
+The explicit `--include-public-diagnostics` collection option on discovery
+requests the existing full install, browser, recovery, Luna and disabled-provider
+controls and complete profile diagnostics. It cannot claim audited external
+provenance or release readiness. Release-audit and protected-input routes keep
+their existing policies. A stopped or incomplete family cannot bind or score.
+
+The execution collector and composition evaluator authenticate original outcome
+states through one canonical owner. Scored families may retain exit 1 only when
+the unchanged diagnostic's sole failure is the missing independent public timing
+bound. Genuine EDIT requires exit 0, the actual `discovery-passed` state and
+every successful original case, followed by complete phase custody and independent
+four-case adjudication. No output or exit code is rewritten. Unrelated failures,
+changed diagnostics and incomplete retention refuse. CB-347 retains the original
+producer/consumer contradiction and the bounded correction's proof obligations.
+
+Checkpoint `b589a31dceea749efe231862910a36e10c7cdd79` passes 4,147 source checks,
+package build, clean install and distribution custody. The follow-on harness
+correction requires its own current-source proof and successor package before
+native dispatch. Genuine EDIT remains 0/4; final holdout remains untouched.
+
+The follow-on passes 126 producer, 445 consumer and 91 private runner controls.
+Independent review clears the bounded patch after reproducing and correcting
+the literal argument, wrong-directory import and macOS interpreter-prefix
+failures. Complete current-source regression, successor package custody and a
+separate review of the actual activation and dispatch remain required. Unit
+association controls do not establish full scored native custody.
+
+## Prior Greenfield release evidence (2026-10-09)
+
+EDIT evidence counts only when an initial seal produces a delivered completion
+receipt, one documented correction produces a distinct edited seal, and the final
+readback preserves every prior lifecycle decision. The release scorer also
+requires the authenticated case manifest, compiler seals, receipts, and successful
+browser and quality proof. Any failure or custody issue earns zero EDIT credit.
+
+CB-209 records the current product-identity correction; CB-347 and B-142 retain
+its proof obligations. Focused custody and release-reader checks pass, with a
+clear bounded independent review. The full v49 gate passes all 3,939 tests
+across 174 modules in 345.02 seconds, with all 372 pins unchanged. Earlier
+failed gates remain retained. A package at
+`8dfb9e7fe5ceed9b5c5c8e18417d078dfdd1ba0e`
+predates this source change and provides no qualification credit. The retained
+first native EDIT failed before an edited seal, so genuine qualifying EDIT remains
+0/4. A Public40 amendment is pending and the final holdout remains untouched.
+Fresh package, authentic EDIT, timing, and independent release proof are required.
+
+## Candidate-contract installation check (2026-10-05)
+
+The existing installation smoke checker imports contract and format versions
+from their authoritative runtime owners. It requires the current authored
+project-summary schema: a required string of 1–600 characters. Source-duty
+custody, exact prompt evidence, read-only write audit, subprocess refusal and
+installed baseline/lifecycle checks remain required. CB-347 preserves the v33
+checker failure; 61 focused controls pass after correcting its stale version
+expectations. A fresh package and full installed smoke remain pending.
+
+## Detached public qualification and shared preparation (2026-10-04)
+
+The immutable onboarding finalizer accepts exact saved public source evidence
+and separately reviewed complete timing evidence through
+`--public-source-evidence` and `--whole-journey-bound-evidence`.
+`greenfield_public_qualification.py` owns this release-only phase. It hydrates
+saved matrix types with an exact roundtrip, invokes the current R2 scorer and
+published floors, and authenticates the original diagnostic failure before
+recomputing only the absent semantic and measured-bound reports in a detached
+sidecar. Unexplained or residual failures stop qualification. Base results,
+source expectations, retention manifests and review inputs remain immutable.
+
+All fixed primary and declared Luna observations must bind to the saved source,
+output and manifest. A separately retained independent decision must cover
+every observed journey with a finite bound at or below the diagnostic cap.
+The unavailable-provider v2 control separately proves disabled-provider
+isolation after candidate receipt using its canonical validator; it does not
+invent a full host stage observation. Browser, recovery, statistics, corpus,
+profile and independent four-lens gates remain required. Saved reviewer
+metadata and hashes authenticate records but cannot establish authorship,
+independence or natural-language entailment by themselves.
+
+Release orchestration directly adopts the product-owned bounded preparation
+flow instead of retaining release-only host, process and deadline owners.
+Observation v17 measures through completion-attempt I/O and final monotonic
+certification before receipt and preview delivery, and requires the supervised
+product route. The strict
+proposal allowance and whole deadline precede private completion-receipt
+issuance. Bounded confirmation requires that delivered receipt; a stored
+positive record cannot qualify a failed or late preparation. Receipt delivery
+does not establish complete user-visible latency, which remains unqualified.
+The 660-second whole cap remains diagnostic and unqualified until genuine
+complete public measurements and review qualify a finite operating bound.
+The detached measured-evidence decision also keeps consumer timing custody
+explicitly unproved; installed entry and cancellation proof must establish
+that separate boundary. Synthetic bridge tests cannot qualify a release.
+
+The malformed unavailable-provider proof finding is independently resolved.
+The canonical validator rejects incorrect primitive types, malformed text
+sequences, invalid record counts and nonfinite timing before success checks.
+Both producers pass genuine counts. Independent rereview passes 89 tests and
+22 controls with no remaining actionable P0/P1/P2 in that bounded scope,
+including all original coherently rebound red controls. Review:
+/private/tmp/odylith-greenfield-public-qualification-independent-rereview-20261004.md,
+SHA-256 e827e022d2131a4edf3c07a99a270e42908471fb8d7cc7a710a0c9ca0e99ab1d.
+Independent final receipt-transport review is CLEAR on fixed source hashes:
+14 boundary controls and the exact bootstrap control pass. Its original
+expanded result retains one startup-window failure; the full final source gate
+must still pass. Installed/public release findings remain open, and the detached
+scorer cannot qualify them from saved metadata. Review:
+/private/tmp/odylith-nonce-independent-final-review-20261004.md,
+SHA-256 ea0244a8b310430608f136ba63357971a93c6af968390bbad9bd652336c7e652.
+
+## Greenfield public source-predicate evaluation (2026-10-04)
+
+The release-only evaluator supports an explicit disclosed-public mode,
+`odylith.greenfield.public-source-predicate-evaluation.v1`. Frozen source-only
+expectations are checked independently of observed forward/reverse coverage.
+The complete coverage mapping, exact source/output/snapshot/transaction,
+retained evidence manifest and independent review record must bind to pinned
+hashes. Reviewer eligibility uses the existing onboarding owner; every audited
+entry requires its exact digest, verdict and rationale. Eligibility metadata
+and matching hashes do not themselves prove reviewer authorship or semantic
+entailment. Missing, partial, contradictory or unaudited evidence fails closed.
+
+`scripts/release/greenfield_semantic_case_score.py` owns the actual moved native
+case-scoring phase and public audited case scoring. The parent semantic scorer
+retains aggregate floors and statistics. `greenfield_evaluation_contract.py`
+owns frozen source preflight, `greenfield_relation_fidelity.py` retains current
+canonical R1 custody and complete reverse inventory, and
+`greenfield_matrix_statistics.py` distinguishes frozen source census from
+authenticated representation census. Source witness, normalized-role and full
+destination hashes keep separate meanings. Repeated projections do not create
+extra source successes. Native scoring, protected once-only rules, fixed
+denominators, model profiles, samples, confidence bounds and floors remain
+strict. This release path adds no consumer model phase.
+
+CB-347/B-142 Wave R2 preserves the original 40-case/425-ID public preflight.
+Canonical custody forbids accepted-fact relabeling, clarification refuses
+compiled evidence, and malformed material rows return incomplete/unscored
+evidence with zero samples and an explicit issue. Genuine assumptions remain
+valid. The final independent 11-control rereview reports no actionable
+P0/P1/P2; initial failed reviews and red artifacts remain retained. Proof:
+/private/tmp/odylith-greenfield-r2-independent-rereview-20261004.md,
+SHA-256 2ebc3a1d8218449e0c8f3b8a7c8a70cca32146abe5f5376e0a9299aeadbf8efe.
+These are structural proof results. Full frozen regression and fresh installed
+semantic adjudication remain open; synthetic audits cannot qualify a release.
+
+Genuine EDIT samples require an initial pending seal, its delivered completion
+receipt, one correction journey and confirmation of the distinct edited seal.
+The existing journey owner retains both phases, exact source frames, private
+artifacts and final preservation readback. Scoring authenticates the finalized
+case manifest, compiler seals, receipts, all prior lifecycle dispositions and
+successful committed browser/quality proof. Any failure or custody issue grants
+zero EDIT credit. Literal intake headings and prepare-only controls grant none.
+Incremental reports remain unqualified; final callers supply the retained
+manifest. Original public inputs, denominators, sample minima and floors stay
+fixed. Native EDIT execution and independent source-family qualification remain
+required before release credit.
+
+## Greenfield host process boundary (2026-10-02)
+
+Host calls must use the shared group-timeout owner with exact stdin delivery,
+bounded descendant cleanup, and retained partial streams on failure. Raw
+stderr belongs in external diagnostic evidence; failed observations may hold
+cleanup outcome and stream sizes/hashes, never private excerpts. A host
+timeout must suppress all later semantic stages and proposal publication.
+External stderr is limited to 256 KiB with private file/directory permissions;
+oversize evidence fails closed with its full size and hash, without clipping.
+Terminal lifecycle-observer failures must retain the complete terminal result
+and streams before refusing. Nonzero and timeout command outcomes remain the
+primary failures; telemetry failure is attached rather than replacing them.
+Cleanup proof covers the owned process group. Escaping descendants are
+explicitly unverified. Successful v12 observation fields remain unchanged.
+The prior direct-child timeout path and discarded exception streams are P1
+defects. Independent process-boundary proof is required before fresh public
+execution; v15's gate timeout has no semantic-positive credit.
+
+## Greenfield standard deadline and recovery custody (2026-10-02)
+
+Model-profile contract v25 and standard profile v21 declare a shared
+300-second gate/candidate model window, 315-second operational allowance,
+and 15-second completion reserve. The fixed diagnostic whole deadline stays
+660 seconds; phase maxima are non-additive. Candidate dispatch reserves
+completion time and never resets spent gate time. Observation v12 proves the
+reserve through authored and clarification outcomes; controls retain their
+previous limits.
+
+The recovery caller adopts that shared standard allowance and passes the
+exact accepted source-duty ledger receipt to the four-argument proposal
+callback. Raw source receipt and sealed transaction retention occur inside
+their timed callbacks. The owned final observation is serialized after driver
+finalization; telemetry failure preserves the primary flow exception.
+Independent primary-chain checks pass 125 tests and recovery checks pass 64.
+Fresh installed semantic, transaction, browser, and full release qualification
+remain required. Historical limits and failed experiments are unchanged.
+
+## V43 maintained matrix invocation contract (2026-09-27)
+
+Every maintained direct Greenfield matrix invocation carries the same exact
+host-native argv obtained from the canonical host-candidate owner. Discovery
+and terminal release proof differ in evidence custody and qualification, not
+in whether a host-authoring command exists. An empty command fails closed;
+callers must not compensate with a second grammar, provider, retry, repair,
+fallback candidate, or model ladder.
+
+## V43 browser differentiation contract (2026-09-27)
+
+The installed Greenfield browser gate treats cross-surface differentiation as
+a release law, not an advisory fixture assertion. Project normal-state proof
+requires five rendered Product Story cards and five distinct visible bodies;
+any repeated body fails the generated case. Desktop and mobile assertions use
+the canonical `Accepted evidence excerpt:` label owned by current product and
+package truth. The gate reuses the browser-visible body count already captured
+by the release runner and adds no prose interpreter or alternate evaluator.
+
+## V43 immutable audit-lineage contract (2026-09-27)
+
+Source-verification rebinding retains its predecessor as an immutable tracked
+artifact. The current manifest's `rebound_from` path must exist, must not
+resolve to the current manifest, and must hash exactly to
+`rebound_from_sha256`. Final audit evidence binds the current verification
+manifest digest and final durable review-evidence paths. Current validity does
+not substitute for reproducible predecessor custody.
+
+## V43 recovery-proof ownership contract (2026-09-27)
+
+Release recovery proof keeps top-level phase orchestration separate from the
+phase evidence owner. The orchestration module selects and sequences recovery
+scenarios; a focused sibling owns immutable phase observations and validation
+without reparsing prose, changing the transaction state machine, or adding a
+second interpretation path. The split must preserve existing imports,
+receipts, manifests, and fail-closed mutation checks while keeping maintained
+source and tests within repository size limits.
+
+## V43 retained completion-handoff contract (2026-09-27)
+
+Release evidence owns one explicit operator-facing completion projection after
+the retained manifest is fully validated. Each handoff binds a case ID, the
+same case's sealed transaction hash, and the absolute retained Project route.
+Its Markdown is derived directly from those typed fields. Raw command
+transcripts remain immutable evidence and are never reparsed or rewritten to
+manufacture a durable route. Invalid or incomplete retained evidence emits no
+completion handoff.
+
+## V43 audited operating-envelope selection contract (2026-09-27)
+
+The Release component keeps source-provenanced parent truth separate from the
+disclosed live operating envelope. An audit request plan may name one explicit
+selection file only when it declares the disclosed-subset claim, binds the
+same parent corpus, contains the requested number of unique cases, and passes
+the canonical exact-membership validator. The plan seals the selection path
+and SHA-256 while continuing to bind the parent as `source_case_file`; audit
+bundle and evaluator claim classes remain unchanged.
+
+## V43 accepted-evidence readback contract (2026-09-27)
+
+Release package readback requires the exact `Accepted evidence excerpt`
+section and quoted value produced by Domain Intelligence. This replaces the
+ambiguous presentation label `Source excerpt` without changing the accepted
+`product_story`, its source span, semantic authority, or transaction bytes.
+Readback still checks the structured Brief projection and its exact rendered
+line; it does not infer, parse, repair, or reclassify evidence. Separately
+identified repository or document provenance remains governed by its existing
+audit bindings rather than being conflated with the user-evidence quote.
+
+## V43 detached package review and statistical release gate (2026-09-27)
+
+Greenfield release qualification requires the campaign's frozen outcome
+statistics to pass. Perfect point acceptance cannot override missing
+structural-complexity or evidence-format coverage, insufficient per-slice
+samples, or a failing worst-slice confidence floor. Safe no-write clarification
+cases may contribute only source-derived evidence format and source-size
+complexity plus their exact observed profile, and only after the one-call
+host-native clarification proof has passed. They never claim a sealed package
+or transaction.
+
+Independent product-manager, architect, engineer, and domain-expert judgments
+are post-execution evidence. Execution keeps them unproven. The provider-free
+onboarding-review finalizer binds each verdict to the immutable matrix result,
+retained root and case manifests, exact source and transaction hashes, and the
+specific artifact and screenshot hashes inspected by the reviewer. It writes a
+detached immutable sidecar, recomputes the ten-dimension scorecard from the
+original automated evidence plus validated verdicts, and never mutates the
+result, calls a provider, or reruns Greenfield.
+
+The V43 retained evidence passes byte validation with zero custody issues, but
+release remains failed on its published coverage/statistics floor. Independent
+review and a broader genuinely representative disclosed corpus are required
+before protected-holdout qualification. No statistical floor may be lowered
+and no bounded case may be relabeled to manufacture coverage.
+
+## V38 frozen clarification-oracle custody (2026-09-27)
+
+For an audited disclosed public subset, every clarification-required case
+carries a complete frozen clarification oracle: the expected material field and
+canonical question. This oracle is subset-only evaluation metadata, separate
+from the exact parent-source case record. Exact parent membership therefore
+continues to compare source case truth while allowing the public subset to
+retain its frozen evaluation expectation.
+
+The common release-subset membership owner fails closed when a clarification
+case lacks either oracle value, or when a committed case declares one. Campaign
+case loading rejects unsupported material fields and malformed or unbounded
+question text. Shard serialization preserves complete oracle annotations and
+rejects a missing or partial annotation; replay uses the same retained public
+expectation. This does not
+relax public-parent provenance, expose or inspect protected-holdout inputs, or
+create a second clarification, authoring, retry, repair, or fallback path.
+
+## Public campaign entry preflight (2026-09-27)
+
+The Release component requires a disclosed public subset to be executable, not
+only balanced. When commit-recovery proof is enabled, at least one selected
+committed case must carry edited confirmed intent and a matching approved audit
+binding. The repository fixture contract invokes the production recovery-case
+selector and binds the expected audited member, while the existing exact-parent
+membership owner still rejects drift. Coverage assertions continue to require
+ten source families, all five input styles, five committed and five
+clarification outcomes, and all eleven stressors.
+
+Retained-evidence temp roots remain symlink-free. The two maintained Greenfield
+release wrappers physicalize only their trusted `/tmp` fallback when both
+`TEMP_PARENT` and `TMPDIR` are absent, which makes the default portable on
+macOS without canonicalizing explicit operator paths. Explicit symlinked paths
+still reach the unchanged fail-closed validator. This is release-entry
+portability and proof-fixture custody; it does not change the Greenfield
+authoring mechanism, recovery state machine, or protected-holdout boundary.
+
+## Model-profile evidence custody (2026-09-27)
+
+Release qualification keeps Astra-medium as the sole successful Greenfield
+profile and Luna as the clarification/no-write control. Sol-high remains an
+unsupported diagnostic; it is not an explicitly assignable successful matrix
+route and cannot receive release credit. The abandoned partial route changed
+only assignment and aggregation while the product runtime correctly rejected
+`deep`, so it is removed rather than extended into a second success mechanism.
+
+Host-native aggregate proof independently binds the claimed profile to the
+configured provider/model/effort, sealed stage profile, exact canonical host
+argv shape/count, executable identity sealed into the stage summary, and
+reviewer observation. A result cannot qualify by changing its public profile
+label or substituting a valid-looking command receipt. Live public controls must retain external stage evidence before
+cleanup so proposal failures remain attributable. This changes release-evidence
+discipline, not the Greenfield authoring topology, so Atlas remains unchanged.
+
+## V34 public campaign and protected-holdout custody split (2026-09-27)
+
+Release proof distinguishes an audited public campaign from final-holdout
+custody. A public release subset may qualify only as exact members of one
+audited parent corpus; it does not enter protected final-holdout sealing,
+ledger, annotation, manifest, or claim-before-open custody. The protected
+final holdout retains those stricter obligations and remains unopened until
+all public gates pass.
+
+One provenance owner compares selected and parent cases structurally, ignoring
+only each case's `source_file`. It fails closed on missing or duplicate parent
+or subset identities, absent membership, and any field drift. Both direct
+preconfirm and campaign-shard paths use that same owner, with the public parent
+file explicitly forwarded through the campaign wrapper.
+
+After a primary candidate or proposal failure, the harness makes no secondary
+host or model call. The lower-capability control, commit recovery, and
+unavailable-provider paths are reported `not-run` with the primary failure
+reason; the aggregate proof fails rather than converting incomplete evidence
+into a recovery result. This is a release-harness safety boundary, not a
+second Greenfield mechanism and not permission to retry, repair, or substitute
+another author.
+
+Focused corpus/sealed-input/release-scope proof passes `51/51`, zero-secondary
+and campaign-entry controls pass `15/15`, and the combined runtime and release
+boundary suite passes `722/722`. No provider or protected holdout was invoked
+for this checkpoint. A clean immutable distribution, installed public campaign,
+browser and retained-output review, and only then one fresh protected holdout
+remain required for release qualification.
+
+## V28 source-custody qualification stop (2026-09-26)
+
+Immutable V28 passed the first 30 disclosed cases, then failed the archive
+custody quality floor after a successful transaction and clean browser proof.
+The committed package repeated `PUBLIC-V11-ARCHIVE-MARKER` and its
+synthetic-source exclusion as product governance copy. This is a semantic
+admission defect, not evaluator noise; V28 remains terminal evidence and must
+not resume from case 31.
+
+The bounded V29 source checkpoint keeps source-custody and non-projection
+controls only in sealed evidence through canonical v71, host format v11,
+contract v22 and reviewer v9. It also preserves complete source-owned
+disjunctive actions so coherent branches keep both outcome relationships
+without invented events. Release proof must rebuild exact immutable bytes and
+restart all 36 disclosed cases from case one. Package, browser, recovery,
+cleanup, advisory timing, retained-output semantic review and the single fresh
+holdout remain separate required gates; source tests alone do not qualify the
+release.
+
+## V27 coherent-branch qualification stop (2026-09-26)
+
+Immutable V27 passed 30 disclosed public cases at `10/10` before the archive
+custody case exposed a product-contract failure: provisional design v2 required
+one First Run to contain mutually exclusive accepted and rejected outcomes. The
+case failed before staging and wrote no governed package. V27 is terminal
+evidence and must not be resumed from case 31.
+
+The new source checkpoint versions the full serialized change—provisional
+design v3, canonical authoring v70, host format v10, host contract v21, and
+reviewer v8. Release proof must accept one coherent selected branch only when
+complete accepted-event and component-support custody remains intact, and must
+retain the independent review receipt that distinguishes alternate omission
+from a missing required step. Source proof and live controls do not qualify the
+release. Build one clean immutable distribution and restart all 36 cases from
+case one with package, browser, recovery, cleanup, and timing evidence before
+independent retained-output review or any fresh holdout.
+
+## Candidate-vocabulary baseline parity (2026-09-26)
+
+Installed Greenfield leakage proof derives generated sentinels from the broad
+source-grounded candidate vocabulary. Native-platform baseline collection must
+scan that same vocabulary before evaluating generated output; otherwise a term
+already present in immutable platform custody can be misreported as new
+consumer-domain leakage. Repository/source identifiers remain independently
+forbidden. External release-quality failures report their actual contract class
+rather than claiming commit readback drift when the manifest and sealed
+transaction passed.
+
+## Host-native admitted-review proof (2026-09-26)
+
+Release qualification now treats the private admitted review receipt as proof,
+not merely retained diagnostics. The harness verifies that its source matches
+the sealed transaction source, its canonical candidate hash matches both the
+recomputed candidate and sealed host receipt, its reviewer profile is the
+selected profile, its decision and receipt version are current, and its typed
+admission witness is present and stable. The sealed committed review receipt
+must equal that verified receipt, including the witness. Missing, malformed,
+mismatched, or unverified proof fails the aggregate gate and cannot be reported
+as admitted.
+
+This closes the observability gap exposed by V22 case seventeen, where a
+source-insufficient candidate was admitted and staged but the aggregate result
+reported `candidate_review_status: unreported`. The corrected stage summary
+reports `admitted` only after verification and requires
+`reviewer_receipt_verified: true`. No public CLI surface exposes the private
+candidate or reviewer metadata, and no author, parser, regex, repair, retry,
+fallback, model ladder, or additional model call was added. Direct negative
+controls cover missing proof, candidate mismatch, malformed witness, and
+profile mismatch. The release remains open until a newly built immutable
+distribution passes the complete disclosed campaign and independent retained-
+output review before one fresh blind holdout.
+
+## Denied host-candidate evidence custody (2026-09-25)
+
+Release proof retains the exact structured host candidate and proposal streams,
+proposal return code, and terminal outcome before deleting temporary
+workspaces. The existing parent-granted private proof descriptor retains the
+full independent review receipt, including source, canonical candidate,
+decision, model-profile, and timing custody. Reviewer-selected clarification
+also remains safely visible without exposing that private metadata: the
+retained host response is authored, the proposal is a typed clarification, and
+the public consistency receipt names `complete_source_missingness` with no
+fabricated span. Admitted, clarified, and denied host-native results share one
+custody family; none may fall into retired participant-selection or
+remaining-author diagnostics. Raw candidate content remains private retained
+evidence and is never exposed in public CLI receipts.
+
+The v19 public campaign is terminal failed after seven passing cases and one
+correct independent denial. Its protected holdout was not touched. A new exact
+distribution may restart public qualification only after failed-candidate
+retention, outcome classification, and no-write clarification controls pass.
+
+## Direct final-holdout interruption custody (2026-09-25)
+
+The direct Greenfield release runner now writes interruption results outside
+its leased temporary namespace, seals retained partial evidence before terminal
+ledger completion, and releases the lease without replacing an active failure.
+If sealing or ledger completion itself fails, the original interrupt remains
+the raised exception, the custody failure is attached as an exception note, and
+the one-shot ledger remains claimed rather than being force-completed without a
+valid manifest. Focused successful-terminalization, sealing-failure, and
+lease-cleanup proof is included in the `105/105` contract result. Exact
+release execution must still prove no surviving descendants and an empty owned
+namespace before CB-321 can close.
+
+## Event-owned citation replacement public qualification (2026-09-25)
+
+Exact pushed commit and immutable distribution `7077dd600` pass the
+schema-bound public host-native journey after replacing the one-event/one-
+distinct-fact assumption. Proposal completed in `56.295s`, inside the `90s`
+advisory target, and commit-only creation completed in `0.303s`. The generated
+package contains four Radar workstreams, four Registry component specs, five
+Atlas sources, ten rendered Atlas assets, one project brief, five implementation
+prompts, and fourteen trace nodes. Normal, empty/fallback, degraded, error, and
+recovery browser states pass with retained desktop/mobile evidence.
+
+The run records one candidate-contract command, one external Astra host
+invocation, one installed proposal command, and one independent runtime semantic
+review. Candidate and host temporary workspaces were removed. An earlier local
+validation attempt omitted the required `--output-schema {candidate_schema}`
+host argument and failed before publication; it is not equivalent product
+evidence and caused no code change. Release remains unclaimed until independent
+final semantic qualification and a fresh untouched holdout accept this exact
+mechanism. Consumed holdout v4 remains regression evidence and must never be
+rerun.
+
+## Host-native installed recovery qualification (2026-09-25)
+
+The public host-native control at clean commit `d4743f3a0` passes proposal,
+commit-only creation, package readback, generated-surface browser proof, and the
+required governance floor. Installed crash recovery must therefore seed its
+sealed transaction through the same configured host-native flow. The release
+matrix forwards the exact host argv to recovery; recovery retrieves the installed
+candidate contract, invokes that host once in an external temporary workspace,
+and proposes the returned candidate file before exercising the unchanged sealed
+transaction across SIGKILL, concurrent-operator conflict, fsync rollback,
+recovery, and same-hash retry phases.
+
+This is release-harness ownership alignment, not a second production mechanism.
+Legacy seed compilation remains only when no host argv is configured so existing
+legacy-profile proof stays fail-closed. Host-native release qualification must
+retain the host observation, candidate hash, independent review observation,
+sealed Product Intent facts hash, and recovery evidence. It may not substitute a
+runtime author, add retries or repair, or relax any recovery check.
+
+## V26 Byte-Custody Qualification Stop (2026-09-26)
+
+- Immutable V26 stopped after two passing cases when its third host candidate
+  changed one citation's capitalization. The campaign correctly failed before
+  review, transaction staging, browser proof, or governed writes for that case.
+- V26 is retained as failed evidence. Contract v20's bounded byte-copy
+  correction has `86/86` focused and `3,185/3,185` complete Greenfield source
+  proof, `133/133` governed-surface browser proof, and independent `SHIP`
+  review; it is not release qualification.
+- Release must build new immutable bytes, restart the disclosed 36-case campaign
+  from case one, preserve direct host argv and retained private review custody,
+  and pass every package, browser, recovery, no-write, cleanup, and timing floor
+  before retained-output review or a fresh holdout. A repeated citation rewrite
+  ends prompt-wording changes and reopens the representation boundary.
+
+Fresh installed proof passes this contract against immutable distribution
+`d4743f3a0`: SIGKILL, partial-write recovery, operator conflict preservation,
+conflict snapshot retention, fsync rollback, recovery, retry, and unchanged
+same-hash retry all pass with one sealed Product Intent facts hash and no retained
+temporary fixture roots.
+
+## Host-native Greenfield release proof (2026-09-24)
+
+The release matrix can explicitly exercise the host-native product path without
+reintroducing runtime authoring. It retrieves the installed candidate contract,
+passes that complete JSON to exactly one configured argv-based host process in
+an external temporary workspace, and invokes installed propose with the returned
+candidate file. Contract retrieval, host reasoning, and proposal compilation
+share one total timeout and one measured request-to-preview interval. The host
+command is provider-neutral; shell expansion, retries, repair, fallbacks, parser
+logic, model ladders, and repository-local candidate files are forbidden.
+
+Retained evidence records contract, schema, and candidate hashes plus invocation,
+cleanup, and timing facts. Exact-commit release proof requires a clean
+provenance-bound distribution and cannot borrow lifecycle or browser evidence
+from a dirty parent build. The sealed untouched holdout may run only after a
+public exact-commit installed request passes this same path. Legacy runtime
+authoring remains available solely until that qualification accepts; if it does,
+the legacy path must be removed and the release gate repeated.
+
+When the sealed model observation declares `origin: host_native`, release proof
+validates that authority directly: one contract command, one external host
+invocation, one proposal command, an external temporary workspace that is
+cleaned, a canonical candidate hash matching the sealed host receipt, and one
+pinned independent candidate-review observation. It does not require the
+retired participant-selection or remaining-candidate-authoring roles. Their
+existing checks remain fail-closed for legacy observations. Host-native runtime
+semantic-call capacity is one—the independent review; the external host call is
+reported separately and remains outside runtime model custody.
+
+The public candidate contract now uses compact event custody. Each host-authored
+event carries its source citation once; deterministic projection supplies the
+legacy v68 `facts.first_path` array without changing citation bytes. Release
+evidence must bind the compact candidate hash, contract v7 schema hash, exact
+distribution provenance, projection/validation outcome, and one measured
+request-to-preview interval. The matrix must not count recovery proof seeded by
+the superseded runtime author as host-native lifecycle proof.
+
+Contract v7 uses compact host format v2 and candidate-review v4. Explicit source
+ordering remains a cited edge between source-supported accepted events; timing
+conditions without source-owned actor/action events remain operational
+constraints. Event array order and proposed first-run order have no
+accepted-source authority. The removed v4-v6 schema variants are not release
+paths, and the reviewer correction adds no model call, retry, repair, fallback,
+or second publication owner.
+
+## Greenfield timing qualification (2026-09-18)
+
+The unreleased profile/manifest revision distinguishes advisory 90/120/150-second
+targets from the explicitly selected 180-second operational safety timeout.
+Release evidence must report target misses honestly and still reject exhausted
+operational time, malformed timing receipts, unsupported facts and unsafe writes.
+Old hard-budget receipts cannot qualify the new contract. Current v18 production
+uses participant selection, remaining-candidate authoring and immutable review:
+three successful-role calls sharing a 165-second model window. Material
+clarification uses two calls and writes nothing. Rejected earlier experiments
+retain their original verdicts; current integration and installed evidence must
+not be attributed retroactively to them.
+
+## Greenfield terminal decision proof
+
+The installed matrix owns show, proposal, explicit terminal CONFIRM and same-hash
+CONFIRM retry through `greenfield_matrix_journey.py`. Its transaction evidence
+owner requires the exact repo/hash-bound decision offer, real command responses,
+the CLOSED journal's saved commit result, sealed readback and unchanged retry
+state. It must not substitute create or synthesize successful command stdout.
+Evaluation failure summaries and actual first/retry command diagnostics remain
+separate, including when no external evidence directory was selected.
+Navigation proof checks the actual terminal completion handoff against the
+transaction's pinned reviewed generation. The CLOSED journal is publication
+authority, not a substitute terminal response, and does not own a navigation
+field. Missing or wrong consumer links remain failures.
+
+Terminal success does not qualify native chat or hook visibility. Report native
+chat as unqualified/read-only until independently qualified, and prove the
+unsupported-host no-write boundary separately. The operating envelope permits
+that read-only posture; absent native write support is not itself a terminal
+defect or permission to invent a new host mechanism. Intervention visibility,
+profile safety, recovery and unseen-input release evaluation remain independent
+obligations.
+
 
 ## Purpose
 Release is Odylith's release subsystem. It owns the canonical maintainer
@@ -19,6 +747,9 @@ governed subsystem.
 - Stable semver discovery anchored to published canonical releases and
   reusable unpublished tag reservations for the canonical lane.
 - Canonical release preflight and dispatch orchestration.
+- Process-isolated full-suite execution for the canonical maintainer validation
+  lane, with deterministic collection order and an aggregate verdict across
+  every shard.
 - Release-planning selector resolution, alias ownership, append-only
   workstream assignment history, and the `odylith release ...` command group.
 - The generic maintainer GTM-and-release checklist plus the release-readiness
@@ -252,7 +983,10 @@ governed subsystem.
   Show session state, highest stable semver tag, and the next auto version.
 - `make dev-validate`
   Run the detached `source-local` maintainer validation lane against current
-  unreleased workspace changes. This is maintainer-only and release-ineligible.
+  unreleased workspace changes. Pytest runs in bounded fresh-process shards so
+  one order-contaminated or crashed interpreter cannot erase prior evidence;
+  every shard still runs and the command fails on any nonzero shard result.
+  This is maintainer-only and release-ineligible.
 - `make license-audit`
   Refresh and audit the checked-in third-party attribution ledger.
 - `make release-session-show`
@@ -286,6 +1020,9 @@ governed subsystem.
 - `bin/_odylith.sh`
   Shared maintainer release-lane authority checks, local session-file
   location, and wrapper plumbing.
+- `bin/validate` and `scripts/run_pytest_shards.py`
+  Canonical maintainer validation entrypoint and deterministic process-
+  isolation boundary for the complete pytest corpus.
 - `.github/workflows/release.yml`
   Canonical release workflow with authority, commit-binding, and self-host
   validation gates.
@@ -329,14 +1066,22 @@ governed subsystem.
   - the workflow ref is `refs/heads/main`
   - the requested `tag` resolves to the session `expected_sha`
   - `GITHUB_SHA` equals that same `expected_sha`
-- Release identity validation now pins canonical maintainer authorship for
-  commit-history proof and no longer depends on a GitHub-generated committer
-  exception in canonical `main` ancestry.
-- Local maintainer config still remains strict on both author and committer
-  identity. The history gate is intentionally narrower: it validates the
-  canonical authored identity that must survive platform merge machinery while
-  tolerating the immutable historical maintainer author alias already present
-  in older canonical commits.
+- Release identity validation separates maintainer credential proof from
+  contribution-history safety. Maintainer release and push workspaces keep
+  local config and authenticated GitHub release authority strict on the
+  canonical `freedom-research` identity; contributor clones use each
+  contributor's own Git identity.
+- Commit-history validation preserves external human author and committer
+  identities. Whenever the canonical maintainer name or email is used, the
+  validator requires the exact canonical pair, apart from the explicitly
+  enumerated immutable historical maintainer alias bounded to its trusted
+  ancestry cutoff. The trusted published history ends at main commit
+  `4a6c37a8633e1af50bb7898303edc23b41e65d74`; subsequent maintainer commits
+  require the canonical identity. It inspects raw Git object identity so `.mailmap` cannot
+  disguise explicit assistant/model/coding-tool-branded author or committer
+  signatures, and rejects structured or prose attribution to those tools.
+  External contribution authorship must not be rewritten to satisfy the
+  release gate.
 - The concrete `v0.1.10` follow-up record is
   [B-060](/Users/freedom/code/odylith/odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md).
 - Release, release-candidate, and test workflows now pin
@@ -363,6 +1108,17 @@ governed subsystem.
   success-path output.
 - Release assets are authoritative only when the signed manifest, provenance,
   and SBOM all verify for the canonical signer identity.
+- Maintainer-local release assets are not closure proof unless
+  `build-provenance.v1.json` binds the package to the local git `HEAD` and
+  records the local source-tree posture, including branch, dirty flag, and
+  dirty-file count. A local dist with an empty provenance commit can be useful
+  for debugging, but it cannot support a release-readiness or local-install
+  handoff claim.
+- Maintainer-local `*.sigstore.json` files are not production attestation proof
+  when they are placeholder `{}` payloads. Local install instructions may use
+  an explicit localhost skip-verify posture, but release-readiness narration
+  must distinguish checksum/provenance proof from canonical signed-attestation
+  proof.
 - Consumer posture must reject maintainer-only localhost asset overrides and
   Sigstore-bypass toggles; those controls are rehearsal-only and valid only in
   the product-repo maintainer lane.
@@ -412,6 +1168,11 @@ governed subsystem.
   temp-only changes.
 - A failed or partial release attempt should remain recoverable by reusing the
   same local session after the maintainer fixes the blocking issue.
+- Full-suite test validation must collect one stable node order, run bounded
+  contiguous shards in fresh Python processes, continue after a failed or
+  signaled shard, and return one aggregate failure after all shards finish.
+  Replaying a failed node in isolation is diagnostic evidence, not a substitute
+  for a complete canonical verdict.
 - Session cleanup is explicit so retry evidence is not silently discarded.
 - Managed runtime bundles must preserve runtime isolation so a consumer repo's
   active `VIRTUAL_ENV`, Conda env, `PYTHONHOME`, `PYTHONPATH`,
@@ -420,15 +1181,169 @@ governed subsystem.
 - The release manifest must expose exactly one Odylith wheel plus the expected
   base-runtime and feature-pack assets; preflight must fail closed on sidecar
   wheels, missing wheel metadata, or missing feature-pack asset metadata.
+- The release manifest must carry `repo_schema_version` from checked-in
+  product-version truth and derive `migration_required` from the registered
+  migration registry for the published version. Migration-marked releases must
+  be accepted by the hosted installer and routed to the install runtime's
+  registered migration planner instead of being rejected by bootstrap shell
+  validation.
 - Local release smoke should prove the installer from a nested repo directory
   as well as the repo root so the zero-friction repo-root detection contract
   does not silently regress.
+- Local release smoke owns deterministic installation and unavailable-author
+  boundary proof: install into an empty repo, run `odylith show`, require public
+  `greenfield propose --format json` to refuse when authoring is disabled, and
+  verify no governed-byte changes or sealed transaction. A passing standalone
+  smoke is not positive Greenfield qualification.
+- The mandatory same-distribution installed matrix owns the positive journey:
+  `show`, public `greenfield propose --format json`, then hash-bound
+  `greenfield create --confirm` of the exact sealed transaction. Successful
+  proposal and creation output must reject host-side schema repair loops,
+  internal host instructions, reasoning contracts and active-proposal paths.
+  Exact readback, first coding handoff, generated-surface browser checks and
+  installed recovery remain release gates; no title-only create shortcut or
+  hidden model fallback substitutes for this journey.
+- The shared Greenfield release proof lane must run an installed, immutable
+  candidate after local release smoke and retain its matrix payload outside any
+  disposable generated repository. Every commit-capable request inside the
+  declared operating envelope must pass exact v14 proposal ceilings: standard
+  strictly below `90s`, rescue below `120s`, and explicit deep/premium below `150s`.
+  `60s` is the advisory normal-case proposal target; commit-only publication
+  retains its separate strict `<60s` gate. Historical v12/v13 observations retain
+  their original ceilings and verdicts, and old sealed approvals are not relabeled
+  or admitted under v14. Fresh profile-specific observations must qualify the new
+  contract; changing ceilings alone establishes no quality or reliability gain.
+  These are separately selected profiles, never sequential budget extensions.
+  The current authored path has initial authoring and full-candidate review;
+  source-bound material clarification has one author call and no review. Both
+  authored roles share the sealed `75/105/135s` model window. Review, including
+  setup and validation, receives at most `20s` and only the remaining window.
+  Release observation must validate both actual roles, their provider/model/
+  effort identity, full source/candidate binding and available timing evidence;
+  a larger permitted call count alone is not qualification. The native stage
+  observation does not contain absolute inter-stage timestamps or the separate
+  sealed review receipt, so those facts require their own evidence. Historical
+  experimental review is not current-protocol acceptance. Material ambiguity
+  must return one focused clarification before staging or governed mutation.
+  `CONFIRM` must remain commit-only: receipt/hash/precondition verification,
+  sealed-byte publication, explicit failure recovery, and readback only, with no model call,
+  semantic interpretation, content generation, or prose repair.
+  Never silently roll back an observed published generation. Current native
+  quality, internal repair, all-profile timing and release qualification remain
+  open; deterministic test observations do not establish model performance.
+  Release acceptance is strict and separate from finite-sample confidence:
+  exact product laws remain zero-tolerance while confidence bounds describe
+  evidence strength and cannot override acceptance. Evaluators must call the
+  canonical product owners for Atlas topology, typed relation order, semantic
+  snapshots, and governed-write scope instead of maintaining parallel parsers.
+  Persisted readback, raw generated artifacts, logs, and screenshots must remain
+  hash-valid through independent adjudication for every terminal v3 outcome.
+  Each claim receives a unique run id; stale or mismatched evidence cannot
+  terminalize a newer claim. Release-scope execution requires an explicit
+  external evidence directory before it can mutate output or telemetry.
+  Installed commit-recovery proof also requires that authority in discovery
+  runs. Conflict evidence is sealed in a sibling output root, bound to the exact
+  transaction, Product Facts, write set, case, command and frozen run before
+  retracting the harness's own mutation. Only verified closed recovery and an
+  unchanged same-hash retry permit cleanup. Failed or interrupted fixtures,
+  unresolved journals and unverified workers remain preserved; the outer lease
+  removes only an empty namespace. Raw proposal/model observation and conflict
+  journal/snapshot bytes survive outside disposable fixtures.
+  Campaign interruption must stop the process group and seal truthful
+  interruption evidence; if that evidence cannot be sealed, the ledger stays
+  claimed and the run fails closed.
+  Browser proof must exercise Project, Radar, Registry, Atlas, Compass,
+  Casebook, and the tooling shell across normal, empty/fallback, and
+  degraded/invalid-recovery states at desktop and 430px mobile widths. The
+  fixed matrix contains 32 required cells and rejects missing cells, document
+  or pane overflow, clipped/hidden text, stale payload binding, malformed
+  content, and any rendered typed fact whose count, order, or value differs
+  from the same generated repository's authored facts.
+- The local release asset builder, standalone greenfield matrix target, and
+  shared release proof lane must run the platform domain-leakage guard against
+  current runtime/source guidance, release tooling, and built release assets
+  before accepting a release proof. The guard must detect phrase leakage across
+  line boundaries plus identifier-shaped leaks such as camelCase or compacted
+  multi-word terms. Distinctive fixture vocabulary belongs in tests, explicit
+  release fixture catalogs, governed evidence, top-level matrix or rescue proof
+  JSON, evaluation corpora, and release
+  notes; it must not leak into runtime code, shipped agent guidance, release
+  tooling behavior, or bundled default behavior.
+- The greenfield release matrix must not rely on hand-curated leakage
+  sentinels alone. Preflight and generated-readback leakage proof must include
+  explicit case sentinels, required anchors, and conservative distinctive
+  source-text phrases from the case prompt or accepted intent while filtering
+  generic confirmation/governance wording. If a declared sentinel is already
+  platform-native, the harness must choose a source-grounded distinctive
+  fallback before failing a case; it may fail preflight only when no
+  platform-distinctive candidate remains. Domain-anchor coverage scoring must
+  use token-aware matching rather than raw substring containment.
+- The standalone `make greenfield-post-confirm-matrix` maintainer target must
+  write `greenfield-post-confirm-matrix.v1.json` by default, with
+  `GREENFIELD_MATRIX_OUTPUT_JSON` as the explicit override. A stdout-only
+  matrix pass is not durable release evidence. The target must also accept an
+  explicit fresh-variance case file through `GREENFIELD_MATRIX_CASE_FILE` so
+  maintainers can run external high-variance simulations without adding domain
+  vocabulary to the platform source catalog. Persisted matrix JSON must include
+  per-case post-confirm manifest summaries, natural structured-rescue proof
+  when requested by the maintained wrapper, and temp-cleanup proof; leftover
+  Odylith simulation roots are release-proof failures, not chat-side cleanup
+  chores.
+- The tiered `make greenfield-matrix-campaign` discovery harness must keep
+  discovery proof and release proof separate. Discovery tiers may use seeded
+  installs and controlled concurrency, but they must stream per-case JSONL,
+  flush incremental shard result JSON, merge live progress into campaign JSONL
+  and snapshot files, cluster failures from typed manifest ownership before
+  score buckets, stop on configured failure-cluster thresholds, and emit a
+  failure-response packet with failed-result JSON paths, stable case IDs,
+  content fingerprints, Casebook-capture requirement, exact failed-subset
+  replay instruction, materialized failed-subset replay shards when exact
+  source identity exists, and resume order. If stable identity is missing,
+  unreadable, or ambiguous, the packet must mark replay materialization
+  unavailable and preserve source-shard replay guidance instead of pretending an
+  exact subset exists. Case breadth must be evaluated through the shared
+  stressor taxonomy and 10-point variance score rather than raw case count
+  alone. Campaign summaries must also report failure outcomes by
+  stressor class, and failure clusters must carry stressor tags so maintainers
+  can identify which ambiguity shapes are failing. Case-generator and shard
+  summaries must also persist source-file, tag, stressor, and stressor-by-tag
+  stratification evidence so high-volume discovery proves varied
+  ambiguity-shape coverage before expensive execution. Pre-result
+  child-process failures must write a replayable synthetic shard payload with
+  source case identity and prompt fingerprints; interrupted sibling shards
+  without failure evidence must not be advertised as failed-subset replay
+  inputs. Release readiness remains strict full-install proof with browser,
+  rescue, and natural-rescue legs, and a release-tier preflight abort is not a
+  completed release proof. Temp cleanup proof must fail on matching stale
+  directories, files, or symlinks.
+- The optional `make greenfield-matrix-generate-cases` source-pool step must
+  consume external case files, not embedded platform domains, and must report
+  stressor coverage, variance score, density warnings, and hard missing-stressor
+  failures before shards are built. Matrix preflight must flush structured
+  failed-case telemetry and incremental result JSON before project execution
+  when source metadata is invalid. Live-stop failure response must prefer exact
+  failed case identity from running shard telemetry before falling back to
+  broader shard replay.
+- Local release smoke must inspect installed greenfield guidance files as part of
+  the same journey. Installed AGENTS, README, and skill guidance must mention the
+  `greenfield create` confirmation path, must forbid hand-authored proposal JSON,
+  must explicitly guard against proposal JSON review and parser/schema retry
+  narration, must name the minimum Product Intent Confirmation sections, and
+  must fail on stale host-drafts-proposal instructions that would send agents
+  back into schema-repair loops.
+- Local release smoke must treat unavailable previous-release metadata as a
+  skipped upgrade rehearsal when the release lookup reports a 404, whether the
+  fetch layer exposes the 404 directly or wraps it in operator-facing context.
+- Installer progress output is part of release polish. Progress bars must leave
+  a clean terminal boundary before child renderer output so transcript lines
+  such as Mermaid render results never glue onto elapsed seconds.
 
 ## Validation Playbook
 ### Release
 - `make release-version-preview`
 - `make release-version-show`
 - `make license-audit`
+- `PYTHONPATH=src python -m pytest -q tests/unit/test_pytest_shards.py`
 - `make release-preflight [VERSION=X.Y.Z]`
 - `make release-session-show`
 - `odylith validate self-host-posture --repo-root . --mode release --expected-tag vX.Y.Z`
@@ -438,15 +1353,561 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-04-17 · Implementation:** Implemented and hardened B-126 conditional release-targeted backlog authoring with --release selector preflight, batch release events, queued-status preservation, Radar/Compass refresh reporting, and focused QA coverage.
-  - Scope: B-126
-  - Evidence: odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md, src/odylith/runtime/governance/backlog_authoring.py +3 more
-- **2026-04-17 · Decision:** Queued B-126 Conditional Release-Targeted Backlog Authoring for v0.1.12 next release targeting; status remains queued and implementation is intentionally deferred out of the v0.1.11 lane.
-  - Scope: B-126
-  - Evidence: odylith/radar/source/ideas/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md, odylith/radar/source/releases/release-assignment-events.v1.jsonl
+- **2026-10-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `sha256:674e4dcf1279090b822ef14c228da2a688306fb096338d331c896c5034c7610b`, `sha256:f6f6644081399f8233ed84590606a8894096990f2fe98cebafc6ffdd34fd570e`, `sha256:0d8006c91a5f4a229a1c9734a745efc1544e418aa22e2ca40ea3b8d315a6ae11`, `sha256:e09e99afa961b3674632a6d6594cf6aa534cbc7f784af22e98200bb0a6d35fe1`, plus 2 more
+- **2026-10-16 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `sha256:23c36a80ee1555af0e65d4d66fef901f12f07c22a4668eb0748cda5ae4c8e899`, `odylith/MAINTAINER_RELEASE_RUNBOOK.md`, `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`
+- **2026-10-16 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `sha256:218ed3d91728764ec05fee73b809e3e7b11275d235568071aa202ff208ca7ecc`, `odylith/MAINTAINER_RELEASE_RUNBOOK.md`, `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`
+- **2026-10-15 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `sha256:1f89d08a54d74152e22e7841f2c5f838aa1c042d2ece651da1e4579a71542118`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_release_assembly.py`
+- **2026-10-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/atlas/source/greenfield-matrix-tiered-campaign-progress.mmd`, `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
+- **2026-10-10 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/project_intelligence/authored_fact_presenter.py`, `tests/fixtures/greenfield-release-corpus/source-annotations/public40-20261010/evidence-amendment.v1.json`
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-10-05: Bound the installed candidate-contract checker to authoritative version owners and required the concise project-summary field with five negative schema controls. All 61 module tests pass; the original v33 installed smoke failure remains retained and requires a fresh immutable build. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-347`)
+- 2026-09-02: Bound Greenfield release scoring to authenticated typed validation and visible browser text. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+  The authored route may replace legacy prose-lens receipts only when its
+  manifest, validation status, zero issue count, single-model semantic owner,
+  and zero post-authoring interpretation count all pass. Independent package
+  evidence continues to gate each release dimension. Browser proof compares
+  exact card labels, semantic slots, and content after HTML-visible whitespace
+  collapse, so presentation newlines cannot masquerade as semantic drift.
+  Immutable v7 completed all public proposals and commits inside `60/90/120`;
+  rebuilt exact-distribution proof remains required.
+
+- 2026-08-04: Corrected the release identity gate so external human contributors retain their original Git authorship while maintainer credentials remain pinned to `freedom-research`. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005); Bug: `CB-320`)
+  The history validator now rejects partial or mismatched maintainer identity
+  and explicit assistant/model/coding-tool-branded identity signatures or
+  attribution without treating legitimate contributor names as a release
+  failure.
+- 2026-08-03: Moved canonical full-suite pytest execution behind deterministic fresh-process shards after a long-lived Python 3.13 process emitted order-dependent failures and terminated with `SIGBUS`. The runner preserves collected order, reports every failed or signaled shard, continues the remaining corpus, and returns one fail-closed aggregate verdict. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-308`)
+- 2026-07-05: Proved the retained final local-installable dist through strict installed release proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`)
+  Release proof for
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-final-20260705T200258Z`
+  passed with campaign
+  `/private/tmp/odylith-final-release-proof-20260705T201226Z/campaign.json`
+  reporting `status=release-ready`, `execution_status=passed`,
+  `release_proof_status=passed`, `release_readiness_status=proven`, and zero
+  failure clusters. The release shard passed 12/12 scientific/deep-tech cases
+  at hard `10/10`, browser proof passed, platform generated-readback leakage
+  proof passed, temp cleanup passed, and natural rescue committed governed
+  records under the 90s rescue budget. Standard create timing stayed below 60s
+  with max `47.719s`. Exact installed `grn-sim` replay against the same dist
+  returned `0` in `38.349s`, wrote governed records, and had zero scanned
+  repeated-copy blockers. Obsolete local release dists were removed so the
+  retained package is the only `odylith-local-release-*` directory under the
+  research-code root.
+
+- 2026-07-04: Materialized exact failed-subset replay shards from failed campaign output. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The tiered campaign runner now writes `failure_response.failed_subset_replay`
+  in the final campaign JSON. When failed result JSON and source case files
+  carry exact stable identity, the runner invokes the existing shard builder to
+  emit ready-to-run failed-subset shard files; when identity is missing,
+  unreadable, ambiguous, or source files are unavailable, it reports an
+  explicit unavailable reason and leaves the original shard replay guidance
+  intact. The wrapper exposes `GREENFIELD_MATRIX_FAILED_SUBSET_REPLAY_DIR` for
+  maintainer-controlled output placement. Focused proof passed the harness
+  campaign/sharder/failure-response/generator suite (`69 passed in 1.61s`) and
+  shell syntax checks. This is stop-fix-replay custody, not release readiness.
+
+- 2026-07-04: Added stratification evidence to Greenfield matrix case generation and shard summaries. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The high-volume campaign harness now records tag, source-file, stressor, and
+  stressor-by-tag distribution in generated case files and tier shard
+  summaries. This keeps the discovery lane honest by proving source-grounded
+  ambiguity-shape breadth before execution instead of relying on raw case
+  counts. Focused proof passed the campaign/generator/sharder harness suite
+  (`63 passed in 1.53s`). This is discovery-harness proof, not release
+  readiness.
+
+- 2026-07-05: Hardened high-variance leakage-sentinel preflight with corpus-aware fallback candidates. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  External matrix cases can declare source-grounded sentinels that are already
+  native to platform custody. The harness now scans declared plus source-derived
+  candidates once, excludes platform-native candidates, and fails preflight only
+  when no distinctive sentinel remains. Generated-readback leakage proof keeps
+  declared sentinels authoritative when usable and otherwise falls back to
+  source-derived candidates without adding domain vocabulary to release code.
+  Focused proof passed the leakage-preflight and generated-readback regression
+  pack (`39 passed in 7.45s`).
+
+- 2026-07-05: Preserved full platform-leakage proof breadth while narrowing external fallback candidates. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  A case-aware source/dist scan showed that raw source-derived fallback
+  candidates could misclassify generic quality-obligation wording as project
+  domain leakage. The harness now derives fallback candidate sentinels from
+  product/title/vocabulary context and confirmed-intent source sections, while
+  the official default release proof keeps the full historical 224-term
+  platform-leakage corpus. Focused proof passed 38 leakage/preflight tests;
+  default source/dist platform leakage passed 224 fixture terms; and exact
+  failed-subset case-aware source/dist leakage passed 69 terms with zero
+  findings. This is proof-custody filtering, not a domain exception and not a
+  weakening of the release leakage guard.
+
+- 2026-07-04: Completed the incremental Greenfield campaign runner architecture slice without promoting discovery to release proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The campaign harness now attributes live stop decisions to the shard that
+  emitted failed case telemetry, propagates required stressor classes into child
+  matrix commands, permits discovery shards to report partial shard-local
+  stressor coverage while the tier owns aggregate coverage, writes replayable
+  synthetic payloads for launch and cleanup failures, and reports
+  `discovery-passed`, `release-ready`, `failed`, or `skipped` as distinct
+  campaign statuses. `execution_status` remains the CLI exit contract, while
+  release readiness still requires the strict full-install release tier with
+  browser, rescue, natural rescue, platform-leakage, temp-cleanup, and artifact
+  quality proof. Focused proof passed the synthetic/replayability pack, focused
+  harness/preflight checks, Compass visible-copy checks, and the full
+  install/matrix harness suite (`135 passed in 15.98s`).
+
+- 2026-07-04: Added source-grounded Greenfield case generation and structured preflight telemetry to the campaign harness. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The release harness now includes `bin/greenfield-matrix-generate-cases` and
+  `scripts/release/greenfield_matrix_case_generator.py` for selecting external
+  case pools by stressor coverage, source/tag balance, and density without
+  adding domain vocabulary to Odylith source. Matrix preflight now emits
+  structured `preflight_failed` case results, incremental result JSON, and
+  run-stop telemetry before expensive project execution when required terms,
+  leakage terms, stressor coverage, or platform-domain custody are invalid.
+  Campaign progress records running cases and per-shard failed identity so
+  live-stop failure-response packets can replay the exact failed subset, and
+  explicit `required_stressors` now apply even when high-variance defaults are
+  disabled. Tooling readback moved to an anchored payload reader that resolves
+  the real `__ODYLITH_TOOLING_DATA__` assignment instead of first-brace parsing.
+  Focused proof passed compile, shell syntax, an external source-case generator
+  smoke, and the focused install/matrix regression pack (`58 passed in 8.45s`).
+  This is discovery-harness proof, not release readiness.
+
+- 2026-07-04: Hardened Greenfield campaign replayability, stressor outcomes, and release-proof status boundaries after reviewer audit. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The campaign runner now writes replayable synthetic matrix payloads when a
+  child shard dies before normal result JSON emission, preserving source case
+  IDs, stressor tags, and prompt fingerprints for exact failed-subset replay.
+  Failure-response aggregation moved into `greenfield_matrix_failure_response.py`
+  so interrupted sibling shards without failed-case evidence are excluded from
+  replay inputs. Campaign summaries now include stressor-class outcomes and
+  stressor-tagged clusters, release-proof preflight aborts report
+  `release_proof_completed=false`, and temp cleanup proof fails on stale
+  files and symlinks as well as directories. Focused proof passed 53
+  reviewer-boundary tests, the widened 134-test install/greenfield harness
+  suite, compile, shell syntax, scoped diff hygiene, and a disposable campaign
+  smoke that proved intentional failure still flushes progress and a
+  failure-response packet without claiming release readiness.
+
+- 2026-07-04: Promoted Greenfield campaign stressor taxonomy and failure-response custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The campaign harness now has a shared stressor taxonomy owner and 10-point
+  variance score used by campaign summaries and shard selection, and the
+  maintained default matrix cases carry explicit stressor metadata so breadth
+  is measured by ambiguity shape rather than only project count. Failed
+  campaigns now persist a failure-response packet that requires Casebook
+  capture, points at failed shard result JSON, preserves stable case IDs and
+  fingerprints for exact replay, and states the stop-fix-replay sequence before
+  volume discovery can resume. Focused proof passed 47 tiered harness tests,
+  77 installed matrix/proof-scope tests, compile, scoped `git diff --check`,
+  Atlas D-047 render at 47 fresh / 0 stale, and a disposable campaign smoke
+  that proved telemetry and failure-response behavior on a controlled fake
+  install failure. This is discovery-harness proof, not release readiness.
+
+- 2026-07-04: Hardened Greenfield campaign replay identity and local-temp portability after reviewer audit. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  Failed-subset replay now distinguishes strong case identity
+  (`case_id`, prompt hash, confirmed-intent hash) from weak display-name
+  evidence, and uses weak names only when a failure cluster carries no stronger
+  identity. This keeps duplicate display names from collapsing unrelated cases
+  while still replaying cluster-only failures from older or partial result
+  payloads. Matrix wrappers and the source default no longer assume
+  `/Users/freedom/mock`; disposable project roots default to the host temp
+  directory unless `TEMP_PARENT` explicitly overrides it. Focused proof passed
+  the sharder, campaign, bootstrap, and matrix wrapper regressions plus a
+  two-case tiered shard smoke where failed-subset, 60-case regression,
+  240-case discovery, release-proof, and volume-discovery tiers all reported
+  passed. This remains harness/discovery custody and does not convert a
+  no-browser or no-natural-rescue run into release readiness.
+
+- 2026-07-04: Hardened tiered Greenfield campaign telemetry, release-proof variance, and failed-subset identity. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The release discovery harness now emits a failed case result when clone or
+  case execution raises after `case_started`, then flushes incremental payload,
+  `case_completed`, and `run_stopped` telemetry instead of leaving the shard
+  opaque. The merged campaign snapshot backfills shard-level failed case and
+  cluster counts only for cases not already observed from child telemetry, so
+  stop decisions remain live without double-counting. Release-proof tiers now
+  enforce requested stressor coverage instead of relying on discovery-tier
+  variance, and the sharder dedupes/replays no-id cases by prompt fingerprint
+  so duplicate names cannot corrupt exact failed-subset replay.
+
+- 2026-07-04: Added source-case required-term provenance to the Greenfield matrix harness. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  External case files now fail at ingestion when `required_terms` cannot be
+  grounded as source tokens or phrases in the case prompt or confirmed intent.
+  The sharder therefore rejects invalid evaluator metadata before writing tier
+  files or launching installed campaigns, rather than burning successful
+  project creates before discovering an impossible domain-term obligation inside
+  one shard. The same pass gives pre-result child-process failures a stable
+  `campaign.shard-process-failed` cluster with tail-preserved stderr, so final
+  campaign JSON remains actionable even when no child matrix result payload was
+  written. The gate is intentionally token-provenance based: prefixed words do
+  not ground shorter required terms, while exact source terms remain valid.
+
+- 2026-07-03: Isolated concurrent Greenfield matrix shard temp cleanup scope. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The tiered campaign runner no longer lets concurrent discovery shards share
+  one cleanup-proof parent. Each shard now receives a campaign-owned isolated
+  temp parent, stale copies of that shard scope are removed before launch, the
+  shard temp parent is recorded in progress/result payloads, and the campaign
+  removes that shard temp parent after completion or interruption. This keeps
+  strict temp-cleanup proof intact while preventing a finished shard from
+  falsely failing because an in-flight sibling still has an active simulation
+  root. The fix is harness-scoped and does not weaken artifact quality gates or
+  convert discovery evidence into release readiness.
+
+- 2026-07-03: Completed tiered Greenfield campaign progress and replay custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The release harness now treats high-volume Greenfield discovery as a tiered
+  campaign rather than final-only shard execution. Matrix runs flush their
+  result payload incrementally while cases complete; the campaign runner tails
+  per-shard telemetry into merged JSONL and live snapshot files; and live
+  cluster evidence can stop scheduling and interrupt sibling shards before a
+  known-bad class burns the rest of the run. Failed-subset replay is keyed by
+  stable case identity, slug, prompt hash, and confirmed-intent hash instead of
+  display names alone. The sharder now emits failed-subset, 60-case regression,
+  120-case discovery, 240-case discovery, and strict release-proof tiers, with
+  per-tier worker limits and final output that keeps discovery status separate
+  from browser/natural-rescue release readiness. This is harness custody only:
+  it does not relax artifact-quality gates and does not convert discovery
+  evidence into release proof.
+
+- 2026-07-03: Tightened Greenfield matrix leakage-sentinel distinctiveness. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The platform domain-leakage preflight now rejects short declared case
+  sentinels made only from platform-native or common governance terms before
+  scanning Odylith source and built package surfaces. This keeps release
+  leakage proof strict while preventing legitimate platform custody prose from
+  blocking discovery shards before any project create occurs. Project-specific
+  declared phrases remain authoritative, and source-derived fallback terms
+  still preserve coverage for cases without explicit sentinels. Focused proof
+  covered the false-positive sentinel class and retained valid multi-token
+  project phrases; the affected installed discovery shards reran cleanly after
+  the selector fix. This is leakage-proof vocabulary custody only: it does not
+  suppress platform findings, weaken generated-artifact readback checks, or
+  convert no-browser discovery evidence into release readiness.
+
+- 2026-07-03: Proved fresh tiered-replay package on selected installed cases. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  Fresh local-release dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-working-tiered-replay2-20260703`
+  passed build-time platform leakage, checksum, installer syntax, and archive
+  readability checks. The selected installed package matrix passed the exact
+  actor-led product-view replay plus the leakage-sentinel tranche with 7/7
+  governed post-confirm writes, hard 10/10 scored quality, zero issues, all
+  expert lenses green, max standard create time of 37.229s, generated-readback
+  leakage proof passing, and temp cleanup passing. This remains discovery and
+  package proof only because browser proof and natural rescue proof were not
+  requested; release proof remains browser-strict and natural-rescue-strict.
+
+- 2026-07-03: Proved 72-case Greenfield volume-discovery campaign on fresh package. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The fresh package passed the full available 72-case high-variance volume tier
+  with two-shard concurrency, stop-on-first-failure thresholds, hard 10/10
+  scored quality on every case, zero issues, zero failure clusters, and no
+  standard-path create over 60s. Timing was max 39.321s, average 33.575s, and
+  p95 38.143s. The tier covered every tracked stressor class and left no
+  generated simulation roots under `/Users/freedom/mock`. This is discovery
+  proof only; release readiness still requires browser surface proof and
+  natural rescue proof.
+
+- 2026-07-03: Strict Greenfield release proof blocked on natural host-planned rescue. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The same fresh package passed all twelve standard release-proof cases, browser
+  proof, platform-domain leakage proof, temp cleanup, and synthetic rescue, but
+  failed the natural structured-rescue release leg before governed writes.
+  `structured_rescue_semantic_patch` remained unrepaired for
+  `SemanticModelIR.domain_ontology.external_systems` because the Tribunal patch
+  planner provider timed out after 45 seconds and returned no schema-bound
+  operation. Release custody must keep natural rescue fail-closed: discovery
+  volume proof and synthetic rescue do not prove release readiness until the
+  provider-backed semantic patch path succeeds inside the 90-second rescue tier.
+
+- 2026-07-04: Added completion-priority structured-rescue fallback custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  Local Codex and Claude CLI probes proved that tiny schema-bound structured
+  patch requests can still miss the rescue budget. The release proof contract
+  now keeps the host attempt first but allows a short provider-timeout fallback
+  only for source-owned, schema-addressed semantic PatchSet operations. The
+  manifest must preserve the provider failure, `structured_patch_fallback`
+  metadata, semantic-patch ledger evidence, repaired issue code, final passed
+  post-confirm manifest, and committed governed write. Source-local proof
+  completed the natural structured-rescue create in 43.439s with governed writes
+  committed after a 12.0s Codex timeout and source-anchored semantic fallback.
+  Strict installed release proof from a fresh dist remains required before
+  release readiness can be claimed.
+
+- 2026-07-04: Proved strict installed release proof for the source-anchored rescue fallback. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  Fresh working-tree dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-working-tiered-rescue-fallback-20260704`
+  passed build leakage, checksum, shell-syntax, wheel, and runtime-archive
+  verification. The strict release campaign
+  `/tmp/odylith-tiered-rescue-fallback-release-campaign.v1.json` finished with
+  `release_readiness_status=proven`, no failure clusters, and a passed
+  release-proof tier. The installed shard passed 12/12 full-install cases with
+  browser proof, zero issue rows, complete governed evidence, and standard
+  create timings of 30.674-40.448s. Synthetic rescue passed, and natural rescue
+  committed governed writes in the rescue tier with `cli_create_seconds=67.639`,
+  manifest elapsed 40.888s, provider timeout recorded after 12.0s, and
+  `structured_patch_fallback.status=applied`. This is working-tree release proof;
+  published-release closure still requires the normal stable checkpoint.
+
+- 2026-07-04: Hardened tiered Greenfield campaign blocker extraction and live proof telemetry. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The release harness now keeps multiline final-gate blockers structurally intact
+  while deriving failure-cluster keys. Plain-text and JSON-backed errors are
+  scanned line by line, wrapper/remediation lines are skipped, and the first
+  concrete blocker bullet becomes the replay cluster before score buckets are
+  considered. This protects the failed-subset replay loop from grouping real
+  post-confirm issues under generic `issue(s)` text. The same proof pass keeps
+  the tiered campaign contract pinned: per-case matrix payload flushing, merged
+  campaign progress JSONL/snapshot files, failed-subset/60/120/240/release
+  shards, stressor-coverage checks, per-shard temp cleanup scopes, and discovery
+  status separated from release readiness. Focused proof passed 29 campaign and
+  sharder tests, the widened 108-test install/matrix suite, harness compile
+  checks, command-help checks, and diff hygiene.
+
+- 2026-07-04: Closed reviewer-found live telemetry and cleanup gaps in the Greenfield campaign harness. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  Per-case matrix execution now applies generated platform-domain leakage
+  verdicts before telemetry, stop-threshold evaluation, and incremental result
+  flushing, so leakage failures participate in live clustering instead of
+  appearing only at final post-processing. The matrix also persists the partial
+  result payload before deleting the generated repo, then converts cleanup
+  failure into a failed proof result instead of losing the last case update. The
+  standalone matrix wrapper only selects release proof when browser proof,
+  installed rescue smoke, and natural rescue proof are all enabled; explicit
+  debug skips downgrade the run to discovery proof. Campaign shard temp cleanup
+  now fails closed with a `campaign.shard-temp-cleanup-failed` cluster rather
+  than swallowing deletion errors. Focused reviewer-finding proof passed 26
+  tests, the widened install/matrix suite passed 111 tests, and compile plus
+  shell-syntax checks passed.
+
+- 2026-07-03: Added merged Greenfield campaign progress and release-tier preflight. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The tiered Greenfield matrix campaign now writes merged
+  `campaign-progress.v1.jsonl` and live `campaign-progress.v1.json` snapshots
+  while shards run, including per-case counts, running shard state,
+  telemetry-derived stop decisions, and cross-tier failure-cluster counts. The
+  campaign payload carries an aggregate failure-cluster summary, and discovery
+  tiers stop scheduling pending shards after the configured failure or cluster
+  threshold while signaling in-flight sibling shards to stop after actionable
+  telemetry. Cluster keys now prefer typed post-confirm manifest issue ownership
+  and concrete blocker text before falling back to score buckets, so repeated
+  mechanisms remain diagnosable. The sharder now emits variance evaluation for
+  each tier and can build failed-subset replay from top-level campaign failure
+  clusters, so high-volume discovery is measured by stressor coverage and
+  ambiguity-shape density, not only case count. Release-proof campaign runs now
+  execute component-forensics and Chromium preflight before full-install
+  browser/natural-rescue shards, and direct release-tier matrix invocations are
+  rejected unless browser proof, installed rescue smoke, and natural rescue
+  proof are requested. This improves discovery observability and release-proof
+  custody without converting discovery passes into release readiness.
+
+- 2026-07-03: Added tiered Greenfield matrix campaign observability and proof-tier custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-021)
+  The installed Greenfield matrix now writes incremental JSONL telemetry,
+  carries a persisted `campaign` summary, exposes failure-cluster and stressor
+  coverage controls, and enforces that release tier cannot use seeded installs,
+  skipped browser proof, or early-stop thresholds. The new tiered campaign
+  wrapper runs failed-subset, regression, volume-discovery, and release-proof
+  shards in order with controlled discovery concurrency and stop-before-next
+  behavior after new failure evidence. The runner reports release proof
+  completion, release proof status, and release readiness status separately
+  from selected-tier pass/fail so discovery-only campaigns cannot be mistaken
+  for release proof. Discovery runs remain non-release proof; release proof
+  remains full install with browser and natural rescue enabled.
+
+- 2026-07-03: Added metadata-driven Greenfield matrix shard building. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-021)
+  The maintainer release harness now includes `make greenfield-matrix-shards`
+  and `greenfield_matrix_shards.py` to build failed-subset, regression,
+  volume-discovery, and release-proof shard files from external case JSON,
+  prior result JSON, and stressor metadata. The sharder emits campaign
+  environment hints, rejects missing required stressor coverage before a volume
+  run starts, and keeps project-domain vocabulary in external cases rather
+  than in Odylith release code. Focused proof passed the sharder/campaign test
+  suite, compile and Bash syntax checks, and a disposable command-surface smoke.
+
+- 2026-07-03: Hardened high-volume greenfield matrix leakage-term selection. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`)
+  Declared case sentinels now reject low-entropy two-token artifact phrases
+  such as generic `evidence` or `proof` heads while preserving project-specific
+  declared phrases. This keeps platform domain-leakage proof strict without
+  letting ordinary Odylith governance language block high-volume discovery
+  shards as false positives. Targeted proof covered the batch-06 failure shape,
+  existing explicit platform-word project phrases, and default matrix coverage.
+
+- 2026-07-03: Separated high-volume greenfield discovery status from release browser proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-046)
+  The installed greenfield matrix keeps browser proof required for release
+  proof by default, but explicit `BROWSER_PROOF=0` high-volume discovery runs
+  now pass the existing skipped-browser allowance into the matrix CLI. The
+  aggregate status therefore matches the per-case scoring contract:
+  no-browser volume runs can pass as
+  `volume_discovery_without_browser_surface_proof`, while release-proof lanes
+  still require browser state proof. Focused harness regressions passed and
+  the shard-05 rerun showed 30/30 governed project creates at hard 10/10 with
+  cleanup and platform leakage passing before the harness status fix.
+
+- 2026-07-01: Bound maintainer-local release provenance to the source git head. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-209`, `CB-215`; Diagram: D-023)
+  Independent closure review found that the greenfield committed-head dist
+  carried strong behavioral proof but weak local provenance: the generated
+  `build-provenance.v1.json` retained the canonical workflow identity while
+  leaving `workflow.sha` empty. The release asset builder now records the local
+  `HEAD` as the provenance SHA for maintainer-local builds and adds a
+  `source_tree` block with branch, dirty state, dirty-file count, and head.
+  Hosted release builds keep the GitHub-provided SHA. Local install handoff now
+  requires a rebuilt dist from the post-fix commit before release-readiness
+  claims continue.
+  The follow-up `da2643ed` local dist passed that contract with clean
+  commit-bound provenance, 14/14 maintained installed matrix cases, 6/6
+  scientific variance cases, exact `grn-sim` replay, and explicit notation that
+  placeholder local Sigstore sidecars are not canonical attestation proof.
+
+- 2026-07-01: Added scientific evidence-depth readback to greenfield release scoring. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-045)
+  The installed greenfield matrix now treats scientific/evaluation semantics as
+  a scored proof obligation, not a shallow domain-term hit. Package evidence
+  findings derive required evidence terms from typed `EvaluationSemantics`
+  fields and inspect governed readback for method/protocol,
+  baseline/comparison, uncertainty/tolerance, and reproducibility obligations
+  before the domain-expert lens can pass. This keeps release proof aligned with
+  the premium artifact bar while preserving generic platform vocabulary;
+  fixture terminology stays confined to matrix cases and evidence records.
+
+- 2026-06-30: Proved the structured-rescue clear-fact checkpoint through fresh installed release assets. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-211`; Diagram: D-043)
+  Fresh dist `odylith-local-release-0.1.15-clear-list-fix` passed the platform
+  domain-leakage build guard across 285 distinctive fixture terms. The
+  installed release matrix then passed 13/13 maintained standard cases with
+  hard 10/10 brutal quality scores, zero quality/browser/platform-leakage
+  findings, browser proof attempted and passed for every case, complete
+  governed records, max standard create time 30.563s, average standard create
+  time 27.854s, generated-term leakage proof across 213 readback terms, and
+  clean temp cleanup. Synthetic auto-rescue passed in 38.917s. The real
+  installed natural structured-rescue leg passed in 60.926s under the 90s
+  rescue budget with `structured_rescue_semantic_patch` repaired, a
+  provider-backed Tribunal plan with one accepted operation and no rejections,
+  committed governed writes, and natural rescue quality proven.
+
+- 2026-06-30: Promoted governed readback parsing into the greenfield release-matrix score contract. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-046)
+  The release proof harness now reads persisted release catalogs/events, program
+  wave records, Compass source/runtime records, generated surface payload
+  globals, and persisted source-launch records through a first-class readback
+  owner before scoring. Release/program freshness is tied to actual generated
+  Radar workstream ids and program umbrella coverage; preview-only next-step
+  output no longer satisfies operator evidence; omitted browser proof is scored
+  as its own premium blocker. Matrix score construction now lives in
+  `greenfield_matrix_quality_scoring.py`, keeping the installed runner focused
+  on orchestration and cleanup instead of carrying score internals. Focused
+  source proof passed; rebuilt installed matrix proof with browser state remains
+  the release gate.
+- 2026-06-30: Hardened greenfield release proof against partial sentinel and substring-coverage false positives. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+  Reviewer audit found the previous leakage proof could miss omitted case
+  vocabulary when any manual `leakage_terms` were present, and the matrix
+  domain-coverage score could pass on raw substrings. The release harness now
+  derives conservative multi-token source-text leakage phrases from the case
+  prompt or accepted intent, unions them with declared sentinels and required
+  anchors for preflight/readback proof, and scores domain coverage with the
+  shared token-aware matcher. The first broad extractor attempt overreached
+  into generic phrases; that failed mechanism is captured in Casebook. Focused
+  leakage/matrix proof passed 73 tests, the full install unit suite passed 448
+  tests, and the strengthened source/dist leakage guard passed across 387
+  distinctive fixture terms against the `88df22be` dist. Rebuilt installed
+  matrix and fresh-variance proof from the post-fix commit remain required
+  before release readiness is reclaimed.
+- 2026-06-30: Fixed release-matrix generated-readback leakage baseline custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+  A `7cf9d2ed` release-dist proof run showed the platform leakage build gate
+  can pass while the installed matrix still stalls if generated-readback
+  required-anchor suppression rescans protected source and runtime tarballs
+  term by term. The matrix now computes platform-native required anchors once
+  for the selected case vocabulary, scans generated-readback leakage terms as
+  one union while preserving case attribution, and reuses the tokenized
+  source/dist custody corpus across repeated term sets. Follow-up review also
+  found that release scripts were outside protected custody and that wrapped or
+  identifier-shaped phrases could escape line-bounded matching. The guard now
+  includes `scripts/release`, keeps intentional fixture vocabulary in the
+  excluded matrix fixture catalog, tokenizes documents across line boundaries,
+  splits identifier case transitions, and catches compacted multi-word phrase
+  tokens. Focused install/leakage proof passed 71 tests; cold/warm source+dist
+  guard timings against the `7cf9d2ed` dist were 28.228s, 0.062s, and 0.809s
+  with zero findings. Rebuilt installed matrix proof remains required before
+  release readiness is reclaimed.
+- 2026-06-30: Proved release package `odylith-local-release-0.1.15-aebe9245` after Project proof-custody hardening. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-046)
+  The maintained installed matrix persisted at
+  `greenfield-post-confirm-matrix-20260630-aebe9245.v1.json` passed 13/13
+  standard cases with hard 10/10 scores, zero quality issues, zero browser
+  issues, complete governed records, standard create timings of 22.338-28.973s,
+  per-case generated browser-state proof including Project shell state,
+  generated-term leakage proof across 55 readback terms with zero protected
+  platform findings, synthetic typed-probe auto-rescue in 33.617s, and clean
+  temp cleanup. Natural non-internal host-model rescue remains outside this
+  proof scope.
+- 2026-06-29: Broadened the platform domain-leakage release guard. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagram: D-043)
+  The guard now scans root `.codex` guidance, public `docs/`, historical
+  escaped-domain sentinels, and Odylith launchers/runtime/guidance inside
+  runtime tarballs while excluding third-party packages, governed evidence, and
+  matrix proof JSON. Line tokenization is cached per scanned line so broader
+  archive custody remains bounded. Focused install proof passed 52 tests, and
+  source plus local dist `odylith-local-release-0.1.15-cd6cf643` passed the
+  strengthened leakage check across 49 distinctive fixture terms with zero
+  protected-custody findings. Fresh local release dist
+  `odylith-local-release-0.1.15-14f5102a` then rebuilt from the committed
+  checkpoint and passed the same 49-term platform domain-leakage build gate.
+- 2026-06-29: Proved release package `odylith-local-release-0.1.15-3fbacb91` after adding the platform domain-leakage gate. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`) The build gate passed across
+  19 distinctive fixture terms, the maintained installed matrix passed 13/13
+  standard cases with hard 10/10 scores and browser proof in 24.230-28.677s,
+  synthetic typed-probe rescue smoke passed in 35.129s, the fresh ten-domain
+  variance matrix passed with hard 10/10 scores and browser proof in
+  25.483-29.269s, and temp cleanup was clean.
+- 2026-06-29: Hardened the greenfield installed-matrix scorer. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagrams: D-043)
+  Fresh variance exposed shallow 10/10 evidence. Domain readback now uses rendered
+  public artifacts rather than runtime custody JSON or accepted-project source
+  launch text, operator usefulness requires real project-brief and next-step
+  preview artifacts rather than custody-file counts, and the Python matrix
+  entrypoint fails when browser proof is skipped unless an explicit debug flag
+  allows that posture. Focused release-matrix proof passed, six source-local
+  high-variance creates scored hard 10/10 under 23s, and release readiness
+  remains blocked until the rebuilt installable dist reruns the installed
+  matrix with browser proof.
+- 2026-06-29: Proved the hardened matrix on fresh installed dist `a4ede761`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagrams: D-043)
+  Local release dist `odylith-local-release-0.1.15-a4ede761` passed the
+  maintained installed matrix with 13/13 standard cases at hard 10/10, zero
+  quality issues, per-case generated browser-state proof attempted and passed,
+  max create time 27.078s, clean temp cleanup, persisted matrix JSON, and
+  synthetic typed-probe rescue wiring smoke passing in 33.430s. This proves the
+  standard installed release matrix for this checkpoint; it does not convert
+  the synthetic rescue smoke into natural host-model semantic rescue proof.
+- 2026-06-29: Reopened installed release readiness after a fresh twelve-case adversarial matrix against `a4ede761`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagrams: D-043, D-045)
+  Eleven non-reused cases passed with hard 10/10 scores and browser proof, but
+  one valid proof-action list failed before governed writes on an over-broad
+  gerund actor-role splice finding. Source now fixes the detector with shared
+  actor-role head custody and clause-local scanning, removes mechanical
+  `changes it` copy from generated state-boundary artifacts, and proves the
+  exact source-local repro in 19.192s with complete records and a passed
+  manifest. Release remains blocked until a rebuilt installable dist reruns the
+  adversarial installed matrix and browser proof from the current commit.
+- 2026-06-29: Reopened greenfield release readiness after fresh installed variance. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`)
+  Despite the earlier `13b796e9` installed matrix pass, a fresh ten-case installed variance run
+  against the same dist failed three cases and cleaned its temp root: one
+  domain-readback anchor miss after governed writes, one no-write semantic-slop
+  blocker, and one Registry under-provisioning failure after governed writes.
+  Release proof must now harden the matrix scorer so public/rendered artifacts,
+  real project-brief/next-step evidence, distinct governance dimensions, and
+  mandatory browser proof are required before a 10/10 claim.
+- 2026-06-29: Release proof correctly failed the fresh `odylith-local-release-0.1.15-3d13f434` installed matrix. Twelve of thirteen standard greenfield cases passed with hard 10/10 scores and browser proof, and synthetic wiring-only rescue smoke passed in 33.936s, but sparse disclosure confirmation failed the release gate with score 0/10 because generated governance depth and domain-anchor coverage were insufficient. Release remains blocked until a rebuilt dist passes the maintained installed matrix from the current commit; older passing dist evidence cannot be reused as release readiness. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+- 2026-06-30: Proved rebuilt installed checkpoint `odylith-local-release-0.1.15-9a764dc7`, then reopened shipped-custody proof for a newer source-level domain-neutralization fix. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+  The maintained installed matrix at
+  `odylith-local-release-0.1.15-9a764dc7/greenfield-post-confirm-matrix-20260630-9a764dc7.v1.json`
+  passed 13/13 standard cases with hard 10/10 scores, zero issues, browser
+  proof, complete governed records, 22.259-29.208s standard create timings,
+  synthetic typed-probe rescue wiring in 33.474s, and clean temp cleanup. A
+  follow-up source audit removed unconditional notification semantics from
+  generic status-view Registry profiles; fresh local release dist
+  `odylith-local-release-0.1.15-3c616936` passed the platform domain-leakage
+  build gate across 52 distinctive fixture terms.
+- 2026-06-30: Preserved standard-path release benchmark wins while reopening natural-rescue release proof for host-ledger custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`; Diagram: D-043)
+  Fresh dist
+  `odylith-local-release-0.1.15-31ab2559` passed 13/13 maintained standard
+  greenfield cases with hard 10/10 scores, zero package/browser/platform
+  leakage issues, max standard create time 27.835s, and synthetic typed-probe
+  rescue at 34.084s. The real provider-backed natural structured rescue leg
+  failed after 69.399s because raw host rationale entered
+  `proposal.semantic_patch_ledger` and was correctly rejected by the final
+  semantic-slop gate before governed writes. Release readiness remains blocked
+  until a rebuilt dist proves the safe host-ledger projection fix through the
+  maintained installed matrix with browser proof and natural rescue enabled.
 - 2026-05-03: Added the v0.1.14 release-planning target and made `next` point to `release-0-1-14`; B-141 and B-142 are active there, while B-140 is recorded as completed release history for migration-observer proof. Greenfield project proposals now default omitted consumer project release selectors to `0.0.1` so first-release planning does not borrow Odylith's own `next` alias. (Plans: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141), [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-03-27: Added a first-class maintainer release subsystem with sticky version sessions, stable semver auto-tagging, canonical commit-bound release dispatch, and a dedicated release runbook. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005))
 - 2026-03-28: Reset the local relaunch narrative to restart preview at `v0.1.0`, made split managed assets part of the canonical release lane while keeping install full-stack by default, and blocked dispatch on local hosted-asset installer proof. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005))
@@ -456,3 +1917,14 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-08: Clarified that active current releases may keep finished completed members visible from release history until explicit ship or closeout, without restoring those workstreams to active targeting. (Plan: [B-066](odylith/radar/radar.html?view=plan&workstream=B-066))
 - 2026-04-09: Hardened `odylith release add` so maintainers can attach an already finished workstream to the active release as completed release history instead of reviving it as an active target. (Plan: [B-066](odylith/radar/radar.html?view=plan&workstream=B-066)) (Bug: [CB-082](odylith/casebook/casebook.html?bug=CB-082))
 - 2026-04-09: Codified release-target progress semantics so release-member badges use shared execution-progress truth, show tracked partial completion honestly, and never render active implementation with unchecked execution as fake `0% progress`. (Plan: [B-068](odylith/radar/radar.html?view=plan&workstream=B-068)) (Bug: [CB-087](odylith/casebook/casebook.html?bug=CB-087))
+- 2026-05-07: Added release-smoke coverage for both empty-repo greenfield paths: the explicit `show -> greenfield propose --format json -> greenfield apply --proposal-file --confirm -> surfaces` journey and the one-command `greenfield create --confirm` shortcut. The same slice tightened installer progress output so child renderer lines no longer collide with the elapsed progress row. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005); Bugs: `CB-180`, `CB-181`)
+- 2026-05-07: Extended release smoke from runtime behavior into installed guidance proof: fresh installed AGENTS/README/skill guidance must point confirmation at `greenfield create --confirm`, forbid hand-authored proposal JSON, and reject stale host-drafts-proposal instructions. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005); Bugs: `CB-176`, `CB-181`)
+- 2026-07-05: Tightened the managed AGENTS release contract after local release smoke caught a post-commit dist whose fresh install guidance omitted the exact `proposal JSON` guard. The release component now treats explicit proposal-JSON review and parser/schema retry wording as part of installed guidance proof, and the managed AGENTS generator carries a regression assertion for that wording. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-181`)
+- 2026-07-05: Extended the same managed AGENTS contract to include the confirmation-format proof tokens (`Product story`, `State object`, `First complete path`, `Proof boundary`, and no wall of prose) after a rebuilt proof dist exposed that missing section list in fresh-install smoke. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-181`)
+- 2026-06-28: Required both canonical release proof and the standalone greenfield matrix target to persist `greenfield-post-confirm-matrix.v1.json`, expanded the installed standard matrix to at least ten/currently thirteen domains, and labeled rescue smoke as wiring-only proof unless a natural repairable failure passes under the 90 second tier. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+- 2026-06-28: Promoted generated-surface browser proof from optional single-case smoke into the maintained release matrix contract. The direct matrix target enables browser proof by default unless `BROWSER_PROOF=0` is set for local debugging, shared release-candidate proof passes `--include-browser-proof`, maintained wrappers provision Playwright Chromium before the browser lane, and release proof now treats unavailable Playwright/Chromium as a fail-closed release blocker. The browser lane now covers generated normal shell routes, invalid-query recovery, Casebook empty/filter fallback, Atlas generated diagram state, and invalid Atlas diagram recovery instead of only heading-level route smoke. Persisted matrix proof now marks requested-but-unattempted browser proof as skipped and failed rather than passed. The matrix surface contract also covers Casebook and rejects stale asset-path or malformed tooling-payload wiring before claiming generated artifact quality. Rebuilt dist `odylith-local-release-0.1.15-atlas-state-proof` passed the twelve-case installed matrix with 10/10 scores, zero issues, every browser proof attempted and passed, create timings of 20.660-23.125s, clean temp cleanup, persisted matrix JSON, and synthetic wiring-only auto-rescue at 27.280s. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+- 2026-06-28: Tightened release-matrix score evidence after a fresh installed audit showed a Project prompt could be human-weak while the matrix still emitted a one-line 10/10 explanation. Perfect-score matrix results now include concrete completion counts, rendered-surface counts, traceability counts, Project prompt counts and findings, and passed expert-lens names in `score_explanation`, so release reviewers can audit why a 10/10 was awarded instead of trusting row counts alone. The default matrix now retains the escaped prompt-quality regression, and prompt quality hardening rejects bounded gerundized actor/product-subject drift without using broad suffix-count gates. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+- 2026-06-28: Proved the prompt-quality release checkpoint through fresh local installable dist `odylith-local-release-0.1.15-prompt-quality-proof`. The maintained standard matrix now covers thirteen domains, including the retained prompt-quality regression, and passed every case with 10/10 release score dimensions, zero prompt findings, zero total issues, every browser proof attempted and passed, create timings of 20.666-23.468s, clean temp cleanup, persisted matrix JSON, and synthetic wiring-only rescue smoke at 27.399s. This proves the standard installed path for this checkpoint; it does not prove natural rescue quality because `natural_rescue_quality_proven` remains false. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-208`, `CB-209`)
+- 2026-05-09: Release manifests now derive `migration_required` from the registered migration registry, and hosted bootstrap validation accepts migration-marked releases so v0.1.15 can route installed `0.1.10` through `0.1.14` repos into the registered Atlas box-explanation migration. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127))
+- 2026-06-28: Closed the release-proof custody gap where `release-candidate` and `release-preflight` ran local release smoke but did not require the installed greenfield matrix. The shared release proof lane now runs the matrix after smoke and writes `greenfield-post-confirm-matrix.v1.json` into the dist directory. The default standard catalog expanded from eight to thirteen domains and the score contract now requires every case-declared domain anchor, not merely three keyword hits. The c6286f0a package passed the earlier twelve-case matrix in 19.834-22.057s with zero issues and 10/10 scores before this release-gate metadata change; final release proof requires a rebuilt dist from the post-fix commit. Installed CLI auto-rescue remains explicitly wiring-only unless a natural non-internal repairable failure is proven under the 90s rescue tier. `RESCUE_SMOKE=0` is debug-only and not release proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-208`, `CB-209`)
+- 2026-09-25: Direct final-holdout interruption custody now preserves the active interrupt if evidence sealing or ledger completion fails, annotates the original exception, leaves the one-shot ledger claimed rather than inventing terminal proof, and releases the matrix lease without masking the active failure. Focused main-path wiring and the full `1174/1174` install Greenfield gate pass. CB-321 remains in progress until one exact-distribution release run proves the real terminal ledger, retained manifest, descendant cleanup, and empty namespace end to end. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-321`)

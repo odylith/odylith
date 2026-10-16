@@ -8,6 +8,7 @@ from pathlib import Path
 
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import execution_wave_ui_runtime_primitives
+from odylith.runtime.surfaces import governance_frame_bridge
 
 
 @dataclass(frozen=True)
@@ -101,10 +102,10 @@ def _load_compass_shell_base_css() -> str:
     resolved = _resolved_template_text("compass-style-base.v1.css")
     replacements = {
         _COMPASS_DEEP_LINK_BUTTON_CONTRACT_TOKEN: dashboard_ui_primitives.detail_action_chip_css(
-            selector=".pill, .chip-link:not(.workstream-id-chip):not(.execution-wave-chip-link)"
+            selector=".pill, .chip-link:not(.workstream-id-chip):not(.ws-covered-id-btn):not(.execution-wave-chip-link)"
         ),
         _COMPASS_WORKSTREAM_BUTTON_CONTRACT_TOKEN: dashboard_ui_primitives.surface_workstream_button_chip_css(
-            selector=".ws-id-btn, .workstream-id-chip"
+            selector=".ws-id-btn, .ws-covered-id-btn, .workstream-id-chip"
         ),
         _COMPASS_KPI_GRID_CONTRACT_TOKEN: dashboard_ui_primitives.kpi_grid_layout_css(
             container_selector=".stats",
@@ -148,6 +149,8 @@ def load_compass_shell_asset_text(filename: str) -> str:
         return _load_compass_shell_base_css()
     if filename == "compass-style-execution-waves.v1.css":
         return _load_compass_execution_wave_css()
+    if filename == "compass-state.v1.js":
+        return f"{governance_frame_bridge.runtime_js()}\n{_resolved_template_text(filename)}"
     return _resolved_template_text(filename)
 
 

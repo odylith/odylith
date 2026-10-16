@@ -95,7 +95,47 @@
         if (!WORKSTREAM_RE.test(token)) return "";
         const tooltip = workstreamTooltipText(token, workstreamTitles, `Open radar for ${token}`);
         const tone = options && options.selected ? " wave-member-selected" : "";
-        return `<a class="chip chip-link execution-wave-chip-link${tone}" href="${escapeHtml(radarWorkstreamHref(token))}" target="_top" data-execution-wave-scope="${escapeHtml(token)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(`${token}: ${tooltip}`)}">${escapeHtml(token)}</a>`;
+        const summaryClass = options && options.summary ? " ws-id-btn" : "";
+        return `<a class="chip chip-link execution-wave-chip-link${summaryClass}${tone}" href="${escapeHtml(radarWorkstreamHref(token))}" target="_top" data-execution-wave-scope="${escapeHtml(token)}" data-ws-id="${escapeHtml(token)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(`${token}: ${tooltip}`)}">${escapeHtml(token)}</a>`;
+      };
+      const memberIdeaId = (member) => String(
+        member && (member.idea_id || member.workstream_id)
+          ? (member.idea_id || member.workstream_id)
+          : ""
+      ).trim();
+      const representativeWaveMemberId = (wave) => {
+        const row = wave && typeof wave === "object" ? wave : {};
+        const candidateGroups = [
+          Array.isArray(row.gate_refs) ? row.gate_refs : [],
+          Array.isArray(row.primary_workstreams) ? row.primary_workstreams : [],
+          Array.isArray(row.in_band_workstreams) ? row.in_band_workstreams : [],
+          Array.isArray(row.carried_workstreams) ? row.carried_workstreams : [],
+          Array.isArray(row.all_workstreams) ? row.all_workstreams : [],
+        ];
+        for (const group of candidateGroups) {
+          for (const member of group) {
+            const token = memberIdeaId(member);
+            if (WORKSTREAM_RE.test(token)) return token;
+          }
+        }
+        return "";
+      };
+      const representativeProgramWorkstreamId = (program) => {
+        const waves = Array.isArray(program && program.waves) ? program.waves : [];
+        const preferred = waves.filter((wave) => {
+          const status = String(wave && wave.status ? wave.status : "").trim().toLowerCase();
+          const waveId = String(wave && (wave.wave_id || wave.id || wave.label) ? (wave.wave_id || wave.id || wave.label) : "").trim();
+          const currentWave = program && program.current_wave && typeof program.current_wave === "object"
+            ? program.current_wave
+            : {};
+          const currentToken = String(currentWave.wave_id || currentWave.id || currentWave.label || "").trim();
+          return status === "active" || (currentToken && waveId === currentToken);
+        });
+        for (const wave of [...preferred, ...waves]) {
+          const token = representativeWaveMemberId(wave);
+          if (token) return token;
+        }
+        return "";
       };
       const planHrefForPath = (value) => {
         const token = normalizeRepoPath(value);
@@ -165,6 +205,10 @@
         if (programProgress.percent) {
           sectionChips.push(`<span class="label execution-wave-label wave-progress-chip">${escapeHtml(`Overall ${programProgress.percent} progress`)}</span>`);
         }
+        const representativeId = representativeProgramWorkstreamId(program);
+        if (representativeId) {
+          sectionChips.push(renderMemberChip(representativeId, { summary: true }));
+        }
         const programSummaryLine = executionWaveSummaryLine(program, { resolveWorkstreamStatus });
         return renderExecutionWaveSection(
           {
@@ -224,6 +268,10 @@
         const roleLabel = String(primaryScopedContext.role_label || "").trim();
         if (waveSpan) sectionChips.push(`<span class="label execution-wave-label wave-status-planned">${escapeHtml(waveSpan)}</span>`);
         if (roleLabel) sectionChips.push(`<span class="label execution-wave-label wave-role-chip">${escapeHtml(roleLabel)}</span>`);
+      }
+      const representativeId = representativeProgramWorkstreamId(primaryProgram);
+      if (representativeId) {
+        sectionChips.push(renderMemberChip(representativeId, { summary: true, selected: representativeId === scopedWorkstream }));
       }
       const sectionPersistenceKey = disclosureKeyForProgram(primaryProgram);
 

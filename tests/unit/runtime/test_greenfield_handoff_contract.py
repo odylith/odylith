@@ -1,0 +1,274 @@
+"""Focused structural proof for the authored Greenfield handoff contract."""
+
+from __future__ import annotations
+
+import inspect
+from copy import deepcopy
+
+import pytest
+
+from odylith.runtime.domain_intelligence import greenfield_handoff_contract
+from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
+    CODING_READINESS_SCHEMA_VERSION,
+    build_coding_readiness_contract,
+    coding_readiness_contract_issues,
+    render_coding_readiness_gates,
+)
+
+
+@pytest.mark.parametrize("constraints,non_goals", [
+    (("Keep APIv7 casing",), ()),
+    ((), ("Bulk migration",)),
+    (("Keep APIv7 casing",), ("Bulk migration",)),
+    ((), ()),
+])
+@pytest.mark.parametrize("step_id", greenfield_handoff_contract.PROJECT_HANDOFF_STEP_SEQUENCE)
+def test_handoff_keeps_required_operations_separate_from_excluded_scope(
+    constraints: tuple[str, ...], non_goals: tuple[str, ...], step_id: str,
+) -> None:
+    contract = greenfield_handoff_contract.build_project_handoff_step_contract(
+        step_id=step_id, project_title="Receipt Desk", accepted_first_path="Publish the receipt.",
+        first_release_workstream_refs=("B-042",), proof_boundary="A reviewer sees the receipt.",
+        operational_constraints=constraints, excluded_scope=non_goals,
+        implementation_target={
+            "workstream_id": "B-042", "workstream_title": "Receipt capture",
+            "deliverable": "Publish the receipt.", "verification": "A reviewer sees the receipt.",
+            "component_refs": ("receipt",),
+        },
+    )
+    assert contract["schema_version"] == "odylith.greenfield.project-handoff-step.v3"
+    assert contract["fact_bindings"]["operational_constraints"] == constraints
+    assert contract["fact_bindings"]["excluded_scope"] == non_goals
+    assert "preserve_operational_constraints" in contract["required_actions"]
+    assert greenfield_handoff_contract.project_handoff_step_contract_issues(
+        contract, expected_step_id=step_id,
+    ) == ()
+
+
+def test_handoff_scope_copy_preserves_repeated_source_bytes() -> None:
+    constraints = ("\tPreserve **café** evidence.\n", "\tPreserve **café** evidence.\n")
+    non_goals = ("  Bulk `APIv7` migration.  ",)
+    contract = greenfield_handoff_contract.build_project_handoff_step_contract(
+        step_id="choose_language", project_title="Receipt Desk", accepted_first_path="Publish the receipt.",
+        operational_constraints=constraints, excluded_scope=non_goals,
+    )
+    assert contract["fact_bindings"]["operational_constraints"] == constraints
+    assert greenfield_handoff_contract.render_project_handoff_scope(
+        operational_constraints=constraints, excluded_scope=non_goals,
+    ) == (
+        "Operational constraints — preserve these requirements:\n"
+        "\tPreserve **café** evidence.\n\n\tPreserve **café** evidence.\n\n\n"
+        "Excluded scope — preserve these exclusions:\n  Bulk `APIv7` migration.  "
+    )
+
+
+@pytest.mark.parametrize("damage", ["v1", "missing_constraints", "missing_exclusions", "scalar_constraints"])
+def test_handoff_v2_rejects_absent_or_untyped_scope_categories(damage: str) -> None:
+    contract = greenfield_handoff_contract.build_project_handoff_step_contract(
+        step_id="choose_language", project_title="Receipt Desk", accepted_first_path="Publish the receipt.",
+    )
+    if damage == "v1":
+        contract["schema_version"] = "odylith.greenfield.project-handoff-step.v1"
+    elif damage == "missing_constraints":
+        contract["fact_bindings"].pop("operational_constraints", None)
+    elif damage == "missing_exclusions":
+        contract["fact_bindings"].pop("excluded_scope")
+    else:
+        contract["fact_bindings"]["operational_constraints"] = "Keep APIv7 casing"
+    assert greenfield_handoff_contract.project_handoff_step_contract_issues(
+        contract, expected_step_id="choose_language",
+    )
+
+
+def _readiness_contract() -> dict[str, object]:
+    return build_coding_readiness_contract(
+        workstream_id="b-042",
+        workstream_title="Dock Console Slice",
+        release_selector="0.0.1",
+        accepted_first_path=(
+            "Dock attendant Ivo opens **`berth-α`** and records the reviewed placement."
+        ),
+        proof_boundary="Reviewer sees the signed café receipt",
+        evidence_requirements=("Keep `audit.md`", "**Retain receipt**"),
+        operational_constraints=("Latency ≤ 60 s",),
+        non_goals=("Do **not** schedule vessels",),
+    )
+
+
+def test_coding_readiness_contract_preserves_exact_unicode_markdown_and_whitespace() -> None:
+    first_path = (
+        "  Mārtiņš opens **`berth-α`**\n"
+        "\tand records the reviewed café placement.  "
+    )
+    proof_boundary = "\tReviewer sees **the signed receipt**.\n"
+    evidence = (
+        "  Keep `audit.md` byte-exact.  ",
+        "\nPreserve **résumé** evidence.\t",
+    )
+    constraints = ("\tLatency ≤ 60 s.\n",)
+    non_goals = ("  Do **not** schedule vessels.  ",)
+
+    contract = build_coding_readiness_contract(
+        workstream_id="B-042",
+        workstream_title="Dock Console Slice",
+        release_selector="0.0.1",
+        accepted_first_path=first_path,
+        proof_boundary=proof_boundary,
+        evidence_requirements=evidence,
+        operational_constraints=constraints,
+        non_goals=non_goals,
+    )
+
+    assert contract["source_facts"] == {
+        "accepted_first_path": first_path,
+        "proof_boundary": proof_boundary,
+        "evidence_requirements": evidence,
+        "operational_constraints": constraints,
+        "non_goals": non_goals,
+    }
+
+
+def test_coding_readiness_contract_preserves_repeated_source_facts() -> None:
+    repeated = "\tPreserve the same source fact twice.\n"
+    contract = build_coding_readiness_contract(
+        workstream_id="B-042",
+        workstream_title="Dock Console Slice",
+        release_selector="0.0.1",
+        accepted_first_path="Dock attendant Ivo records the reviewed placement.",
+        proof_boundary="Reviewer sees the signed café receipt",
+        evidence_requirements=(repeated, repeated),
+        operational_constraints=(repeated, repeated),
+        non_goals=(repeated, repeated),
+    )
+
+    assert contract["source_facts"] == {
+        "accepted_first_path": "Dock attendant Ivo records the reviewed placement.",
+        "proof_boundary": "Reviewer sees the signed café receipt",
+        "evidence_requirements": (repeated, repeated),
+        "operational_constraints": (repeated, repeated),
+        "non_goals": (repeated, repeated),
+    }
+    rendered = render_coding_readiness_gates(contract)
+    assert rendered[-1].count(repeated) == 2
+    assert rendered[2].count(repeated) == 4
+
+
+def test_coding_readiness_contract_has_exact_gate_policies_and_deterministic_rendering() -> None:
+    contract = _readiness_contract()
+
+    assert contract["schema_version"] == CODING_READINESS_SCHEMA_VERSION
+    assert contract["gates"] == [
+        {
+            "gate_id": "implementation_environment",
+            "policy": "decide_before_source_plan",
+        },
+        {"gate_id": "source_boundary", "policy": "bind_before_source_edit"},
+        {"gate_id": "scope_boundary", "policy": "preserve_exact_source_facts"},
+        {"gate_id": "proof_boundary", "policy": "prove_before_governance_refresh"},
+    ]
+    expected = [
+        (
+            "Choose and record the implementation language, runtime assumptions, dependency policy, "
+            "and test toolchain before source planning."
+        ),
+        (
+            "Bind B-042 Dock Console Slice to its own source boundary and target files. "
+            "Preserve this first run as release context, not the scope of this one workstream: Dock attendant Ivo opens "
+            "**`berth-α`** and records the reviewed placement."
+        ),
+        (
+            "Operational constraints — preserve these requirements:\nLatency ≤ 60 s\n\n"
+            "Excluded scope — preserve these exclusions:\nDo **not** schedule vessels"
+        ),
+        (
+            "Prove the selected workstream before refreshing its records; withhold release readiness until release-wide proof passes.\n"
+            "Release-wide proof boundary:\n"
+            "Reviewer sees the signed café receipt\n"
+            "Evidence requirements:\n"
+            "Keep `audit.md`; **Retain receipt**"
+        ),
+    ]
+
+    assert coding_readiness_contract_issues(
+        contract,
+        expected_workstream_id="B-042",
+    ) == ()
+    assert render_coding_readiness_gates(contract) == expected
+    assert render_coding_readiness_gates(contract) == expected
+
+
+@pytest.mark.parametrize("terminal", (".", "!", "?"))
+def test_coding_readiness_renderer_preserves_authored_terminal_punctuation_once(
+    terminal: str,
+) -> None:
+    proof_boundary = f"Reviewer sees the signed café receipt{terminal}"
+    contract = build_coding_readiness_contract(
+        workstream_id="B-042",
+        workstream_title="Dock Console Slice",
+        release_selector="0.0.1",
+        accepted_first_path="Dock attendant Ivo records the reviewed placement.",
+        proof_boundary=proof_boundary,
+    )
+
+    assert contract["source_facts"]["proof_boundary"] == proof_boundary
+    proof_gate = render_coding_readiness_gates(contract)[-1]
+    assert (
+        f"Release-wide proof boundary:\n{proof_boundary}\nEvidence requirements:"
+        in proof_gate
+    )
+    assert f"{proof_boundary}." not in proof_gate
+
+
+def test_coding_readiness_contract_fails_closed_when_missing_or_mistyped() -> None:
+    assert coding_readiness_contract_issues(
+        None,
+        expected_workstream_id="B-042",
+    ) == ("operator next-steps preview is missing its typed coding-readiness contract",)
+
+    wrong_schema = deepcopy(_readiness_contract())
+    wrong_schema["schema_version"] = "odylith.greenfield.coding-readiness.invalid"
+    assert "operator next-steps preview has an unsupported coding-readiness contract" in (
+        coding_readiness_contract_issues(
+            wrong_schema,
+            expected_workstream_id="B-042",
+        )
+    )
+
+    wrong_policy = deepcopy(_readiness_contract())
+    wrong_policy["gates"][2]["policy"] = "guess_from_prompt_words"  # type: ignore[index]
+    issues = coding_readiness_contract_issues(
+        wrong_policy,
+        expected_workstream_id="B-042",
+    )
+    assert "operator next-steps readiness does not carry the exact gate contract" in issues
+    with pytest.raises(ValueError, match="exact gate contract"):
+        render_coding_readiness_gates(wrong_policy)
+
+
+def test_coding_readiness_contract_rejects_workstream_drift() -> None:
+    contract = _readiness_contract()
+
+    assert coding_readiness_contract_issues(
+        contract,
+        expected_workstream_id="B-999",
+    ) == (
+        "operator next-steps readiness drifted from the first implementation workstream",
+    )
+
+
+def test_handoff_contract_owner_has_no_semantic_regex_or_vocabulary_machinery() -> None:
+    source = inspect.getsource(greenfield_handoff_contract).casefold()
+
+    for banned in (
+        "import re",
+        "re.compile",
+        "re.search",
+        "regex",
+        "normalize_token",
+        "tokenize",
+        "stemmer",
+        "keyword",
+        "semantic_overlap",
+        "casefold(",
+    ):
+        assert banned not in source

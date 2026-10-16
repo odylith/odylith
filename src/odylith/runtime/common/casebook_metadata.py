@@ -130,6 +130,7 @@ _STATUS_ALIASES = {
     "won't fix": "Closed",
 }
 _TERMINAL_STATUSES = frozenset({"closed"})
+_ACTIVE_ATTENTION_STATUSES = frozenset({"open", "inprogress", "mitigated", "monitoring"})
 CANONICAL_CASEBOOK_TYPES: tuple[str, ...] = (
     "Product",
     "App",
@@ -449,6 +450,12 @@ def casebook_status_is_terminal(value: str | Sequence[str] | None) -> bool:
     """Return whether the Casebook status is no longer an active open bug."""
     status = canonical_casebook_status(value)
     return status.casefold() in _TERMINAL_STATUSES
+
+
+def casebook_status_requires_active_attention(value: str | Sequence[str] | None) -> bool:
+    """Return whether the status still needs active engineering risk attention."""
+    status = canonical_casebook_status(value)
+    return status.casefold() in _ACTIVE_ATTENTION_STATUSES
 
 
 def _compact_part(value: str) -> str:

@@ -98,6 +98,49 @@ def test_repo_has_authored_release_note_for_current_product_version() -> None:
     assert note.summary
 
 
+def test_v0_1_15_release_note_matches_greenfield_no_program_boundary() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    note_path = repo_root / "odylith" / "runtime" / "source" / "release-notes" / "v0.1.15.md"
+    note_text = note_path.read_text(encoding="utf-8")
+
+    assert "Greenfield onboarding does not create Compass programs or execution waves." in note_text
+    assert "Greenfield output now carries a clearer program shape" not in note_text
+    assert "created release/program/wave state" not in note_text
+
+
+def test_v0_1_15_release_note_describes_sealed_confirmation_not_disabled_apply() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    for root in (repo_root, repo_root / "src/odylith/bundle/assets"):
+        note = release_notes.load_release_notes_source(repo_root=root, version="0.1.15")
+        assert note is not None
+        public_copy = "\n".join((*note.highlights, note.body))
+        for obsolete in ("Greenfield apply", "proposal apply", "Apply and authoring paths"):
+            assert obsolete not in public_copy
+        for command in (
+            "odylith greenfield prepare",
+            "odylith greenfield decide",
+            "--transaction-hash",
+            "--completion-receipt",
+            "CONFIRM",
+            "EDIT",
+            "REJECT",
+        ):
+            assert command in public_copy
+        narrative = " ".join(public_copy.split())
+        assert "Public chat and hooks cannot authorize publication" in narrative
+        assert "Native Claude inference and confirmation remain unqualified" in narrative
+        assert "After CONFIRM" in public_copy
+        assert "does not call a model, generate artifacts, or repair prose" in public_copy
+
+
+def test_v0_1_15_authored_and_bundled_release_notes_match() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    relative = Path("odylith/runtime/source/release-notes/v0.1.15.md")
+    assert (repo_root / relative).read_bytes() == (
+        repo_root / "src/odylith/bundle/assets" / relative
+    ).read_bytes()
+
+
 def test_repo_release_note_front_matter_stays_github_yaml_safe() -> None:
     repo_root = Path(__file__).resolve().parents[3]
     notes_roots = (

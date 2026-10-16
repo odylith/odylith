@@ -3,8 +3,11 @@ from __future__ import annotations
 import datetime as dt
 from pathlib import Path
 
+import pytest
+
 from odylith.runtime.governance import sync_session
 from odylith.runtime.governance import backlog_topology_contract
+from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import validate_backlog_contract as gate
 
 
@@ -306,6 +309,31 @@ def test_backlog_contract_passes_with_valid_seed(
     assert "- active release targets: 0" in out
 
 
+def test_backlog_contract_accepts_five_core_sections(
+    tmp_path: Path, capsys,
+) -> None:
+    implementation, queued = _seed_minimal_repo(tmp_path)
+    for path in (implementation, queued):
+        spec = gate._parse_idea_spec(path)  # noqa: SLF001
+        sections = {section: spec.section_bodies[section] for section in gate._REQUIRED_SECTIONS}
+        path.write_text(
+            backlog_authoring._render_idea_text(metadata=spec.metadata, sections=sections),
+            encoding="utf-8",
+        )
+    assert gate.main(["--repo-root", str(tmp_path)]) == 0
+    assert "backlog contract validation passed" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("body", ("TBD", "Seed Workstream"))
+def test_core_detail_authoring_rejects_placeholder_and_title_only(body: str) -> None:
+    sections = {**_CORE_SECTION_BODIES, "Problem": body}
+    errors = gate.core_detail_section_errors(
+        title="Seed Workstream", sections=sections, path=Path("<generated>"),
+    )
+    assert len(errors) == 1
+    assert "## Problem" in errors[0]
+
+
 def test_backlog_contract_rejects_product_repo_workstream_title_prefix(
     tmp_path: Path,
     capsys,  # noqa: ANN001 - pytest fixture
@@ -351,15 +379,66 @@ def test_backlog_contract_rejects_topology_sensitive_workstream_without_diagram_
     assert rc == 0
 
 
-def test_backlog_contract_rejects_placeholder_core_detail_section(
+def test_backlog_contract_rejects_queued_p0_release_spine_without_topology(
+    tmp_path: Path,
+    capsys,  # noqa: ANN001 - pytest fixture
+) -> None:
+    implementation_path, queued_path = _seed_minimal_repo(tmp_path)
+    release_spine_text = queued_path.read_text(encoding="utf-8")
+    release_spine_text = release_spine_text.replace("title: Backlog Bootstrap", "title: v0.1.15 Governed Harness Control Plane")
+    release_spine_text = release_spine_text.replace("priority: P1", "priority: P0")
+    release_spine_text = release_spine_text.replace(
+        "impacted_parts: test surface",
+        "impacted_parts: cross-host runtime hooks, Context Engine, Execution Engine, Radar, Registry, Atlas, and Compass",
+    )
+    queued_path.write_text(release_spine_text, encoding="utf-8")
+    backlog_index = tmp_path / "odylith" / "radar" / "source" / "INDEX.md"
+    backlog_index.write_text(
+        backlog_index.read_text(encoding="utf-8")
+        .replace("Backlog Bootstrap", "v0.1.15 Governed Harness Control Plane")
+        .replace("| P1 | 89 |", "| P0 | 89 |", 1),
+        encoding="utf-8",
+    )
+
+    rc = gate.main(["--repo-root", str(tmp_path)])
+    out = capsys.readouterr().out
+    assert rc == 2
+    assert "release-spine workstream `B-101` must declare `related_diagram_ids`" in out
+    assert "release-spine workstream `B-101` must declare at least one workstream topology relation" in out
+
+    queued_path.write_text(release_spine_text.replace("related_diagram_ids:", "related_diagram_ids: D-002"), encoding="utf-8")
+    rc = gate.main(["--repo-root", str(tmp_path)])
+    out = capsys.readouterr().out
+    assert rc == 2
+    assert "release-spine workstream `B-101` must declare at least one workstream topology relation" in out
+
+    queued_path.write_text(
+        release_spine_text.replace("related_diagram_ids:", "related_diagram_ids: D-002").replace(
+            "workstream_children:",
+            "workstream_children: B-102",
+        ),
+        encoding="utf-8",
+    )
+    implementation_path.write_text(
+        implementation_path.read_text(encoding="utf-8")
+        .replace("workstream_type: standalone", "workstream_type: child")
+        .replace("workstream_parent:", "workstream_parent: B-101"),
+        encoding="utf-8",
+    )
+
+    rc = gate.main(["--repo-root", str(tmp_path)])
+    assert rc == 0
+
+
+def test_backlog_contract_rejects_empty_required_section(
     tmp_path: Path,
     capsys,  # noqa: ANN001 - pytest fixture
 ) -> None:
     _implementation_path, queued_path = _seed_minimal_repo(tmp_path)
     text = queued_path.read_text(encoding="utf-8")
     text = text.replace(
-        "## Problem\nSeed workstream problem detail is grounded enough for backlog validation.",
-        "## Problem\nDetails.",
+        "## Problem\nSeed workstream problem detail is grounded enough for backlog validation.\n\n## Customer",
+        "## Problem\n\n## Customer",
     )
     queued_path.write_text(text, encoding="utf-8")
 
@@ -367,10 +446,29 @@ def test_backlog_contract_rejects_placeholder_core_detail_section(
     out = capsys.readouterr().out
 
     assert rc == 2
-    assert "core detail section `## Problem` uses placeholder-like text" in out
+    assert "required section `## Problem` must be non-empty" in out
 
 
-def test_backlog_contract_rejects_boilerplate_core_detail_section(
+@pytest.mark.parametrize(
+    ("body", "diagnostic"),
+    (("TBD", "uses placeholder-like text"), ("Backlog Bootstrap", "repeats the workstream title")),
+)
+def test_backlog_contract_rejects_persisted_placeholder_or_title_only_core(
+    tmp_path: Path, capsys, body: str, diagnostic: str,
+) -> None:
+    _implementation_path, queued_path = _seed_minimal_repo(tmp_path)
+    text = queued_path.read_text(encoding="utf-8")
+    text = text.replace(
+        "## Problem\nSeed workstream problem detail is grounded enough for backlog validation.",
+        f"## Problem\n{body}",
+    )
+    queued_path.write_text(text, encoding="utf-8")
+
+    assert gate.main(["--repo-root", str(tmp_path)]) == 2
+    assert f"core detail section `## Problem` {diagnostic}" in capsys.readouterr().out
+
+
+def test_backlog_contract_does_not_reinterpret_persisted_core_detail_copy(
     tmp_path: Path,
     capsys,  # noqa: ANN001 - pytest fixture
 ) -> None:
@@ -385,8 +483,7 @@ def test_backlog_contract_rejects_boilerplate_core_detail_section(
     rc = gate.main(["--repo-root", str(tmp_path)])
     out = capsys.readouterr().out
 
-    assert rc == 2
-    assert "core detail section `## Customer` still uses backlog-create boilerplate" in out
+    assert rc == 0, out
 
 
 def test_validate_idea_specs_ignores_legacy_cache_without_section_bodies(tmp_path: Path) -> None:

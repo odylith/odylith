@@ -1,0 +1,1161 @@
+"""Shared complete-host-candidate fixtures for Greenfield authoring tests."""
+
+from __future__ import annotations
+
+import copy
+import json
+from collections.abc import Mapping, Sequence
+from pathlib import Path
+from typing import Any
+
+from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
+    TERMINAL_RESULT_FACT_FIELDS,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GREENFIELD_INTENT_AUTHORING_VERSION,
+    _REPEATED_SOURCE_FIELDS,
+    _SINGULAR_SOURCE_FIELDS,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    STANDARD_PROFILE_ID,
+)
+from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
+    HOST_CANDIDATE_FORMAT_VERSION,
+    HOST_SOURCE_DUTY_BINDING_FIELD,
+)
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    admit_greenfield_host_candidate,
+)
+from odylith.runtime.domain_intelligence.greenfield_host_candidate_materialization import (
+    materialize_host_authored_intent,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
+    prepare_model_authoring_evidence,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_source_citations import (
+    canonical_citation_from_host_selection,
+    resolve_source_citation,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
+    HOST_SOURCE_DUTY_BINDING_VERSION,
+    validate_greenfield_source_duty_binding,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
+    SOURCE_DUTY_LEDGER_VERSION,
+    preflight_greenfield_source_duty_ledger,
+    validate_greenfield_source_duty_ledger,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import (
+    SOURCE_DUTY_DECISION_SET_VERSION,
+    source_duty_entailment_task,
+)
+
+
+class _FixtureHostCandidate(dict):
+    """Keep test source atoms beside, never inside, the public candidate JSON."""
+
+    source_action_atoms: list[dict[str, Any]]
+    product_identity: dict[str, Any]
+    project_customer: dict[str, Any] | None
+    nonperforming_participants: dict[str, Any]
+    source_run_plan: dict[str, Any]
+
+
+def _fixture_actor_ref(facts: Mapping[str, Any], event: Mapping[str, Any]) -> dict[str, str]:
+    address = event["actor_fact"]
+    field = address["field"]
+    value = facts.get(field)
+    if field == "title" and isinstance(value, Mapping):
+        return copy.deepcopy(value)
+    if (
+        isinstance(value, list)
+        and type(address.get("row")) is int
+        and 1 <= address["row"] <= len(value)
+    ):
+        return copy.deepcopy(value[address["row"] - 1])
+    # Keep malformed actor addresses in the candidate so admission owns the
+    # expected denial; a test ledger still needs one valid source citation.
+    return copy.deepcopy(facts["title"])
+
+
+def _fixture_action_refs(atom: Mapping[str, Any]) -> list[dict[str, str]]:
+    if atom["actor_ref"] != atom["event_ref"]:
+        return [copy.deepcopy(atom["actor_ref"])]
+    return []
+
+
+def _fixture_action_atom(atom: Mapping[str, Any]) -> dict[str, Any]:
+    statement = atom["projection_ref"]["quote"]
+    identity = atom["actor_ref"]["quote"]
+    if identity not in statement:
+        # Source role context already declares this identity; retain it while
+        # normalizing the fixture's explicitly declared action and target.
+        statement = f"{identity}: {statement}"
+    return {
+        "statement": statement,
+        "event_ref": copy.deepcopy(atom["event_ref"]),
+        "actor_ref": copy.deepcopy(atom["actor_ref"]),
+        "action": atom["action_quote"],
+        "target": atom["target_quote"],
+        "role_refs": [copy.deepcopy(atom["projection_ref"])],
+    }
+
+
+def declared_source_action_fixture(
+    *, duty_id: str, actor_quote: str, event_quote: str, statement: str,
+    action: str, target: str, performer_role: str, observable_result: str,
+) -> dict[str, Any]:
+    """Declare a test action whose exact performer occurs in its event context.
+
+    Every meaning-bearing value comes from the caller. This builds citation
+    custody for boundary tests; it does not interpret or qualify source meaning.
+    """
+    event_ref = {"quote": event_quote, "context": event_quote}
+    return {
+        "id": duty_id, "source_refs": [], "performer_role": performer_role,
+        "observable_result": observable_result, "statement": statement,
+        "event_ref": event_ref,
+        "actor_ref": {"quote": actor_quote, "context": event_quote},
+        "action": action, "target": target, "role_refs": [copy.deepcopy(event_ref)],
+    }
+
+
+def synthetic_source_duty_receipt(
+    host_candidate: Mapping[str, Any], *, evidence_text: str,
+    declared_actions: Sequence[Mapping[str, Any]] | None = None,
+    declared_identity: Mapping[str, Any] | None = None,
+    declared_run_plan: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Make a test-only exact-cited ledger; this does not prove semantic roles.
+
+    Legacy fixture cases already declare their intended first run. This helper
+    supplies custody for that declared sequence without interpreting the source.
+    Public semantic qualification must use a separately authored source ledger.
+    """
+
+    identity = declared_identity if declared_identity is not None else getattr(host_candidate, "product_identity", None)
+    if identity is None:
+        raise ValueError("test host candidate has no declared product identity")
+    if declared_actions is not None:
+        ledger = {
+            "version": SOURCE_DUTY_LEDGER_VERSION, "status": "inventory", "question": "",
+            "nonperforming_participants": copy.deepcopy(getattr(host_candidate, "nonperforming_participants", {field: [] for field in ("human_actors", "internal_systems", "external_systems")})),
+            "evidence_controls": [], "product_identity": copy.deepcopy(identity),
+            "customer": copy.deepcopy(getattr(host_candidate, "project_customer", None)),
+            "first_path_actions": copy.deepcopy(list(declared_actions)),
+            "supporting_human_actions": [], "system_duties": [], "state_fields": [],
+            "off_path_transitions": [], "conditional_guards": [], "boundaries": [], "proof_duties": [],
+        }
+        plan = declared_run_plan if declared_run_plan is not None else getattr(host_candidate, "source_run_plan", None)
+        if plan is None:
+            raise ValueError("test host candidate has no declared source run plan")
+        ledger.update(copy.deepcopy(plan))
+        return synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=evidence_text)
+    result = host_candidate.get("result")
+    if not isinstance(result, Mapping):
+        raise ValueError("synthetic source duties require a fixture result")
+    if result.get("status") == "clarification_required":
+        raise ValueError(
+            "clarification fixture requires a separately declared source duty receipt"
+        )
+    elif result.get("status") == "authored":
+        atoms = getattr(host_candidate, "source_action_atoms", None)
+        if atoms is None:
+            raise ValueError("test host candidate has no declared source action atoms")
+    else:
+        raise ValueError("synthetic source duties require a known fixture result")
+    ledger = {
+        "version": SOURCE_DUTY_LEDGER_VERSION, "status": "inventory", "question": "",
+            "nonperforming_participants": copy.deepcopy(getattr(host_candidate, "nonperforming_participants", {field: [] for field in ("human_actors", "internal_systems", "external_systems")})),
+        "evidence_controls": [], "product_identity": copy.deepcopy(identity),
+            "customer": copy.deepcopy(getattr(host_candidate, "project_customer", None)),
+        "state_fields": [], "off_path_transitions": [],
+        "conditional_guards": [], "boundaries": [], "proof_duties": [],
+    }
+    roles = {"human_actors": "human_actor", "internal_systems": "internal_system",
+             "external_systems": "external_system", "title": "internal_system"}
+    for section in ("first_path_actions", "supporting_human_actions", "system_duties"):
+        rows = []
+        for atom in atoms:
+            if atom["source_role"] != section:
+                continue
+            row = {"id": atom["duty_id"], "source_refs": _fixture_action_refs(atom),
+                   **_fixture_action_atom(atom)}
+            if section != "supporting_human_actions":
+                row["performer_role"] = roles[atom["performer_field"]]
+            if section == "system_duties":
+                row["execution_kind"] = "discrete_action"
+            if section == "first_path_actions":
+                row["observable_result"] = "fixture-declared result"
+            rows.append(row)
+        ledger[section] = rows
+    ledger.update(copy.deepcopy(host_candidate.source_run_plan))
+    return synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=evidence_text)
+
+
+def affirmative_source_plan_fixture(ledger):
+    """Synthetic verdicts for declared test plans; no live semantic qualification."""
+    from odylith.runtime.domain_intelligence.greenfield_source_run_plan import source_run_decisions_schema
+    return {name: {key: "yes" for key in schema["required"]}
+            for name, schema in source_run_decisions_schema(ledger)["properties"].items()}
+
+
+def source_duty_authoring_fixture(ledger, *, evidence_text):
+    """Serialize a valid current fixture through the advertised native wire."""
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_authoring import SOURCE_DUTY_AUTHORING_VERSION
+    accepted = preflight_greenfield_source_duty_ledger(ledger, evidence_text=evidence_text)["ledger"]
+    result = ({key: accepted[key] for key in ("status", "question")}
+              if accepted["status"] == "clarification_required"
+              else {key: value for key, value in accepted.items() if key != "version"})
+    return {"version": SOURCE_DUTY_AUTHORING_VERSION, "result": result}
+
+
+def synthetic_source_duty_receipt_for_ledger(
+    ledger: Mapping[str, Any], *, evidence_text: str,
+) -> dict[str, Any]:
+    """Approve a fixture-only ledger; production must obtain an independent verdict."""
+
+    passive_version = ledger["version"] if ledger["version"] in {
+        "odylith.greenfield.source-duty-ledger.v5", "odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"} else None
+    preflight = preflight_greenfield_source_duty_ledger(
+        ledger, evidence_text=evidence_text, _passive_source_version=passive_version,
+    )
+    decision_task = source_duty_entailment_task(
+        preflight, evidence_text=evidence_text
+    )
+    decision_set = {
+        "version": decision_task["decision_set_schema"]["properties"]["version"]["enum"][0],
+        **({"product_identity": {"verdict": "yes"}} if passive_version in (None, "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13") else {}),
+        **({"customer": {"verdict": "yes"}} if passive_version is None else {}),
+        "verifier_task_sha256": decision_task["verifier_task_sha256"],
+        "source_completeness": {"verdict": "yes", "omissions": []},
+        **({"participant_decisions": {key: {field: "yes" for field in ("entity_name", "participant_type", "nonperformance", "identity_nonduplication")} for key in preflight["participant_claims"]}} if "participant_claims" in preflight else {}),
+        **({"source_plan": affirmative_source_plan_fixture(ledger)} if passive_version in (None, "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13") else {}),
+        "decisions": {
+            claim["duty_id"]: {
+                "verdict": "yes",
+                "support_ref_indexes": list(range(len(claim["source_refs"]))),
+                "role_ref_indexes": list(range(len(claim["role_refs"]))),
+            }
+            for claim in preflight["claims"]
+        },
+    }
+    return validate_greenfield_source_duty_ledger(
+        ledger, evidence_text=evidence_text, decision_set=decision_set, _passive_source_version=passive_version,
+    )
+
+
+def _fixture_source_duty_binding(
+    host_candidate: Mapping[str, Any], *, evidence_text: str,
+) -> dict[str, Any]:
+    receipt = synthetic_source_duty_receipt(
+        host_candidate, evidence_text=evidence_text
+    )
+    return {
+        "version": HOST_SOURCE_DUTY_BINDING_VERSION,
+        "source_sha256": receipt["source_sha256"], "ledger_sha256": receipt["ledger_sha256"],
+        "off_path_transitions": [], "conditional_guards": [], "boundaries": [], "proof_duties": [],
+    }
+
+
+def source_duty_fixture(
+    host_candidate: Mapping[str, Any], *, evidence_text: str,
+) -> dict[str, Any]:
+    """Retain the declared fixture receipt, binding, and lifecycle together."""
+    from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import (
+        project_greenfield_source_lifecycle,
+    )
+
+    receipt = synthetic_source_duty_receipt(host_candidate, evidence_text=evidence_text)
+    binding = validate_greenfield_source_duty_binding(
+        host_candidate["result"][HOST_SOURCE_DUTY_BINDING_FIELD], ledger_receipt=receipt,
+        candidate_result=host_candidate["result"], evidence_text=evidence_text,
+    )
+    return {
+        "ledger_receipt": receipt, "binding": copy.deepcopy(binding),
+        "lifecycle": project_greenfield_source_lifecycle(
+            ledger_receipt=receipt, binding=binding,
+            candidate_result=host_candidate["result"], evidence_text=evidence_text,
+        ),
+    }
+
+
+def admit_complete_host_candidate(
+    *,
+    evidence_text: str,
+    host_candidate: Mapping[str, Any],
+    model_profile_id: str = STANDARD_PROFILE_ID,
+) -> Any:
+    """Admit one complete public host candidate through the shipped boundary."""
+
+    return admit_greenfield_host_candidate(
+        host_candidate,
+        evidence_text=evidence_text,
+        source_duty_receipt=synthetic_source_duty_receipt(
+            host_candidate, evidence_text=evidence_text
+        ),
+        profile_id=model_profile_id,
+    )[0]
+
+
+def materialize_complete_host_candidate(
+    *,
+    prompt: str,
+    repo_root: Path,
+    host_candidate: Mapping[str, Any],
+    authoring_profile_id: str = STANDARD_PROFILE_ID,
+    edit_evidence: str = "",
+    authoring_receipt: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Materialize one complete public host candidate through the shipped path."""
+
+    prepared_evidence = prepare_model_authoring_evidence(
+        prompt=prompt,
+        edit_evidence=edit_evidence,
+    )
+    candidate = copy.deepcopy(host_candidate)
+    result = candidate.get("result")
+    if isinstance(result, dict) and result.get("status") == "authored":
+        # The staging source adds custody headers to a raw prompt. Rebind only
+        # this synthetic fixture's digest to the exact staged evidence bytes.
+        result[HOST_SOURCE_DUTY_BINDING_FIELD] = _fixture_source_duty_binding(
+            candidate, evidence_text=prepared_evidence.evidence_source
+        )
+    return materialize_host_authored_intent(
+        prompt=prompt,
+        repo_root=repo_root,
+        edit_evidence=edit_evidence,
+        host_candidate=candidate,
+        source_duty_receipt=synthetic_source_duty_receipt(
+            candidate, evidence_text=prepared_evidence.evidence_source
+        ),
+        authoring_profile_id=authoring_profile_id,
+        authoring_receipt=authoring_receipt,
+        prepared_evidence=prepared_evidence,
+    )
+
+
+def host_candidate_response(
+    response: Mapping[str, Any],
+    *,
+    evidence_text: str,
+    first_path_event_orders: Sequence[int] | None = None,
+    source_run_event_orders: Sequence[int] | None = None,
+) -> dict[str, Any]:
+    """Project a canonical test response into the public host-candidate shape."""
+
+    candidate = _FixtureHostCandidate(copy.deepcopy(dict(response)))
+    candidate["version"] = HOST_CANDIDATE_FORMAT_VERSION
+    result = candidate.get("result")
+    if not isinstance(result, dict) or result.get("status") == "clarification_required":
+        return candidate
+    result.pop("components", None)
+    design = result.get("provisional_design")
+    if isinstance(design, dict) and "project_summary" not in design:
+        # Explicit synthetic narrative; no source parsing or product-quality claim.
+        design["project_summary"] = (
+            "This structural fixture supports test authors checking exact source and design custody."
+        )
+    facts = result.get("facts")
+    events = result.get("events")
+    if not isinstance(facts, dict) or not isinstance(events, list):
+        raise TypeError("canonical fixture cannot be projected to a host candidate")
+    first_path = facts.pop("first_path")
+    facts.pop("supporting_events", None)
+    if not isinstance(first_path, list) or len(first_path) != len(events):
+        raise ValueError("canonical fixture event citations are incomplete")
+    for field, value in tuple(facts.items()):
+        if isinstance(value, list):
+            citations = [
+                _unique_context_citation(evidence_text, row)
+                for row in value
+            ]
+            facts[field] = citations
+        elif isinstance(value, Mapping):
+            facts[field] = _unique_context_citation(
+                evidence_text,
+                value,
+                state_object=field == "state_object",
+            )
+    first_orders = list(first_path_event_orders) if first_path_event_orders is not None else result["provisional_design"]["first_run"]["event_orders"]
+    sections = {order: ("first_path_actions" if order in first_orders else
+                "supporting_human_actions" if event["actor_fact"]["field"] == "human_actors"
+                else "system_duties") for order, event in enumerate(events, 1)}
+    catalog_orders = [*first_orders, *[order for order in sections if sections[order] == "supporting_human_actions"],
+                      *[order for order in sections if sections[order] == "system_duties"]]
+    remap = {old: new for new, old in enumerate(catalog_orders, 1)}
+    atoms = []
+    for old in catalog_orders:
+        event, citation = events[old - 1], first_path[old - 1]
+        event_ref = _unique_context_citation(evidence_text, citation)
+        section = sections[old]
+        duty_id = (f"fixture-first-path-{first_orders.index(old) + 1}" if section == "first_path_actions"
+                   else f"fixture-{'supporting' if section == 'supporting_human_actions' else 'system'}-{old}")
+        atoms.append({
+            "event_ref": event_ref, "projection_ref": copy.deepcopy(event_ref),
+            "actor_ref": _fixture_actor_ref(facts, event), "action_quote": event["action_quote"],
+            "target_quote": event["target_quote"], "performer_field": event["actor_fact"]["field"],
+            "source_role": section, "duty_id": duty_id,
+        })
+    def remap_refs(value):
+        if isinstance(value, list):
+            for row in value:
+                remap_refs(row)
+        elif isinstance(value, dict):
+            for key, child in value.items():
+                if key in {"event_order", "before_event", "after_event"} and type(child) is int:
+                    value[key] = remap.get(child, child)
+                elif key in {"event_orders", "supported_event_orders", "verification_event_orders"}:
+                    value[key] = [remap.get(order, order) for order in child]
+                else:
+                    remap_refs(child)
+    remap_refs(design)
+    remap_refs(result["source_precedence"])
+    if result["terminal"] is not None:
+        remap_refs(result["terminal"])
+        if result["terminal"]["result_fact"]["field"] == "first_path":
+            old_row = result["terminal"]["result_fact"]["row"]
+            result["terminal"]["result_fact"]["row"] = remap.get(old_row, old_row)
+    by_order = {order: atom["duty_id"] for order, atom in enumerate(atoms, 1)}
+    terminal = result["terminal"]
+    if terminal is None or facts["proof_boundary"] is None:
+        raise ValueError("fresh native fixture requires a declared result and separate proof witness")
+    carrier = terminal["result_fact"]
+    field = carrier["field"]
+    if field == "first_path":
+        result_fact = {"field": field, "duty_id": by_order[carrier["row"]]}
+    else:
+        selected = facts[field]
+        result_fact = {"field": field, "source_ref": copy.deepcopy(selected[carrier["row"] - 1] if isinstance(selected, list) else selected)}
+    candidate.source_run_plan = {
+        "source_precedence": [{"before_duty_id": by_order[edge["before_event"]],
+                               "after_duty_id": by_order[edge["after_event"]],
+                               "constraint_ref": copy.deepcopy(facts["operational_constraints"][edge["constraint_index"] - 1])}
+                              for edge in result.pop("source_precedence")],
+        "first_run": {"duty_ids": [by_order[order] for order in ([remap[order] for order in source_run_event_orders] if source_run_event_orders is not None else design["first_run"]["event_orders"])]},
+        "terminal": {"duty_id": by_order[terminal["event_order"]],
+                     "proof_boundary": facts.pop("proof_boundary"), "result_fact": result_fact,
+                     "result_quote": terminal["result_quote"], "result_occurrence": terminal["result_occurrence"]},
+    }
+    if field in {"product_story", "opportunity", "product_view"}:
+        facts[field] = None
+    design["first_run"].pop("event_orders")
+    result.pop("terminal")
+    result.pop("events")
+    candidate.product_identity = {"basis": "explicit_name", "source_ref": facts.pop("title")}
+    candidate.project_customer = facts.pop("customer")
+    candidate.source_action_atoms = atoms
+    performer_refs = [atom["actor_ref"] for atom in atoms]
+    candidate.nonperforming_participants = {field: [{**ref, "mention_ordinal": 1} for ref in facts.pop(field) if ref not in performer_refs]
+                                          for field in ("human_actors", "internal_systems", "external_systems")}
+    result[HOST_SOURCE_DUTY_BINDING_FIELD] = _fixture_source_duty_binding(candidate, evidence_text=evidence_text)
+    return candidate
+
+
+def write_host_candidate_fixture(
+    path: Path,
+    response: Mapping[str, Any],
+    *,
+    evidence_text: str,
+) -> Path:
+    """Write one public host candidate fixture and return its path."""
+
+    path.write_text(
+        json.dumps(
+            host_candidate_response(response, evidence_text=evidence_text)
+        ),
+        encoding="utf-8",
+    )
+    return path
+
+
+def write_synthetic_source_duty_receipt(
+    path: Path,
+    host_candidate: Mapping[str, Any],
+    *,
+    evidence_text: str,
+    declared_actions: Sequence[Mapping[str, Any]] | None = None,
+    declared_identity: Mapping[str, Any] | None = None,
+    declared_run_plan: Mapping[str, Any] | None = None,
+) -> Path:
+    """Write test-only source custody for public CLI fixture calls."""
+
+    path.write_text(
+        json.dumps(
+            synthetic_source_duty_receipt(
+                host_candidate, evidence_text=evidence_text,
+                declared_actions=declared_actions,
+                declared_identity=declared_identity,
+                declared_run_plan=declared_run_plan,
+            )
+        ),
+        encoding="utf-8",
+    )
+    return path
+
+
+def _unique_context_citation(
+    evidence_text: str,
+    citation: Mapping[str, Any],
+    *,
+    state_object: bool = False,
+) -> dict[str, str]:
+    evidence = evidence_text.encode("utf-8")
+    quote, start = resolve_source_citation(
+        evidence,
+        citation,
+        state_object=state_object,
+    )
+    start_character = len(evidence[:start].decode("utf-8"))
+    end_character = start_character + len(quote)
+    for added in range(len(evidence_text) + 1):
+        for before in range(added + 1):
+            after = added - before
+            left = max(0, start_character - before)
+            right = min(len(evidence_text), end_character + after)
+            context = evidence_text[left:right]
+            if evidence_text.count(context) == 1 and context.count(quote) == 1:
+                return {"quote": quote, "context": context}
+    raise AssertionError("fixture could not derive unique citation context")
+
+
+def authored_response(
+    intent: Mapping[str, Any],
+    *,
+    evidence_text: str = "",
+    first_path_segments: Sequence[str] | None = None,
+    first_path_relations: Sequence[Mapping[str, Any]] | None = None,
+    supporting_event_relations: Sequence[Mapping[str, Any]] = (),
+    component_responsibility_owners: Sequence[str] | None = None,
+    provisional_design: Mapping[str, Any] | None = None,
+    source_precedence: Sequence[Mapping[str, Any]] = (),
+) -> dict[str, Any]:
+    """Build model-shaped citations; fixture states retain their declared quote."""
+
+    source_relations = tuple(
+        first_path_relations or _default_first_path_relations(intent)
+    )
+    path_relations = source_relations
+    source_relations += tuple(supporting_event_relations)
+    path_segments = (
+        [str(row).strip() for row in first_path_segments]
+        if first_path_segments is not None
+        else [str(row.get("event_quote") or "").strip() for row in source_relations]
+    )
+    facts: dict[str, Any] = {
+        **{field: None for field in _SINGULAR_SOURCE_FIELDS},
+        **{field: [] for field in _REPEATED_SOURCE_FIELDS},
+    }
+    selected_facts: list[dict[str, Any]] = []
+    fact_indexes: dict[str, int] = {}
+    first_path_fact_indexes: list[int] = []
+    for field, value in intent.items():
+        if field in {"assumptions", "ambiguities", "component_responsibilities"}:
+            continue
+        rows = (
+            path_segments
+            if field == "first_path"
+            else value if isinstance(value, list) else [value]
+        )
+        for row_index, row in enumerate(rows):
+            quote = str(row).strip()
+            if not quote:
+                continue
+            fact_index = len(selected_facts) + 1
+            projection_path = f"/{field}" if not isinstance(value, list) else f"/{field}/{row_index}"
+            citation = {"quote": quote, "occurrence": 1}
+            if field in _SINGULAR_SOURCE_FIELDS:
+                facts[field] = citation
+                source_field_row = 1
+            else:
+                facts[field].append(citation)
+                source_field_row = len(facts[field])
+            selected_facts.append({"field": field, "row": source_field_row, **citation})
+            fact_indexes[projection_path] = fact_index
+            if field == "first_path":
+                first_path_fact_indexes.append(fact_index)
+
+    state_citation = facts["state_object"]
+    if state_citation is not None:
+        facts["state_object"] = {
+            "quote": state_citation["quote"],
+            "prefix": "",
+            "anchor_occurrence": state_citation["occurrence"],
+        }
+
+    relation_rows = _relation_rows(
+        source_relations,
+        first_path_segments=(
+            path_segments
+        ),
+        first_path_fact_indexes=first_path_fact_indexes,
+        fact_indexes=fact_indexes,
+        intent=intent,
+    )
+    if not relation_rows:
+        raise ValueError("authored fixture requires one event")
+    terminal = _terminal_row(
+        relations=path_relations,
+        facts=selected_facts,
+        evidence_text=evidence_text,
+    )
+    components = _component_responsibility_relation_rows(
+        intent=intent,
+        fact_indexes=fact_indexes,
+        owners=component_responsibility_owners,
+    )
+    return {
+        "version": GREENFIELD_INTENT_AUTHORING_VERSION,
+        "result": {
+            "status": "authored",
+            "facts": facts,
+            "events": relation_rows,
+            "source_precedence": [dict(row) for row in source_precedence],
+            "terminal": terminal,
+            "components": components,
+            "assumptions": list(intent.get("assumptions") or []),
+            "ambiguities": list(intent.get("ambiguities") or []),
+            "consistency": {"status": "consistent", "evidence_quotes": []},
+            "provisional_design": copy.deepcopy(provisional_design) if provisional_design is not None
+            else structural_design_fixture(
+                range(1, len(relation_rows) + 1),
+                first_run_event_orders=range(1, len(path_relations) + 1),
+                project_name=str(intent["title"]),
+            ),
+        },
+    }
+
+
+def structural_design_fixture(
+    event_orders: Sequence[int], *, first_run_event_orders: Sequence[int] | None = None,
+    project_name: str = "Structural test project", version: str = "odylith.greenfield.provisional-design.v7",
+) -> dict[str, Any]:
+    """Synthetic design for custody/wiring tests, never product-quality evidence."""
+
+    orders = list(event_orders)
+    if not orders:
+        raise ValueError("design fixture requires source events")
+    components = [
+        {
+            "key": f"test-boundary-{index}",
+            "name": f"Structural test boundary {index}",
+            "responsibility": f"Retain the test value at boundary {index}.",
+            "supported_event_orders": orders if index == 1 else [orders[(index - 1) % len(orders)]],
+            "verification": f"Read back the exact test value assigned to boundary {index}.",
+            "verification_event_orders": (
+                orders if index == 1 else [orders[(index - 1) % len(orders)]]
+            ),
+        }
+        for index in range(1, 5)
+    ]
+    return {
+        "version": version,
+        **({"project_name": project_name} if version.endswith(".v7") else {}),
+        "authority_kind": "provisional_design",
+        "first_run": {
+            "event_orders": list(first_run_event_orders) if first_run_event_orders is not None else orders,
+            "rationale": "The fixture proposes this execution order; citation order does not establish chronology.",
+        },
+        "components": components,
+        "workstreams": [
+            {
+                "key": f"test-work-{index}",
+                "title": f"Implement structural test boundary {index}",
+                "problem": f"Users cannot yet rely on the distinct test boundary {index}.",
+                "component_keys": [row["key"]],
+                "depends_on": [f"test-work-{index - 1}"] if index > 1 else [],
+                "deliverable": f"Implement the exact-value boundary {index}.",
+                "verification": f"An independent read returns the test value from boundary {index}.",
+                "verification_event_orders": list(row["verification_event_orders"]),
+            }
+            for index, row in enumerate(components, 1)
+        ],
+        "exchanges": [
+            {
+                "from_component": components[index - 1]["key"],
+                "to_component": components[index]["key"],
+                "contract": f"The exact test value from boundary {index}.",
+            }
+            for index in range(1, 4)
+        ],
+        "risk_posture": {
+            "status": "no_material_risks_identified",
+            "rationale": "This structural fixture carries no product-domain risk claim.",
+            "items": [],
+        },
+    }
+
+
+def clarification_response(
+    *,
+    question: str,
+    material_dimension: str,
+    evidence_quotes: Sequence[str],
+    consistency_status: str = "material_ambiguity",
+) -> dict[str, Any]:
+    """Return a clarification response; the question remains test-only metadata."""
+
+    del question
+    return {
+        "version": GREENFIELD_INTENT_AUTHORING_VERSION,
+        "result": {
+            "status": "clarification_required",
+            "consistency": {
+                "status": consistency_status,
+                "evidence_quotes": [str(quote) for quote in evidence_quotes],
+            },
+            "clarification": {"material_dimension": material_dimension},
+        },
+    }
+
+
+def model_event_rows(response: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Return mutable fixture event rows in their authored order."""
+
+    result = response.get("result")
+    events = result.get("events") if isinstance(result, Mapping) else None
+    if not isinstance(events, list) or not all(
+        isinstance(row, dict) for row in events
+    ):
+        raise ValueError("authored fixture response has no event graph")
+    return events
+
+
+def _relation_rows(
+    relations: Sequence[Mapping[str, Any]],
+    *,
+    first_path_segments: Sequence[str],
+    first_path_fact_indexes: Sequence[int],
+    fact_indexes: Mapping[str, int],
+    intent: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for relation in relations:
+        event_quote = str(relation.get("event_quote") or "")
+        # Legacy-looking surface text is accepted only as fixture ergonomics for
+        # choosing an already-selected human/external fact; it is never emitted.
+        test_surface_actor_quote = str(relation.get("actor_quote") or "")
+        target_quote = str(relation.get("target_quote") or "")
+        actor_kind = str(relation.get("actor_kind") or "")
+        segment_index = relation.get("segment_index")
+        if isinstance(segment_index, int) and not isinstance(segment_index, bool):
+            selected_segment_index = segment_index
+        else:
+            matches = [
+                index
+                for index, segment in enumerate(first_path_segments)
+                if _occurrence(segment, event_quote)
+            ]
+            if len(matches) != 1:
+                raise ValueError(
+                    "authored fixture relation must identify exactly one first_path segment"
+                )
+            selected_segment_index = matches[0]
+        if selected_segment_index < 0 or selected_segment_index >= len(first_path_fact_indexes):
+            raise ValueError("authored fixture relation references an unknown first_path segment")
+        actor_fact = _actor_fact(
+            relation,
+            actor_kind=actor_kind,
+            test_surface_actor_quote=test_surface_actor_quote,
+            fact_indexes=fact_indexes,
+            intent=intent,
+        )
+        rows.append(
+            {
+                "actor_fact": actor_fact,
+                "action_quote": str(
+                    relation.get("action_verb_quote") or event_quote
+                ),
+                "target_quote": target_quote,
+            }
+        )
+    return rows
+
+
+def _terminal_row(
+    *,
+    relations: Sequence[Mapping[str, Any]],
+    facts: Sequence[Mapping[str, Any]],
+    evidence_text: str,
+) -> dict[str, Any]:
+    visible_rows = [
+        (order, str(relation.get("visible_result_quote") or ""))
+        for order, relation in enumerate(relations, start=1)
+        if str(relation.get("visible_result_quote") or "")
+    ]
+    if not visible_rows:
+        raise ValueError("authored fixture requires one terminal visible result")
+    event_order, result_quote = visible_rows[-1]
+    proof_fact = next(
+        (
+            fact
+            for fact in facts
+            if fact["field"] in TERMINAL_RESULT_FACT_FIELDS
+            and result_quote in str(fact.get("quote") or "")
+        ),
+        None,
+    )
+    if proof_fact is None:
+        raise ValueError(
+            "authored fixture terminal result requires a selected proof fact"
+        )
+    if evidence_text:
+        _nth_start(
+            evidence_text.encode("utf-8"),
+            str(proof_fact["quote"]).encode("utf-8"),
+            int(proof_fact["occurrence"]),
+        )
+    return {
+        "event_order": event_order,
+        "result_fact": {"field": proof_fact["field"], "row": proof_fact["row"]},
+        "result_quote": result_quote,
+        "result_occurrence": 1,
+    }
+
+
+def _actor_fact(
+    relation: Mapping[str, Any],
+    *,
+    actor_kind: str,
+    test_surface_actor_quote: str,
+    fact_indexes: Mapping[str, int],
+    intent: Mapping[str, Any],
+) -> dict[str, object]:
+    explicit_path = relation.get("actor_fact_path")
+    if explicit_path is not None:
+        return _actor_fact_reference_for_path(
+            explicit_path,
+            actor_kind=actor_kind,
+            relation=relation,
+            test_surface_actor_quote=test_surface_actor_quote,
+            fact_indexes=fact_indexes,
+            intent=intent,
+        )
+    if actor_kind == "product":
+        return _owner_system_fact_reference(
+            relation,
+            fact_indexes=fact_indexes,
+            intent=intent,
+        )
+    field = {
+        "human": "human_actors",
+        "external_system": "external_systems",
+    }.get(actor_kind)
+    if field is None:
+        raise ValueError(f"unknown authored fixture actor_kind: {actor_kind}")
+    selected_quote = str(
+        relation.get("actor_fact_quote") or test_surface_actor_quote
+    )
+    rows = [str(row) for row in intent.get(field, [])]
+    matches = [index for index, row in enumerate(rows) if row == selected_quote]
+    if len(matches) != 1:
+        raise ValueError("authored fixture actor must identify one exact selected entity fact")
+    if not fact_indexes.get(f"/{field}/{matches[0]}", 0):
+        raise ValueError("authored fixture actor fact is not selected")
+    return {"field": field, "row": matches[0] + 1}
+
+
+def _actor_fact_reference_for_path(
+    path: object,
+    *,
+    actor_kind: str,
+    relation: Mapping[str, Any],
+    test_surface_actor_quote: str,
+    fact_indexes: Mapping[str, int],
+    intent: Mapping[str, Any],
+) -> dict[str, object]:
+    if not isinstance(path, str) or not fact_indexes.get(path, 0):
+        raise ValueError("authored fixture actor path is not selected")
+    field, separator, row_text = path.strip("/").partition("/")
+    if not separator or not row_text.isdigit():
+        if path == "/title" and actor_kind == "product":
+            field, row_text = "title", "0"
+        else:
+            raise ValueError("authored fixture actor path is invalid")
+    row_index = int(row_text)
+    expected_fields = {
+        "human": {"human_actors"},
+        "external_system": {"external_systems"},
+        "product": {"title", "internal_systems"},
+    }.get(actor_kind)
+    if expected_fields is None or field not in expected_fields:
+        raise ValueError("authored fixture actor path conflicts with actor_kind")
+    values = [str(value) for value in intent.get(field, [])] if field != "title" else [str(intent.get("title") or "")]
+    if row_index < 0 or row_index >= len(values) or not values[row_index]:
+        raise ValueError("authored fixture actor path is not selected")
+    expected_quote = str(
+        relation.get("owner_system_quote")
+        if actor_kind == "product"
+        else relation.get("actor_fact_quote") or test_surface_actor_quote
+    )
+    if expected_quote and expected_quote != values[row_index]:
+        raise ValueError("authored fixture actor path conflicts with actor quote")
+    return {"field": field, "row": row_index + 1}
+
+
+def _owner_system_fact_reference(
+    relation: Mapping[str, Any],
+    *,
+    fact_indexes: Mapping[str, int],
+    intent: Mapping[str, Any],
+) -> dict[str, object]:
+    owner = str(relation.get("owner_system_quote") or "")
+    systems = [str(row) for row in intent.get("internal_systems", [])]
+    if not owner:
+        raise ValueError("authored fixture must explicitly bind every product event to owner_system_quote")
+    if owner == str(intent.get("title") or ""):
+        if fact_indexes.get("/title", 0):
+            return {"field": "title", "row": 1}
+    for index, system in enumerate(systems):
+        if owner == system and fact_indexes.get(f"/internal_systems/{index}", 0):
+            return {"field": "internal_systems", "row": index + 1}
+    raise ValueError(f"unknown authored fixture owner_system_quote: {owner}")
+
+
+def _component_responsibility_relation_rows(
+    *,
+    intent: Mapping[str, Any],
+    fact_indexes: Mapping[str, int],
+    owners: Sequence[str] | None,
+) -> list[dict[str, Any]]:
+    responsibilities = [
+        str(row)
+        for row in intent.get("component_responsibilities", [])
+        if str(row)
+    ]
+    systems = [str(row) for row in intent.get("internal_systems", []) if str(row)]
+    if not responsibilities:
+        return []
+    if owners is None:
+        raise ValueError(
+            "authored fixture must explicitly bind component_responsibility_owners"
+        )
+    owner_values = [str(owner) for owner in owners]
+    if len(owner_values) != len(responsibilities):
+        raise ValueError("authored fixture must bind every component responsibility exactly once")
+    rows: list[dict[str, Any]] = []
+    for index, owner in enumerate(owner_values):
+        owner_fact_quote = _owner_fact_quote(
+            owner=owner,
+            intent=intent,
+            systems=systems,
+            fact_indexes=fact_indexes,
+        )
+        if not owner_fact_quote:
+            raise ValueError("authored fixture component responsibility owner is not a selected fact")
+        group = next(
+            (
+                row
+                for row in rows
+                if row["owner_fact_quote"] == owner_fact_quote
+            ),
+            None,
+        )
+        if group is None:
+            group = {
+                "owner_fact_quote": owner_fact_quote,
+                "responsibilities": [],
+            }
+            rows.append(group)
+        group["responsibilities"].append(
+            {"quote": responsibilities[index], "occurrence": 1}
+        )
+    return rows
+
+
+def _owner_fact_quote(
+    *,
+    owner: str,
+    intent: Mapping[str, Any],
+    systems: Sequence[str],
+    fact_indexes: Mapping[str, int],
+) -> str:
+    if owner == str(intent.get("title") or ""):
+        path = "/title"
+    else:
+        try:
+            path = f"/internal_systems/{systems.index(owner)}"
+        except ValueError as exc:
+            raise ValueError(
+                f"unknown authored fixture component responsibility owner: {owner}"
+            ) from exc
+    fact_index = fact_indexes.get(path, 0)
+    if not fact_index:
+        raise ValueError("authored fixture component owner is not a selected fact")
+    return owner
+
+
+def _default_first_path_relations(intent: Mapping[str, Any]) -> tuple[dict[str, Any], ...]:
+    first_path = str(intent.get("first_path") or "").strip()
+    actors = intent.get("human_actors") or []
+    human_actor = str(actors[0]).strip() if actors else ""
+    return (
+        {
+            "actor_kind": "human",
+            "actor_fact_quote": human_actor,
+            "event_quote": first_path,
+            "action_verb_quote": first_path,
+            "target_quote": "",
+            "visible_result_quote": first_path,
+        },
+    )
+
+
+def _occurrence(source: str, quote: str) -> int:
+    return 1 if quote and source.encode("utf-8").find(quote.encode("utf-8")) >= 0 else 0
+
+
+def _nth_start(source: bytes, quote: bytes, occurrence: int) -> int:
+    cursor = 0
+    found = -1
+    for _ in range(occurrence):
+        found = source.find(quote, cursor)
+        if found < 0:
+            raise ValueError("authored fixture quote occurrence is not present")
+        cursor = found + 1
+    return found
+
+
+def edit_action_context_fixture(*, prior_source, prior_receipt, prior_lifecycle, design, correction,
+                                transaction_hash="a" * 64, prior_facts=None):
+    """Give small source-backed unit fixtures the complete fresh action baseline."""
+    import hashlib
+    from odylith.runtime.domain_intelligence.greenfield_authored_semantics import combined_prompt_evidence_segment
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import project_greenfield_source_event_catalog, source_action_allocation_relations
+    from odylith.runtime.domain_intelligence.greenfield_model_source_citations import canonical_citation_from_host_selection, resolve_source_citation
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import greenfield_edit_preservation_context
+    catalog = project_greenfield_source_event_catalog(prior_receipt, evidence_text=prior_source)
+    raw = prior_source.encode("utf-8")
+    actions = {section: [] for section in catalog["action_bindings"]}
+    for event in catalog["events"]:
+        section = event["binding_role"]
+        duty = next(row for row in prior_receipt["ledger"][section] if row["id"] == event["duty_id"])
+        quote, start = resolve_source_citation(raw, canonical_citation_from_host_selection(raw, duty["event_ref"]))
+        end = start + len(quote.encode("utf-8"))
+        actions[section].append({"duty": copy.deepcopy(duty),
+            "source_locator": {"relation_order": event["event_order"], "source_start_byte": start,
+                "source_end_byte": end, "text_sha256": hashlib.sha256(raw[start:end]).hexdigest()},
+            "allocation_relations": source_action_allocation_relations(design, event["event_order"])})
+    source, segment = combined_prompt_evidence_segment(prompt=prior_source, edit_evidence=correction)
+    from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import append_atomic_source_spans, build_atomic_fact_ledger
+    if prior_receipt["ledger"]["version"] in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v10"}:
+        from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import source_owned_greenfield_actor_facts
+        prior_facts = source_owned_greenfield_actor_facts(catalog, supplemental={}, evidence_text=prior_source, ledger_receipt=prior_receipt)
+    claims, facts = [], {}
+    for field in ("internal_systems", "external_systems"):
+        facts[field] = []
+        for index, citation in enumerate((prior_facts or {}).get(field, [])):
+            quote, start = resolve_source_citation(raw, canonical_citation_from_host_selection(raw, citation, mention_selection="mention_ordinal" in citation))
+            digest = hashlib.sha256(quote.encode("utf-8")).hexdigest()
+            facts[field].append(quote)
+            claims.append({"field": field, "category": "actions" if field == "internal_systems" else "dependencies",
+                "polarity": "affirmed", "source_start_byte": start, "source_end_byte": start + len(quote.encode("utf-8")),
+                "quote": quote, "quote_sha256": digest, "projection_path": f"/{field}/{index}",
+                "projection_start_byte": 0, "projection_end_byte": len(quote.encode("utf-8")),
+                "projection_value_sha256": digest, "relation_order": 0, "relation_role": ""})
+    spans = []
+    if claims:
+        append_atomic_source_spans(spans, authored_atomic_claims=claims)
+    atoms = build_atomic_fact_ledger(facts=facts, spans=spans, authored_atomic_claims=claims) if claims else []
+    systems = {field: [atom for atom in atoms if atom["projection_links"][0]["field"] == field] for field in facts}
+    return greenfield_edit_preservation_context(transaction_hash=transaction_hash,
+        prior_lifecycle=prior_lifecycle, prior_identity=prior_receipt["ledger"]["product_identity"],
+        correction=correction, evidence_text=source, prior_actions=actions,
+        prior_system_facts=systems, prior_source_segment=segment,
+        prior_authority_sha256=hashlib.sha256(raw).hexdigest(), prior_relation_set_sha256=hashlib.sha256(raw).hexdigest())
+
+
+def preserved_edit_decisions_fixture(context, *, current_ids=None):
+    """Use explicit same-section IDs; production still verifies all dispositions."""
+    decisions = {
+        f"{section}/{row['duty_id']}": {"verdict": "preserved", "current_duty_id": row["duty_id"],
+            "correction_authorization": "not_required"}
+        for section in ("state_fields", "off_path_transitions", "conditional_guards", "boundaries", "proof_duties")
+        for row in context["prior_lifecycle"][section]
+    }
+    for section, rows in context["prior_actions"].items():
+        for row in rows:
+            duty_id = row["duty"]["id"]
+            decisions[f"{section}/{duty_id}"] = {"verdict": "preserved",
+                "current_duty_id": (current_ids or {}).get(duty_id, duty_id), "correction_authorization": "not_required"}
+    return {"edit_preservation": decisions,
+            "system_preservation": {atom["atom_id"]: {"verdict": "preserved", "correction_authorization": "not_required"}
+                for rows in context["prior_system_facts"].values() for atom in rows}}
+
+
+def prior_transaction_custody_fixture(*, prior_source, prior_receipt, context, design):
+    """Complete the existing release-test transaction double's source custody.
+
+    Release tests isolate the sealed-transaction loader. This provides every
+    baseline field read by the real EDIT bridge, without mocking that bridge.
+    Full compiler authentication is proved separately by runtime tests.
+    """
+    from types import SimpleNamespace
+    import hashlib
+    relations = [
+        {"order": row["source_locator"]["relation_order"],
+         "source_start_byte": row["source_locator"]["source_start_byte"],
+         "source_end_byte": row["source_locator"]["source_end_byte"]}
+        for rows in context["prior_actions"].values() for row in rows
+    ]
+    binding = {
+        section: [{"duty_id": row["duty"]["id"], "event_order": row["source_locator"]["relation_order"]}
+                  for row in rows]
+        for section, rows in context["prior_actions"].items()
+    }
+    lifecycle = context["prior_lifecycle"]
+    return SimpleNamespace(transaction_hash=context["transaction_hash"],
+        proposal={"intent": {"prompt": prior_source, "internal_systems": [], "external_systems": [],
+            "authored_semantics": {"source_event_relations": relations, "provisional_design": design,
+                "source_duty": {"ledger_receipt": prior_receipt, "binding": binding, "lifecycle": lifecycle}}},
+            "semantic_model": {"source_lifecycle": lifecycle}},
+        intent_authority={"markdown_source_sha256": hashlib.sha256(prior_source.encode()).hexdigest(),
+            "atomic_facts": [], "authority_snapshot_sha256": context["prior_authority_sha256"],
+            "authored_relation_set_sha256": context["prior_relation_set_sha256"]},
+        quality_manifest={})
+
+
+def fresh_project_projection_fixture(repo_root: Path, *, named: bool) -> dict[str, Any]:
+    """Real fresh compiler/render path; all semantic verdicts are synthetic fixtures."""
+    from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal, _backlog_apply_args
+    from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import build_prewrite_completion_package
+    from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
+    from tests.unit.runtime.test_greenfield_model_path_custody import _TEXT_FIELDS, _LIST_FIELDS, _response
+    from tests.unit.runtime.test_greenfield_create_transaction import _seed_empty_governance_repo
+    _seed_empty_governance_repo(repo_root)
+    title = "Harbor Desk" if named else "The workspace coordinates berth evidence for dock teams"
+    prompt = ". ".join([title, *[v for k, v in _TEXT_FIELDS.items() if k != "title"],
+                         *[item for rows in _LIST_FIELDS.values() for item in rows]]) + "."
+    order_constraint = "Record berth occupancy before showing the placement"
+    prompt += " " + order_constraint + "."
+    if not named:
+        prompt = prompt.replace(_TEXT_FIELDS["product_view"], "The workspace gives dock attendants a berth workflow")
+    prepared = prepare_model_authoring_evidence(prompt=prompt)
+    response = _response(prepared.evidence_source)
+    if not named:
+        response["result"]["facts"]["product_view"] = {"quote": "The workspace gives dock attendants a berth workflow", "occurrence": 1}
+    response["result"]["facts"]["operational_constraints"].insert(0, {"quote": order_constraint, "occurrence": 1})
+    response["result"]["source_precedence"] = [{"before_event": 2, "after_event": 3, "constraint_index": 1}]
+    response["result"]["facts"]["title"] = {"quote": title, "occurrence": 1}
+    response["result"]["provisional_design"]["project_name"] = "Harbor Desk" if named else "Berth Evidence Workspace"
+    candidate = host_candidate_response(response, evidence_text=prepared.evidence_source)
+    candidate.product_identity["basis"] = "explicit_name" if named else "product_description"
+    receipt = synthetic_source_duty_receipt(candidate, evidence_text=prepared.evidence_source)
+    candidate["result"][HOST_SOURCE_DUTY_BINDING_FIELD].update(
+        source_sha256=receipt["source_sha256"], ledger_sha256=receipt["ledger_sha256"])
+    intent = materialize_host_authored_intent(prompt=prompt, repo_root=repo_root,
+        host_candidate=candidate, source_duty_receipt=receipt, prepared_evidence=prepared)
+    proposal = build_greenfield_proposal(repo_root=repo_root, prompt=prompt, release_selector="0.0.1",
+        confirmed_intent=intent, require_completion_ready=False)
+    prewrite = build_prewrite_completion_package(root=repo_root, proposal=proposal, release_selector="0.0.1",
+        backlog_args=_backlog_apply_args(proposal, release_selector="0.0.1"),
+        validation_gate={"status": "passed", "issues": []}, release_assignment_note="Synthetic browser/unit fixture.")
+    first_run = next(row for row in proposal["diagrams"] if row["slug"].endswith("-first-run"))
+    return {"kind": "synthetic source14/design7 compiled fixture; no live qualification",
+            "prompt": prompt, "source": prepared.evidence_source, "candidate": candidate, "receipt": receipt,
+            "intent": intent, "proposal": proposal, "prewrite": prewrite,
+            "project_payload": prewrite.package.project_dashboard_preview,
+            "radar_markdown": dict(prewrite.backlog_result["idea_files"]), "first_run_atlas": first_run,
+            "expected": {"source_title": title, "project_name": response["result"]["provisional_design"]["project_name"],
+                "customer": "Dock attendants", "first_performer": "Dock attendant Ivo",
+                "event_orders": [1, 2, 3], "source_precedence": [{"before_event": 2, "after_event": 3, "constraint_index": 1}], "named": named}}

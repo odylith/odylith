@@ -46,8 +46,8 @@ def sync_packet_budget_truncation(
     packet_budget["within_budget"] = bool(packet_metrics.get("within_budget"))
     packet_budget["estimated_bytes"] = int(packet_metrics.get("estimated_bytes", 0) or 0)
     packet_budget["estimated_tokens"] = int(packet_metrics.get("estimated_tokens", 0) or 0)
-    packet_budget["max_bytes"] = int(packet_metrics.get("max_bytes", 0) or 0)
-    packet_budget["max_tokens"] = int(packet_metrics.get("max_tokens", 0) or 0)
+    packet_budget["max_bytes"] = int(packet_metrics.get("budget_bytes", 0) or 0)
+    packet_budget["max_tokens"] = int(packet_metrics.get("budget_tokens", 0) or 0)
     truncation["packet_budget"] = packet_budget
     synced["truncation"] = truncation
     return synced

@@ -1,0 +1,51 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "security",
+    "secure",
+    "vulnerability",
+    "threat",
+    "privacy",
+    "crypt"
+  ],
+  "matched_description_evidence_terms": [
+    "secure"
+  ],
+  "repository": {
+    "default_branch": "master",
+    "description": "OpenZeppelin Contracts is a library for secure smart contract development.",
+    "full_name": "OpenZeppelin/openzeppelin-contracts",
+    "id": 64700934,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "openzeppelin-contracts",
+    "node_id": "MDEwOlJlcG9zaXRvcnk2NDcwMDkzNA==",
+    "pushed_at": "2026-07-17T20:35:45Z",
+    "topics": [
+      "ethereum",
+      "evm",
+      "security",
+      "smart-contracts",
+      "solidity"
+    ]
+  },
+  "response_item_index": 9,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Asecurity&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:16:16 GMT",
+    "x-github-request-id": "D13D:12CDE4:14D7437:153AA0B:6A5B607D"
+  },
+  "search_response_path": "responses/security.json",
+  "search_response_sha256": "9157d4541298aedcadf8903b95896a05ce7dd8da07f2289fe3698caa705b223c",
+  "selection_index": 3,
+  "source_family": "security",
+  "source_id": "github-repository:64700934",
+  "source_uri": "https://github.com/OpenZeppelin/openzeppelin-contracts",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

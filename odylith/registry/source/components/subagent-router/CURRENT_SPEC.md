@@ -6,10 +6,8 @@
   route-ready contract exists.
 - Discipline checks may recommend routing affordances but must not spawn
   subagents or call host models to classify pressure.
-Last updated: 2026-04-09
+Last updated: 2026-09-15
 
-
-Last updated (UTC): 2026-04-09
 
 ## Purpose
 Subagent Router is Odylith's bounded leaf-routing engine. It takes one already
@@ -46,7 +44,7 @@ native-spawn host.
 - The router is the leaf authority. If a task has already been decomposed, the
   router is the component that decides whether that leaf is worth delegating.
 - Hard gates beat soft scoring.
-- `gpt-5.4` `xhigh` is a gated tier, not a default outcome.
+- `frontier_xhigh` is a gated tier, not a default outcome.
 - Tuning stored under `.odylith/` may bias future soft choices, but it cannot
   rewrite safety policy.
 - Consumer-facing `why`, `explanation_lines`, and related human-readable route
@@ -150,23 +148,31 @@ Recorded execution result used for escalation or tuning:
 - notes and outcome id
 
 ## Profile Ladder
-The supported ordered profile ladder across native-spawn-capable hosts is:
+The supported ordered profile ladder is host-portable. Current Codex defaults are:
 - `main_thread`
   No delegation.
 - `analysis_medium`
-  `gpt-5.4-mini`, `medium`.
+  `gpt-5.6-luna`, `medium`.
 - `analysis_high`
-  `gpt-5.4-mini`, `high`.
+  `gpt-5.6-luna`, `high`.
 - `fast_worker`
   `gpt-5.3-codex-spark`, `medium`.
 - `write_medium`
-  `gpt-5.3-codex`, `medium`.
+  `gpt-5.6-terra`, `medium`.
 - `write_high`
-  `gpt-5.3-codex`, `high`.
+  `gpt-5.6-terra`, `high`.
 - `frontier_high`
-  `gpt-5.4`, `high`.
+  `gpt-5.6-sol`, `high`.
 - `frontier_xhigh`
-  `gpt-5.4`, `xhigh`, gated.
+  `gpt-5.6-sol`, `xhigh`, gated.
+
+The shared resolver retains Claude's existing Haiku/Sonnet/Opus mapping. Codex
+tuples remain distinct so context packets cannot confuse write and frontier
+roles. Historical model tuples still infer their original semantic role, then
+resolve to its current host default; an explicit semantic profile takes
+precedence. This changes availability defaults, not routing scores, effort,
+escalation, explicit provider pins or Greenfield generation profiles. Mapping
+and asset tests do not establish live generation quality or latency.
 
 Legacy ids `mini_*`, `spark_medium`, `codex_*`, and `gpt54_*` remain accepted
 as read-compatibility aliases for one migration window, but new decisions and
@@ -311,16 +317,16 @@ prompt templates.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-03-23 · Decision:** Successor created: B-276 reopens B-275 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md +2 more
-- **2026-03-16 · Implementation:** Implemented family-aware adaptive tuning, low-confidence GPT-5.4 promotion, smarter hard gates, and broader-coordination rescope handling in the Subagent Router.
-  - Evidence: src/odylith/runtime/orchestration/subagent_router.py
-- **2026-03-16 · Decision:** Deepened Subagent Router with task-family assessment, route-confidence backstops, and escalation refusal that can return control to the main thread.
-  - Evidence: src/odylith/runtime/orchestration/subagent_router.py
-- **2026-03-16 · Implementation:** Implemented the Subagent Router runtime, the thin router skill, the component spec and runbook, and the Atlas routing topology diagrams.
-  - Evidence: odylith/atlas/source/catalog/diagrams.v1.json, odylith/registry/source/components/subagent-router/CURRENT_SPEC.md +1 more
-- **2026-03-16 · Decision:** keep Subagent Router accuracy-first, hard-gated, and first-class in Registry and Atlas instead of hiding delegation policy in prompt folklore.
-  - Evidence: odylith/atlas/source/catalog/diagrams.v1.json, odylith/registry/source/components/subagent-router/CURRENT_SPEC.md +1 more
+- **2026-03-23 · Decision:** Decision evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `odylith/radar/source/INDEX.md`, `odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md`, `odylith/registry/source/components/subagent-router/CURRENT_SPEC.md`, `odylith/technical-plans/INDEX.md`
+- **2026-03-16 · Implementation:** Implementation evidence linked this component to governed work with 1 verifiable artifact reference.
+  - Evidence: `src/odylith/runtime/orchestration/subagent_router.py`
+- **2026-03-16 · Decision:** Decision evidence linked this component to governed work with 1 verifiable artifact reference.
+  - Evidence: `src/odylith/runtime/orchestration/subagent_router.py`
+- **2026-03-16 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/registry/source/components/subagent-router/CURRENT_SPEC.md`, `src/odylith/runtime/orchestration/subagent_router.py`
+- **2026-03-16 · Decision:** Decision evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/registry/source/components/subagent-router/CURRENT_SPEC.md`, `src/odylith/runtime/orchestration/subagent_router.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

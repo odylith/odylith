@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from odylith import cli
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import stream_state
@@ -18,6 +20,13 @@ _INTERNAL_VISIBLE_WORDS = (
     "transcript",
     "fallback",
     "delivery",
+)
+_VISIBILITY_OBSERVATION = (
+    "---\n\n**Odylith Observation:** You should see guidance when it matters. This is the visible "
+    "checkpoint; future notes will stay concise, useful, and tied to a decision or verified result."
+)
+_PROMPT_ASSIST = (
+    "I will make the next decision, risk, or verified result visible in the conversation"
 )
 
 
@@ -119,7 +128,112 @@ def test_stop_visible_intervention_recovers_assist_from_summary_validation(tmp_p
     )
 
     assert "**Odylith Assist:**" in rendered
-    assert "closing with 1 focused check" in rendered
+    assert "Validation passed with 551 tests after the visible intervention fallback landed." in rendered
+
+
+def test_stop_visible_intervention_has_minimum_assist_when_summary_has_no_richer_signal(tmp_path) -> None:
+    rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family="codex",
+        phase="stop_summary",
+        summary="Worked on the greenfield generator and orchestration contract.",
+    )
+
+    assert rendered == (
+        "**Odylith Assist:** Worked on the greenfield generator and orchestration contract."
+    )
+
+
+@pytest.mark.parametrize("host_family", ["codex", "claude"])
+def test_explicit_current_closeout_preserves_summary_without_consuming_pending_replay(tmp_path, host_family) -> None:
+    session = "current-closeout"
+    stale = "**Odylith Assist:** An earlier promise.."
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="assist_closeout",
+        summary="Earlier promise awaiting chat.",
+        session_id=session,
+        host_family=host_family,
+        intervention_key="prior-closeout",
+        turn_phase="stop_summary",
+        display_markdown=stale,
+        delivery_channel="assistant_visible_fallback",
+        delivery_status="assistant_render_required",
+    )
+    summary = (
+        "The preview contains five distinct responsibilities, but the customer-facing "
+        "checks do not yet establish that the complete workflow works correctly. "
+        "The package remains unpublished and no completion claim is justified. "
+        "The next action is to review the unresolved acceptance criteria, not to publish."
+    )
+    before = stream_state.load_recent_intervention_events(repo_root=tmp_path, session_id=session)
+    rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family=host_family,
+        phase="stop_summary",
+        session_id=session,
+        summary=summary,
+        include_closeout=True,
+    )
+    assert rendered == f"**Odylith Assist:** {summary}"
+    assert stream_state.load_recent_intervention_events(repo_root=tmp_path, session_id=session) == before
+    assert host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family=host_family,
+        phase="stop_summary",
+        session_id=session,
+    ) == stale
+
+
+@pytest.mark.parametrize("host_family", ["codex", "claude"])
+@pytest.mark.parametrize("summary", ["The package remains unpublished.", "Which criterion remains unresolved?"])
+def test_explicit_current_closeout_is_not_replaced_by_visibility_feedback(tmp_path, host_family, summary) -> None:
+    rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family=host_family,
+        phase="stop_summary",
+        prompt="I do not see Odylith interventions in chat.",
+        summary=summary,
+        include_closeout=True,
+    )
+    assert rendered == f"**Odylith Assist:** {summary}"
+
+
+@pytest.mark.parametrize("host_family", ["codex", "claude"])
+def test_explicit_current_closeout_retains_visible_quality_gate(tmp_path, host_family) -> None:
+    assert host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family=host_family,
+        phase="stop_summary",
+        summary="Casebook already remembers CB-999999 as resolved.",
+        include_closeout=True,
+    ) == ""
+
+
+@pytest.mark.parametrize("host_family", ["codex", "claude"])
+def test_explicit_current_closeout_confirms_only_the_displayed_result(tmp_path, host_family) -> None:
+    session = "current-closeout-confirmation"
+    stale = "**Odylith Assist:** An earlier result remains pending."
+    stream_state.append_intervention_event(
+        repo_root=tmp_path, kind="assist_closeout", summary="Prior result.",
+        session_id=session, host_family=host_family, intervention_key="prior-result",
+        turn_phase="stop_summary", display_markdown=stale,
+        delivery_channel="assistant_visible_fallback", delivery_status="assistant_render_required",
+    )
+    summary = "The package remains unpublished."
+    rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path, host_family=host_family, phase="stop_summary",
+        session_id=session, summary=summary, include_closeout=True,
+        record_delivery=True, confirm_chat_delivery=True,
+    )
+    assert rendered == f"**Odylith Assist:** {summary}"
+    rows = stream_state.load_recent_intervention_events(repo_root=tmp_path, session_id=session)
+    confirmations = [row for row in rows if row.get("delivery_status") == "assistant_chat_confirmed"]
+    assert confirmations
+    assert all(row["display_markdown"] == rendered for row in confirmations)
+    assert host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path, host_family=host_family, phase="stop_summary", session_id=session,
+    ) == stale
 
 
 def test_visible_intervention_generic_failure_has_observation_without_fake_assist(tmp_path) -> None:
@@ -130,9 +244,7 @@ def test_visible_intervention_generic_failure_has_observation_without_fake_assis
         prompt="I do not think it is working",
     )
 
-    assert rendered.startswith(
-        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
-    )
+    assert rendered.startswith(_VISIBILITY_OBSERVATION)
     assert rendered.count("---") == 2
     assert "**Odylith Assist:**" not in rendered
     assert "Show the next Odylith" not in rendered
@@ -189,12 +301,10 @@ def test_visible_intervention_visibility_feedback_adds_assist_after_live_block(t
         prompt="I still do not see any Odylith ambient highlights, interventions, or Assist in chat.",
     )
 
-    assert rendered.startswith(
-        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
-    )
+    assert rendered.startswith(_VISIBILITY_OBSERVATION)
     assert rendered.count("---") == 2
     assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
-    assert "visibility feedback noted; this line is deliberately shown in chat" in rendered
+    assert _PROMPT_ASSIST in rendered
     assert "Odylith is tracking this signal" not in rendered
     assert "**Odylith Insight:**" not in rendered
     assert "**Odylith Risks:**" not in rendered
@@ -215,7 +325,7 @@ def test_visible_intervention_assist_every_prompt_feedback_adds_assist(tmp_path)
 
     assert rendered.startswith("**Odylith Assist:**")
     assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
-    assert "visibility feedback noted; this line is deliberately shown in chat" in rendered
+    assert "I will surface meaningful decisions, risks, proof points, and verified results" in rendered
     assert "hook" not in rendered
 
 
@@ -227,7 +337,72 @@ def test_visible_intervention_assist_feedback_suppresses_stale_blocks(tmp_path) 
         prompt="I want to see Odylith Assist in every prompt.",
     )
 
-    assert rendered == "**Odylith Assist:** visibility feedback noted; this line is deliberately shown in chat."
+    assert rendered == (
+        "**Odylith Assist:** I will surface meaningful decisions, risks, proof points, "
+        "and verified results; routine chatter stays out of the way."
+    )
+
+
+def test_visible_intervention_more_frequent_assist_suppresses_stale_blocks(tmp_path) -> None:
+    for host_family in ("codex", "claude"):
+        stream_state.append_intervention_event(
+            repo_root=tmp_path,
+            kind="intervention_card",
+            summary="Stale observation.",
+            host_family=host_family,
+            session_id="assist-cadence",
+            display_markdown="Odylith Observation: stale host state.",
+            delivery_channel="assistant_render_required",
+            delivery_status="assistant_fallback_ready",
+        )
+
+        rendered = host_visible_intervention.render_visible_intervention(
+            repo_root=tmp_path,
+            host_family=host_family,
+            phase="prompt_submit",
+            prompt="I want Odylith Assist to be a lot more frequent and informative.",
+            session_id="assist-cadence",
+        )
+
+        assert rendered == (
+            "**Odylith Assist:** I will surface meaningful decisions, risks, proof points, "
+            "and verified results; routine chatter stays out of the way."
+        )
+
+
+def test_visible_intervention_persisted_assist_cadence_suppresses_stale_replay(tmp_path) -> None:
+    for host_family in ("codex", "claude"):
+        stream_state.append_intervention_event(
+            repo_root=tmp_path,
+            kind="assist_closeout",
+            summary="Cadence preference recorded.",
+            host_family=host_family,
+            session_id="persisted-assist-cadence",
+            prompt_excerpt="I want Odylith Assist to be a lot more frequent and informative.",
+        )
+        stream_state.append_intervention_event(
+            repo_root=tmp_path,
+            kind="intervention_card",
+            summary="Stale observation.",
+            host_family=host_family,
+            session_id="persisted-assist-cadence",
+            display_markdown="**Odylith Observation:** stale host state.",
+            delivery_channel="assistant_render_required",
+            delivery_status="assistant_fallback_ready",
+        )
+
+        rendered = host_visible_intervention.render_visible_intervention(
+            repo_root=tmp_path,
+            host_family=host_family,
+            phase="prompt_submit",
+            prompt="Please continue.",
+            session_id="persisted-assist-cadence",
+        )
+
+        assert rendered == (
+            "**Odylith Assist:** I will continue from the last verified checkpoint and call out the next completed "
+            "change, remaining risk, and gate."
+        )
 
 
 def test_visible_intervention_suppresses_cli_help_passthrough(tmp_path) -> None:
@@ -293,7 +468,7 @@ def test_visible_intervention_replays_pending_chat_block_before_generic_failure(
 
     assert rendered.startswith("---\n\n**Odylith Observation:** Replay this exact earned block in chat.\n\n---")
     assert "\n\n**Odylith Assist:**" in rendered
-    assert "visibility feedback noted; this line is deliberately shown in chat" in rendered
+    assert _PROMPT_ASSIST in rendered
     assert "This is a visibility failure" not in rendered
     _assert_user_facing_visible_voice(rendered)
 
@@ -306,9 +481,7 @@ def test_visible_intervention_detects_only_assist_visibility_feedback(tmp_path) 
         prompt="Dude, I am still not sure about Odylith interventions being visible; only " + "As" "sit" + " works",
     )
 
-    assert rendered.startswith(
-        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
-    )
+    assert rendered.startswith(_VISIBILITY_OBSERVATION)
     assert "Show the next Odylith" not in rendered
     assert "chat-proved" not in rendered
     assert "**Odylith Assist:**" in rendered
@@ -316,7 +489,7 @@ def test_visible_intervention_detects_only_assist_visibility_feedback(tmp_path) 
     _assert_user_facing_visible_voice(rendered)
 
 
-def test_visible_intervention_can_record_manual_visible_fallback(tmp_path) -> None:
+def test_visible_intervention_records_unconfirmed_fallback_by_default(tmp_path) -> None:
     rendered = host_visible_intervention.render_visible_intervention(
         repo_root=tmp_path,
         host_family="codex",
@@ -330,16 +503,36 @@ def test_visible_intervention_can_record_manual_visible_fallback(tmp_path) -> No
         repo_root=tmp_path,
         session_id="visible-session",
     )
-    assert rendered.startswith(
-        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
-    )
+    assert rendered.startswith(_VISIBILITY_OBSERVATION)
     assert "**Odylith Assist:**" not in rendered
-    assert events[-1]["delivery_status"] == "manual_visible"
-    assert events[-1]["delivery_channel"] == "manual_visible_command"
+    assert events[-1]["delivery_status"] == "assistant_render_required"
+    assert events[-1]["delivery_channel"] == "assistant_visible_fallback"
     assert events[-1]["host_family"] == "codex"
     assert events[-1]["session_id"] == "visible-session"
-    assert any(row.get("metadata", {}).get("manual_visible") is True for row in events)
+    assert all(row.get("metadata", {}).get("manual_visible") is not True for row in events)
     _assert_user_facing_visible_voice(rendered)
+
+
+def test_visible_intervention_confirm_chat_records_manual_visible_fallback(tmp_path) -> None:
+    rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family="codex",
+        phase="prompt_submit",
+        prompt="I do not think it is working",
+        session_id="visible-session-confirmed",
+        record_delivery=True,
+        confirm_chat_delivery=True,
+    )
+
+    events = host_visible_intervention.stream_state.load_recent_intervention_events(
+        repo_root=tmp_path,
+        session_id="visible-session-confirmed",
+    )
+
+    assert rendered.startswith(_VISIBILITY_OBSERVATION)
+    assert events[0]["delivery_status"] == "manual_visible"
+    assert events[0]["delivery_channel"] == "manual_visible_command"
+    assert events[-1]["delivery_status"] == "assistant_chat_confirmed"
 
 
 def test_chat_confirmation_can_promote_manual_visible_fallback_once(tmp_path) -> None:
@@ -449,7 +642,7 @@ def test_visible_intervention_replaces_generic_teaser_for_visibility_failure(tmp
     )
 
     assert rendered.startswith(
-        "---\n\n**Odylith Observation:** Claude has Odylith activity, but no Odylith note has reached this chat yet."
+        "---\n\n**Odylith Observation:** You should see guidance when it matters. This is the visible checkpoint; future notes will stay concise, useful, and tied to a decision or verified result."
     )
     assert "Show the next Odylith" not in rendered
     assert "chat-proved" not in rendered
@@ -461,7 +654,7 @@ def test_visible_intervention_replaces_generic_teaser_for_visibility_failure(tmp
     _assert_user_facing_visible_voice(rendered)
 
 
-def test_visible_intervention_status_review_surfaces_current_visibility_truth_not_workstream_scope(tmp_path) -> None:
+def test_visible_intervention_status_review_stays_quiet_without_explicit_visibility_complaint(tmp_path) -> None:
     rendered = host_visible_intervention.render_visible_intervention(
         repo_root=tmp_path,
         host_family="claude",
@@ -477,13 +670,7 @@ def test_visible_intervention_status_review_surfaces_current_visibility_truth_no
         ),
     )
 
-    assert rendered.startswith(
-        "---\n\n**Odylith Observation:** Odylith is active, but no Odylith note has reached this chat yet."
-    )
-    assert "normal assistant text" in rendered
-    assert "Show the next Odylith" not in rendered
-    assert "Radar already has B-096" not in rendered
-    _assert_user_facing_visible_voice(rendered)
+    assert rendered == ""
 
 
 def test_codex_visible_intervention_cli_dispatches_plain_markdown(monkeypatch, tmp_path, capsys) -> None:

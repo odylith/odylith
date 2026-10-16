@@ -1,9 +1,10 @@
 # Contributing To Odylith
 
-Last updated: 2026-03-27
+Last updated: 2026-08-04
 
-Canonical repo authorship and contributor attribution are recorded under
-`freedom-research`.
+Maintainer-authored repo history and repository-owned metadata use the
+`freedom-research` identity. External human contributors retain their original
+Git authorship.
 
 ## Before You Start
 
@@ -17,11 +18,19 @@ Canonical repo authorship and contributor attribution are recorded under
 ## Ground Rules
 
 - Odylith is a product repo, not a consumer repo.
-- The sole canonical contributor identity for this repo is
-  `freedom-research`.
+- The canonical identity for maintainer-authored commits and repository-owned
+  metadata is `freedom-research`.
+- External human contributors keep their original Git author identity; their
+  commits must not be rewritten as `freedom-research`.
+- Configure contributor clones with your own Git name and email. The canonical
+  `freedom-research` local-config and GitHub-account checks are maintainer-only
+  release and push controls.
 - Do not add personal-name authors, alternate handles, or additional
   contributor identities to tracked metadata, notices, docs, or generated
-  surfaces unless preserving immutable third-party or historical material.
+  surfaces unless preserving immutable external authorship, third-party
+  material, or historical material.
+- Human co-author attribution is allowed. Assistant, model, and coding-tool
+  identities or attribution trailers are not.
 - Do not copy consumer-repo truth into this repository.
 - Keep public docs generic. Do not add consumer-branded paths, screenshots, or
   prose.

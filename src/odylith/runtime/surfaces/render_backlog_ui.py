@@ -27,7 +27,6 @@ from odylith.runtime.surfaces import dashboard_time
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import dashboard_surface_bundle
-from odylith.runtime.surfaces import backlog_rich_text
 from odylith.runtime.surfaces import backlog_render_support
 from odylith.runtime.surfaces import backlog_traceability_paths
 from odylith.runtime.surfaces import backlog_detail_pages
@@ -40,6 +39,7 @@ from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.governance import execution_wave_view_model
 from odylith.runtime.surfaces import generated_surface_cleanup
 from odylith.runtime.governance import plan_progress
+from odylith.runtime.governance import traceability_freshness
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.governance import traceability_ui_lookup
@@ -125,10 +125,6 @@ def _as_portable_relative_href(*, output_path: Path, target: Path) -> str:
     return backlog_render_support._as_portable_relative_href(output_path=output_path, target=target)
 
 
-def _slug_token(value: str) -> str:
-    return backlog_rich_text._slug_token(value)
-
-
 def _radar_route_href(
     *,
     source_output_path: Path,
@@ -146,14 +142,6 @@ def _radar_route_href(
 
 def _extract_sections_with_body(path: Path) -> list[tuple[str, list[str]]]:
     return backlog_render_support._extract_sections_with_body(path)
-
-
-def _normalize_inline_repo_token(*, repo_root: Path, token: str) -> str:
-    return backlog_rich_text.normalize_inline_repo_token(repo_root=repo_root, token=token)
-
-
-def _rewrite_section_text(*, repo_root: Path, text: str) -> str:
-    return backlog_render_support._rewrite_section_text(repo_root=repo_root, text=text)
 
 
 def _render_section_body(*, repo_root: Path, lines: list[str]) -> str:
@@ -184,10 +172,6 @@ def _collect_plan_traceability_paths(
 
 def _as_repo_path(*, repo_root: Path, target: Path) -> str:
     return backlog_render_support._as_repo_path(repo_root=repo_root, target=target)
-
-
-def _extract_sections_from_markdown(path: Path) -> dict[str, str]:
-    return backlog_render_support._extract_sections_from_markdown(path)
 
 
 def _split_metadata_ids(*, value: str, pattern: re.Pattern[str]) -> list[str]:
@@ -670,6 +654,10 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     traceability_graph_path = (output_path.parent / "traceability-graph.v1.json").resolve()
     traceability_graph: dict[str, object] = {}
+    traceability_freshness.ensure_traceability_graph_fresh(
+        repo_root=repo_root,
+        graph_path=traceability_graph_path,
+    )
     if traceability_graph_path.is_file():
         try:
             traceability_graph = json.loads(traceability_graph_path.read_text(encoding="utf-8"))

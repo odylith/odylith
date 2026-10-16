@@ -15,16 +15,90 @@
   the B-110 workstream anchor when measuring the v0.1.11 Odylith Discipline program,
   so Context/Execution adoption metrics can distinguish real ambiguity from a
   missing program tag.
-Last updated: 2026-05-03
+Last updated: 2026-10-13
 
+## Current authority and useful history in memory
 
-Last updated (UTC): 2026-04-18
+Context Engine owns the shared `memory_record.v1` admission and usefulness
+policy. Derived governance records distinguish current truth, historical
+learning and observations, with explicit validity, source refs/fingerprints,
+evidence time, observation time and projection provenance. Legacy missing
+metadata stays unknown. Age alone does not establish truth or supersession.
+Authority and validity precede weighted relevance, evidence strength and age;
+current active constraints retain authority regardless of age. Closed failures
+remain useful history and cannot become current policy through a high score.
+Record currency does not turn historical or proposed statements inside the
+record into verified implementation evidence; their original dates, status and
+proof limits remain part of the retrieved evidence.
+
+Compiler records, entity retrieval, indexed/fallback selection and compact
+packets share the same policy. Current derivation must match before a record
+confers authority; contradictory current claims remain visible uncertainty.
+Judgment continuity additionally validates the canonical workstream source,
+current fingerprint and confirmation evidence before routing confidence can
+increase. Rebuilding a cache does not reconfirm a remembered decision. Existing
+shared-only ambiguity and session-intent non-replay laws remain intact.
+
+B-133 H1/CB-355 owns this unreleased contract; CB-356 owns the separate cap
+telemetry correction. Historical H1 source records retain the original
+before/after and latency claims. Their named primary handoffs and final review
+files are no longer available, so those figures are not current release proof.
+The fresh proof below supersedes their use as an active qualification witness
+without deleting the historical learning.
+
+Fresh source proof at clean checkpoint `51c6a379f` passes 60 existing checks
+with zero failures, errors or skips. It exercises actual compiler-to-snapshot
+and LanceDB/Tantivy indexed/fallback retrieval, authority and decay, useful
+failure recall, source-checked continuity, session-intent non-replay, final
+guidance actionability and existing packet caps. Independent source/evidence
+review inspected the actual log and JUnit. No memory source or test changed.
+These are bounded source controls; same-package installed/upgrade proof,
+complete current regression and full native benchmark qualification remain open.
+
+The current log, JUnit, exact source/test hashes and independent evidence map
+are retained in the 2026-10-13 release evidence. Backend readiness remains
+separate from evidence truth and from demonstrated semantic retrieval accuracy.
+
+## Supporting context and workstream ownership
+
+Radar assessment metadata retains its original authority during compilation
+and retrieval. Provisional unassessed records keep unknown numeric values and
+their provenance in snapshots, detailed retrieval and direct-source fallback;
+they never receive a fabricated numeric score. Store detail shaping adopts the
+existing backlog projection owner instead of keeping a second implementation.
+Assessed source remains governed by the shared assessment policy. CB-324 Wave
+Q1 carries source/index/snapshot/retrieval and malformed-record proof; no engine
+is disabled or replaced by a source parser.
+
+Documentation and runbooks may support several workstreams without identifying
+an exclusive owner. Selection must preserve that cross-workstream relationship:
+extra component or diagram memberships cannot turn shared support alone into a
+confident choice. Sharedness comes from distinct projected owners whose typed
+support references match each changed path, including overlapping directory and
+exact-file references; unrelated subtrees remain separate. It does not come
+from a growing filename list or equal reference spelling. Explicit workstream selection,
+genuine implementation or contract evidence, and independently bounded
+documentation ownership remain valid. Retained memory must not bypass the
+shared-only ambiguity boundary. CB-336 tracks the candidate correction and its
+positive, negative, duplicate, renamed-reference and ordering controls.
+
 
 ## Purpose
 Odylith Context Engine is the deterministic local grounding runtime for the
 governance engine. It compiles repo truth into a reusable read model, exposes
 packet-oriented CLI reads for coding agents and surfaces, manages session
 claims, and optionally materializes faster local and remote retrieval layers.
+
+## Feature History
+
+- 2026-07-02: Hardened Casebook path-reference extraction against prose-sized tokens. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-035`)
+  The Casebook snapshot path-reference extractor now treats raw bug prose as
+  untrusted input: multiline, whitespace-bearing, overly long, or
+  filesystem-impossible path candidates are dropped before classification and
+  rendering. This prevents governance surface refresh from crashing with
+  `ENAMETOOLONG` while preserving real repo paths embedded in prose. Proof:
+  focused path-extraction regression passed, and source-local Casebook refresh
+  completed with 213 cases and 119 open cases.
 
 ## Scope And Non-Goals
 ### The Context Engine owns
@@ -123,6 +197,17 @@ Public entrypoint: `odylith context-engine`
   summaries, bootstrap packets, hot-path packets, context dossiers, and
   runtime surfaces should consume that shared snapshot instead of locally
   deriving policy posture.
+- Dossier delivery keeps the full typed `related_entity_ids` map independently
+  of its descriptive-row budget. Bootstrap and session brief retain that dossier
+  and share the existing execution attachment owner. The handshake consumes only
+  resolved workstream relations and preserves every selected component identity;
+  a display limit must not hide a noncanonical identity or truncate target scope.
+  These identities are context, not writable targets or renewed instructions.
+  Complete narrowing copy is preserved without phrase substitution or clipping.
+  CB-333 proof: 144 focused tests, 4563 frozen runtime tests, 31 browser integration
+  cases, and public bootstrap/resume readback preserving all 96 sealed files.
+  Native-host visibility, full-profile next-action admission and release timing
+  remain separate obligations.
 - When a packet is guidance-behavior-relevant, packet builders attach the
   compact `guidance_behavior_summary` first and the handshake carries its
   validator command as recommended validation. The summary remains a compact
@@ -168,6 +253,12 @@ Public entrypoint: `odylith context-engine`
   Build a compact governance and delivery-truth packet.
 - `session-brief`
   Build one deterministic session dossier and refresh the session heartbeat.
+  A full-profile read with only an explicit session ID may recover a live saved
+  workstream through current canonical projections. Retained intent remains
+  session context, never a new turn instruction or execution permission. New
+  scope inputs take precedence; expired/missing sessions and missing anchors
+  do not inherit it. The `session_workstream_selection.py` phase owns selection
+  for both session packet forms; agent hot-path behavior is unchanged (CB-332).
 - `bootstrap-session`
   Build a compact fresh-session bootstrap packet with docs, commands, and test
   recommendations.
@@ -577,24 +668,22 @@ evidence is missing or drifting.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-05-03 · Implementation:** CB-149 consumer start latency update: installed v0.1.13 measured 25.40s in a real consumer repo; source fix now returns expected fallback in 2.55s with fast start preflight and hot-path bootstrap.
+- **2026-08-01 · Implementation:** Implementation evidence linked this component to governed work with 5 verifiable artifact references.
+  - Evidence: `odylith/casebook/bugs/2026-08-01-fresh-install-compact-guidance-omitted-greenfield-commit-only-boundary.md`, `odylith/runtime/source/release-notes/v0.1.15.md`, `src/odylith/install/bootstrap_assets.py`, `tests/unit/install/test_manager.py`, plus 1 more
+- **2026-05-06 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md`, `src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py`, `src/odylith/runtime/domain_intelligence/proposal_contract.py`
+- **2026-05-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-141
-  - Evidence: odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md, src/odylith/cli.py +3 more
-- **2026-04-17 · Implementation:** B-110 hardening pass made Character signal extraction negation-aware and proof-execution aware, prevented false blocks for technical-plan authoring, release-proof execution, credit-safety work, and negated delegation, added modern Codex/Claude model alias coverage, expanded deterministic corpus to 24 cases, and added benchmark summary rates for false allow/block, unknown-pressure handling, stance vectors, noise suppression, intervention precision, and unseen-pressure generalization. Proof: 48 focused Character tests passed, 225 benchmark/corpus/guidance tests passed, 2120 runtime tests passed, validate discipline and validate guidance-behavior passed, quick discipline report 1be88ce4ead87770 passed, quick guidance_behavior report 61d3b6a2b1cbe33e passed; hot-path host/provider call counts remained zero.
+  - Evidence: `odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md`, `src/odylith/cli.py`, `src/odylith/install/manager.py`, `src/odylith/install/runtime.py`, plus 1 more
+- **2026-04-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-110
-  - Evidence: odylith/runtime/source/discipline-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md +3 more
-- **2026-04-17 · Implementation:** B-110 Odylith Discipline hardening centralized signal/law policy, ranked open-world affordances, suppressed ephemeral practice refs, tagged Discipline benchmark scenarios to B-110, and proved zero-credit validators plus quick benchmark families with advisory widening at 0.0.
+  - Evidence: `odylith/runtime/source/discipline-evaluation-corpus.v1.json`, `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md`, `src/odylith/runtime/discipline/benchmark.py`, `src/odylith/runtime/discipline/signals.py`, plus 1 more
+- **2026-04-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-110
-  - Evidence: odylith/runtime/source/optimization-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md
-- **2026-04-17 · Implementation:** B-110 Odylith Discipline source-local proof landed: zero-credit validator, guidance-behavior validator, quick benchmark family selection, and Discipline quick benchmark are green; pinned dogfood runtime proof remains blocked by managed runtime drift.
+  - Evidence: `odylith/runtime/source/optimization-evaluation-corpus.v1.json`, `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md`
+- **2026-04-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-110, B-111, B-112, B-113
-  - Evidence: odylith/runtime/source/discipline-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md +2 more
-- **2026-04-16 · Implementation:** Context Engine and Execution Engine alignment hardened stale snapshot handling across packet summaries, router assessment, remediator execution, and benchmark proof with fail-closed canonical execution-engine identity checks; runtime, integration, registry, backlog, atlas, sync, and diff hygiene validation passed.
-  - Scope: B-099
-  - Evidence: src/odylith/runtime/context_engine/execution_engine_handshake.py, src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py +3 more
-- **2026-04-16 · Implementation:** Hardened Context Engine to Execution Engine alignment with canonical identity propagation, identity-first guard blocking, benchmark identity gates, and refreshed release-proof surfaces.
-  - Scope: B-099
-  - Evidence: src/odylith/runtime/context_engine/execution_engine_handshake.py, src/odylith/runtime/execution_engine/runtime_lane_policy.py
+  - Evidence: `odylith/runtime/source/discipline-evaluation-corpus.v1.json`, `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md`, `src/odylith/runtime/discipline/contract.py`, `src/odylith/runtime/governance/validate_discipline.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -611,3 +700,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-17: Extended the compact Guidance Behavior packet summary with the platform end-to-end contract so Context Engine packets can carry benchmark/eval and host-lane mirror proof availability without repo-wide scans, provider calls, or full validation on the hot path. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
 - 2026-04-17: Added the Guidance Behavior `hot_path_efficiency` contract: deterministic validator summaries now prevent adaptive session/full-scan widening, skip runtime projection warmup, avoid projection-store opens for no-projection guidance packets, and keep unanchored proof-state resolution out of delivery-intelligence reads. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
 - 2026-05-03: Hardened the Context Engine CLI boundary so early-closing stdout consumers no longer leak BrokenPipe tracebacks during diagnostic benchmark JSON output. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Bug: `CB-163`)
+- 2026-05-08: Hardened startup target recognition so unquoted existing paths and planned new files under trusted repo roots become explicit `odylith start` anchors, while untrusted planned suffixes stay rejected; the successful startup summary now prints the recognized target before the packet hint. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Bug: `CB-183`)

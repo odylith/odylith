@@ -1,11 +1,13 @@
-%% Reviewed 2026-04-06 after README/install-surface updates for managed-runtime boundary clarity across consumer installs, detached source-local validation, and canonical maintainer proof.
+%% Reviewed 2026-10-16: canonical packaging uses qualified hosted assets and provenance bound to clean H.
 flowchart TD
     maintainer["Maintainer workspace"]
     devvalidate["dev-validate<br/>detached source-local current workspace"]
+    forensicpreflight["Registry forensics freshness preflight<br/>source-local sync check-only<br/>one-pass sidecar convergence required"]
     canonical["Canonical release commit<br/>origin/main"]
     proof["Isolated clean proof checkout<br/>optional when workspace is dirty or off-main"]
-    bundles["Publish wheel + managed runtime bundles<br/>darwin-arm64 / linux-arm64 / linux-x86_64"]
-    manifest["Signed manifest + provenance + SBOM"]
+    bundles["Exact qualified wheel + managed runtime assets<br/>darwin-arm64 / linux-arm64 / linux-x86_64"]
+    localprov["Canonical provenance<br/>clean H + actual hosted run/attempt"]
+    manifest["Signed release manifest<br/>canonical provenance + SBOM"]
     install["Hosted install.sh"]
     detect["Detect supported platform"]
     verify["Verify manifest + runtime bundle + provenance + SBOM"]
@@ -22,17 +24,54 @@ flowchart TD
         consumer_rt["Consumer repo toolchain"]
     end
 
+    subgraph upgrade_completion["Existing-install upgrade completion"]
+        upgrade_parent["Authenticated unfinished upgrade<br/>holds repository writer lease"]
+        target_render["Activated target runtime<br/>checks selected Atlas migration"]
+        render_leaves["Target subprocess refreshes six views<br/>shell, Radar, Compass,<br/>Registry, Casebook, Atlas"]
+        complete_render{"All six views<br/>completed successfully?"}
+        publish_ready["Parent verifies and publishes<br/>a complete immutable generation"]
+        readback["Read back published generation<br/>check manifest and publication identity"]
+        completion_report["Separate v1 completion report<br/>keeps failed report; pins generation,<br/>manifest and publication"]
+        receipt_retired["Retire retry receipt<br/>after report is durable"]
+        report_missing["Published view, missing completion report<br/>keep receipt for exact forced retry"]
+        render_failure["Retain target runtime and exact failure receipt<br/>previous complete dashboard stays published"]
+        retry_check{"Recorded project, activation and plan unchanged<br/>no other pending transaction?"}
+        retry_refused["Refuse stale or forged retry without writes<br/>preserve edits and recovery evidence"]
+        ordinary_refresh["First install or completed upgrade<br/>ordinary shell, Radar, Compass refresh"]
+    end
+
     maintainer --> canonical
     maintainer --> devvalidate
+    devvalidate --> forensicpreflight
+    maintainer --> localprov
     canonical --> proof
-    canonical --> bundles
+    canonical --> forensicpreflight
+    canonical --> localprov
+    forensicpreflight --> bundles
     proof --> bundles
     bundles --> manifest
+    localprov --> manifest
     manifest --> install
     install --> detect
     detect --> verify
     verify --> stage
     stage --> launcher
+    managed --> upgrade_parent
+    managed --> ordinary_refresh
+    upgrade_parent -->|verify target runtime| target_render
+    target_render --> render_leaves
+    render_leaves --> complete_render
+    complete_render -->|yes; parent resumes| publish_ready
+    complete_render -->|no| render_failure
+    publish_ready --> readback
+    readback -->|verified| completion_report
+    readback -->|changed or forged| retry_refused
+    completion_report -->|durable| receipt_retired
+    completion_report -->|missing after publication| report_missing
+    render_failure -->|exact forced dashboard retry under lease| retry_check
+    report_missing -->|exact forced dashboard retry under lease| retry_check
+    retry_check -->|yes; same six-view completion| target_render
+    retry_check -->|no| retry_refused
 
     shell --> odylith_cmd
     shell --> consumer_cmd
@@ -42,6 +81,8 @@ flowchart TD
     managed --> repo_files
     consumer_cmd --> consumer_rt
 
+    localprov -. advisory local builds cannot establish release custody, see D-022 .-> maintainer
+    forensicpreflight -. stale or wrong-runtime component sidecars block packaging and installed matrix proof .-> maintainer
     verify -. fail closed on unsupported or invalid bundle .-> shell
     managed -. no shell-level interpreter switching .-> consumer_rt
     repo_files -. validation still belongs to the consumer repo toolchain .-> consumer_rt

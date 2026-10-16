@@ -1,22 +1,13 @@
-"""Codex PostToolUse checkpoint for edit-like Codex tool calls.
+"""Codex PostToolUse checkpoint for edit-like tool calls.
 
-When Codex finishes an edit-like Bash command or native patch tool call
-(``apply_patch``, ``cp``, ``mv``, ``sed -i``, etc. -- see
-``codex_host_shared.edit_like_bash``), this hook records a tiny dirty event
-and returns. Expensive grounding and selective governance refresh happen from
-``settle_deferred_checkpoint_events`` on Stop, where Codex can pay the work
-outside the tool-call critical path.
+Edit-like Bash commands record a small dirty event for ordinary foreground
+``odylith sync`` to retire after successful synchronization. SessionStart owns
+startup grounding. This hook does not run grounding or governance refresh.
 
-The second step is Bash-checkpoint parity with Claude's
-``post-edit-checkpoint`` hook
-(``claude_host_post_edit_checkpoint.refresh_governance``). Current Codex hook
-schemas expose ``PostToolUse`` for ``Bash`` only; native desktop/app tool
-payloads can still be parsed by this module in tests or manual fallback
-commands, but they are not claimed as automatically hook-dispatched.
-
-The hook always exits 0. It records deferred governance work cheaply, then
-emits only the already-earned live Observation/Proposal payload when the
-intervention engine has one. Heavy governance refresh still settles at Stop.
+Codex hook schemas dispatch ``PostToolUse`` for ``Bash`` only. Native patch
+payloads remain supported for tests and manual calls. The hook exits 0 and
+emits an earned Observation/Proposal when the intervention engine has one.
+Shared command parsing and ``refresh_governance`` also serve Claude hooks.
 """
 
 from __future__ import annotations
@@ -28,12 +19,12 @@ import re
 import shlex
 import subprocess
 import sys
-import time
 from pathlib import Path
 from typing import Any
 from typing import Mapping
 
 from odylith.runtime.intervention_engine import host_surface_runtime
+from odylith.runtime.intervention_engine import visibility_broker
 from odylith.runtime.surfaces import claude_host_shared
 from odylith.runtime.surfaces import codex_host_shared
 from odylith.runtime.surfaces import host_dirty_checkpoint
@@ -65,11 +56,6 @@ _NODE_TWO_PATH_CALL_RE = re.compile(
     re.VERBOSE,
 )
 _SHELL_CONTROL_TOKENS: frozenset[str] = frozenset({"&&", "||", ";", "|", "&"})
-_START_GROUND_CACHE_RELATIVE = Path(
-    ".odylith/runtime/latency-cache/codex-post-bash-start.v1.json"
-)
-_START_GROUND_CACHE_TTL_SECONDS = 20 * 60
-_PROCESS_FALLBACK_SESSION_RE = re.compile(r"^agent-\d+$")
 
 
 def _is_shell_redirection_token(token: str) -> bool:
@@ -92,111 +78,6 @@ def _trim_shell_command_tokens(tokens: list[str]) -> list[str]:
 
 def should_checkpoint(command: str) -> bool:
     return codex_host_shared.edit_like_bash(command)
-
-
-def _start_ground_cache_path(*, project_dir: Path | str) -> Path:
-    return Path(project_dir).expanduser().resolve() / _START_GROUND_CACHE_RELATIVE
-
-
-def _start_ground_cache_key(session_id: str) -> str:
-    token = str(session_id or "").strip()
-    if not token or _PROCESS_FALLBACK_SESSION_RE.match(token):
-        return "codex-default"
-    return token
-
-
-def _load_start_ground_cache(*, project_dir: Path | str) -> dict[str, Any]:
-    path = _start_ground_cache_path(project_dir=project_dir)
-    if not path.is_file():
-        return {}
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError):
-        return {}
-    return dict(payload) if isinstance(payload, Mapping) else {}
-
-
-def _write_start_ground_cache(*, project_dir: Path | str, payload: Mapping[str, Any]) -> None:
-    path = _start_ground_cache_path(project_dir=project_dir)
-    try:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(
-            json.dumps(dict(payload), indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
-    except OSError:
-        return
-
-
-def should_run_start_grounding(
-    *,
-    project_dir: Path | str,
-    session_id: str,
-    now_seconds: float | None = None,
-    ttl_seconds: int = _START_GROUND_CACHE_TTL_SECONDS,
-) -> bool:
-    cache = _load_start_ground_cache(project_dir=project_dir)
-    sessions = cache.get("sessions")
-    if not isinstance(sessions, Mapping):
-        return True
-    record = sessions.get(_start_ground_cache_key(session_id))
-    if not isinstance(record, Mapping):
-        return True
-    try:
-        attempted_at = float(record.get("attempted_at_seconds"))
-    except (TypeError, ValueError):
-        return True
-    now = time.time() if now_seconds is None else float(now_seconds)
-    age_seconds = now - attempted_at
-    return not (0 <= age_seconds < max(1, int(ttl_seconds)))
-
-
-def record_start_grounding_attempt(
-    *,
-    project_dir: Path | str,
-    session_id: str,
-    completed: subprocess.CompletedProcess[str] | None,
-    now_seconds: float | None = None,
-) -> None:
-    cache = _load_start_ground_cache(project_dir=project_dir)
-    sessions = cache.get("sessions")
-    if not isinstance(sessions, dict):
-        sessions = {}
-    now = time.time() if now_seconds is None else float(now_seconds)
-    sessions[_start_ground_cache_key(session_id)] = {
-        "attempted_at_seconds": now,
-        "returncode": completed.returncode if completed is not None else None,
-        "status": (
-            "launcher_unavailable"
-            if completed is None
-            else "completed"
-            if completed.returncode == 0
-            else "failed"
-        ),
-    }
-    _write_start_ground_cache(
-        project_dir=project_dir,
-        payload={
-            "version": 1,
-            "ttl_seconds": _START_GROUND_CACHE_TTL_SECONDS,
-            "sessions": sessions,
-        },
-    )
-
-
-def run_start_grounding_if_due(*, project_dir: Path | str, session_id: str) -> None:
-    if not should_run_start_grounding(project_dir=project_dir, session_id=session_id):
-        return
-    completed = codex_host_shared.run_odylith(
-        project_dir=project_dir,
-        args=["start", "--repo-root", "."],
-        timeout=20,
-    )
-    record_start_grounding_attempt(
-        project_dir=project_dir,
-        session_id=session_id,
-        completed=completed,
-    )
 
 
 def dirty_governed_paths(*, project_dir: Path | str) -> list[str]:
@@ -721,7 +602,7 @@ def record_deferred_checkpoint_event(
     command: str,
     session_id: str = "",
 ) -> str:
-    """Record a cheap Codex dirty event for later Stop-time settlement."""
+    """Retain Codex dirty paths for ordinary foreground synchronization."""
 
     project = Path(project_dir).expanduser().resolve()
     changed_paths = inferred_command_paths(project_dir=project, command=command)
@@ -733,7 +614,6 @@ def record_deferred_checkpoint_event(
         host_family="codex",
         session_id=session_id,
         source="post_bash_checkpoint",
-        command=command,
         paths=changed_paths,
         governed_paths=governed_paths,
     )
@@ -752,6 +632,12 @@ def _codex_post_bash_payload(
     )
     if not bundle:
         return {}
+    bundle = dict(bundle)
+    observation = dict(bundle.get("observation", {})) if isinstance(bundle.get("observation"), Mapping) else {}
+    observation.setdefault("host_family", "codex")
+    observation.setdefault("turn_phase", "post_bash_checkpoint")
+    observation.setdefault("session_id", session_id)
+    bundle["observation"] = observation
     developer_context = host_surface_runtime.render_developer_context(
         bundle,
         markdown=True,
@@ -763,6 +649,26 @@ def _codex_post_bash_payload(
         markdown=True,
         include_proposal=True,
     )
+    decision = host_surface_runtime.visible_intervention_decision(
+        repo_root=project_dir,
+        bundle=bundle,
+        host_family="codex",
+        turn_phase="post_bash_checkpoint",
+        session_id=session_id,
+        include_proposal=True,
+        include_closeout=False,
+        delivery_channel=visibility_broker.ASSISTANT_RENDER_REQUIRED_CHANNEL,
+        delivery_status=visibility_broker.ASSISTANT_RENDER_REQUIRED_STATUS,
+        visible_markdown_override=visible_intervention,
+    )
+    if decision.visible_markdown or decision.developer_context:
+        host_surface_runtime.append_visible_intervention_events(
+            repo_root=project_dir,
+            bundle=bundle,
+            decision=decision,
+            render_surface="codex_post_bash_checkpoint",
+        )
+    visible_intervention = decision.visible_markdown or visible_intervention
     system_message = host_surface_runtime.compose_checkpoint_system_message(
         live_intervention=visible_intervention,
     )
@@ -771,34 +677,6 @@ def _codex_post_bash_payload(
         system_message=system_message,
         include_assist_in_visible_fallback=False,
     )
-
-
-def settle_deferred_checkpoint_events(
-    *,
-    project_dir: Path | str,
-    session_id: str = "",
-) -> dict[str, str] | None:
-    """Run deferred Codex checkpoint refresh work and clear settled events."""
-
-    project = Path(project_dir).expanduser().resolve()
-    events = host_dirty_checkpoint.read_dirty_events(
-        repo_root=project,
-        host_family="codex",
-        session_id=session_id,
-    )
-    if not events:
-        return None
-    event_ids = [str(event.get("id") or "").strip() for event in events if str(event.get("id") or "").strip()]
-    governed_paths = host_dirty_checkpoint.deduped_governed_paths(events)
-    if not governed_paths:
-        host_dirty_checkpoint.clear_dirty_events(repo_root=project, event_ids=event_ids)
-        return None
-    run_start_grounding_if_due(project_dir=project, session_id=session_id)
-    governance_message = refresh_governance(project_dir=project, paths=governed_paths)
-    governance_status = str((governance_message or {}).get("systemMessage", "")).strip()
-    if not governance_status:
-        host_dirty_checkpoint.clear_dirty_events(repo_root=project, event_ids=event_ids)
-    return governance_message
 
 
 def main(argv: list[str] | None = None) -> int:

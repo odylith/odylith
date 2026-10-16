@@ -2,14 +2,23 @@ from __future__ import annotations
 
 import errno
 import importlib.util
+import json
 import shutil
+import socket
+import subprocess
 import sys
+import time
 from pathlib import Path
+from types import SimpleNamespace
 from urllib.error import HTTPError
+
+import pytest
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
 
 
 def _load_module(path: Path, name: str):
@@ -36,7 +45,25 @@ def test_local_release_env_forces_deterministic_reasoning(monkeypatch) -> None: 
     assert env["ODYLITH_RELEASE_MAINTAINER_ROOT"] == str(module.REPO_ROOT)
     assert env["ODYLITH_REASONING_MODE"] == "disabled"
     assert env["ODYLITH_REASONING_PROVIDER"] == "auto-local"
+    assert env["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "1"
+    assert env["ODYLITH_REASONING_CODEX_BIN"] == "/usr/bin/false"
+    assert env["ODYLITH_REASONING_CLAUDE_BIN"] == "/usr/bin/false"
+    assert env["ODYLITH_COMPASS_STANDUP_BACKGROUND_DISABLE"] == "1"
+    assert env["ODYLITH_NO_BROWSER"] == "1"
     assert env["ODYLITH_VERSION"] == "0.1.6"
+
+
+@pytest.mark.parametrize('skip', ['', '0', '1', 'true'])
+def test_signed_candidate_smoke_cannot_inherit_signature_bypass(monkeypatch, skip):
+    module = _module()
+    monkeypatch.setenv('ODYLITH_RELEASE_REQUIRE_SIGSTORE_VERIFY', '1')
+    monkeypatch.setenv('ODYLITH_RELEASE_SKIP_SIGSTORE_VERIFY', skip)
+    if skip not in ('', '0'):
+        with pytest.raises(RuntimeError, match='cannot bypass'):
+            module._local_release_env(base_url='http://127.0.0.1:8123', version='0.1.15')
+    else:
+        environment = module._local_release_env(base_url='http://127.0.0.1:8123', version='0.1.15')
+        assert 'ODYLITH_RELEASE_SKIP_SIGSTORE_VERIFY' not in environment
 
 
 def test_force_deterministic_reasoning_env_overrides_exported_provider() -> None:
@@ -51,6 +78,29 @@ def test_force_deterministic_reasoning_env_overrides_exported_provider() -> None
 
     assert env["ODYLITH_REASONING_MODE"] == "disabled"
     assert env["ODYLITH_REASONING_PROVIDER"] == "auto-local"
+    assert env["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "1"
+    assert env["ODYLITH_REASONING_CODEX_BIN"] == "/usr/bin/false"
+    assert env["ODYLITH_REASONING_CLAUDE_BIN"] == "/usr/bin/false"
+    assert env["ODYLITH_COMPASS_STANDUP_BACKGROUND_DISABLE"] == "1"
+    assert env["ODYLITH_NO_BROWSER"] == "1"
+
+
+def test_release_asset_server_shutdown_does_not_wait_for_a_stalled_client(tmp_path: Path) -> None:
+    module = _module()
+    (tmp_path / "install.sh").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    server, _base_url = module._serve_directory(tmp_path)
+    host, port = server.server_address
+    client = socket.create_connection((host, port), timeout=1)
+    client.sendall(b"GET /install.sh HTTP/1.1\\r\\n")
+    time.sleep(0.05)
+
+    try:
+        started = time.monotonic()
+        server.shutdown()
+        assert time.monotonic() - started < 1
+    finally:
+        server.server_close()
+        client.close()
 
 
 def test_cleanup_smoke_temp_root_retries_enotempty(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
@@ -75,6 +125,35 @@ def test_cleanup_smoke_temp_root_retries_enotempty(monkeypatch, tmp_path: Path) 
     assert not target.exists()
     assert calls[0] is False
     assert len(calls) >= 2
+
+
+def test_cleanup_smoke_temp_root_removes_post_success_runtime_residue(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
+    module = _module()
+    target = tmp_path / "release-smoke"
+    (target / ".odylith" / "compass").mkdir(parents=True)
+    (target / ".odylith" / "compass" / "standup-brief-cache.v25.json").write_text("{}", encoding="utf-8")
+    real_rmtree = shutil.rmtree
+    calls = 0
+
+    def rmtree_then_recreate(path, *args, **kwargs):  # noqa: ANN001
+        nonlocal calls
+        calls += 1
+        result = real_rmtree(path, *args, **kwargs)
+        if calls == 1:
+            (target / ".odylith" / "locks" / "odylith-context-engine").mkdir(parents=True)
+            (target / ".odylith" / "locks" / "odylith-context-engine" / "late.lock").write_text(
+                "",
+                encoding="utf-8",
+            )
+        return result
+
+    monkeypatch.setattr(module.time, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(module.shutil, "rmtree", rmtree_then_recreate)
+
+    module._cleanup_smoke_temp_root(target)
+
+    assert not target.exists()
+    assert calls >= 2
 
 
 def test_cleanup_smoke_temp_root_swallows_persistent_cleanup_noise(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
@@ -108,6 +187,17 @@ def test_previous_release_is_published_treats_404_as_missing(monkeypatch) -> Non
     assert module._previous_release_is_published(version="0.1.5") is False
 
 
+def test_previous_release_is_published_treats_wrapped_404_as_missing(monkeypatch) -> None:
+    module = _module()
+
+    def fake_fetch_release(**kwargs):  # noqa: ANN001
+        raise ValueError("failed to fetch release metadata: HTTP Error 404: Not Found")
+
+    monkeypatch.setattr(module, "fetch_release", fake_fetch_release)
+
+    assert module._previous_release_is_published(version="0.0.0") is False
+
+
 def test_previous_release_is_published_returns_true_when_release_exists(monkeypatch) -> None:
     module = _module()
 
@@ -122,6 +212,449 @@ def test_previous_release_is_published_returns_true_when_release_exists(monkeypa
     assert module._previous_release_is_published(version="0.1.5") is True
     assert seen["repo"] == "odylith/odylith"
     assert seen["version"] == "0.1.5"
+
+
+def test_run_reports_timeout_with_command_and_cwd(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
+    module = _module()
+
+    def fake_run(*args, **kwargs):  # noqa: ANN001
+        raise subprocess.TimeoutExpired(cmd=args[0], timeout=300, output="out", stderr="err")
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+
+    try:
+        module._run(cwd=tmp_path, env={}, command=["odylith", "sync", "--force"])
+    except RuntimeError as exc:
+        message = str(exc)
+    else:  # pragma: no cover - assertion branch
+        raise AssertionError("timeout should raise RuntimeError")
+
+    assert "command timed out after" in message
+    assert "odylith sync --force" in message
+    assert f"cwd: {tmp_path}" in message
+    assert "out" in message
+    assert "err" in message
+
+
+@pytest.mark.parametrize(
+    "defect",
+    [
+        "",
+        "nonzero",
+        "invalid_json",
+        "wrong_version",
+        "wrong_candidate_version",
+        "missing_evidence",
+        "bad_schema",
+        "open_schema",
+        "unknown_candidate_field",
+        "open_authored_result",
+        "unknown_authored_field",
+        "open_facts",
+        "unknown_fact",
+        "missing_fact",
+        "optional_fact",
+        "custody_leak",
+        "duplicate_component_authority",
+        "missing_proposed_components",
+        "missing_summary",
+        "optional_summary",
+        "non_string_summary",
+        "empty_summary",
+        "unbounded_summary",
+        "missing_context",
+        "non_string_context",
+        "candidate_review",
+        "missing_binding",
+        "non_object_binding",
+        "optional_binding",
+        "bad_binding_version",
+        "legacy_binding_version",
+        "open_binding",
+        "unknown_binding_field",
+        "bad_source_digest",
+        "bad_ledger_digest",
+        "missing_boundary_bindings",
+        "open_boundary_row",
+        "unknown_boundary_field",
+        "reauthored_first_path_binding",
+        "reauthored_supporting_binding",
+        "reauthored_system_binding",
+        "reauthored_event",
+        "non_object_event",
+        "reauthored_title",
+        "optional_title",
+        "reauthored_first_path",
+        "reauthored_supporting_events",
+        "reauthored_customer",
+        "reauthored_human_actors",
+        "reauthored_internal_systems",
+        "reauthored_external_systems",
+        "reauthored_proof_boundary",
+        "reauthored_terminal",
+        "reauthored_source_precedence",
+        "reauthored_first_run_membership",
+        "open_first_run",
+        "unknown_first_run_field",
+        "missing_first_run_rationale",
+        "optional_first_run_rationale",
+        "non_string_first_run_rationale",
+        "empty_first_run_rationale",
+        "unbounded_first_run_rationale",
+        "attempt",
+        "subprocess",
+        "missing_audit",
+        "failed_audit",
+    ],
+)
+def test_greenfield_install_smoke_requires_read_only_candidate_contract(
+    monkeypatch, tmp_path: Path, defect: str,
+) -> None:
+    from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+        greenfield_host_candidate_contract,
+    )
+
+    module = _module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    odylith = repo_root / ".odylith" / "bin" / "odylith"
+    commands: list[tuple[str, ...]] = []
+    finished: list[bool] = []
+    audit = SimpleNamespace(
+        environment=lambda: {"audit": "enabled"},
+        pass_fds=(42,),
+        command=lambda **kwargs: [str(kwargs["runtime_python"]), "-I", "-c", "audit", *kwargs["arguments"]],
+        finish=lambda: finished.append(True) or SimpleNamespace(
+            active=defect != "missing_audit", error="audit failed" if defect == "failed_audit" else "",
+            write_attempts=("open:odylith/radar/source/transient.json",) if defect == "attempt" else (),
+            subprocess_attempts=("subprocess.Popen",) if defect == "subprocess" else (),
+        ),
+    )
+    monkeypatch.setattr(module, "begin_installed_write_audit", lambda **kwargs: audit)
+    baseline_checks: list[Path] = []
+    monkeypatch.setattr(
+        module, "_require_greenfield_baseline",
+        lambda **kwargs: baseline_checks.append(kwargs["repo_root"]),
+    )
+
+    def fake_run(**kwargs):  # noqa: ANN001
+        command = tuple(str(part) for part in kwargs["command"])
+        commands.append(command)
+        if "show" in command:
+            return SimpleNamespace(returncode=0, stdout="Odylith read this repo\n", stderr="")
+        assert "candidate-contract" in command and "propose" not in command
+        assert kwargs["env"]["ODYLITH_REASONING_MODE"] == "disabled"
+        assert kwargs["env"]["audit"] == "enabled" and kwargs["pass_fds"] == (42,)
+        time.sleep(0.002)
+        payload = greenfield_host_candidate_contract(module._CANDIDATE_CONTRACT_SMOKE_PROMPT)
+        schema = payload["candidate_schema"]
+        authored = schema["properties"]["result"]["anyOf"][0]
+        facts = authored["properties"]["facts"]
+        constraint_schema = facts["properties"]["operational_constraints"]["items"]
+        first_run = authored["properties"]["provisional_design"]["properties"]["first_run"]
+        binding = authored["properties"]["source_duty_binding"]
+        if defect == "wrong_version":
+            payload["version"] = "odylith.greenfield.host-candidate-contract.v33"
+        elif defect == "wrong_candidate_version":
+            payload["candidate_version"] = "odylith.greenfield.host-candidate-format.v18"
+        elif defect == "missing_evidence":
+            payload["request"]["evidence"] = "different evidence"
+        elif defect == "bad_schema":
+            payload["candidate_schema"] = {"type": "object", "required": ["version"]}
+        elif defect == "open_schema":
+            schema["additionalProperties"] = True
+        elif defect == "unknown_candidate_field":
+            schema["properties"]["unexpected"] = {"type": "string"}
+        elif defect == "open_authored_result":
+            authored["additionalProperties"] = True
+        elif defect == "unknown_authored_field":
+            authored["properties"]["unexpected"] = {"type": "string"}
+        elif defect == "open_facts":
+            facts["additionalProperties"] = True
+        elif defect == "unknown_fact":
+            facts["properties"]["unexpected"] = constraint_schema
+        elif defect == "missing_fact":
+            facts["properties"].pop("problem")
+        elif defect == "optional_fact":
+            facts["required"].remove("problem")
+        elif defect == "custody_leak":
+            constraint_schema["properties"]["constraint_custody"] = {"type": "object"}
+        elif defect == "duplicate_component_authority":
+            authored["properties"]["components"] = {"type": "array"}
+            authored["required"].append("components")
+        elif defect == "missing_proposed_components":
+            authored["properties"]["provisional_design"]["properties"].pop("components")
+        elif defect == "missing_summary":
+            authored["properties"]["provisional_design"]["properties"].pop("project_summary")
+        elif defect == "optional_summary":
+            authored["properties"]["provisional_design"]["required"].remove("project_summary")
+        elif defect == "non_string_summary":
+            authored["properties"]["provisional_design"]["properties"]["project_summary"]["type"] = "object"
+        elif defect == "empty_summary":
+            authored["properties"]["provisional_design"]["properties"]["project_summary"]["minLength"] = 0
+        elif defect == "unbounded_summary":
+            authored["properties"]["provisional_design"]["properties"]["project_summary"].pop("maxLength")
+        elif defect == "missing_context":
+            constraint_schema["required"] = ["quote"]
+        elif defect == "non_string_context":
+            constraint_schema["properties"]["context"] = {"type": "object"}
+        elif defect == "candidate_review":
+            authored["properties"]["candidate_review"] = {"type": "object"}
+        elif defect == "missing_binding":
+            authored["properties"].pop("source_duty_binding")
+        elif defect == "non_object_binding":
+            authored["properties"]["source_duty_binding"] = None
+        elif defect == "optional_binding":
+            authored["required"].remove("source_duty_binding")
+        elif defect == "bad_binding_version":
+            binding["properties"]["version"]["const"] = "odylith.greenfield.source-duty-binding.v2"
+        elif defect == "legacy_binding_version":
+            binding["properties"]["version"]["const"] = "odylith.greenfield.source-duty-binding.v3"
+        elif defect == "open_binding":
+            binding["additionalProperties"] = True
+        elif defect == "unknown_binding_field":
+            binding["properties"]["unexpected"] = {"type": "string"}
+        elif defect == "bad_source_digest":
+            binding["properties"]["source_sha256"]["minLength"] = 1
+        elif defect == "bad_ledger_digest":
+            binding["properties"]["ledger_sha256"]["maxLength"] = 128
+        elif defect == "missing_boundary_bindings":
+            binding["properties"].pop("boundaries")
+            binding["required"].remove("boundaries")
+        elif defect == "open_boundary_row":
+            binding["properties"]["boundaries"]["items"]["additionalProperties"] = True
+        elif defect == "unknown_boundary_field":
+            binding["properties"]["boundaries"]["items"]["properties"]["unexpected"] = {"type": "string"}
+        elif defect in {
+            "reauthored_first_path_binding", "reauthored_supporting_binding", "reauthored_system_binding",
+        }:
+            from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
+                greenfield_source_duty_binding_schema,
+            )
+            role = {
+                "reauthored_first_path_binding": "first_path_actions",
+                "reauthored_supporting_binding": "supporting_human_actions",
+                "reauthored_system_binding": "system_duties",
+            }[defect]
+            binding["properties"][role] = greenfield_source_duty_binding_schema()["properties"][role]
+            binding["required"].append(role)
+        elif defect == "reauthored_event":
+            authored["properties"]["events"] = {
+                "type": "array", "items": {
+                    "type": "object", "additionalProperties": False,
+                    "required": ["actor_fact"], "properties": {"actor_fact": {"type": "object"}},
+                },
+            }
+            authored["required"].append("events")
+        elif defect == "non_object_event":
+            authored["properties"]["events"] = []
+        elif defect in {"reauthored_title", "optional_title"}:
+            facts["properties"]["title"] = {"anyOf": [constraint_schema, {"type": "null"}]}
+            if defect == "reauthored_title":
+                facts["required"].append("title")
+        elif defect in {"reauthored_first_path", "reauthored_supporting_events"}:
+            field = "first_path" if defect == "reauthored_first_path" else "supporting_events"
+            facts["properties"][field] = {"type": "array", "items": constraint_schema}
+            facts["required"].append(field)
+        elif defect in {
+            "reauthored_customer", "reauthored_human_actors", "reauthored_internal_systems",
+            "reauthored_external_systems", "reauthored_proof_boundary",
+        }:
+            field = defect.removeprefix("reauthored_")
+            facts["properties"][field] = constraint_schema
+            facts["required"].append(field)
+        elif defect in {"reauthored_terminal", "reauthored_source_precedence"}:
+            field = defect.removeprefix("reauthored_")
+            authored["properties"][field] = {"type": "object"}
+            authored["required"].append(field)
+        elif defect == "reauthored_first_run_membership":
+            first_run["properties"]["event_orders"] = {"type": "array"}
+            first_run["required"].append("event_orders")
+        elif defect == "open_first_run":
+            first_run["additionalProperties"] = True
+        elif defect == "unknown_first_run_field":
+            first_run["properties"]["unexpected"] = {"type": "string"}
+        elif defect == "missing_first_run_rationale":
+            first_run["properties"].pop("rationale")
+        elif defect == "optional_first_run_rationale":
+            first_run["required"].remove("rationale")
+        elif defect == "non_string_first_run_rationale":
+            first_run["properties"]["rationale"]["type"] = "object"
+        elif defect == "empty_first_run_rationale":
+            first_run["properties"]["rationale"]["minLength"] = 0
+        elif defect == "unbounded_first_run_rationale":
+            first_run["properties"]["rationale"].pop("maxLength")
+        stdout = "not-json" if defect == "invalid_json" else json.dumps(payload)
+        return SimpleNamespace(
+            returncode=2 if defect == "nonzero" else 0,
+            stdout=stdout,
+            stderr="candidate-contract failed" if defect == "nonzero" else "",
+        )
+
+    monkeypatch.setattr(module, "_run", fake_run)
+    monkeypatch.setattr(module, "run_command_with_group_timeout", fake_run)
+    env = module._force_deterministic_reasoning_env({"ODYLITH_VERSION": "0.1.15"})
+    if defect:
+        with pytest.raises(RuntimeError, match="candidate[- ]contract"):
+            module._greenfield_candidate_contract_smoke(repo_root=repo_root, odylith=odylith, env=env)
+    else:
+        module._greenfield_candidate_contract_smoke(repo_root=repo_root, odylith=odylith, env=env)
+    assert finished == [True]
+    assert baseline_checks[0] == repo_root
+    if not defect:
+        assert baseline_checks == [repo_root, repo_root]
+    assert commands[0] == (str(odylith), "show", "--repo-root", ".")
+    assert len(commands) == 2 and "candidate-contract" in commands[1]
+
+
+def test_release_smoke_pins_the_real_current_candidate_contract() -> None:
+    from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+        HOST_CANDIDATE_CONTRACT_VERSION,
+        greenfield_host_candidate_contract,
+    )
+    from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
+        HOST_CANDIDATE_FORMAT_VERSION,
+    )
+
+    module = _module()
+    contract = greenfield_host_candidate_contract(module._CANDIDATE_CONTRACT_SMOKE_PROMPT)
+
+    assert module._EXPECTED_CANDIDATE_CONTRACT_VERSION == HOST_CANDIDATE_CONTRACT_VERSION
+    assert module._EXPECTED_CANDIDATE_FORMAT_VERSION == HOST_CANDIDATE_FORMAT_VERSION
+    assert contract["version"] == HOST_CANDIDATE_CONTRACT_VERSION
+    assert contract["candidate_version"] == HOST_CANDIDATE_FORMAT_VERSION
+    assert "source-only" in contract["task"]
+    assert "without another semantic call" in contract["task"]
+    facts = contract["candidate_schema"]["properties"]["result"]["anyOf"][0]["properties"]["facts"]
+    assert "title" not in facts["properties"] and "title" not in facts["required"]
+    authored = contract["candidate_schema"]["properties"]["result"]["anyOf"][0]
+    assert {"terminal", "source_precedence"}.isdisjoint(authored["properties"])
+    assert {"customer", "human_actors", "internal_systems", "external_systems", "proof_boundary"}.isdisjoint(facts["properties"])
+    first_run = authored["properties"]["provisional_design"]["properties"]["first_run"]
+    assert set(first_run["properties"]) == set(first_run["required"]) == {"rationale"}
+    assert module._has_current_host_candidate_schema(contract["candidate_schema"])
+
+
+def test_install_smoke_does_not_claim_positive_greenfield_qualification() -> None:
+    module = _module()
+    assert "does not qualify a successful Greenfield request" in module.build_parser().description
+
+
+def _write_greenfield_guidance(repo_root: Path, text: str) -> None:
+    module = _module()
+    for relative_path in module._GREENFIELD_GUIDANCE_FILES:
+        path = repo_root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+
+
+def test_release_smoke_requires_read_only_proposal_and_separate_direct_create(tmp_path: Path) -> None:
+    module = _module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_greenfield_guidance(
+        repo_root,
+        "Use a project-first greenfield proposal. Include a sectioned Product story, State object, First complete path, and Proof boundary; never collapse the proposal into a wall of prose. Run odylith greenfield propose --repo-root . --prompt '<request>'. Odylith compiles and validates typed prompt evidence and the full ProductCreateTransaction as a read-only public proposal. No qualified confirmation interface is attached to the preview. Do not append chat decision commands, offer publication, or run create from a chat approval. Explicit operator invocation of odylith greenfield create remains separate and uses --repo-root . --transaction-file .odylith/runtime/greenfield/pending/<hash>/product-create-transaction.v1.json --transaction-hash <hash> --confirm. Create verifies the compiler receipt, hash, and repo preconditions, writes only sealed bytes under a rollback guard, validates readback, and performs no product reinterpretation, repair, or generation after confirmation. Do not inspect Odylith source after confirmation. Do not narrate parser/schema retries. Do not ask the operator to inspect proposal JSON.\n",
+    )
+
+    module._require_greenfield_guidance_uses_confirmed_create(repo_root=repo_root, label="unit")
+
+    (repo_root / "AGENTS.md").write_text(
+        "Use Product Intent Confirmation before proposal expansion. Include the product story. The host authors an internal proposal payload and uses odylith greenfield apply from the same confirmation. Do not inspect Odylith source after confirmation. Do not ask the operator to inspect proposal JSON. host model drafts\n",
+        encoding="utf-8",
+    )
+    try:
+        module._require_greenfield_guidance_uses_confirmed_create(repo_root=repo_root, label="unit")
+    except RuntimeError as exc:
+        assert "stale greenfield schema-repair flow" in str(exc)
+    else:  # pragma: no cover - assertion branch
+        raise AssertionError("stale installed guidance should fail release smoke")
+
+
+def test_release_smoke_accepts_current_candidate_contract_guidance() -> None:
+    module = _module()
+
+    module._require_greenfield_guidance_uses_confirmed_create(
+        repo_root=REPO_ROOT,
+        label="maintained source",
+    )
+
+
+def test_release_smoke_rejects_old_unqualified_public_decision_offer(tmp_path: Path) -> None:
+    module = _module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_greenfield_guidance(
+        repo_root,
+        "Run odylith greenfield propose to compile a ProductCreateTransaction as a read-only preview with no qualified confirmation interface. Do not append chat decisions or offer publication, and do not run odylith greenfield create from a chat approval. After showing the only hash-bound CONFIRM rail, use exactly one hash-bound command: CONFIRM, EDIT, or REJECT. A direct operator can separately run odylith greenfield create --transaction-file <file> --transaction-hash <hash> --confirm. Create verifies receipt under a rollback guard and readback with no product reinterpretation. Do not inspect proposal JSON or narrate parser/schema retries.\n",
+    )
+
+    with pytest.raises(RuntimeError, match="obsolete public greenfield command rail"):
+        module._require_greenfield_guidance_uses_confirmed_create(repo_root=repo_root, label="unit")
+
+
+def test_release_smoke_rejects_maintainer_restrictions_in_consumer_guidance(tmp_path: Path) -> None:
+    module = _module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    for relative_path in module._CONSUMER_GUIDANCE_FILES:
+        path = repo_root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("Consumer guidance follows this repo's own Git identity.\n", encoding="utf-8")
+    for relative_dir in module._CONSUMER_GUIDANCE_DIRECTORIES:
+        path = repo_root / relative_dir / "README.md"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("Consumer guidance follows this repo's own Git policy and native validation.\n", encoding="utf-8")
+
+    module._require_no_maintainer_restrictions_in_consumer_guidance(repo_root=repo_root, label="unit")
+
+    (repo_root / "CLAUDE.md").write_text(
+        "Commit messages must use only the `freedom-research` contributor identity and must not include coding-assistant trailers.\n",
+        encoding="utf-8",
+    )
+    try:
+        module._require_no_maintainer_restrictions_in_consumer_guidance(repo_root=repo_root, label="unit")
+    except RuntimeError as exc:
+        assert "consumer surface leaks maintainer-only restriction" in str(exc)
+        assert "CLAUDE.md" in str(exc)
+    else:  # pragma: no cover - assertion branch
+        raise AssertionError("consumer guidance with maintainer identity should fail release smoke")
+
+    (repo_root / "CLAUDE.md").write_text("Consumer guidance follows this repo's own Git identity.\n", encoding="utf-8")
+    leak = repo_root / "odylith" / "agents-guidelines" / "VALIDATION_AND_TESTING.md"
+    leak.write_text("In this repo, never work directly on `main`; run make release-preflight before release.\n", encoding="utf-8")
+    try:
+        module._require_no_maintainer_restrictions_in_consumer_guidance(repo_root=repo_root, label="unit")
+    except RuntimeError as exc:
+        assert "consumer surface leaks maintainer-only restriction" in str(exc)
+        assert "odylith/agents-guidelines/VALIDATION_AND_TESTING.md" in str(exc)
+    else:  # pragma: no cover - assertion branch
+        raise AssertionError("consumer guidance with maintainer branch or release rule should fail release smoke")
+
+    leak.write_text("Consumer guidance follows this repo's own Git policy and native validation.\n", encoding="utf-8")
+    (repo_root / "odylith" / "runtime" / "source").mkdir(parents=True, exist_ok=True)
+    (repo_root / "odylith" / "runtime" / "source" / "release-metadata.v1.json").write_text(
+        '{"owner": "freedom-research"}\n',
+        encoding="utf-8",
+    )
+    try:
+        module._require_no_maintainer_restrictions_in_consumer_guidance(repo_root=repo_root, label="unit")
+    except RuntimeError as exc:
+        assert "consumer surface leaks maintainer-only restriction" in str(exc)
+        assert "odylith/runtime/source/release-metadata.v1.json" in str(exc)
+    else:  # pragma: no cover - assertion branch
+        raise AssertionError("consumer runtime source with maintainer identity should fail release smoke")
+
+
+def test_bundled_consumer_guidance_has_no_maintainer_restrictions(tmp_path: Path) -> None:
+    module = _module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    shutil.copytree(REPO_ROOT / "src" / "odylith" / "bundle" / "assets" / "project-root", repo_root, dirs_exist_ok=True)
+    bundled_odylith = REPO_ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith"
+    shutil.copytree(bundled_odylith, repo_root / "odylith", dirs_exist_ok=True)
+
+    module._require_no_maintainer_restrictions_in_consumer_guidance(repo_root=repo_root, label="bundle")
 
 
 def test_main_skips_upgrade_cycle_when_previous_release_missing(monkeypatch, tmp_path: Path) -> None:
@@ -178,6 +711,56 @@ def test_main_runs_upgrade_cycle_when_previous_release_exists(monkeypatch, tmp_p
     assert events == ["install", "upgrade", "stale-residue", "shutdown", "server_close"]
 
 
+def test_main_runs_all_explicit_previous_versions(monkeypatch, tmp_path: Path) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    dist_dir.mkdir()
+    (dist_dir / "install.sh").write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+
+    events: list[str] = []
+
+    class _DummyServer:
+        def shutdown(self) -> None:
+            events.append("shutdown")
+
+        def server_close(self) -> None:
+            events.append("server_close")
+
+    monkeypatch.setattr(module, "_serve_directory", lambda directory: (_DummyServer(), "http://127.0.0.1:8123"))
+    monkeypatch.setattr(module, "_install_and_smoke", lambda **kwargs: events.append("install"))
+    monkeypatch.setattr(module, "_upgrade_cycle", lambda **kwargs: events.append(f"upgrade:{kwargs['previous_version']}"))
+    monkeypatch.setattr(
+        module,
+        "_stale_uninstall_residue_cycle",
+        lambda **kwargs: events.append(f"stale-residue:{kwargs['previous_version']}"),
+    )
+    monkeypatch.setattr(module, "_previous_release_is_published", lambda **kwargs: True)
+
+    rc = module.main(
+        [
+            "--version",
+            "0.1.15",
+            "--dist-dir",
+            str(dist_dir),
+            "--previous-version",
+            "0.1.10",
+            "--previous-version",
+            "0.1.14",
+        ]
+    )
+
+    assert rc == 0
+    assert events == [
+        "install",
+        "upgrade:0.1.10",
+        "stale-residue:0.1.10",
+        "upgrade:0.1.14",
+        "stale-residue:0.1.14",
+        "shutdown",
+        "server_close",
+    ]
+
+
 def test_upgrade_cycle_proves_dashboard_refresh_after_each_target_activation(
     monkeypatch, tmp_path: Path
 ) -> None:
@@ -203,6 +786,14 @@ def test_upgrade_cycle_proves_dashboard_refresh_after_each_target_activation(
     monkeypatch.setattr(module, "_install_cwd", lambda root: root)
     monkeypatch.setattr(module, "_seed_legacy_compass_archive_fixture", lambda **kwargs: history_checks.append("seed"))
     monkeypatch.setattr(module, "_require_compass_history_layout", lambda **kwargs: history_checks.append("check"))
+    monkeypatch.setattr(
+        module, "_greenfield_candidate_contract_smoke",
+        lambda **kwargs: commands.append(("greenfield-ready",)),
+    )
+    monkeypatch.setattr(
+        module, "_require_greenfield_baseline",
+        lambda **kwargs: commands.append(("baseline-readback",)),
+    )
 
     module._upgrade_cycle(
         repo_root=repo_root,
@@ -221,6 +812,82 @@ def test_upgrade_cycle_proves_dashboard_refresh_after_each_target_activation(
     assert all(command[-3:] == ("refresh", "--repo-root", ".") for command in dashboard_commands)
     assert history_checks == ["seed", "check", "seed", "check", "seed", "check"]
     assert sum(1 for command in commands if command == ("bash", str(install_script))) == 4
+    for index, command in enumerate(commands):
+        if "dashboard" in command:
+            assert commands[index - 1] == ("greenfield-ready",)
+            assert commands[index + 1] == ("baseline-readback",)
+
+
+@pytest.mark.parametrize("defect", ["", "no_publication", "working_drift", "published_drift", "incomplete"])
+def test_greenfield_baseline_probe_uses_installed_readback_contract(
+    monkeypatch, tmp_path: Path, defect: str,
+) -> None:
+    from odylith import cli
+    from odylith.runtime.domain_intelligence import greenfield_create_baseline as baseline
+    from odylith.runtime.domain_intelligence import greenfield_generation_store as store
+    from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
+
+    module = _module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    if defect != "no_publication":
+        if defect == "incomplete":
+            empty_surface = repo_root / cli._FIRST_RUN_SURFACE_OUTPUTS[1]
+            empty_surface.parent.mkdir(parents=True, exist_ok=True)
+            empty_surface.touch()
+            # Simulate a publisher defect with internally consistent but incomplete bytes.
+            with monkeypatch.context() as patch:
+                patch.setattr(baseline, "_require_completed_baseline_surfaces", lambda *args: None)
+                activate_greenfield_baseline_fixture(repo_root)
+        else:
+            activate_greenfield_baseline_fixture(repo_root)
+        generation = store.require_greenfield_working_generation(repo_root)
+        if defect in {"working_drift", "published_drift"}:
+            root = repo_root if defect == "working_drift" else generation.repository_root
+            (root / "odylith/radar/radar.html").write_text("changed\n", encoding="utf-8")
+
+    commands: list[list[str]] = []
+
+    def run_source_contract(**kwargs):  # noqa: ANN001
+        command = kwargs["command"]
+        commands.append(command)
+        assert command[:4] == [str(repo_root / ".odylith/runtime/current/bin/python"), "-I", "-B", "-c"]
+        assert kwargs["cwd"] == repo_root
+        monkeypatch.chdir(repo_root)
+        # This unit test exercises the exact probe, not an installed-wheel proof.
+        exec(command[4], {})
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(module, "_run", run_source_contract)
+    if defect:
+        expected_error = {
+            "no_publication": "no active immutable generation",
+            "working_drift": "managed files differ from the published generation",
+            "published_drift": "immutable generation bytes differ from the sealed manifest",
+            "incomplete": "requires a complete rendered surface",
+        }[defect]
+        with pytest.raises(RuntimeError, match=expected_error):
+            module._require_greenfield_baseline(repo_root=repo_root, env={})
+    else:
+        module._require_greenfield_baseline(repo_root=repo_root, env={})
+    assert len(commands) == 1
+
+
+def test_greenfield_smoke_cannot_repair_a_missing_baseline_before_readiness(
+    monkeypatch, tmp_path: Path,
+) -> None:
+    module = _module()
+
+    def refuse_baseline(**kwargs):  # noqa: ANN001
+        raise RuntimeError("Greenfield has no active immutable generation")
+
+    monkeypatch.setattr(module, "_require_greenfield_baseline", refuse_baseline)
+    monkeypatch.setattr(module, "_run", lambda **kwargs: pytest.fail("must not run show or repair"))
+    monkeypatch.setattr(module, "begin_installed_write_audit", lambda **kwargs: pytest.fail("must not propose"))
+    with pytest.raises(RuntimeError, match="no active immutable generation"):
+        module._greenfield_candidate_contract_smoke(
+            repo_root=tmp_path, odylith=tmp_path / ".odylith/bin/odylith", env={},
+        )
 
 
 def test_install_clean_previous_release_resets_generated_install_state(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001

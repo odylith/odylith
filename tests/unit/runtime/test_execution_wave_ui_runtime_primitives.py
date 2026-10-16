@@ -42,7 +42,37 @@ def test_execution_wave_component_css_matches_shared_contract() -> None:
         flags=re.S,
     )
     assert re.search(
+        r"\.execution-wave-section-summary\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*auto;[^}]*gap:\s*12px\s*16px;",
+        css,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.execution-wave-section-meta-bottom\s*\{[^}]*grid-column:\s*1\s*/\s*-1;[^}]*justify-content:\s*flex-start;",
+        css,
+        flags=re.S,
+    )
+    assert re.search(
+        r"@media\s*\(max-width:\s*900px\)\s*\{.*?\.execution-wave-section-summary\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);",
+        css,
+        flags=re.S,
+    )
+    assert re.search(
         r"\.execution-wave-card-shell-full-copy\s*\{[^}]*grid-template-areas:\s*\"title meta\"\s*\"sub sub\"\s*\"compact compact\";[^}]*row-gap:\s*8px;",
+        css,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.execution-wave-focus-grid\s*\{[^}]*display:\s*block;[^}]*min-width:\s*0;",
+        css,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.execution-wave-focus-line\s*\{[^}]*max-width:\s*none;",
+        css,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.execution-wave-focus-stat-rail\s*\{[^}]*float:\s*right;[^}]*max-width:\s*min\(44%,\s*520px\);",
         css,
         flags=re.S,
     )
@@ -86,6 +116,11 @@ def test_execution_wave_component_css_matches_shared_contract() -> None:
         css,
         flags=re.S,
     )
+    assert re.search(
+        r"\.execution-wave-group-body \.label\.execution-wave-label\s*\{[^}]*max-width:\s*100%;[^}]*white-space:\s*normal;[^}]*overflow-wrap:\s*anywhere;[^}]*word-break:\s*break-word;",
+        css,
+        flags=re.S,
+    )
     assert "@media (max-width: 900px)" in css
     assert re.search(
         r"@media\s*\(max-width:\s*900px\)\s*\{.*?\.execution-wave-body-grid-members\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);",
@@ -123,6 +158,8 @@ def test_execution_wave_runtime_helpers_expose_shared_renderer() -> None:
     assert 'const resolveWorkstreamProgress = typeof options.resolveWorkstreamProgress === "function"' in runtime
     assert "const programCompletion = executionWaveProgramCompletion(program, options);" in runtime
     assert "execution-wave-card-stat-rail" in runtime
+    assert '<span class="execution-wave-section-toggle execution-wave-section-toggle-triangle" aria-hidden="true"></span>' in runtime
+    assert '<div class="execution-wave-section-meta execution-wave-section-meta-bottom">${sectionChips.join("")}</div>' in runtime
     assert "wave-current-chip" in runtime
     assert 'Current: ${currentWave}' in runtime
     assert 'Closed gate workstreams: ${programCompletion.completeCount}/${programCompletion.totalCount}' in runtime
@@ -138,4 +175,8 @@ def test_execution_wave_runtime_helpers_expose_shared_renderer() -> None:
     assert '? `<div class="${escapeHtml(boardWrapperClass)}">${boardHtml}</div>`' in runtime
     assert 'String(options.selectedNoteText || "").trim()' in runtime
     assert "execution-wave-highlight-label\">Selected scope" in runtime
+    assert "const exitGate = String(wave.exit_gate || \"\").trim();" in runtime
+    assert "execution-wave-highlight-label\">Exit gate" in runtime
+    assert "execution-wave-highlight-label\">Validation" in runtime
     assert "Selected workstream participates here." not in runtime
+    assert runtime.index("execution-wave-focus-stat-rail") < runtime.index("execution-wave-focus-copy")

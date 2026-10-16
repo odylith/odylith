@@ -7,6 +7,7 @@ import time
 
 import pytest
 
+from odylith.runtime.surfaces import compass_briefing_support
 from odylith.runtime.surfaces import compass_standup_brief_narrator as narrator
 from odylith.runtime.reasoning import odylith_reasoning
 
@@ -60,6 +61,32 @@ class _FailingProvider:
 
     def generate_finding(self, *, prompt_payload):  # noqa: ANN001, ARG002
         raise AssertionError("Compass standup narration should use structured generation only.")
+
+
+def test_forcing_function_fallback_normalizes_default_queue_action() -> None:
+    text = compass_briefing_support._forcing_function_text(  # noqa: SLF001
+        action="Prepare promotion plan and implementation breakdown",
+        label="Coastal shelter readiness",
+        purpose="Do this before implementation expands so the workstream has a tested first slice.",
+    )
+
+    assert text == (
+        "Immediate forcing function is to define the first implementation step and how to verify it "
+        "before implementation expands so the workstream has a tested first slice."
+    )
+    assert "land Prepare" not in text
+    assert "so do this before" not in text
+
+
+def test_local_fallback_preserves_full_recorded_fact_and_omits_empty_claim() -> None:
+    text = "Record the source result and its original custody. " * 5 + "Do not treat the pending review as approval. \u2705"
+    digest = narrator._local_runtime_fallback_digest(  # noqa: SLF001
+        fact_packet={"facts": [{"section_key": "current_execution", "text": text}]},
+    )
+    assert digest == ["Current: " + text]
+    assert narrator._local_runtime_fallback_digest(  # noqa: SLF001
+        fact_packet={"scope": {"label": "B-001"}, "facts": []},
+    ) == []
 
 
 def _reasoning_config() -> odylith_reasoning.ReasoningConfig:
@@ -2619,7 +2646,7 @@ def test_build_standup_brief_rejects_exact_cache_when_current_execution_workstre
                         "kind": "portfolio_posture",
                         "text": (
                             "Planning and implementation are running in parallel across active lanes, and some "
-                            "implementation lanes still lack captured checklist progress Live focus lanes: "
+                            "implementation lanes still lack captured progress evidence Live focus lanes: "
                             "Cross-Surface Runtime Freshness and UX Browser Hardening (B-025), Scope Signal Ladder, "
                             "Cross-Surface Focus Gating, and Low-Signal Suppression (B-071)."
                         ),
@@ -2913,7 +2940,7 @@ def test_build_standup_brief_fails_over_to_alternate_local_provider_on_budget_fa
     assert claude_provider.calls == 1
 
 
-def test_unavailable_brief_for_budget_failure_names_provider_and_model() -> None:
+def test_unavailable_brief_for_budget_failure_keeps_provider_and_model_in_diagnostics() -> None:
     class _BudgetFailingProvider:
         provider_name = "codex-cli"
         last_failure_code = "credits_exhausted"
@@ -2928,11 +2955,8 @@ def test_unavailable_brief_for_budget_failure_names_provider_and_model() -> None
     )
 
     diagnostics = brief["diagnostics"]
-    assert diagnostics["title"] == "Brief is waiting on Codex CLI budget"
-    assert (
-        diagnostics["message"]
-        == "Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff."
-    )
+    assert diagnostics["title"] == "Summary usage limit"
+    assert diagnostics["message"] == "The summary service may be out of credits. Check its account or budget."
     assert diagnostics["provider"] == "codex-cli"
     assert diagnostics["provider_model"] == "gpt-5.3-codex-spark"
 
@@ -2945,6 +2969,8 @@ def test_build_standup_brief_fails_closed_when_no_provider_or_cache(tmp_path: Pa
     )
 
     _assert_unavailable(brief, reason="provider_unavailable")
+    assert brief["diagnostics"]["fallback_title"] == "Local runtime facts"
+    assert brief["diagnostics"]["fallback_digest"][0].startswith("Current: Compass is being steered")
 
 
 def test_build_standup_brief_fails_closed_when_live_provider_is_deferred_without_exact_cache(tmp_path: Path) -> None:
@@ -2961,6 +2987,24 @@ def test_build_standup_brief_fails_closed_when_live_provider_is_deferred_without
 
     _assert_unavailable(brief, reason="provider_deferred")
     assert provider.calls == 0
+
+
+def test_build_standup_brief_timeout_surfaces_local_facts_until_retry(tmp_path: Path) -> None:
+    provider = _FailingProvider(provider_name="codex-cli", failure_code="timeout")
+
+    brief = narrator.build_standup_brief(
+        repo_root=tmp_path,
+        fact_packet=_fact_packet(),
+        generated_utc="2026-03-13T20:00:00Z",
+        config=_reasoning_config(),
+        provider=provider,
+    )
+
+    _assert_unavailable(brief, reason="timeout")
+    assert brief["diagnostics"]["title"] == "Summary timed out"
+    assert brief["diagnostics"]["message"] == "The summary service took too long. Try again later."
+    assert brief["diagnostics"]["fallback_digest"][0].startswith("Current:")
+    assert provider.calls == 2
 
 
 def test_build_standup_brief_meets_hot_and_cold_latency_budgets(tmp_path: Path) -> None:

@@ -3,7 +3,30 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from odylith.runtime.governance import surface_refresh_fingerprint_dag
+from odylith.runtime.surfaces import registry_spec_reading_ui
+
+
+@pytest.mark.parametrize("recorded,requested,expected", [
+    (("D-110",), (), False),
+    ((), ("D-110",), False),
+    (("D-110",), ("D-111",), False),
+    (("D-110",), ("D-110",), True),
+    (("D-111", "D-110"), ("D-110", "D-111"), True),
+])
+def test_atlas_refresh_cache_keeps_exact_selection_distinct_from_global(tmp_path, recorded, requested, expected):
+    output = tmp_path / "odylith/atlas/atlas.html"
+    output.parent.mkdir(parents=True)
+    output.write_text("Atlas inventory with retained unrelated review debt.\n")
+    options = {"repo_root": tmp_path, "surface": "atlas", "atlas_sync": True,
+               "outputs": ("odylith/atlas/atlas.html",)}
+    surface_refresh_fingerprint_dag.record_surface_refresh(**options, atlas_diagram_ids=recorded)
+    reused, _details = surface_refresh_fingerprint_dag.can_reuse_surface_refresh(
+        **options, atlas_diagram_ids=requested,
+    )
+    assert reused is expected
 
 
 def _seed_registry_fingerprint_repo(repo_root: Path) -> Path:
@@ -105,6 +128,23 @@ def test_registry_surface_input_fingerprint_includes_renderer_helper_source(tmp_
     )
 
     assert updated != baseline
+
+
+def test_registry_spec_reading_source_invalidates_cached_surface(tmp_path: Path) -> None:
+    source = Path(registry_spec_reading_ui.__file__).resolve()
+    relative = Path("src/odylith/runtime/surfaces") / source.name
+    owner = tmp_path / relative
+    owner.parent.mkdir(parents=True)
+    owner.write_bytes(source.read_bytes())
+    output = tmp_path / "odylith/registry/registry.html"
+    output.parent.mkdir(parents=True)
+    output.write_text("<html>retained Registry output</html>", encoding="utf-8")
+    kwargs = dict(repo_root=tmp_path, surface="registry", atlas_sync=False,
+                  outputs=["odylith/registry/registry.html"])
+    surface_refresh_fingerprint_dag.record_surface_refresh(**kwargs)
+    assert surface_refresh_fingerprint_dag.can_reuse_surface_refresh(**kwargs)[0]
+    owner.write_bytes(owner.read_bytes() + b"\n# source dependency control\n")
+    assert not surface_refresh_fingerprint_dag.can_reuse_surface_refresh(**kwargs)[0]
 
 
 def test_all_governance_surface_dags_react_to_owned_inputs(tmp_path: Path) -> None:

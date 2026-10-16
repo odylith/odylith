@@ -1,0 +1,1148 @@
+Status: In progress
+Created: 2026-07-20
+Updated: 2026-10-05
+Backlog: B-145
+
+# v0.1.15 Guidance And Browser Surface Migration Assessment
+
+## Current migration frontier (2026-10-04)
+
+The help-tail continuation then reaches the author wrapper, which refuses
+before the seeder runs. Two legitimate published-v14 import caches are the
+only additions; all 9,191 existing bytes and modes remain exact. Offline code
+comparison confirms both compiled bodies match unchanged published sources.
+CB-347 records their exact hashes. Preserve both failed results and the current
+consumer. A narrowly predeclared continuation may accept only those two cache
+additions and start at the first unexecuted seeder; completed install/start/help
+phases and failed wrappers are not rerun. Linked-plan preflight and actual upgrade
+remain unexecuted, and all five migration classes remain unapproved.
+
+The new linked-fixture driver stops before application authoring: published-v14
+installation and version checks pass, but its empty-repo startup requests one
+code path and returns `gated_ambiguous`/exit 1. The original failed result and
+same installed consumer are retained under
+`/private/tmp/odylith-v22-linked-predecessor-proof-20261004/`. A possible guarded
+continuation must begin at the first unexecuted step and repeat no completed
+phase. Positive linked-plan preflight and upgrade remain unexecuted.
+
+The original populated v14 fixture lacks a forward plan binding. Its strict
+byte-preservation failures and later unlinked-plan browser failure remain
+retained. Explicit supported Registry refresh succeeds with 11/11 authored
+bytes and modes preserved; its managed publication-pointer advance explains
+the separately retained guard failure. Browser-only remaining continuation
+passes 47 screenshots and leaves the whole consumer unchanged. This covers
+selected desktop/mobile authored, fallback, degraded and error states, not the
+complete matrix or positive linked-plan migration. Result:
+`/private/tmp/odylith-v21-post-registry-browser-proof-20261004/result.json`.
+Use a new properly linked published-v14 fixture with a real served-plan
+preflight before its frozen baseline and one v22 upgrade attempt. No original
+failure is rewritten. All five migration classes remain unapproved; current
+native Codex status is unverified, and historical readiness below cannot qualify
+this session. Actual Claude host delivery and complete timing remain unqualified.
+
+## Native intervention qualification checkpoint (2026-09-24)
+
+The intervention status path now separates inspection from confirmation. A
+plain Codex/Claude `intervention-status` command is read-only and may inspect a
+preserved dirty workspace; supplying `--last-assistant-message` still enters the
+governed mutation boundary because it writes chat-confirmation evidence. Codex
+static configuration alone remains `unverified`. Activation becomes `ready`
+only when the current session contains a matching native UserPromptSubmit
+delivery and Stop chat confirmation for the same intervention identity.
+
+The current Codex session satisfies that gate: all six readiness checks pass,
+the matching native pair is present, and status reports `17` chat-confirmed
+events with zero waiting events. Claude is statically ready but has no actual
+chat-visible proof in the local synthetic session. Focused boundary, ledger,
+status/browser and capability proof passes `90` tests. Freeze this evidence
+contract; do not add trust-store mutation, UI automation bypass, background
+probing, or manual-fallback promotion. Rebuild and prove the installed runtime,
+then obtain actual Claude chat delivery or retain it as an explicit unqualified
+host slice before final release adjudication. The current regression boundary
+passes `306` intervention/browser/boundary tests, `172` adjacent
+capability/discipline/guidance tests, and `12` install/bundle contract tests.
+Live source-local Codex status also exits zero with native activation and chat
+visibility proven in this session. Exact pushed commit `3e454546e` builds wheel
+`57f832f4d7c95f62bf85f2ac2427af5062ec0cb67854fdd54494ca573cb25994`,
+assembles the complete local release asset set, and passes canonical
+fresh-install release smoke. A separate installed `0.1.15` consumer proves
+read-only Codex status across dirty managed overlap: it returns the intended
+unverified exit `1`, preserves the dirty dashboard bytes, keeps one generation,
+and leaves the generation-manifest hash unchanged. Installed execution for this
+correction is therefore closed; actual Claude chat delivery remains an explicit
+unqualified host slice rather than a reason to widen the mechanism.
+
+## Current bounded checkpoint (2026-09-23)
+
+The latest mechanism-cleanup wave removes `442` lines of unreachable
+regex-driven visible-result, proof-boundary, action-target, punctuation, and
+related grammar-repair code from the Greenfield text layer. Atlas now carries
+the source action relation through unchanged instead of applying a prose
+rewrite. No replacement cascade was added. Focused Atlas/render/browser-
+adjacent checks pass `89`, and the complete Greenfield unit frontier passes
+`2,068`. This reduces mechanism surface without changing the typed custody
+contract; native intervention activation, installed positive semantic
+qualification, independent strong review, and the protected final holdout
+remain open.
+
+The previous release-proof checkpoint `c1f5d8d3a` corrected the local
+release-smoke contract to require the explicit bounded
+`MODEL_UNAVAILABLE_NO_WRITE` environment outcome already emitted by the
+installed CLI. The focused runtime/admission set passes `110` tests and the
+complete local-release-smoke unit file passes `37`. A clean archive of the
+source checkpoint builds the `0.1.15` wheel and sdist, generates hosted-style
+assets, and passes fresh install, upgrade, stale-residue, and unavailable-author
+no-write cycles; the disposable proof root is removed. This closes one
+release-proof mismatch, not release readiness.
+
+The implementation checkpoint is `6bf5efa7c`; follow-up governance evidence
+correction `86700d308` records the final `442`-line count. Both leave the
+release gates unchanged.
+
+The clean installed-positive qualification attempt against the current `HEAD`
+archive generated hosted-style `0.1.15` assets and exercised all `14` selected
+cases across the advisory `90/120/150` profiles. The matrix completed `14/14`
+cases but passed `0/14`: thirteen were stopped by the provider's invalid
+authoring response with no records created, and one stopped at the
+clarification-required contract. Direct probes reproduced the external
+`credits_exhausted` condition for `gpt-5.6-sol` high and `gpt-5.6-luna` high.
+This is an environment-capacity blocker, not evidence of a new semantic
+regression; the proof namespace cleaned, no governed writes or final-holdout
+reads occurred, and installed positive qualification must be rerun when model
+capacity is available. The release claim remains closed.
+
+The capacity-restored discovery rerun on 2026-09-24 completed all `14/14`
+clean full-install cases across the advisory `90/120/150` profiles. Thirteen
+cases reached commit-only publication with return code `0`; the clarification
+and quantum cases remained no-write by contract. It still scored `0/14`
+release-quality cases because the invocation deliberately used
+`proof-tier discovery`, which does not retain private model evidence or run
+browser proof. Temporary simulation roots cleaned and the protected holdout
+was untouched. This closes the provider-capacity uncertainty for the
+transaction path, not the release gate. Run one bounded full-install release
+matrix with retained evidence and browser proof next; do not change product
+semantics from this diagnostic. Evidence:
+`/tmp/odylith-greenfield-clean.PxI0Kb/installed-positive-rerun.json`.
+
+The source-provenanced release corpus itself passes its policy preflight on
+the pushed clean archive: `200` cases, `10` source families, `180` artifacts,
+all five input styles, `20` complete metamorphic groups, and `40/40` approved
+audits. An installed release-tier invocation then stopped before case
+execution because the release-intent contract requires a sealed semantic
+annotation/evaluation root plus a one-shot final-holdout ledger. Those inputs
+were deliberately withheld; no final-holdout bytes were read or claimed.
+Treat this as a correct custody boundary, not a product failure. The next
+gate is the separately governed final semantic lane after installed positive,
+browser, and strong-review prerequisites are green. Evidence:
+`/private/tmp/odylith-greenfield-release-proof.AQNLvW/output/release-campaign.json`.
+
+The latest clean-source intervention status remains partial: Codex reports
+`Activation: degraded` with `12` chat-confirmed Odylith events in the current
+session, while Claude reports `Activation: degraded` with no recorded events.
+The visible fallback is therefore proven, but native activation/chat delivery
+is not qualified; a reloaded trusted host session must reach `Activation: ready`
+before the intervention gate can close.
+
+The fresh selected non-holdout browser/intervention matrix passes `131` tests
+in `4m12s` across dashboard publication, publication carrier, intervention
+visibility, browser proof summaries/selection/surface health, and
+Codex/Claude parity. This is source-level UX proof, not native activation or
+final holdout qualification.
+
+The product engine-integrity validator passes `22/22` areas and `22/22`
+handshakes with zero findings. This confirms structural engine wiring only;
+native host activation, installed positive semantic qualification, independent
+strong review, and the final holdout remain separate gates.
+
+Existing release floors remain green at this checkpoint: Discipline validation
+passes, and guidance-behavior validation checks `6` cases across `11` guidance
+checks.
+
+The formal self-host release contract passes for `v0.1.15`. The active
+maintainer worktree remains deliberately `detached_source_local` with a
+`source_checkout` runtime, so local-runtime posture is not release eligible and
+must not be presented as shipped-release proof.
+
+Version truth also passes (`0.1.15` in source, package, and pin), and topology
+integrity scores `100/100` with zero findings across `262` nodes and `1,711`
+structural edges. These floors do not replace the positive installed model
+matrix or independent strong semantic adjudication.
+
+Commit `d2bbbad82` integrates the Greenfield completion seam across the typed
+Execution Engine handoff, staged Delivery Intelligence v4 validation, and the
+host-neutral post-confirm `Odylith Assist` fallback. The current authored
+first-path equivalent passes `105` focused custody/order/completion checks; the
+fresh non-holdout Greenfield frontier passes `2,097` tests in `6m54s`. The
+active performance contract is the advisory `90/120/150` profile set, with the
+existing model window and operational safety timeout unchanged. This checkpoint
+improves end-to-end evidence flow but does not claim release readiness: full
+distribution and clean-install proof, normal/empty/fallback/degraded/error
+browser coverage, native intervention activation plus chat visibility, an
+independent strong/Astra semantic review, and the untouched final holdout remain
+required. The generated refresh lane is currently fail-closed by known managed
+file drift (`RECOVERY_REQUIRED`); generated surfaces must be refreshed before
+this plan can close. The bounded Greenfield publication/dashboard/carrier/
+selection/surface-health browser slice passes `121` tests in `4m04s`, the
+intervention visibility/delivery/fallback slice passes `104`, and Codex/Claude
+hook parity plus launcher ownership passes `40`; these do not promote native
+activation or installed release proof. Isolated Hatch wheel and sdist builds
+for commit `c1ff88ee8` also pass for `0.1.15`; the supported hosted-style asset
+and clean-install path remains blocked by stale `release/FORENSICS.v1.json` and
+the fail-closed managed-file drift, so build success is not release proof.
+
+## Current bounded checkpoint (2026-09-10)
+
+The release-observation correction now passes 208 focused tests and all 1,327
+install unit tests, with independent bounded acceptance. Current author/review
+evidence qualifies; the historical experimental receipt still fails three
+current-protocol checks. Production behavior and 60/90/120 are unchanged. This
+removes a stale qualification obstacle, not the need for fresh generated-package
+quality and real installed performance evidence (CB-329).
+
+The single passive history capture rejects the missing-early-native-start
+hypothesis: all three exact successor starts follow their aborts. Both deliberate
+fault controls correctly remain strict errors. No visible route failure or safe
+small shell remedy is established; avoid repeating the capture, adding another
+observer event, or accepting later success as causal evidence (CB-305).
+
+The completed 439-case browser gate has 437 passes, one history-navigation
+failure and one explicit absent-state skip. Inputs are unchanged and owned
+workers are gone. The three failed Document requests have successful same-frame
+successors, but those requests start after cancellation; retain the strict
+observation boundary and inspect shell restoration before adding another rule.
+Full browser acceptance remains open (CB-305).
+
+Full Linux CI at c9507756 now passes both unchanged Codex/Claude confirmation
+checks and no longer emits the old tracer/deadline warning. Eight other failures
+remain: seven browser cases and the stale release dossier. This is actual host
+test advancement, not current desktop activation or consumer timing (CB-304).
+
+Independent package-level re-adjudication corrects the historical DGzOhE custody
+finding to P2/advisory: complete canonical obligations and readiness/handoff
+gates retain preservation. Local verification could be more specific, but an
+exhaustive executable specification is not required of every provisional field.
+Do not redesign authoring solely to satisfy that overstrong P1. Failed trials
+stay failed, and bounded internal repair remains a genuine unmet requirement
+(CB-303).
+
+The release profile observer still assumes one author call and ignores review.
+Correct that existing owner to qualify current two-role authored evidence and
+one-role clarification, binding the complete candidate/source and available
+identity/deadline evidence. Historical experimental review cannot become a
+current-protocol positive. Then qualify fresh complete packages against the
+unchanged 60/90/120 limits, 4–5 workstreams, 4–5 components and at least five
+useful detailed diagrams; counts alone do not prove utility (CB-329).
+
+The following entries preserve earlier checkpoint evidence; the explicit
+package-level adjudication above supersedes their specific custody P1 claim.
+
+Current Radar source already projects each workstream's authored Proposed
+Solution into its card and retains project context in detail. Eleven current
+projection controls pass; the old package's repeated cards do not justify a
+second renderer fix. Qualify the existing desktop/mobile and fallback owner in
+the comprehensive browser run. Source-grounded custody verification and bounded
+internal quality correction remain unclosed (CB-303).
+
+Corrected server admission now produces five original smoke passes in 10.637
+seconds against the verified generation. All 34 raw Script cancellations have
+native same-frame replacement evidence; none are discarded. Source, fixture and
+worker custody are unchanged. Independent review finds no bounded P0/P1, and all
+327 matching-hash observer/resource/bundle controls pass. This supports a bounded
+navigation checkpoint; the complete desktop/mobile normal/fallback/degraded
+matrix remains open (CB-305).
+
+The confirmation-observer comparison preserves the same 15-file execution
+inventory with substantially lower measured local cost, but naive deferred
+relative paths lose call-time working-directory identity. Two controls establish
+lexical anchoring before deferred resolution. All three provenance-test tracers
+now share that observer and preserve full failure diagnostics. The 107-case
+provenance/host/deadline pack passes, with independent bounded acceptance.
+Production deadlines, runtime inventories and consumer timing claims remain
+unchanged; the original Linux interruption phase is still unproved (CB-304).
+
+The original-five passive browser capture exposes a fixture-admission mistake:
+the custody check pins generation021a9f86, but served URLs use181cf3dd and the
+module-name routing guard silently skips setup. Its five failures cannot judge
+the intended candidate. Require exact test-file routing and actual HTTP-byte
+identity before another browser admission; preserve original assertions and the
+failed run. Separate raw-evidence review confirms the earlier 17-case run's five
+smokes also served181cf3dd, so its candidate-falsification claim is withdrawn.
+Correctly routed candidate integration remains unproved (CB-305).
+
+Completed Linux8fb narrows CI to10 failed,7,914 passed and one skipped. HIIT,
+both spaced-worker variants and attribution no longer fail; a Radar selection
+race recurs. Host confirmations still stop around10.001 seconds and their dict
+diagnostics remain truncated. Compare a lower-overhead call observer with equal
+execution inventory, not a larger callback or consumer deadline (CB-304).
+
+The complete-draft verification-delta comparison is rejected on its one native
+attempt: null/timeout, 18.095894 seconds owner elapsed and18.096123 through the
+receipt against18.077313 available. All111 frozen dependencies are unchanged.
+No candidate or prose exists to assess; do not retry or adopt this mechanism.
+Production remains unchanged, and successful internal quality correction within
+60/90/120 remains a central unclosed obligation (CB-303).
+
+A private complete-draft/delta-output comparison now targets CB-303's internal
+verification-repair gap. Only existing verification text may change; all other
+meaning and structural authority stay frozen. Its original remaining 18.077313
+seconds include correction validation and receipt. This experimentally changes
+the online reviewer role, so new text lacks a separate online model review and
+requires independent adjudication before advancement. It does not adopt a new
+production mechanism or relax the full consumer and release proof obligations.
+
+The Document observation-policy correction now has independent acceptance:
+four baseline denial controls fail, then all 220 maintained controls pass.
+Four retained native-sequence replays additionally preserve redirect/manual-stop
+results and reject cancellation followed only later by successful navigation.
+This is not a fresh browser run. The separate resource/stop-removal candidate,
+original smoke failures and complete browser acceptance remain open (CB-305).
+
+The subsequent capture-only five-case diagnostic records four passes and one
+private assertion failure in 6.43 seconds. Navigation-start identity is observable,
+but the earlier abort-before-request order does not recur. Its deliberate failed
+Document followed by later success exposes an intentionally weak supersession
+policy, not causal displacement. Root now requires in-flight replacement in the
+existing Document owner, with genuine positive and non-vacuous negative controls.
+The same-document assertion failure belongs to child/root scope discrimination.
+No complete browser acceptance or new event/classifier follows from this capture.
+
+CB-303 separately corrects a proposed online/release-policy conflation: repairable
+quality must improve internally before preview; stricter binary denial alone is
+not successful Greenfield creation. The current two-call mechanism has no repair
+iteration. The private criterion proposal remains held, with no semantic changes
+or model calls. This does not relax quality, independent review or 60/90/120.
+
+Newer Linux run 34496071745 at 92e7d6d6 narrows the red suite to 13 failures,
+7,911 passes and one unnamed skip: no new failed IDs, five removed and thirteen
+persistent. Worker and host causes are still not printed in that revision.
+The local spaced-worker fixture now preserves the interpreter's whole
+environment through a directory alias; both unchanged variants pass once in
+0.62 seconds after an independent venv comparison. This is not Linux-cause
+proof. No production deadline, observer acceptance or publication policy changes
+belong to the seven-file stable fixture/diagnostic/governance checkpoint.
+
+The third complete-reference fixture passes all six rendered surfaces after
+normal Atlas synchronization, but the single 17-case browser qualification is
+still red: five original smoke failures and twelve passing controls in 32.80
+seconds. All 46 canceled resources precede their successor network request;
+the first smoke additionally samples an unselected Radar tab. Do not accept or
+commit the four navigation-candidate source/test files from synthetic proof.
+The stable checkpoint is limited to independently supported fixture diagnostics,
+environment corrections, attribution and governance evidence. CB-305 retains
+all three preparations and the exact final report.
+
+Detached fixture-worker evidence narrows the diagnosis: Compass publishes a
+coherent fresh successor before the browsers, with matching sealed readback.
+The foreground generation hash was not captured. No lock-only publication
+defect is established. Descendant-only cleanup checks missed that worker;
+archive preservation and exact native-root containment followed separately.
+Do not turn this diagnostic counterevidence into another production rewrite.
+
+The complete-reference replacement fixture resolves all missing paths but retains
+22 stale Atlas records, so its render returns 2 and zero browser cases execute.
+Next use the existing opt-in Atlas synchronization owner on a separate complete
+fixture; preserve the freshness gate, actual source immutability, and exact
+generated fixture-mirror ownership. Both failed preparations remain evidence.
+The separate fixed-author HIIT integration now establishes its real-publication
+synthetic baseline and one explicit existing reviewer stub before exercising the
+unchanged workflow: one case passes in 7.02 seconds, including original 4/4/5,
+sealed readback, event text and 60-second bounds. This is not live-model timing
+or actual installation proof. Details and receipts remain in CB-305.
+
+Linux run 34491249084 at 43b07030 completes with 18 failures and 7,898 passes.
+All fourteen prior rendering/proposal failed IDs disappear after actual Mermaid
+provisioning, with their test files unchanged; the full suite is still red.
+The later worker/host diagnostic tests retain first failure evidence without
+altering runtime deadlines, tracing, identity, receipt or cleanup requirements.
+Canonical license-audit regeneration corrects the existing markdown-it-py
+direct/transitive classification only; three attribution checks pass.
+
+The source correction deletes six premature-stop lines. The existing native
+observer admits exact same-frame resource replacement through its established
+loader/origin/successor/continuity contract; 351 private independent controls and
+323 maintained actual-source controls pass. No file-origin or unexplained-abort
+waiver is added. A real six-surface render then fails Atlas because the isolated
+fixture lacks repository code referenced by its copied authored catalog. Five
+surfaces pass; zero browser cases run. Preserve that failed fixture and prepare a
+separate complete-reference snapshot before one replacement render/browser gate.
+Do not treat the failed fixture, synthetic controls or previous 432/6 matrix as
+current complete UX acceptance. Evidence and exact boundaries are recorded in
+CB-305 and /Users/freedom/.codex/odylith-rendered-stop-proof.7dePhR/actual/REPORT.md.
+
+CB-303 records the distinct independent verification-sufficiency gap. No new
+semantic mechanism/profile/prompt, deadline relaxation or reviewer call is
+authorized by this browser checkpoint. Historical publication recovery, current
+Linux failures, fresh generated-package quality/SLA, actual populated-predecessor
+upgrade, automatic desktop chat delivery and the untouched final release gate
+remain open. Existing plan lifecycle and governed preamble remain unchanged.
+
+## Goal
+Qualify v0.1.15 compatibility against the actual published predecessor across
+the full committed change set. Reopened after CB-337 proved that dirty-only
+observation could erase release scope. Preserve the historical evidence below;
+do not treat it as approval of this larger candidate.
+
+## V42 resumed CI freshness boundary (2026-10-08)
+
+CI `37507903773` fails five assertions after 10,036 passes and 10 skips in
+71m06s. Independent review classifies all five as stale tests: one retired
+`inferredWithinLane` lifecycle expectation and four empty-component browser
+cases expecting the removed “Named responsibility” fallback. The bounded local
+correction passes the lifecycle assertion once and the Atlas assertion group
+four times. A successor hosted CI is still required; no current CI pass or
+release credit follows. Preserve V41’s 44 native browser passes as prior
+evidence only. Logs: `/private/tmp/odylith-resume-ci-37507903773-20261008.log`,
+`/private/tmp/odylith-ci37507903773-lifecycle-correction-20261008.log`, and
+`/private/tmp/odylith-ci37507903773-atlas-correction-20261008.log`.
+
+## V41 Public40 failure boundary (2026-10-06)
+
+Executed four of 40 Public40 cases: two clarification cases pass, two cases
+fail, and 36 remain unexecuted; no controls run. Independent review identifies three
+release-harness P1s: stale Validation heading, labeled-citation false positives,
+and initial confirmed intent routed to EDIT. Preserve each case outcome and do
+not call a product semantic pass. B-145 remains unfinished until current proof
+and its canonical gate close. Evidence:
+`/private/tmp/odylith-v41-public40-campaign-handoff-20261006/actual-campaign-outcome.v1.json`
+and `/private/tmp/odylith-v41-public40-case2-case4-independent-review-20261006/report.md`.
+
+## V41 five-class installed assessment (2026-10-06)
+
+The read-only installed assessment marks all five B-145 classes assessment-ready:
+108 managed skills exact, 18 preserved rows plus 18 reconciled exceptions with
+zero unresolved, 1,020 installed owner hashes exact, native upgrade/package and
+20-workstream adoption pass, and browser evidence combines 42 corrected cells
+with two native Project-degraded cells for 44 pass/zero fail. Synthetic UI2 is
+supplemental only. The canonical predecessor-bound migration gate remains blocked because the
+migration-observer workflow has not admitted B-145’s five current class markers;
+do not write them by hand or complete this slice. Scoped Radar refresh also
+refused on managed-generation drift without writing. Do not extend this result
+to current CI, Public40, native Claude, original holdout, or release
+qualification. Evidence:
+`/private/tmp/odylith-v41-installed-five-class-assessment-20261006/installed-five-class-assessment.json`
+(SHA-256 `497249afe3bbc67c16a1529447a15ac15282c0ab1a845ff78226e9deed1e31de`).
+
+## V41 Radar measurement-race correction (2026-10-06)
+
+Independent diagnosis classifies the sole CI failure as a measurement race, not
+Radar product behavior. The two affected resize cases now pass in 3.89s while
+product Radar remains unchanged. Preserve the failed CI and all other gates;
+this focused proof does not clear CI or release status. Evidence:
+`/private/tmp/odylith-v41-radar-atomic-measurement-20261006.log` (diagnosis
+SHA-256 `8a27d3ed85d78a0d31773dd7380908132cee56c4cfc2462ca5dee5727e7e9cc6`).
+
+## V41 active-owner fixture proof and current CI boundary (2026-10-06)
+
+The supported active-generation/source-owner fixture now passes two publication
+crash tests in 90.09s with atomicity and conservation oracles retained. Root copy
+checks remain 137 pass/two fixture fail as history. Current CI `37495747429` at
+`5303` is still failed (`10,051` pass, one fail, 10 skip): a visible-selection
+Radar resize case raises `Locator.evaluate` TypeError because `closest('#list')`
+returns null during rerender. Diagnosis is pending, so do not classify product
+versus test cause or mark CI clear. B-145, Public40, final holdout, native Claude,
+and native Project-degraded proof remain open. Evidence:
+`/private/tmp/odylith-v41-publication-fixture-active-owner-correction-20261006.log`
+and `/private/tmp/odylith-v40-current-ci-failure-20261006.log`.
+
+## V41 active-publication fixture correction boundary (2026-10-06)
+
+The immutable-bundle hypothesis remains failed: two tests fail in 31.93s before
+baseline/crash phases because dynamic tooling payload is missing. The fixture must
+use the supported published asset owner: `read_active_publication(SOURCE)`;
+without one it uses ordinary SOURCE, and with one it calls
+`pin_active_greenfield_generation(SOURCE).repository_root` once. Invalid active
+publication or pin fails closed; do not mix or fabricate payload fallback. The
+selected root supplies entry, server, URL containment, copies, and source hashes,
+while SOURCE/src remains the current compiler-import owner. Preserve all
+publication, crash, conservation, and atomicity oracles. Evidence: failed log
+`/private/tmp/odylith-v41-publication-fixture-correction-20261006.log` (SHA-256
+`f4451aa2…`) and review
+`/private/tmp/odylith-v41-final-patch-independent-review-20261006/review-v2.json`
+(SHA-256 `d4af0bd306571fdeaaac03c30e57d5b0e7212557bb7bb204b61e4f9cf593c610`).
+
+## V41 publication fixture asset-closure failure (2026-10-06)
+
+Copy verification records 137 pass and two fail before baseline compilation or
+crash injection. The test fixture’s `_asset_closure` reads the physical published
+root index wrapper and copies its generation-relative dependencies, then expects
+canonical `odylith/registry/registry.html`. Build closure and relative copies
+from immutable `src/odylith/bundle/assets` instead. Preserve source subprocess
+imports and all six-surface, publication, crash, source-conservation, and
+atomicity oracles. This is not a product regression or lazy-proxy-order issue;
+do not reset wrappers, repair consumer/source, weaken admission, or retry the
+fixture. Evidence: `/private/tmp/odylith-v41-publication-browser-local-failure-diagnosis-20261006/diagnosis.json`
+(SHA-256 `2e6815fb5f38746f381f32f7ab4cdf9208634b80ccbe331a5f9e0af4f6f72064`).
+
+## V40 installed-browser Registry adapter boundary (2026-10-06)
+
+The v40 installed matrix records 40 pass, two Registry failures, and two native
+Project-degraded holds. Registry raw source Markdown correctly retains backticks
+in closed Topology, while the external adapter's exact-text oracle omits them;
+the source guard correctly suppresses controlled registration scaffold. Correct
+the future adapter with verbatim raw-field comparison only. Do not call this a
+Registry product regression, relabel v40 failures, or replay the frozen matrix.
+Native Project-degraded holds receive no synthetic credit.
+
+## V40 unpublished Compass-stream publication refusal (2026-10-06)
+
+Selective authored publication refused before a successor because the sole
+unselected managed divergence is three unpublished `ambient_signal` hook records
+in `odylith/compass/runtime/agent-stream.v1.jsonl` at `2026-10-06T15:02:02Z`.
+Archive the exact raw stream and diff, then preview and apply restoration only
+for that stream before reviewed authored publication and one meaningful Compass
+implementation append referencing the archive. The hook candidates are immutable
+external history, not chat or source proof; do not replay models or disable an
+engine. Evidence: compiler delta
+`/private/tmp/odylith-v40-final-source-freeze-20261006/refused-unselected-delta.json`
+(SHA-256 `f47e6d3b2943a9e80ad72ad2e19c9da6e93dae0fc9685f842d52ba636ac0960a`)
+and failed publication log (SHA-256
+`2c10705ad0ac5cf4f29babd2b74fca4d640fdea185e402899b1ced70ddf68c48`).
+
+## V40 test-order and future-browser helper proof (2026-10-06)
+
+The CI proxy-order test correction passes 103 paired-order and adjacent checks
+without changing real admission, publication, refusal, custody, Registry mapping,
+or validation. The future installed-browser helper passes 94 tests with one added
+line at 1,200 LOC; its external adapter is HELD with zero execution. The failed
+current CI at `73d` (10,036 pass/one fail/10 skip) and v39 matrix (26/16/2)
+remain history, not superseded installed credit. Evidence:
+`/private/tmp/odylith-v39-authored-sync-ci-test-fix-20261006.json` and
+`/private/tmp/odylith-v40-installed-browser-future-predispatch-20261006/handoff.json`.
+
+## V39 Project spotlight timing diagnosis (2026-10-06)
+
+The matrix remains `26 PASS`, `16 FAIL`, and `2 HELD`. The first assertion reads
+bootstrap `version_story {}` at 7.945ms, before asynchronous generation redirect
+DOM at 34.773ms and payload at 50.047ms; its selected-three-highlights oracle is
+valid. Failure before Close leaves the modal open and cascades 16 failures.
+Actual Close works in the root’s 12 read-only review captures. The bounded remedy
+is for the shared obstruction helper to wait for settled document before checking
+visible Close, and for the external adapter to wait for generation payload before
+version/spotlight checks and finally Close after a failed assertion. No fake time,
+model, consumer repair, or oracle weakening. Evidence:
+`/private/tmp/odylith-v39-project-spotlight-diagnosis-20261006/diagnosis.json`
+(SHA-256 `ecd74ddf4bc716bb330f1e4d4012a955f1b7e2290e2a32dc471ac61e3965f687`).
+
+## V39 current CI proxy-patching failure (2026-10-06)
+
+Current CI `37480920778` at `73d1555` fails one test (`10,036` pass, `10` skip)
+after 49m13s. The cause is test order: an earlier install test patches the lazy
+CLI proxy `cli.sync_workstream_artifacts.main`, then teardown restores a concrete
+original on that proxy. The later admission test patches the underlying module,
+misses the proxy attribute, and real sync runs against a fixture missing
+Traceability. The paired order reproduction is one pass/one fail. Patch only
+the actual CLI proxy in the test; retain real admission, publication, model
+refusal, custody, Registry mapping, and validator behavior. This is not CI-pass
+credit. Evidence: `/private/tmp/odylith-v39-authored-sync-ci-paired-repro-20261006.log`;
+current failed log `/private/tmp/odylith-v39-current-ci-failure-20261006.log`.
+
+## V39 installed browser-matrix failure boundary (2026-10-06)
+
+The actual v39 installed matrix records `26 PASS`, `16 FAIL`, and `2 HELD`
+across 65 screenshots. Its first Project assertion ran before modal Close, and a
+later backdrop click was intercepted; the browser owner is still diagnosing the
+exact cause. Do not call Product non-regression, R3 PASS, or replay from this
+result. Preserve the failed matrix at
+`/private/tmp/odylith-greenfield-v14-to-v39-migration-20261006/upgrade-r3/final-installed-browser-matrix-handoff.json`
+(SHA-256 `c46ad8a8…`), and retain R1–R3 history.
+
+## V39 Casebook index-refresh regression (2026-10-06)
+
+CI run `37464433347` at exact `11e3211` remains the historical 29-failure,
+9,996-pass, 10-skip result. On final source/test bytes, all 29 original
+signatures now reproduce as `29 PASS` in `6.90s`, with source pins unchanged.
+The first collection-only reproduction is retained: one renamed test node meant
+no tests ran and source remained unchanged.
+
+The Casebook fix preserves the reader contract: direct sole-surface refresh
+supports existing legacy-ID migration; selective, multi-surface, and upgrade
+refresh update `INDEX.md` first without changing authored bug bytes or modes;
+and malformed source stops later readers. Focused proof before unused-helper
+removal covers 21 checks. The integrated runtime is net -95 lines with no new
+modules. This is current-source regression proof only; fresh full CI, package,
+installed, Public40, Luna, holdout, Claude, and release qualification remain
+open. Evidence: final reproduction
+`/private/tmp/odylith-v39-final-ci-regression-reproduction-r2-20261006/report.json`
+(SHA-256 `579ba9a2ce21895b76b53781131af087dbb1f554959b165db53fe45e2373449a`);
+retained collection-only attempt
+`/private/tmp/odylith-v39-final-ci-regression-reproduction-20261006/report.json`
+(SHA-256 `58ac4d99b93b8b12fdf9fe98d9ef806b84788903c36724f0c86f503984fbd3b2`);
+and focused handoff
+`/private/tmp/odylith-v39-casebook-refresh-focused-handoff-20261006/report.json`
+(SHA-256 `2b423ec6549c026311f4dadb768fb2b383497af3798b972d4400ed658358ca63`).
+
+## V39 temporal Casebook adapter correction (2026-10-06)
+
+The existing Casebook helper and temporal adapter now match the actual invalid
+selection and expiry contract: 16 focused checks pass across 27 bindings, with
+no helper growth (the helper remains 1,199 LOC). R1, R2, and R3 failures remain
+historical and this static proof is not an external browser pass or native-parity
+proof. Evidence: `/private/tmp/odylith-greenfield-v14-to-v38-migration-20261006/upgrade/casebook-temporal-correction-static-proof.json`
+(SHA-256 `97495204f601469ffc16296eb6ff214bc1b3c315a7f57621ccd22ef86313e7c4`).
+
+## V38 installed witness and browser-audit boundary (2026-10-06)
+
+Frozen candidate `11e3211` now has a passing distribution result and a fresh
+native v0.1.14-to-v0.1.15 witness: six pages render, 15 source and three
+customer-owned files remain preserved, and 13 owners retain identity. Installed
+adoption passes 20 workstreams and 88 source units. This is stronger bounded
+migration evidence, but the five B-145 assessment classes and markers remain
+open.
+
+The external browser driver receives no credit. R1 stopped on a wrapper
+surface/state collision; R2 lacks required covered state. Both failures and the
+unchanged 18,337-entry consumer are retained while a deterministic binding audit
+runs. The separate two-pass installed synthetic Project UI supplement is not
+client-data proof. CI is still running, and Public40, real Luna, native Claude,
+and the protected original holdout remain unqualified or unavailable. Do not run
+another upgrade or browser replay from this record.
+
+Evidence: package `/private/tmp/odylith-greenfield-v38-dist-20261006/proof/result.json`
+(SHA-256 `aeb48292a56184ae8a02406cfe90bd7be9ef61da39a28dbe19b03140e56dd130`);
+migration `/private/tmp/odylith-greenfield-v14-to-v38-migration-20261006/upgrade/final-migration-browser-handoff.json`
+(SHA-256 `94f2e84992d36f77860f319131bf2fdf11cf98379c529bb530d86c43b882a801`);
+external browser handoff `final-browser-r2-handoff.json` (SHA-256
+`353268772e6eae4cbed6b6231e26396278e3fbceb4e20a697d9fe4e3020054b1`).
+
+
+External R3 completes `36 PASS`, `6 FAIL`, and `2 HELD`, with the whole
+18,337-entry consumer unchanged. Diagnosis attributes four notice cells to one
+expired-notice assertion: the payload expires at `13:06:15Z`, and R3's
+post-10-minute policy correctly hides it while the adapter asserts visibility.
+The two Casebook cells wait for automatic active-row selection, although the
+existing contract requires unknown query/status plus zero active rows before a
+user clicks a valid record. Product UI remains unregressed, but R3 remains a
+failed run. V49 owns the source Casebook-helper and external real-clock-adapter
+correction; do not run a fourth attempt. This leaves external browser
+qualification open without invalidating the bounded v38 package/adoption witness.
+Diagnosis: `/private/tmp/odylith-greenfield-v14-to-v38-migration-20261006/upgrade/r3-six-failure-read-only-diagnosis.json`
+(SHA-256 `97993fbd8448ffead5c4b433cac0977d9d4b89338c639cf7119d0f29f8b69064`).
+
+## V37 published-v14 installed witness (2026-10-06)
+
+A fresh native v0.1.14-to-v0.1.15 upgrade against clean candidate
+`111fc5241202ed42a174c5a0d265980f85f1bfb3` returned `RC=0` in `27.502s`. It
+preserves 14/15 raw source files and 15/15 modes, with only the predeclared
+Atlas `render_source_fingerprint` leaf changed; Radar `INDEX.md` remains exact.
+Thirteen target owners match across source, wheel, and installed readback. The
+whole consumer inventory remains exact before and after the browser readback.
+Desktop and mobile prove the active wall-clock notice, native Close control,
+and two positive linked-plan readbacks across 12 screenshots with no issues.
+
+This is one bounded installed witness, not five-class assessment completion.
+The canonical migration gate still returns `RC=1` with all five classes blocked:
+guidance-and-skills, operator-cli-contracts, public-docs-and-release-guidance,
+browser-surfaces, and install-managed-assets. Separate owners must map each
+current selected path, bytes, modes, and existing-consumer effect before any
+marker or lifecycle change; the two normal browser widths do not replace the
+required class browser scope. The prior ambiguous start remains `RC=1` with no
+credit, and v35/v36 failures remain retained. Evidence: handoff
+`/private/tmp/odylith-greenfield-v14-to-v37-migration-start-routed-r1-20261006/handoff.json`
+(SHA-256 `45d677ddbc988200a37c5e37e2c26521a1042a3afacfd0c890bd1cbd96f64af7`)
+and independent review `independent-b145-assessment-review.json` (SHA-256
+`1a003527292ca609b5558c9e6020c0eed153b58c015debadc119ea5b5b04a085`).
+
+## V37 assessment stop and generated-surface gap (2026-10-06)
+
+The r6 all-six upgrade correction passes 240 source checks with no input drift
+and independent CLEAR review. Upgrade refresh now regenerates all six surfaces;
+ordinary refresh remains the default three-surface path. The preserved customer
+Casebook/source/INDEX modes, durable-report-before-receipt-retirement, stale or
+forged-drift refusal, and historical-generation validity are covered by the
+existing owners. This is source-only correction, not installed qualification or
+five-class completion. Preserve the earlier open-after-recovery report,
+published-before-report SIGKILL, widened ordinary-three attempt, and missing
+immutable-pin finding. Evidence: `/private/tmp/odylith-upgrade-all-surfaces-correction-20261006-nvascvna/independent-review-r6-final-20261006.json`
+(SHA-256 `4231ab985ecfd1b0a23db736f4daf7fe542e01f9c0b5acdfb94cebfa64a8a00c`).
+D-023's source update remains pending canonical catalog/render work; no final
+render claim is supported.
+
+The selected-path census shows that Casebook and Registry HTML/JS stay at exact
+v0.1.14 bytes after upgrade while the target bundle and wheel are new; the
+upgrade renderer currently selects only tooling-shell, Radar, and Compass. This
+blocks the relevant class assessments without invalidating the bounded native
+preservation/notice witness above. The assessor stopped before credit because
+its help assertion expected `--description` rather than `--what-it-is` and lost
+stdout. A retained runtime `.pyc` is outside the original 18,348-entry browser
+inventory and does not change that frozen result. Preserve both files under the
+v37 migration namespace: `b145-selected-path-census.json` SHA-256
+`b2a79e8616be3e021265279fc4a79e36af642bc91a9e81107a4dbf5219f853a5` and
+`b145-assessment-stopped.json` SHA-256
+`9197553152c7aa5fb4ee505d6e0691f707d590c67dbdf8289a96539e850609ce`. No marker
+or lifecycle change is supported.
+
+## V20 populated migration checkpoint (2026-10-05)
+
+The current assessed candidate is `d0021184faba41b8fac887ce107ee452d8dc2722`
+against published v0.1.14 `fae446995e13e12409e50f944a336dbc846db90a`.
+The independent ledger classifies all 877 distinct changed paths and 1,016
+category memberships into 44 ownership groups. Five current fingerprints remain
+unapproved: guidance-and-skills `b5af43f5a39c`, operator-cli-contracts
+`adae86a8e731`, public-docs-and-release-guidance `b92026adb597`, browser-surfaces
+`51dba106a014`, and install-managed-assets `b09d28725509`. This is complete path
+assessment with explicit open obligations, not compatibility approval.
+Ledger: `/private/tmp/odylith-v20-migration-path-assessment-20261004.json`,
+SHA-256 `9c82eb1fcad487e3dfa25a5f56ca5c40ca69cbb056fae13e645f2203ce0b9777`.
+
+The actual published predecessor holds 11 nonempty inventoried files across six
+governance source families. Its old-parent refusal is retained; supported hosted
+continuation runs on that same consumer without reset or manual source repair.
+Activation reaches 0.1.15, then Atlas verification fails on a correctly rendered
+clusterless SVG (CB-358). Active runtime, pin and last-known-good all remain
+0.1.15; this is not a rollback to v0.1.14. Exactly 10/11 raw file byte sequences
+and 11/11 modes remain unchanged. The catalog changes only its existing derived
+render fingerprint. Topology scores 100 and generated-surface violations are
+zero, but migration is incomplete and installed browser proof does not execute.
+Retained evidence: `/private/tmp/odylith-v20-populated-migration-proof-20261004/failed-outcome.json`,
+`failed-atlas-read-only-inspection.json`, and `atlas-catalog-exact-change.patch`
+in that directory. Preserve all original failure bytes and the consumer.
+
+The bounded proposed Atlas predicate correction passes 15 independent controls,
+including the retained SVG and malformed XML refusal, without mutating that
+consumer. Review: `/private/tmp/odylith-v20-atlas-proposed-correction-review-20261004.json`,
+SHA-256 `f97f72edad6526dc108534fb30831fd64960cf92757ca8c2b752e956aae774a2`.
+Subsequent application checks pass 33 Atlas/CI tests and 90 adjacent migration
+tests with PYTHONPATH unset; exact logs and hashes are in CB-358. Actual installed
+recovery, a new complete freeze and Ubuntu execution remain required; CB-358 stays Open. No authored-source schema or experimental Greenfield journal
+converter is required by this evidence.
+
+The exact d002 frozen runtime/install/selected-browser gate passes 8,410 tests
+with zero drift; v20 local assets and empty-baseline smoke also pass. Actual
+Ubuntu CI collection fails with missing `greenfield_model_profiles`. One civic
+source-first review is independently CLEAR with stated limits and its saved
+snapshot passes 44 browser cells with zero issues; this does not substitute for
+the failed populated-upgrade browser gate. CB-347 retains those receipts, both
+agriculture harness errors, and the one actual EDIT source-verification refusal
+(one omission, three calls, zero candidate calls, 214.023 diagnostic seconds).
+No full semantic release, measured qualified bound or protected run is claimed.
+The later documentation correction passes current-command readback without a
+model or transaction; CB-347 retains its exact receipt. This does not approve
+the original d002 path ledger or a new candidate.
+
+### Exact catalog preservation boundary
+
+Preserve every consumer-authored field, every file mode, and raw bytes for all
+inventoried source files except the explicitly named renderer-owned catalog
+leaf `diagrams[<same diagram identity>].render_source_fingerprint`. Published
+v0.1.14 already defines this leaf as the Mermaid source/theme render fingerprint
+in the Atlas current spec (Freshness And Review Semantics); its existing render
+owner refreshes it. This narrow ownership clarification does not permit changing
+catalog identity, source paths, labels, descriptions, relations, review dates,
+watch fingerprints, any other field, or whole catalog formatting.
+
+Before a new witness, bind the exact selected diagram and allowed leaf, retain
+the old catalog bytes/mode, and require an exact JSON diff containing only that
+leaf plus independent recomputation of its new source/theme fingerprint. Compare
+all remaining catalog content and all modes unchanged. Report raw whole-file
+byte equality separately even when this derived-field check passes. The original
+witness remains a failed 10/11 raw-byte result and 11/11 mode result; this rule
+neither rewrites its receipt nor grants a general catalog exemption.
+
+## Current Scope And Ownership
+
+- Base: published v0.1.14, `fae446995e13e12409e50f944a336dbc846db90a`.
+- Assessed candidate: clean `d0021184faba41b8fac887ce107ee452d8dc2722`.
+- B-145 owns the five incomplete assessment classes across 877 distinct paths.
+- Main task owns compatibility adjudication, governance binding and installed
+  proof. A bounded independent reviewer checks path coverage; a separate bounded
+  harness owner prepares the populated upgrade witness before independent review.
+- No new migration, schema, model role or Greenfield mechanism is authorized by
+  this assessment. No user-owned consumer or protected evaluation asset is touched.
+
+## Must Ship
+
+- Map every classified path to its compatibility decision and current proof;
+  separate authored source, managed guidance/runtime and generated views.
+- Prove the actual published runtime with populated Radar, Registry, Atlas and
+  related governance before upgrade. Record nonzero inventories, bytes and modes.
+- Retain the exact old-parent refusal and continue through the supported hosted
+  installer on the same consumer, without resets or manual source repair.
+- Verify the installed successor, preserved authored truth under the exact catalog
+  leaf rule above, positive Atlas box inventory and real desktop/mobile readback.
+  Report raw whole-file byte equality separately; require unchanged modes and
+  every authored field. Empty-source proof is insufficient.
+- Reconcile current docs with sealed pre-CONFIRM compilation and explicit
+  transaction/environment recovery. Do not promise rollback of an observed package.
+- Add exact completed bindings only after proof and adjudication, settle owned
+  governance surfaces, then recheck the clean predecessor-bound release gate.
+
+## Historical bbe312 Evidence And Limits
+
+Full local candidate build and all twelve checksum checks pass; provenance
+records clean `bbe31214`. All 3,204 frozen inputs match after build. The candidate
+is local and unsigned, not publicly released. The complete report and witness
+work live in `/private/tmp/odylith-populated-predecessor-proof.0JeIRw/`.
+Post-CB-338 broad checks pass 5,058 runtime, 1,437 install, 180 CLI and 376 browser
+tests, with one documented Radar fixture-state skip. Prior installed witnesses
+prove empty-source transitions/recovery only. Populated preservation and exact
+path coverage remain unproven. Full Greenfield semantics, 60/90/120, host parity
+and final untouched holdout are separate open release requirements.
+
+## Historical Validation And Retained Failures
+
+CI run `34477764869` at pushed checkpoint `351ce72b` completes with 28 failures,
+7,574 passes and one skip in 3,318.69 seconds after successful Chromium/system
+library provisioning. CB-305 retains exact failure groups; not all proposal
+failures can be attributed to the two explicit missing-Mermaid cases.
+
+Native lifecycle ownership and 31 caller migrations are independently accepted
+with 166 synthetic passes and unchanged 35-file hashes. Mutable-list and URL
+discard paths are removed. The initial integrated pass retains 26 passes and six
+failures in 102.10 seconds. Two bounded corrections now pass independent review
+with 342 synthetic checks in 1.46 seconds and the exact ordered 32 live cases in
+101.63 seconds. All 35 frozen hashes/modes remain unchanged; every teardown passes
+with no sampled resource residue. Ordinary separate pages are outside the
+observed-Page-plus-descendant-frame transport scope, not cancellation evidence.
+Unknown/contained/prerender targets remain gaps. Four deliberate Compass 404
+assertions tolerate query cache busters only, retaining raw evidence and exact
+origin/path/status/fragment plus unrelated-error rejection. UI assertions and
+interactions are unchanged. The full browser matrix and separate popup transport
+remain unproved. Exact receipts and retained reds are linked in CB-305.
+
+Full-matrix preparation then catches two omitted transitive Atlas callers; the
+initial 31-caller inventory was incomplete. Their eight desktop/mobile cases
+pass in 13.26 seconds after migration to the same owner, with UI bodies and all
+six frozen input hashes/modes preserved. Recursive helper-consumer inventory
+finds no remaining legacy caller in the inspected src/tests cone. Current
+collection is 439 cases across 35 modules, including every prior case. The frozen
+438-case main matrix now completes: 432 passed and six failed in 1,136.696 seconds.
+Five smoke observations reject 45 unproved root-loader Script cancellations;
+one historical applicability skip exits before explicit observation completion.
+The separate simulator-backed Casebook upgrade passes once in 3.939 seconds.
+All 3,227 input hashes/modes, served publication and retained stream/carrier match;
+teardown/resource receipts are clean. This is not a green full matrix or actual
+published-predecessor proof. CB-305 retains all traces and the source-first
+redirect comparison plus caller-owned skip-completion correction boundaries.
+
+The skip-completion correction now covers all 16 applicability exits without
+changing the observer or UI behavior. Lifecycle validation passes 216 controls;
+the exact formerly failing Radar case finishes cleanly and remains one fixture
+applicability skip, not a feature pass. The five smoke failures remain open.
+
+The source-first redirect comparison does not yet close those five failures.
+Removing the two premature stop calls fixes native ordering, but same-frame
+resource replacement remains outside current qualification. Both variants retain
+three failures in the fixed private comparison; no production change is adopted.
+
+CI preparation installs pinned Mermaid 11.12.0 and its package's
+pinned default Puppeteer browsers into runner-owned paths before unchanged tests.
+Runtime on-demand installation remains disabled. Two actual local SVG/PNG render
+tests pass against the existing explicit-root package; fresh Linux provisioning
+and the remaining CI failures are not yet qualified. Checkpoint 14b441bb exposes
+an invalid job-level runner context before any CI job starts. Local actionlint
+reproduces all three errors. A runner-executed GITHUB_ENV configuration step now
+provides the same values to subsequent install/test steps; actionlint passes.
+The prior review missed this context boundary. Keep the rejected run and lint
+receipts in CB-305; neither lint nor package availability proves suite success.
+
+Current 43b07030 CI successfully provisions Linux Chromium and the pinned Mermaid
+runtime; its suite remains pending. The earlier 5a18d1c9 run completes with 29
+failures, 7,674 passes and one skip: all previous 28 failures persist, plus one
+Radar selection-race request/route-callback count mismatch. It adds no Compass
+completion failure ID; root-cause adjudication is still required.
+
+The three diagnosed audit/browser-opening fixture expectations now have a
+test-only correction with 39 focused passes under CI environment flags. Exact
+process events and all four automated-opening refusals remain enforced; product
+policies are unchanged. This does not prove the pending Linux suite or resolve
+the distinct worker-startup, host-confirmation and route-race failures.
+
+The corrected prospective Compass completion candidate is independently accepted:
+168 focused compatibility passes plus six fresh actual-owner controls. Structured
+request custody preserves terminal pid=0 and rejects foreign/coalesced outcomes.
+Capture setup fallback cannot replay execution; delivered success survives a
+late cleanup error without cache/render re-entry on explicit completion. Prior
+counterexamples remain. This is not historical or installed recovery. Existing
+publication and archived log bytes remain unchanged; Registry forensic
+regeneration still refuses. CB-305 records exact receipts and limits.
+
+The following entries retain historical checkpoints and their then-current
+limitations; the current qualification state is stated above.
+
+CI at `6beb35a4` also reports missing Playwright browser executables during
+fixture setup. The bounded prerequisite correction installs matching Chromium
+and system dependencies through the same Hatch interpreter before the unchanged
+test command. Every preexisting workflow byte is preserved. Local CLI dry-run
+checks do not prove Ubuntu provisioning; remote CI and actual browser outcomes
+remain required, with no skip, threshold or assertion changes.
+
+Checkpoint `64d68cfa` is pushed. Its portable root shell and matching payload
+come from an independently verified successful generation and the existing
+committed bundle, not the failed working carrier. An isolated proposed Git tree
+passes all 59 unchanged shell contracts; exact blobs, modes and sixteen local
+references are independently checked. This is a two-file shell checkpoint against
+existing checked-in child views, not a unified generation export, browser pass,
+supported consumer Git migration or release qualification. The live publication
+is unchanged. Required source validation passes; governed refresh remains blocked.
+
+Two private native-browser captures now distinguish the six retained abort
+histories and demonstrate actual forced process isolation. Pending fragment and
+history actions remain unproved; the forced child return raises TargetClosedError.
+A bounded test-only native-ID observer candidate is being built separately from
+the active strict observer. It must retain raw errors, reject missing coverage,
+never skip a failed immediate successor or borrow a later unrelated departure,
+and pass independent controls before adoption. No target-attachment framework
+or broader cancellation eligibility is authorized. Separately, CB-305's bounded
+prospective Compass-log completion candidate must prove durable append-once
+custody and explicit completion without reappending; it cannot authorize recovery
+of the existing receipt-less failed proof tree. Neither candidate is accepted.
+
+Development checkpoint `33ee2fbc` is committed and pushed; it deliberately
+excludes the failed local publication and generated-view drift. Browser evaluator
+corrections are a separate wave. The URL-based lifecycle candidate is rejected
+after independent commit-alias counterexamples and removed from active source;
+its exact code and receipts remain archived. Active instrumentation retains all
+request failures without cancellation exemptions. Parsed local HTTP-error logging
+and unchanged shell assertions pass 109 controls. The accepted Radar row
+replacement is integrated; six causal controls and eight maintained cases pass
+on actual source in 18.87 seconds, with no private overlay or forced clicks.
+The static shell reader uses the existing logical layout owner. A private
+read-only browser-ID capture precedes any replacement observer implementation.
+These results do not supersede the failed full browser matrix, qualify the stale
+release dossier, recover the failed writer, or prove populated installed upgrade.
+Current receipts and limitations remain linked in CB-305.
+
+CB-339's actual first registration creates one reciprocal B-145 plan row and no
+successor; the second call makes zero decisions. Selective sync reveals a further
+gap: its active idea's Radar row remains in Finished Workstreams. The revised
+existing owner now prevalidates the affected batch and reconciles registration
+and lifecycle on the same call. Root's 91 tests and independent rereview's 103
+tests pass, including prior partial-write counterexamples. Actual application
+remains pending because CB-305's failed Compass publication blocks writer
+admission. No manual index patch or new workstream conceals that state.
+
+CB-340's shared character clipper and all call-site limits are removed. The
+single release-spotlight style owner keeps complete copy scrollable and Close
+usable on mobile without changing the frozen header. Authored summary precedes
+optional body detail. The final focused pack passes 128 controls; all eight
+authored/bundled and installer-fallback browser cells pass. Independent review
+accepts the bounded correction. Eight real shared-shell readbacks of Casebook and
+Registry also pass with screenshot inspection. The initial activation failure is
+traced to sealed/live path sorting; a two-line correction preserves the existing
+wire format and passes 117 focused tests plus independent compatibility review.
+The actual canonical refresh then succeeds in 33.9 seconds. A subsequent Compass
+append exposes a distinct detached-writer race: it changes brief payloads outside
+the repository lock, causing successor capture to fail. The exact owned worker
+is stopped and its pending requests, old publication and failed state are
+preserved. The shared publication boundary and cache/request custody correction
+passes 488 broader Compass, kernel and hygiene controls in 4.90 seconds. Independent
+real-child counterexamples reject both shell parsing and exact process-display
+matching; native argument identity replaces both, with no authority on failed
+observation and no replacement before observed exit. Final independent review
+accepts 73 controls in 1.02 seconds. Actual OS proof is Darwin; Linux parsing is
+mocked. Provider-free real Compass and shell browser checks pass all twelve
+empty/ready/failed observations across file/HTTP and desktop/mobile, plus four
+read-only audits proving all retained generations remain readable. Root inspected
+scrolled mobile briefs as well as desktop screenshots. Other child surfaces are
+minimal in this bounded witness; full six-surface and installed proof remain open.
+Compass Registry and D-032 source learning is updated; catalog update and refresh
+remain refused, and D-032 is stale. Separate source-backed controls also show
+that selective sync rejects permitted authored narrative edits,
+ordinary failed writers have no supported recovery authority, and the tracked
+canonical index cannot travel without its ignored generation. The authored-edit
+candidate passes 221 focused and 542 integrated Compass/kernel controls,
+including actual Casebook CLI/standalone renderer success and failure. Independent
+review rejected the initial pin/identity mismatch: a non-cooperating carrier
+switch could combine different bases and lose an unselected published projection.
+The corrected owner binds both pinned hashes to the retained active identity and
+passes 67 independent rereview controls, with no remaining bounded P0/P1.
+Plan/spec/Atlas positives remain synthetic boundary controls; no actual failed-proof
+refresh has run. Domain Intelligence's living spec records this admission contract
+without claiming ordinary failure recovery or completed broad qualification.
+Do not waive working integrity, fabricate upgrade receipts or commit the current
+runtime-bound index as a self-contained dashboard. Safe recovery, exact authored
+admission, portable distribution and broad qualification remain open.
+
+The subsequent frozen broad check records 5298 runtime passes and seven failures,
+336 CLI passes, and 1437 installation unit/integration passes. The 32-module
+browser regression records 326 passes, 55 failures and one fixture-diagnostic
+skip; its separate Casebook consumer-upgrade module was excluded. All eight
+release-note cases pass, but the comprehensive UX gate remains red. Both browser
+freeze checks match all 3219 inputs. The failures separate into 42 timeouts, nine
+request-failure assertions, two invalid publication-envelope fixture setups, one
+obsolete Compass worker reference and one disappearing Radar row bounding box.
+The two runtime prewrite test references are migrated to the actual worker owner,
+with all assertions preserved; 84 focused controls pass in 1.49 seconds. Shared
+fixture ownership, request-observer validity and the Radar interaction require
+separate diagnosis before rerunning failed browser groups. Root receipts are at
+/Users/freedom/.codex/odylith-goal-recovery-20260910.wJE8mT/ and the complete browser
+selection, command and XML are at /Users/freedom/.codex/odylith-browser-matrix.HcnD3E/.
+No blanket failure waiver, runtime-pointer reset or release claim follows.
+
+The bounded fixture correction subsequently passes 13 controls (independent
+repeat: 13 in 0.11 seconds) and seven representative browser cases in 265.85
+seconds, including both publication crash/readback protocols. All 29 owned copy
+sites now use one logical working view without the canonical carrier or ignored
+publication state. Independent review finds no bounded P0/P1. This corrects test
+setup, not portable export or full browser qualification. Separately, the observer
+was discarding Playwright's string failure reason and waiving unknown failures
+through legacy-path regexes. Remove those exemptions and retain real failures
+before deciding whether any cancellation handling is necessary; actual selected
+Registry content must load before destination checks pass. The Radar pointer
+failure needs its own causal reproduction. Retained evidence is at
+/Users/freedom/.codex/odylith-logical-fixture-proof.D7ZSM3/.
+
+The independent path inventory assigns all 809 unique paths and 938 family
+memberships to 47 proof owners without gaps or duplicate assignments. This is
+routing coverage, not completed compatibility assessment. Host/runtime changes
+need host proof, authored history is not consumer migration payload authority,
+and four corpus paths retain unresolved seed-versus-learning ownership. The
+reviewed populated witness installed the exact published predecessor in 64.862s
+and reached grounded Radar, Registry, Atlas and Casebook creation. The harness
+then rejected mixed progress plus JSON stdout from the successful v0.1.14 bug
+capture. All 14 command groups are terminal; the candidate assets are unchanged.
+One independently reviewed continuation completes the remaining predecessor
+render in 4.512 seconds, then fails before upgrade because its browser observer
+checks the outer shell instead of the redirected Radar frame. A single corrected
+four-cell matrix reaches populated Radar and the exact plan routes, but fails:
+the published predecessor requests external Mermaid assets, the fixture's
+Registry view predates its authored spec update, and the observer incorrectly
+expects cache-buster query state to survive normal surface navigation. The final
+observer corrects only that document-identity assertion and passes 20 focused
+synthetic controls; it has not rerun the live matrix. Root inspected desktop
+Radar, mobile plan and failed Registry screenshots. These are distinct historical
+dependency, fixture-render and observer obligations, not candidate regressions.
+Preserve both original failures and the executed matrix unchanged. No upgrade,
+second matrix, record recreation, reset or reinstall has occurred. Full handoff:
+`/private/tmp/odylith-populated-predecessor-proof.0JeIRw/corrected-predecessor-browser.0Vf9sb/HANDOFF.md`.
+
+- `odylith release migration-gate --repo-root . --target-version 0.1.15 --base-ref v0.1.14`
+- `odylith governance reconcile-plan-workstream-binding --repo-root .`
+- `odylith validate plan-workstream-binding --repo-root .`
+- `odylith validate plan-traceability --repo-root .`
+- Selective governed refresh and reviewed desktop/mobile readback after authoring.
+- `git diff --check` and independent evidence review before checkpoint.
+
+## Current Stop Condition
+
+Every current path class is assessed against exact published/candidate identities;
+populated preservation, installed migration, recovery boundaries and rendered
+readback are proved; final bindings resolve on the clean candidate. No pending
+marker becomes complete merely through changing this record's status.
+
+## Risks & Mitigations
+
+- [ ] Risk: Historical or empty-source proof could be mistaken for qualification of the current populated upgrade. An unqualified compatibility claim could hide loss of authored records, modes or visible content.
+  - [ ] Mitigation: Bind evidence to exact published/candidate identities, require positive source and rendered inventories, and preserve failure receipts. Independently review the path mapping and witness before accepting the result.
+- [ ] Risk: Assessment-generated changes could trigger repeated fingerprint churn instead of improving consumer proof. Current runtime and release-note contradictions must not be hidden by marker completion.
+  - [ ] Mitigation: Refresh owned surfaces once, compare new path/content deltas when a fingerprint changes, and keep incomplete assessment status until the real requirements pass.
+
+## Traceability
+
+### Runbooks
+
+- `docs/runbooks/odylith-migration.md`
+- `docs/runbooks/odylith-governance.md`
+
+### Developer Docs
+
+- `docs/specs/greenfield-operating-envelope.md`
+
+### Code References
+
+- `src/odylith/install/migration_release_gate.py`
+- `src/odylith/install/migration_observer.py`
+- `src/odylith/install/atlas_box_explanation_migration.py`
+- `src/odylith/install/upgrade_dashboard_recovery.py`
+
+## Historical Assessment Before Release-Scope Reopening
+
+The following decision and validation describe earlier snapshots only. Their
+dirty-only command and empty-source campaign do not qualify the current scope.
+
+## Historical Assessed Scope
+- Managed Codex and Claude guidance and skills.
+- Generated Atlas, Casebook, Compass, Radar, Registry, and Project surfaces.
+- Install, upgrade, reinstall, doctor, and dashboard-refresh behavior.
+- Consumer-owned governance source preservation and rollback posture.
+
+## Historical Decision
+No consumer source migration is required. The changed files are managed
+runtime, guidance, bundle, or generated browser assets that existing refresh
+and recovery paths already own. Consumer-authored Radar, Registry, Atlas,
+Casebook, and Compass source must remain unchanged during installation and
+upgrade.
+
+## Historical Compatibility And Risk
+- Existing consumer repositories remain compatible with the managed refresh
+  contract; no schema rewrite or source-data backfill is required.
+- Rollback restores the prior managed runtime and assets without rewriting
+  consumer source.
+- Browser and guidance changes remain release-sensitive because they affect
+  navigation, accessibility, and host behavior, so the migration observer must
+  bind the final changed-path fingerprints before promotion.
+- No secrets or customer content are introduced by the assessed surfaces.
+
+## Historical Evidence
+- The 2026-09-09 authored Radar presentation assessment in B-145 covers the
+  shared Markdown renderer, complete source projection, long-row measurement
+  and resize anchoring. The frozen source passes 5,036 runtime, 1,168 install
+  and 361 browser checks with one existing browser skip, plus three Greenfield
+  CLI checks. It requires normal managed replacement and generated-view
+  refresh, not a consumer schema or stored-data migration. This is not a fresh
+  installed Greenfield campaign or full release qualification.
+- The release migration observer fingerprints are recorded in B-145.
+- `D-023` describes the managed runtime release and install flow.
+- `D-042` describes migration planning, application, ledger, and release-gate
+  ownership.
+- The installed Greenfield campaign and managed install tests exercise the
+  affected runtime and generated browser surfaces without consumer source
+  mutation.
+
+## Historical Validation
+- `odylith release migration-gate --repo-root . --target-version 0.1.15`
+  resolves every final observer fingerprint to B-145.
+- Radar validation accepts the finished workstream, plan binding, and topology
+  references.
+- `odylith sync --repo-root . --check-only` passes before final refresh.
+- `git diff --check` passes before the release checkpoint.
+
+## Historical Stop Condition
+The assessment is complete when the migration gate recognizes the final
+fingerprints, consumer-owned source is unchanged by managed refresh paths, and
+the governed workstream and plan bindings validate.
+
+## Exact V19 Public Reopen (2026-09-25)
+
+The exact clean distribution passed seven public host-native cases before the
+fail-fast gate stopped on a source-only civic-tech request. The host returned an
+authored candidate within the `90s` advisory target; independent review denied
+unsupported product-as-performer meaning, and zero writes occurred. The release
+harness then lost the raw candidate and obscured the one useful denial behind
+retired two-role diagnostics.
+
+The active implementation wave is deliberately bounded:
+
+1. make the existing independent review choose admitted, typed material
+   clarification, or denied without revising candidate content;
+2. retain exact host candidate and proposal bytes before cleanup and bind the
+   full reviewer receipt through the existing private proof descriptor;
+3. classify every host-native outcome through the same custody owner;
+4. prove the disclosed civic-tech failure, a source-sufficient denial, a direct
+   host clarification, and tamper controls;
+5. rebuild immutable bytes and restart the public campaign from case one.
+
+No parser, regex, vocabulary rule, retry, repair, fallback candidate, model
+ladder, or extra semantic call is admissible. The protected holdout remains
+untouched until the full public gate and independent strong review pass.
+
+
+### V39 final Atlas fingerprint settlement
+
+The first V39 staged commit check retained a freshness failure: 42 diagrams were fresh and five were stale after later Registry spec and forensic records settled during full sync. The canonical Atlas preview selects five review-only fingerprint updates and zero diagram renders. This is a final metadata settlement step; topology and diagram source are unchanged. The failed gate remains recorded at `/private/tmp/odylith-v39-commit-ready-20261006/report.json` (SHA-256 `4fb978ba086d8c9a6f809818e2dba85cf43ba4e2941b7ab8cd04c18b493e63cc`). Final refresh and a fresh staged check remain required; freshness, current full CI, installed proof, and release gates are retained.
+
+## Current V42 migration evidence and next gate (2026-10-08)
+
+The fresh predecessor-bound installed assessment is ready for root review.
+It records one native upgrade, exact 1,020-owner package readback, 44 passing
+browser cells and a complete 18,397-path reconciliation with no unresolved
+changes. B-145 records the five current class assessments and exact report
+hash. No historical exception count substitutes for actual path dispositions.
+
+Next, bind this current evidence through the canonical final migration gate;
+write completion markers only if that gate accepts the exact fingerprints.
+B-145 remains unfinished. Preserve the original browser report's two held
+Project cells and their separate genuine error supplement. Do not repeat the
+upgrade or browser runs, infer native host qualification from static guidance,
+or treat migration acceptance as whole-release acceptance. The ongoing Public40
+run and its obsolete Project text oracle are tracked in CB-347 and CB-303.

@@ -72,9 +72,25 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
         "Keep startup, Context Engine, Execution Engine, memory substrate, Tribunal, Intervention Engine, observers",
         "Optimize by routing, caching, batching, and shortening prompt surface, not by disabling engines.",
         "Treat AI slop as a regression",
+        "Generated human-visible content has a non-negotiable clarity floor across all lanes",
         "odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md",
         "odylith/skills/odylith-code-hygiene-guard/SKILL.md",
         "Discipline hot paths must not call host models",
+        "greenfield prepare --repo-root .",
+        "authority gate, source-duty inventory, source-only verifier, and one candidate",
+        "one question and stop",
+        "pinned inference is direct Codex Astra medium",
+        "missing Codex is an environment no-write outcome",
+        "No full-candidate reviewer, parser/regex, repair, retry, fallback or model ladder",
+        "--completion-receipt",
+        "odylith greenfield decide",
+        "Chat/hooks cannot authorize create",
+        "Standard shares 300s gate/candidate plus 15s completion",
+        "Markdown is view, not truth",
+        "ProductCreateTransaction",
+        "--transaction-file",
+        "--transaction-hash",
+        "rollback guard",
         "Odylith capabilities",
         "host model capability surface",
         "never prefix commentary with control-plane receipt labels",
@@ -85,9 +101,12 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
         "`odylith codex intervention-status` or `odylith claude",
         "low-latency delivery record for Teaser, Ambient Highlight, Observation, Proposal, and Assist readiness",
         "`Activation: ready` plus chat visibility",
-        "normal non-passthrough prompts do not get an Assist line by default",
-        "Do not add Assist just because Odylith ran",
-        "concrete observed counts, measured deltas, or validation outcomes",
+        "When explicit intervention feedback asks for more frequent Assist",
+        "substantive-continuation beats",
+        "while keeping bare acknowledgements, routine chatter, and internal execution details out",
+        "Never add Assist merely because Odylith ran",
+        "concrete counts, deltas, or validation outcomes",
+        "Generic receipts are not premium interventions",
         "never say `fixed`, `cleared`, or `resolved` without qualification",
         "same fingerprint as the last falsification or not",
         "grounding Odylith is diagnosis authority, not blanket write authority",
@@ -105,26 +124,34 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
         "Odylith didn't return immediately",
         "literal commands",
         "supplies one shared prompt-visible Assist line",
-        "In the Odylith product repo, maintainer-only release and benchmark publishing work follows `odylith/maintainer/AGENTS.md`.",
+        "Product repo release/benchmark publishing uses `odylith/maintainer/AGENTS.md`.",
     )
     for snippet in forbidden:
         assert snippet not in block
 
-    assert len(block.encode("utf-8")) < 11000
+    assert len(block.encode("utf-8")) < 12400
 
 
 def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
     block = managed_block(repo_role="product_repo")
 
-    assert "In the Odylith product repo, maintainer-only release and benchmark publishing work follows `odylith/maintainer/AGENTS.md`." in block
-    assert "the consumer lane and the Odylith product repo's maintainer mode" in block
-    assert "pinned dogfood and detached `source-local` maintainer-dev posture" in block
+    assert "maintainer-only release and benchmark publishing work follows `odylith/maintainer/AGENTS.md`" in block
+    assert "substantive grounded consumer and maintainer work" in block
+    assert "transport support does not prove current-session spawn permission or effectiveness" in block
     assert "pinned dogfood is the default proof posture and detached `source-local` is the explicit dev posture" in block
-    assert "Codex and Claude Code are both validated Odylith delegation hosts under the same grounding, routing, and validation contract" in block
+    assert "Codex and Claude Code share one grounding, routing, and validation contract" in block
     assert "rerender only the owned surface" in block
     assert "Claude direct-edit and Bash PostToolUse hooks stay silent on success" in block
     assert "Claude Stop is memory/logging only" in block
-    assert len(block.encode("utf-8")) < 11000
+    assert "never hand-author proposal/transaction JSON" in block
+    assert "infer schemas from source" in block
+    assert "narrate schema failures" in block
+    assert "Clarification: show one question and stop; no candidate or transaction" in block
+    assert "Chat/hooks cannot authorize create" in block
+    assert "without model, generation, or repair" in block
+    assert "Confirm/Edit/Reject" not in block
+    assert "confirm to expand" not in block
+    assert len(block.encode("utf-8")) < 12400
 
 
 def test_managed_block_matches_repo_root_product_scope_truth() -> None:
@@ -146,6 +173,16 @@ def test_managed_claude_bridge_stays_lean_and_imports_agents() -> None:
     assert "@AGENTS.md" in rendered
     assert "Treat AI slop as a regression." not in scope_block
     assert len(scope_block.encode("utf-8")) < 2200
+
+
+def test_managed_claude_bridge_consumer_does_not_pin_maintainer_identity() -> None:
+    scope_block = managed_claude_bridge_block()
+
+    assert "Use the consumer repo's Git identity and commit policy" in scope_block
+    assert "freedom-research" not in scope_block
+    assert "sole canonical contributor identity" not in scope_block
+    assert "Commit messages must use only" not in scope_block
+    assert "coding-assistant trailers" not in scope_block
 
 
 def test_managed_claude_bridge_matches_repo_root_scope_truth() -> None:

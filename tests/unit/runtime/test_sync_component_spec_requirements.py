@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
+import sys
 
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance import sync_component_spec_requirements as sync
@@ -123,6 +126,28 @@ def _init_git_repo(tmp_path: Path) -> None:
     subprocess.run(["git", "commit", "-m", "baseline"], cwd=tmp_path, check=True, capture_output=True, text=True)
 
 
+def test_event_calendar_dates_are_identical_across_host_timezones() -> None:
+    timestamps = [
+        "2026-10-04T23:15:52-07:00", "2026-10-05T00:15:52+14:00",
+        "2026-10-05T00:15:52Z", "2026-10-04T23:15:52", "2026-10-04", "", "invalid",
+    ]
+    expected = ["2026-10-04", "2026-10-05", "2026-10-05", "2026-10-04",
+                "2026-10-04", "2026-01-02", "2026-01-02"]
+    code = (
+        "import json,sys; "
+        "from odylith.runtime.governance.sync_component_spec_requirements import _event_date; "
+        "print(json.dumps([_event_date(value,fallback_date='2026-01-02') "
+        "for value in json.load(sys.stdin)]))"
+    )
+    for timezone in ("America/Los_Angeles", "UTC"):
+        result = subprocess.run(
+            [sys.executable, "-B", "-c", code], input=json.dumps(timestamps),
+            env={**os.environ, "TZ": timezone}, text=True, capture_output=True,
+            check=True, timeout=30,
+        )
+        assert json.loads(result.stdout) == expected, timezone
+
+
 def test_resolve_forensics_path_keeps_product_dossier_layout(tmp_path: Path) -> None:
     spec_path = tmp_path / "odylith" / "registry" / "source" / "components" / "registry" / "CURRENT_SPEC.md"
     entry = _component_entry(
@@ -140,6 +165,153 @@ def test_clean_requirement_summary_scrubs_consumer_repo_names() -> None:
         summary=f"CB-149 update measured 25.40s in {legacy_consumer_repo} before the fast path.",
         kind="implementation",
     ) == "CB-149 update measured 25.40s in a real consumer repo before the fast path."
+
+
+def test_requirements_trace_projection_does_not_copy_scenario_terms() -> None:
+    event = component_registry.MappedEvent(
+        event_index=12,
+        ts_iso="2026-07-03T01:47:31-07:00",
+        kind="implementation",
+        summary=(
+            "Exact municipal stormwater plus tribal consultation source-local "
+            "replays wrote clean governed records."
+        ),
+        workstreams=["B-142"],
+        artifacts=[
+            "/tmp/municipal-stormwater/proof.json",
+            "/tmp/tribal-consultation/proof.json",
+        ],
+        explicit_components=["domain-intelligence"],
+        mapped_components=["domain-intelligence"],
+        confidence="high",
+        meaningful=True,
+    )
+
+    rows = sync._build_generated_requirement_lines(
+        events=[event],
+        fallback_date="2026-07-03",
+        max_events=6,
+    )
+    rendered = "\n".join(rows).lower()
+
+    assert "implementation evidence linked this component to governed work" in rendered
+    assert "2 verifiable artifact references" in rendered
+    assert "sha256:" in rendered
+    assert "municipal" not in rendered
+    assert "stormwater" not in rendered
+    assert "tribal" not in rendered
+    assert "consultation" not in rendered
+
+
+def test_forensics_payload_keeps_timeline_rows_scenario_neutral() -> None:
+    entry = _component_entry(
+        component_id="release",
+        spec_ref="odylith/registry/source/components/release/CURRENT_SPEC.md",
+    )
+    coverage = component_registry.ComponentForensicCoverage(
+        status="forensic_coverage_present",
+        timeline_event_count=1,
+        explicit_event_count=1,
+        recent_path_match_count=0,
+        mapped_workstream_evidence_count=1,
+        spec_history_event_count=0,
+        empty_reasons=[],
+    )
+    event = component_registry.MappedEvent(
+        event_index=7,
+        ts_iso="2026-06-30T12:00:00-07:00",
+        kind="statement",
+        summary="Quantum tunneling scenario passed while shelter capacity failed.",
+        workstreams=["B-142"],
+        artifacts=["/tmp/quantum-tunneling/proof.json"],
+        explicit_components=["release"],
+        mapped_components=["release"],
+        confidence="high",
+        meaningful=True,
+    )
+
+    payload = sync._forensics_payload(
+        entry=entry,
+        coverage=coverage,
+        timeline=[event],
+        traceability={"runbooks": [], "developer_docs": [], "code_references": []},
+    )
+
+    row = payload["timeline"][0]
+    assert row["summary"] == (
+        "Timeline evidence linked this component to governed work. "
+        "workstream scope preserved; 1 verifiable artifact reference."
+    )
+    assert row["artifacts"] == [
+        "sha256:" + hashlib.sha256(b"/tmp/quantum-tunneling/proof.json").hexdigest()
+    ]
+    assert "quantum" not in json.dumps(payload).lower()
+    assert "shelter" not in json.dumps(payload).lower()
+
+
+def test_forensics_payload_preserves_safe_repo_artifact_paths() -> None:
+    event = component_registry.MappedEvent(
+        event_index=8,
+        ts_iso="2026-07-18T08:42:07-07:00",
+        kind="implementation",
+        summary="Installed proof completed.",
+        workstreams=[],
+        artifacts=[
+            "src/odylith/runtime/domain_intelligence/greenfield_create_commit.py",
+            "scripts/release/greenfield_commit_recovery_proof.py",
+        ],
+        explicit_components=["domain-intelligence", "release"],
+        mapped_components=["domain-intelligence", "release"],
+        confidence="high",
+        meaningful=True,
+    )
+
+    rows = sync._build_generated_requirement_lines(
+        events=[event],
+        fallback_date="2026-07-18",
+        max_events=6,
+    )
+    payload = sync._forensics_payload(
+        entry=_component_entry(
+            component_id="domain-intelligence",
+            spec_ref="odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        ),
+        coverage=component_registry.ComponentForensicCoverage(
+            status="forensic_coverage_present",
+            timeline_event_count=1,
+            explicit_event_count=1,
+            recent_path_match_count=0,
+            mapped_workstream_evidence_count=1,
+            spec_history_event_count=0,
+            empty_reasons=[],
+        ),
+        timeline=[event],
+        traceability={"runbooks": [], "developer_docs": [], "code_references": []},
+    )
+
+    rendered = "\n".join(rows)
+    assert "`src/odylith/runtime/domain_intelligence/greenfield_create_commit.py`" in rendered
+    assert "`scripts/release/greenfield_commit_recovery_proof.py`" in rendered
+    assert "plus -" not in rendered
+    assert payload["timeline"][0]["artifacts"] == event.artifacts
+
+
+def test_artifact_evidence_reference_canonicalizes_and_hashes_unsafe_paths() -> None:
+    safe_path = "src/odylith/runtime/governance/sync_component_spec_requirements.py"
+    unsafe_hash = "sha256:" + hashlib.sha256(b"tmp/proof.json").hexdigest()
+    traversed_hash = "sha256:" + hashlib.sha256(b"../tmp/tribal-consultation/proof.json").hexdigest()
+
+    assert sync._artifact_evidence_reference(safe_path) == safe_path  # noqa: SLF001
+    assert (
+        sync._artifact_evidence_reference("src/../src/odylith/runtime/governance/sync_component_spec_requirements.py")
+        == safe_path
+    )  # noqa: SLF001
+    assert sync._artifact_evidence_reference("./tmp/proof.json") == unsafe_hash  # noqa: SLF001
+    assert sync._artifact_evidence_reference("tmp/proof.json") == unsafe_hash  # noqa: SLF001
+    assert sync._artifact_evidence_reference(r"C:\tmp\proof.json") == sync._artifact_evidence_reference("C:/tmp/proof.json")  # noqa: SLF001
+    assert sync._artifact_evidence_reference("src/../../tmp/tribal-consultation/proof.json") == traversed_hash  # noqa: SLF001
+    assert sync._artifact_evidence_reference("scripts/../tmp/municipal-stormwater/proof.json").startswith("sha256:")  # noqa: SLF001
+    assert sync._artifact_evidence_references(["", "   "]) == []  # noqa: SLF001
 
 
 def test_sync_component_spec_requirements_consumer_specs_use_per_component_sidecars_and_prune_legacy_file(
@@ -222,7 +394,7 @@ def test_sync_component_spec_requirements_consumer_specs_use_per_component_sidec
     assert sync.main([*base_argv, "--check-only"]) == 0
 
 
-def test_sync_component_spec_requirements_records_workspace_activity_from_source_owned_bundle_mirror(
+def test_sync_component_spec_requirements_excludes_workspace_activity_from_persisted_forensics(
     tmp_path: Path,
 ) -> None:
     spec_path = tmp_path / "odylith" / "registry" / "source" / "components" / "tribunal" / "CURRENT_SPEC.md"
@@ -267,6 +439,20 @@ def test_sync_component_spec_requirements_records_workspace_activity_from_source
         encoding="utf-8",
     )
 
+    live_report = component_registry.build_component_registry_report(
+        repo_root=tmp_path,
+        manifest_path=manifest_path,
+        catalog_path=tmp_path / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json",
+        ideas_root=tmp_path / "odylith" / "radar" / "source" / "ideas",
+        stream_path=tmp_path / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl",
+    )
+    live_timeline = component_registry.build_component_timelines(
+        component_index=live_report.components,
+        mapped_events=live_report.mapped_events,
+    )["tribunal"]
+    assert [event.kind for event in live_timeline] == ["workspace_activity"]
+    assert live_report.forensic_coverage["tribunal"].recent_path_match_count == 1
+
     base_argv = [
         "--repo-root",
         str(tmp_path),
@@ -284,7 +470,12 @@ def test_sync_component_spec_requirements_records_workspace_activity_from_source
 
     forensics_path = tmp_path / "odylith" / "registry" / "source" / "components" / "tribunal" / "FORENSICS.v1.json"
     payload = json.loads(forensics_path.read_text(encoding="utf-8"))
-    assert payload["forensic_coverage"]["status"] == "forensic_coverage_present"
+    assert payload["forensic_coverage"]["status"] == "baseline_forensic_only"
     assert payload["forensic_coverage"]["explicit_event_count"] == 0
-    assert payload["forensic_coverage"]["recent_path_match_count"] == 1
-    assert payload["timeline"][0]["kind"] == "workspace_activity"
+    assert payload["forensic_coverage"]["recent_path_match_count"] == 0
+    assert payload["timeline"] == []
+
+    subprocess.run(["git", "add", "."], cwd=tmp_path, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "commit", "-m", "sync forensics"], cwd=tmp_path, check=True, capture_output=True, text=True)
+
+    assert sync.main([*base_argv, "--check-only"]) == 0

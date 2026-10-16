@@ -58,11 +58,30 @@
 ## Consumer Greenfield Rules
 - Greenfield Domain Intelligence may reason from user intent, but it must keep
   observed source, user intent, and Odylith assumptions separate.
-- `odylith greenfield apply` must remain confirmation-gated and must reject
-  missing host-authored Atlas Mermaid source, duplicated topology, invalid
-  evidence tiers, and incomplete proposal sections before any governed write.
-- Host routes may help the operator draft a proposal, but Codex, Claude Code,
-  and future hosts must not own the durable validation or write boundary.
+- `odylith greenfield propose` and compile previews publish nothing, but print
+  three full shell-quoted terminal `decide` commands for the retained repository
+  path and hash: `CONFIRM`, `EDIT` with `--edit` or `--edit-evidence`, and
+  `REJECT`. Chat approval, host names, and hooks are not eligibility.
+- `CONFIRM` and `REJECT` use the shared bounded deterministic owner with no
+  compiler or model work. `EDIT` verifies the retained hash, compiles only sealed
+  original source plus new untrusted correction through the existing compiler,
+  preserves the tier, the 90/120/150-second performance targets, and the separate
+  profile operational safety timeout (315 seconds for standard, 180 for controls),
+  keeps the old seal, and returns a new
+  preview/hash. Performance-target overruns are reported as timing evidence and
+  are not proposal failures by themselves. It adds no schema, stage, retry, or
+  repair path.
+- Explicit operator `odylith greenfield create` verifies the sealed receipt,
+  hash and preconditions, publishes sealed bytes under rollback guard, validates
+  readback and returns its outcome. It remains separate and commit-only; no model
+  calls, artifact generation or rebuilding persistent projections may follow it.
+- Legacy proposal `apply` must not become a confirmed write path; edited
+  confirmation text is new evidence and requires a rebuilt transaction.
+- The deterministic greenfield proposal Tribunal must reject disconnected child
+  topology, shallow component ownership, and invisible release/program
+  structures before durable source truth changes.
+- Host routes may help the operator draft a proposal, but supported hosts must
+  not own the durable validation or write boundary.
 
 ## Host Configuration Rules
 - Managed Codex and Claude assets must merge additively with user-owned host
@@ -82,19 +101,17 @@
   locking, but it must not weaken the advisory-lock plus atomic-replace
   contract that prevents torn or interleaved local state.
 
-## Release Prep Rules
-- Release-facing security docs, public docs, browser surfaces, and
-  install-managed assets must be covered by `odylith release migration-gate`
-  for the target version before GA.
-- Reuse accepted candidate proof for the same artifact instead of rerunning
-  expensive full-suite or consumer rehearsal gates without new evidence.
+## Product Release Prep Boundary
+- Product release prep rules belong in product-repo maintainer guidance and
+  must not be applied as consumer repo obligations.
+- Consumer repos should use the installed launcher to inspect version, repair
+  local runtime posture, and run consumer-owned validation on the repo's native
+  toolchain.
 
-## Canonical Commands
+## Consumer Diagnostic Commands
 ```bash
 ./.odylith/bin/odylith version --repo-root .
 ./.odylith/bin/odylith doctor --repo-root . --repair
 ./.odylith/bin/odylith reinstall --repo-root . --latest
 ./.odylith/bin/odylith context-engine status --repo-root .
-./.odylith/bin/odylith release migration-gate --repo-root . --target-version 0.1.13
-make release-candidate
 ```

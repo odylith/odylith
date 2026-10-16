@@ -1,4 +1,4 @@
-"""Codex Stop hook logger for meaningful Odylith implementation summaries."""
+"""Durably capture meaningful Codex summaries without canonical hook writes."""
 
 from __future__ import annotations
 
@@ -9,13 +9,17 @@ import sys
 from typing import Any
 from typing import Mapping
 
-from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
-from odylith.runtime.intervention_engine import visible_delivery_runtime
 from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
-from odylith.runtime.intervention_engine import visibility_replay
 from odylith.runtime.surfaces import codex_host_shared
 from odylith.runtime.surfaces import host_intervention_support
+from odylith.runtime.surfaces import host_hook_execution
+from odylith.runtime.surfaces import host_dirty_checkpoint
+
+
+# The native hook has a 20-second outer timeout; leave launcher and owned
+# process cleanup headroom instead of granting each phase a fresh timeout.
+_STOP_BUDGET_SECONDS = 14.0
 
 
 def _stop_intervention_bundle(
@@ -58,17 +62,6 @@ def _stop_intervention_bundle(
     )
 
 
-def log_codex_stop_summary(repo_root: str = ".", *, message: str) -> bool:
-    summary = codex_host_shared.meaningful_stop_summary(message)
-    if not summary:
-        return False
-    return codex_host_shared.run_compass_log(
-        project_dir=repo_root,
-        summary=summary,
-        workstreams=codex_host_shared.extract_workstreams(summary),
-    )
-
-
 def render_codex_stop_summary(
     repo_root: str = ".",
     *,
@@ -90,101 +83,60 @@ def render_codex_stop_summary(
     )
 
 
-def main(argv: list[str] | None = None) -> int:
+def _run_stop_summary(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="odylith codex stop-summary",
-        description="Log a meaningful Codex stop summary to Compass when present.",
+        description="Save a meaningful Codex summary for the next Compass update.",
     )
-    parser.add_argument("--repo-root", default=".", help="Repository root for launcher resolution.")
+    parser.add_argument("--repo-root", default=".", help="Repository root for durable summary capture.")
     args = parser.parse_args(list(argv or []))
     payload = codex_host_shared.load_payload()
     if bool(payload.get("stop_hook_active")):
         return 0
     message = str(payload.get("last_assistant_message", ""))
     session_id = codex_host_shared.hook_session_id(payload)
-    from odylith.runtime.surfaces import codex_host_post_bash_checkpoint
-
-    deferred_governance = codex_host_post_bash_checkpoint.settle_deferred_checkpoint_events(
-        project_dir=args.repo_root,
-        session_id=session_id,
-    )
     if host_intervention_support.suppress_prompt_live_narration(assistant_summary=message):
-        governance_status = str((deferred_governance or {}).get("systemMessage", "")).strip()
-        if governance_status:
-            sys.stdout.write(json.dumps(host_surface_runtime.stop_payload(system_message=governance_status)))
         return 0
-    host_surface_runtime.confirm_assistant_chat_delivery(
-        repo_root=args.repo_root,
-        host_family="codex",
-        session_id=session_id,
-        last_assistant_message=message,
-        render_surface="codex_stop",
-    )
-    log_codex_stop_summary(args.repo_root, message=message)
-    bundle = _stop_intervention_bundle(
-        repo_root=args.repo_root,
-        message=message,
-        session_id=session_id,
-    )
-    decision = (
-        host_surface_runtime.visible_intervention_decision(
+    summary = codex_host_shared.meaningful_stop_summary(message)
+    try:
+        saved = not summary or host_dirty_checkpoint.capture_stop_summary(
             repo_root=args.repo_root,
-            bundle=bundle,
             host_family="codex",
-            turn_phase="stop_summary",
             session_id=session_id,
-            include_proposal=False,
-            include_closeout=True,
+            summary=summary,
+            workstreams=codex_host_shared.extract_workstreams(summary),
         )
-        if bundle
-        else None
-    )
-    replay = visibility_replay.replayable_chat_markdown(
-        repo_root=args.repo_root,
-        host_family="codex",
-        session_id=session_id,
-        max_live_blocks=4,
-        ambient_cap=3,
-        include_assist=True,
-        include_teaser=False,
-    )
-    closeout_text = (
-        conversation_surface.render_closeout_text(bundle, markdown=True)
-        if bundle
-        else ""
-    )
-    rendered = (
-        host_intervention_support.merge_replay_with_closeout(
-            replay=replay,
-            closeout_text=closeout_text,
-        )
-        if replay
-        else ""
-    )
-    if rendered and bundle and decision is not None:
-        host_surface_runtime.append_visible_intervention_events(
-            repo_root=Path(args.repo_root).expanduser().resolve(),
-            bundle=bundle,
-            decision=decision,
+    except host_dirty_checkpoint.HostDirtyCheckpointError:
+        saved = False
+    status = "" if saved else "Odylith could not save this turn's summary."
+    try:
+        host_surface_runtime.confirm_assistant_chat_delivery(
+            repo_root=args.repo_root,
+            host_family="codex",
+            session_id=session_id,
+            last_assistant_message=message,
             render_surface="codex_stop",
+            defer=True,
         )
-    system_message = host_surface_runtime.compose_checkpoint_system_message(
-        live_intervention=rendered,
-        governance_status=(deferred_governance or {}).get("systemMessage", ""),
-    )
-    if system_message:
-        sys.stdout.write(
-            json.dumps(
-                host_surface_runtime.stop_payload(
-                    system_message=system_message,
-                    block_for_visible_delivery=not visible_delivery_runtime.visible_delivery_already_present(
-                        last_assistant_message=message,
-                        visible_text=system_message,
-                    ),
-                )
-            )
-        )
+    except host_dirty_checkpoint.HostDirtyCheckpointError:
+        status = status or "Odylith could not save chat-delivery confirmation."
+    if status:
+        sys.stdout.write(json.dumps(host_surface_runtime.stop_payload(system_message=status)))
     return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    try:
+        with host_hook_execution.hook_budget(seconds=_STOP_BUDGET_SECONDS):
+            return _run_stop_summary(argv)
+    except host_hook_execution.HookBudgetExpired:
+        sys.stdout.write(json.dumps(host_surface_runtime.stop_payload(
+            system_message=(
+                "Odylith Stop capture did not complete. "
+                "This turn's summary may not be saved."
+            ),
+        )))
+        return 0
 
 
 if __name__ == "__main__":

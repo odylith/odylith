@@ -20,6 +20,29 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   source for maintainer-side coding, testing, generated-artifact authoring,
   branch and write safety, refactor-first policy, release-surface source
   updates, benchmark harness changes, and coding validation expectations.
+- Keep Odylith governance artifacts current as part of maintainer work, not
+  as an optional closeout task. When a simulation, live consumer repro, broad
+  validation run, or architecture review exposes a new product learning,
+  update the appropriate governed surface before moving on: Casebook for
+  escaped defects and regressions, Radar or technical plans for planned
+  rearchitecture scope, Registry and Atlas for changed component or product
+  contracts, and Compass for execution decisions and proof posture. Use the
+  Odylith CLI first and do not hand-edit governed records where a CLI exists.
+- For recursive greenfield and post-confirm QA in maintainer mode, every
+  failed or materially weak generated artifact must either link to existing
+  Casebook/Radar truth or create/update that truth before the next simulation.
+  A stable checkpoint includes code state, test proof, governance updates, and
+  cleanup of temporary simulation repositories.
+- Carry this rule through pinned dogfood, detached `source-local`, Codex,
+  Claude Code, and shipped consumer guidance whenever maintainer work changes
+  default agent behavior. A governance-learning rule that only exists in the
+  maintainer lane is incomplete.
+- Before fixing a bug in maintainer mode, search existing Casebook plus
+  related Radar, technical-plan, Registry, Atlas, and Compass truth, read
+  prior failed mechanisms, failed fix attempts, and guardrails, avoid
+  repeating a fix path that governance already shows failed, and capture new
+  mechanism-level learning. Do not repeat a fix path that governance already
+  shows failed.
 - Treat AI slop as a regression. In this product lane, use
   `../agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md` together with
   `agents-guidelines/CODING_STANDARDS.md` to keep fake modularization,
@@ -31,6 +54,12 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
 - Structural cleanup is not permission to drift behavior, UX, or UI. Preserve
   semantics deliberately and prove the touched contract on the real toolchain
   or surface that owns it.
+- Human-visible generated content has the same minimum clarity floor in this
+  maintainer lane: simple, easy to understand, legible, grammatically
+  coherent, and clear before any live narration, voice, or stylistic
+  embellishment is added. When this floor is strengthened here, push the same
+  rule into consumer-safe guidance, skills, install generators, and shipped
+  mirrors.
 - When strengthening anti-slop policy in maintainer mode, push the shared
   contract into the consumer-safe guidance, shared skill, and shipped bundle
   mirrors in the same change so Codex and Claude consumer lanes inherit the
@@ -73,10 +102,12 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   because it is visible in a backlog or Odylith queue surface.
 - Local maintainer release identity is also non-negotiable in this lane:
   authored maintainer work uses `freedom-research
-  <freedom@freedompreetham.org>` for both author and committer config. If
-  canonical release-history proof needs to survive platform merge machinery,
-  keep the history gate focused on canonical maintainer authorship instead of
-  widening local identity policy.
+  <freedom@freedompreetham.org>` for both author and committer config.
+  Release-history proof keeps that maintainer credential boundary separate
+  from contribution authorship: preserve external contributors' raw Git
+  identities, tolerate only the explicitly enumerated immutable historical
+  maintainer alias, and reject assistant/model/coding-tool identity or
+  attribution. Never rewrite an external contributor as `freedom-research`.
 - Keep maintainer and dogfood progress updates task-first. Do not narrate
   startup, routing, packet-selection, or degraded-attempt history unless a
   literal command, a live blocker, or a runtime-lane distinction matters.
@@ -85,7 +116,12 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   observer before release closeout. This is a maintainer release-gate
   obligation only: do not add it to consumer-safe `odylith/agents-guidelines/`,
   shared `odylith/skills/`, or bundled install assets. Run
-  `odylith release migration-gate --repo-root . --target-version <version>`
+  `odylith release migration-gate --repo-root . --target-version <version> --base-ref <published-predecessor-ref>`
+  on the clean, frozen candidate. Verify the predecessor against published
+  release metadata; a reserved local tag or HEAD's parent is not that proof.
+  The gate reports both resolved endpoint commits and refuses unavailable
+  Git scope or hidden tracked consumer surfaces. It includes committed changes;
+  a clean working tree alone cannot satisfy assessment. Use the emitted scope
   and complete the exact emitted
   `migration-observer:<version>:<surface>:<fingerprint>` Radar marker in
   maintainer governance before claiming release readiness.

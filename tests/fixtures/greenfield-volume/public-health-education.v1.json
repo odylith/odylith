@@ -1,0 +1,324 @@
+{
+  "cases": [
+    {
+      "name": "municipal water main renewal ledger",
+      "prompt": "A mid-sized city water utility needs a shared operating product for its water main renewal program. Field crews report breaks, pavement restoration, valve isolation records, and customer notices in separate systems. Asset engineers need to rank renewal candidates by failure history and coordinate approved capital work with street resurfacing windows. The product must preserve inspection evidence, permit constraints, and neighborhood commitments for annual budget review.",
+      "required_terms": ["water main", "valve isolation", "capital work", "street resurfacing"],
+      "leakage_terms": ["failure history", "inspection evidence", "neighborhood commitments"],
+      "tags": ["public-sector", "municipal-operations"],
+      "stressors": ["long-first-path", "path-grant", "atlas-label-pressure", "registry-contract-pressure"]
+    },
+    {
+      "name": "city procurement protest docket",
+      "prompt": "Build a civic procurement review workspace for a city purchasing office handling construction and technology solicitations. Procurement analysts need to receive bid protest filings, record procurement officer findings, manage vendor communications, and schedule hearing deadlines. Finance, legal, and departmental sponsors must see the same solicitation record while access to sealed bids remains restricted. The first release should show protest status, evidence custody, and council award readiness.",
+      "required_terms": ["bid protest", "procurement officer", "sealed bids", "award readiness"],
+      "leakage_terms": ["hearing deadlines", "vendor communications", "solicitation record"],
+      "tags": ["public-sector", "procurement"],
+      "stressors": ["multi-role-tribunal", "final-memory-pressure", "domain-depth-obligations", "modal-expert-lens"]
+    },
+    {
+      "name": "county cooling center coordination",
+      "prompt": "County emergency management wants an operational product for extreme-heat cooling centers. During a heat advisory, municipal sites, library branches, transit staff, disability advocates, and volunteer groups need current hours, accessible entrance details, generator status, water deliveries, and transport requests. Coordinators must distinguish confirmed center capacity from estimates and retain daily incident logs. The product supports placement and outreach operations, not clinical assessment or medical advice.",
+      "required_terms": ["heat advisory", "cooling centers", "accessible entrance", "generator status"],
+      "leakage_terms": ["transport requests", "daily incident logs", "center capacity"],
+      "tags": ["public-sector", "accessibility", "emergency-management"],
+      "stressors": ["multi-role-tribunal", "path-grant", "long-first-path", "latency-pressure"]
+    },
+    {
+      "name": "paratransit eligibility operations",
+      "prompt": "A regional transit authority needs a case-management product for paratransit eligibility operations. Riders submit eligibility applications with functional access needs, mobility-device dimensions, and travel training history. Eligibility staff, contracted assessors, customer service, and scheduling coordinators must track review dates, temporary certifications, reasonable modification requests, and appeal outcomes. The product must generate accessible notices and clearly separate administrative eligibility from medical diagnosis or treatment decisions.",
+      "required_terms": ["paratransit eligibility", "mobility-device", "temporary certifications", "reasonable modification"],
+      "leakage_terms": ["appeal outcomes", "accessible notices", "travel training"],
+      "tags": ["municipal-operations", "disability-accessibility", "transit"],
+      "stressors": ["domain-depth-obligations", "multi-role-tribunal", "registry-contract-pressure", "modal-expert-lens"]
+    },
+    {
+      "name": "neighborhood code compliance intake",
+      "prompt": "The city neighborhood services department needs a public-facing and staff-facing product for code compliance intake. Residents report vacant property hazards, illegal dumping, noise, and blocked sidewalks; inspectors document site visits, notice periods, correction plans, and repeat violations. Supervisors need workload visibility by district and a defensible record before escalation. The product must offer language access and accessible reporting without promising automatic enforcement decisions.",
+      "required_terms": ["code compliance", "vacant property", "notice periods", "repeat violations"],
+      "leakage_terms": ["blocked sidewalks", "site visits", "correction plans"],
+      "tags": ["public-sector", "municipal-operations"],
+      "stressors": ["noun-verb-homonym", "path-grant", "final-memory-pressure", "atlas-label-pressure"]
+    },
+    {
+      "name": "resilience grant match desk",
+      "prompt": "A city sustainability office is coordinating a resilience grant portfolio across public works, housing, and community organizations. Staff need to track grant match commitments, environmental justice screening, benefit-cost analysis, subrecipient invoices, and federal reporting milestones. The product should make project dependencies visible before a reimbursement request is submitted, retain source documents, and identify which partner must resolve a missing certification. It is an administrative grants product, not a funding recommendation engine.",
+      "required_terms": ["grant match", "environmental justice", "benefit-cost analysis", "subrecipient invoices"],
+      "leakage_terms": ["reimbursement request", "federal reporting", "missing certification"],
+      "tags": ["public-sector", "climate-resilience", "grants"],
+      "stressors": ["domain-depth-obligations", "long-first-path", "registry-contract-pressure", "final-memory-pressure"]
+    },
+    {
+      "name": "public records request queue",
+      "prompt": "A county clerk needs a records-request workspace for public records requests spanning departments. Requesters may seek emails, permits, contracts, or inspection reports; liaison staff need to assign custodians, log search scope, flag exemptions, collect redaction review, and issue delivery notices. Legal counsel and department records officers must share deadline visibility without exposing withheld material. The product should maintain an auditable response timeline and fee-waiver determination record.",
+      "required_terms": ["public records requests", "search scope", "redaction review", "fee-waiver"],
+      "leakage_terms": ["delivery notices", "response timeline", "records officers"],
+      "tags": ["public-sector", "records-management"],
+      "stressors": ["multi-role-tribunal", "noun-verb-homonym", "path-grant", "latency-pressure"]
+    },
+    {
+      "name": "library digital navigator network",
+      "prompt": "A public library system needs to coordinate a digital navigator network serving residents who need device access, broadband enrollment help, and accessible technology orientation. Branch staff, nonprofit partners, and multilingual volunteers need referral status, appointment availability, loaner device inventory, interpreter needs, and consent-based follow-up. Program managers need neighborhood reporting without exposing individual browsing history. The service should support digital inclusion operations rather than provide financial or legal advice.",
+      "required_terms": ["digital navigator", "broadband enrollment", "loaner device", "digital inclusion"],
+      "leakage_terms": ["interpreter needs", "referral status", "browsing history"],
+      "tags": ["public-sector", "library-services", "accessibility"],
+      "stressors": ["modal-expert-lens", "multi-role-tribunal", "final-memory-pressure", "path-grant"]
+    },
+    {
+      "name": "parks permit stewardship calendar",
+      "prompt": "Parks and recreation needs a seasonal product for managing park permits, field allocations, amplified sound requests, and stewardship obligations. Community leagues, neighborhood festivals, maintenance crews, and environmental staff compete for the same sites. Permit coordinators need to verify insurance certificates, restroom access, litter plans, weather cancellations, and restoration inspections before returning deposits. The product should publish fair availability rules while retaining staff-only records for disputes and damage recovery.",
+      "required_terms": ["park permits", "field allocations", "insurance certificates", "restoration inspections"],
+      "leakage_terms": ["weather cancellations", "litter plans", "returning deposits"],
+      "tags": ["municipal-operations", "parks-recreation"],
+      "stressors": ["path-grant", "atlas-label-pressure", "registry-contract-pressure", "long-first-path"]
+    },
+    {
+      "name": "immunization clinic administration",
+      "prompt": "A local public health department needs an administrative operations product for community immunization clinics. Clinic coordinators schedule sites, assign staff roles, track consent forms, document vaccine inventory transfers, confirm language access, and reconcile daily dose counts. School liaisons and pharmacy partners need approved information for outreach. The product must support clinic logistics and reporting, while clearly avoiding individualized health guidance, diagnosis, or treatment recommendations.",
+      "required_terms": ["immunization clinics", "consent forms", "vaccine inventory", "daily dose counts"],
+      "leakage_terms": ["clinic logistics", "language access", "pharmacy partners"],
+      "tags": ["public-health", "healthcare-administration"],
+      "stressors": ["domain-depth-obligations", "scientific-casing", "multi-role-tribunal", "latency-pressure"]
+    },
+    {
+      "name": "hospital discharge transport coordination",
+      "prompt": "A safety-net hospital seeks an administrative product for discharge transport coordination. Unit coordinators need to record discharge-ready status, wheelchair van requests, shelter destination confirmation, interpreter arrangements, durable equipment handoffs, and transport vendor arrival times. Case management, billing, and community partners need a shared exception view when a trip fails or a destination cannot receive the person. This product manages transitions and documentation, not clinical discharge decisions.",
+      "required_terms": ["discharge transport", "wheelchair van", "interpreter arrangements", "transport vendor"],
+      "leakage_terms": ["durable equipment", "destination confirmation", "discharge-ready"],
+      "tags": ["healthcare-administration", "accessibility", "care-coordination"],
+      "stressors": ["multi-role-tribunal", "path-grant", "final-memory-pressure", "domain-depth-obligations"]
+    },
+    {
+      "name": "community clinic referral ledger",
+      "prompt": "A federally qualified health center needs a referral administration product spanning primary care, specialty partners, language services, and patient navigation. Referral coordinators must capture referral order status, authorization expiration, records release, appointment confirmation, no-show outreach, and closed-loop receipt from the receiving organization. Compliance staff need to audit missing documentation without reading unnecessary clinical details. The product coordinates administrative follow-through and does not provide medical advice or triage.",
+      "required_terms": ["referral order", "authorization expiration", "records release", "closed-loop receipt"],
+      "leakage_terms": ["appointment confirmation", "no-show outreach", "patient navigation"],
+      "tags": ["healthcare-administration", "public-health"],
+      "stressors": ["registry-contract-pressure", "domain-depth-obligations", "long-first-path", "modal-expert-lens"]
+    },
+    {
+      "name": "behavioral health provider directory",
+      "prompt": "A county behavioral health authority needs a provider-directory operations product, not a clinical service. Contract managers maintain provider credentials, language capacity, accessibility features, service locations, referral acceptance status, and network adequacy evidence. Call-center staff need accurate public listings and escalation paths when directory information is stale. Providers must attest to changes, while county reviewers preserve verification history and contract consequences. The product must not recommend treatment or assess individual needs.",
+      "required_terms": ["provider credentials", "network adequacy", "referral acceptance", "verification history"],
+      "leakage_terms": ["language capacity", "accessibility features", "public listings"],
+      "tags": ["healthcare-administration", "public-sector", "accessibility"],
+      "stressors": ["modal-expert-lens", "registry-contract-pressure", "multi-role-tribunal", "latency-pressure"]
+    },
+    {
+      "name": "university accommodation service tracker",
+      "prompt": "A public university disability resource center needs a case workflow for accommodation requests. Students submit documentation, describe access barriers, and request exam accommodations, captioning, adaptive furniture, or housing modifications. Access coordinators, faculty liaisons, housing staff, and testing centers need role-specific tasks, decision letters, implementation confirmations, and appeal records. The product must protect privacy, provide accessible communication, and keep approval authority with qualified campus staff.",
+      "required_terms": ["accommodation requests", "exam accommodations", "captioning", "implementation confirmations"],
+      "leakage_terms": ["access barriers", "decision letters", "faculty liaisons"],
+      "tags": ["education", "disability-accessibility", "higher-education"],
+      "stressors": ["multi-role-tribunal", "path-grant", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "accessible city service audit",
+      "prompt": "A city digital service office needs an operational registry for accessibility remediation across permits, benefits, payment, and reporting portals. Auditors log WCAG findings, keyboard navigation failures, caption defects, vendor remediation commitments, and verification dates. Product owners need prioritized work by resident impact and legal deadline, while procurement staff need evidence for contract enforcement. The system must preserve test artifacts and distinguish published accessibility statements from unresolved issues.",
+      "required_terms": ["WCAG findings", "keyboard navigation", "vendor remediation", "accessibility statements"],
+      "leakage_terms": ["caption defects", "test artifacts", "legal deadline"],
+      "tags": ["public-sector", "digital-accessibility"],
+      "stressors": ["registry-contract-pressure", "scientific-casing", "atlas-label-pressure", "domain-depth-obligations"]
+    },
+    {
+      "name": "vocational rehabilitation service authorization",
+      "prompt": "The state vocational rehabilitation agency needs a service authorization product for employment supports. Counselors track eligibility milestones, individualized employment plans, assistive technology requests, training vendor authorizations, invoice approval, and employment outcome verification. Fiscal staff, providers, and client advocates need clear status and deadlines without altering counselor judgment. The product should support accessible notices, appeal tracking, and federal performance reporting, but it must not make benefit or disability determinations automatically.",
+      "required_terms": ["vocational rehabilitation", "employment plans", "assistive technology", "employment outcome"],
+      "leakage_terms": ["training vendor", "appeal tracking", "accessible notices"],
+      "tags": ["workforce", "disability-accessibility", "public-sector"],
+      "stressors": ["domain-depth-obligations", "multi-role-tribunal", "path-grant", "long-first-path"]
+    },
+    {
+      "name": "special education service evidence",
+      "prompt": "A school district needs a coordinated administrative product for special education service evidence. Case managers need to track IEP service minutes, related-service provider schedules, parent consent, evaluation due dates, transportation accommodations, and compensatory service decisions. School leaders and compliance staff need district-wide exception reporting, while families need clear accessible notices in their preferred language. The product records educational obligations and documentation; it does not evaluate a student's disability or prescribe services.",
+      "required_terms": ["IEP service minutes", "parent consent", "evaluation due dates", "transportation accommodations"],
+      "leakage_terms": ["related-service", "compensatory service", "accessible notices"],
+      "tags": ["education", "disability-accessibility", "public-sector"],
+      "stressors": ["multi-role-tribunal", "final-memory-pressure", "domain-depth-obligations", "registry-contract-pressure"]
+    },
+    {
+      "name": "school bus route exception board",
+      "prompt": "A large school district needs an operations board for school bus route exceptions. Dispatchers need to record route changes, wheelchair lift availability, hazardous walking conditions, driver substitutions, weather closures, family notifications, and late-arrival investigations. Transportation supervisors, school principals, and special education coordinators need to see the same operational facts with different permissions. The product should preserve daily route evidence and communicate service changes without making student placement decisions.",
+      "required_terms": ["school bus route", "wheelchair lift", "hazardous walking", "driver substitutions"],
+      "leakage_terms": ["weather closures", "family notifications", "late-arrival"],
+      "tags": ["education", "municipal-operations", "accessibility"],
+      "stressors": ["latency-pressure", "path-grant", "multi-role-tribunal", "atlas-label-pressure"]
+    },
+    {
+      "name": "community college aid verification",
+      "prompt": "A community college financial aid office needs a case product for aid verification and completion support. Students submit verification worksheets, tax transcripts, residency evidence, satisfactory academic progress appeals, and emergency grant requests. Financial aid counselors, records staff, and student advocates need a shared queue for missing documents, eligibility review dates, disbursement holds, and appeal outcomes. The product must support multilingual and accessible communication without making financial decisions without authorized review.",
+      "required_terms": ["aid verification", "tax transcripts", "satisfactory academic progress", "disbursement holds"],
+      "leakage_terms": ["verification worksheets", "residency evidence", "appeal outcomes"],
+      "tags": ["education", "workforce", "student-services"],
+      "stressors": ["noun-verb-homonym", "multi-role-tribunal", "final-memory-pressure", "domain-depth-obligations"]
+    },
+    {
+      "name": "university research compliance portfolio",
+      "prompt": "A public university research office needs a portfolio product for research compliance administration. Investigators, department administrators, biosafety staff, and sponsors need current status for IRB protocols, conflict disclosures, data use agreements, training renewals, and grant subawards. The product should expose dependencies before a study or award can proceed, retain committee determinations, and track continuing review deadlines. It supports institutional administration, not scientific conclusions or participant medical guidance.",
+      "required_terms": ["IRB protocols", "conflict disclosures", "data use agreements", "continuing review"],
+      "leakage_terms": ["biosafety staff", "grant subawards", "committee determinations"],
+      "tags": ["education", "research-administration", "public-sector"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "registry-contract-pressure", "long-first-path"]
+    },
+    {
+      "name": "teacher credential renewal desk",
+      "prompt": "The state educator licensing board needs a renewal operations product for teacher credentials. Educators submit continuing education records, fingerprint clearance status, district employment verification, subject-area endorsements, and hardship extension requests. Licensing analysts, district human resources staff, and hearing officers need an auditable record of deficiencies, notices, fee payments, and appeal decisions. The product must make renewal requirements understandable and accessible while reserving final licensure action for authorized board processes.",
+      "required_terms": ["teacher credentials", "continuing education", "fingerprint clearance", "subject-area endorsements"],
+      "leakage_terms": ["hardship extension", "appeal decisions", "employment verification"],
+      "tags": ["education", "workforce", "public-sector"],
+      "stressors": ["multi-role-tribunal", "domain-depth-obligations", "path-grant", "final-memory-pressure"]
+    },
+    {
+      "name": "registered apprenticeship sponsor review",
+      "prompt": "A regional workforce board needs a product for registered apprenticeship sponsor review. Employers propose occupation standards, wage progression, related instruction partners, mentor ratios, equal opportunity plans, and apprentice completion records. Workforce analysts, labor representatives, community colleges, and state reviewers must coordinate technical assistance and approval steps. The product should retain sponsor attestations and corrective action plans, identify stalled reviews, and publish program readiness without certifying individual workers.",
+      "required_terms": ["registered apprenticeship", "wage progression", "related instruction", "mentor ratios"],
+      "leakage_terms": ["occupation standards", "sponsor attestations", "corrective action"],
+      "tags": ["workforce", "education", "public-sector"],
+      "stressors": ["multi-role-tribunal", "long-first-path", "registry-contract-pressure", "path-grant"]
+    },
+    {
+      "name": "housing voucher portability ledger",
+      "prompt": "A housing authority needs an administrative case product for housing voucher portability. Portability specialists need to record receiving agency contacts, family briefing dates, payment standard comparisons, landlord packets, inspection milestones, transfer deadlines, and lease-up outcomes. Finance teams need verified information before housing assistance payments change, while families need accessible notices explaining next steps. The product coordinates records and deadlines, not eligibility determinations or legal advice for tenants or landlords.",
+      "required_terms": ["housing voucher portability", "receiving agency", "payment standard", "lease-up outcomes"],
+      "leakage_terms": ["landlord packets", "inspection milestones", "housing assistance payments"],
+      "tags": ["housing", "public-sector", "resident-services"],
+      "stressors": ["path-grant", "domain-depth-obligations", "final-memory-pressure", "multi-role-tribunal"]
+    },
+    {
+      "name": "coordinated entry housing match",
+      "prompt": "A county continuum of care needs a coordinated entry operations product for housing match review. Outreach teams submit consent-based assessments, shelter providers update bed availability, housing navigators document eligibility documents, and referral partners record appointment outcomes. A multi-agency case conference must review priority factors, accessibility needs, veteran status, and unit requirements before accepting a match. The product supports transparent administrative coordination and must not replace human judgment about housing priority.",
+      "required_terms": ["coordinated entry", "bed availability", "accessibility needs", "housing priority"],
+      "leakage_terms": ["case conference", "unit requirements", "appointment outcomes"],
+      "tags": ["housing", "nonprofit", "public-sector"],
+      "stressors": ["multi-role-tribunal", "domain-depth-obligations", "long-first-path", "final-memory-pressure"]
+    },
+    {
+      "name": "affordable housing compliance monitor",
+      "prompt": "A city housing department needs a compliance monitor for affordable housing covenants. Asset managers track regulatory agreements, income recertifications, rent schedules, physical inspections, reserve account reports, and corrective action deadlines for properties receiving public subsidy. Owners, property managers, lenders, and city reviewers need a shared record with controlled access to tenant-sensitive data. The product should flag missing evidence and prepare annual compliance review packets without setting rent or determining household eligibility.",
+      "required_terms": ["affordable housing covenants", "income recertifications", "rent schedules", "reserve account"],
+      "leakage_terms": ["regulatory agreements", "physical inspections", "compliance review"],
+      "tags": ["housing", "public-sector", "compliance"],
+      "stressors": ["registry-contract-pressure", "domain-depth-obligations", "atlas-label-pressure", "latency-pressure"]
+    },
+    {
+      "name": "tenant legal aid intake network",
+      "prompt": "A nonprofit tenant legal aid network needs an intake coordination product for eviction prevention services. Partner organizations need to capture court date, notice type, language preference, disability accommodation request, income documentation, conflict screening, and referral acceptance. Supervising attorneys and navigators need to see capacity and urgency without exposing protected notes to every partner. The product should coordinate administrative intake, retain consent, and never offer automated legal advice or case outcome predictions.",
+      "required_terms": ["tenant legal aid", "court date", "conflict screening", "referral acceptance"],
+      "leakage_terms": ["notice type", "language preference", "protected notes"],
+      "tags": ["housing", "nonprofit", "accessibility"],
+      "stressors": ["modal-expert-lens", "multi-role-tribunal", "path-grant", "final-memory-pressure"]
+    },
+    {
+      "name": "regional food bank allocation",
+      "prompt": "A regional food bank needs an operations product for food allocation across pantries, schools, senior centers, and disaster partners. Warehouse staff track donated pallets, cold-chain exceptions, culturally preferred foods, delivery routes, partner order windows, and recall notices. Program managers need equitable allocation evidence based on service area and household demand, while partners need accessible pickup instructions. The product manages logistics and reporting, not nutrition counseling or individual dietary recommendations.",
+      "required_terms": ["food allocation", "donated pallets", "cold-chain exceptions", "recall notices"],
+      "leakage_terms": ["delivery routes", "partner order windows", "equitable allocation"],
+      "tags": ["nonprofit", "public-health", "logistics"],
+      "stressors": ["scientific-casing", "long-first-path", "registry-contract-pressure", "latency-pressure"]
+    },
+    {
+      "name": "disaster recovery nonprofit intake",
+      "prompt": "After a wildfire, a nonprofit recovery coalition needs a product for survivor assistance administration. Caseworkers record damage verification, insurance status, temporary lodging, accessibility equipment replacement, volunteer repair requests, unmet needs referrals, and grant disbursement documentation. Municipal recovery staff and charitable partners need coordinated responsibility assignments and a clear record of duplicate assistance checks. The product should support recovery operations and consent-based information sharing, not determine emergency eligibility automatically.",
+      "required_terms": ["damage verification", "temporary lodging", "unmet needs", "duplicate assistance"],
+      "leakage_terms": ["insurance status", "volunteer repair", "grant disbursement"],
+      "tags": ["nonprofit", "public-sector", "disaster-recovery"],
+      "stressors": ["multi-role-tribunal", "path-grant", "final-memory-pressure", "domain-depth-obligations"]
+    },
+    {
+      "name": "youth mentoring partnership registry",
+      "prompt": "A city-funded youth mentoring coalition needs a partner registry and program operations product. Nonprofit providers submit mentor screening status, school partnership agreements, transportation plans, accessibility accommodations, attendance evidence, incident escalation contacts, and outcome reporting schedules. Youth services staff need to monitor contract obligations and identify gaps by neighborhood, while providers need limited access to shared referral pathways. The product must preserve consent boundaries and avoid scoring or predicting individual youth risk.",
+      "required_terms": ["mentor screening", "school partnership", "accessibility accommodations", "outcome reporting"],
+      "leakage_terms": ["transportation plans", "incident escalation", "referral pathways"],
+      "tags": ["nonprofit", "education", "youth-services"],
+      "stressors": ["registry-contract-pressure", "multi-role-tribunal", "domain-depth-obligations", "atlas-label-pressure"]
+    },
+    {
+      "name": "survivor shelter service coordination",
+      "prompt": "A nonprofit survivor shelter needs an administrative coordination product for confidential services. Advocates manage shelter bed status, safety planning appointments, interpreter availability, disability accommodation needs, transportation vouchers, court accompaniment requests, and partner referrals. Program directors need aggregate capacity and funding reports without compromising location confidentiality or protected advocacy records. The product supports staff workflow, consent, and resource coordination; it must not provide legal, medical, or crisis counseling advice.",
+      "required_terms": ["shelter bed status", "interpreter availability", "transportation vouchers", "location confidentiality"],
+      "leakage_terms": ["safety planning", "court accompaniment", "protected advocacy"],
+      "tags": ["nonprofit", "housing", "accessibility"],
+      "stressors": ["modal-expert-lens", "final-memory-pressure", "path-grant", "multi-role-tribunal"]
+    },
+    {
+      "name": "rapid response layoff navigator",
+      "prompt": "A state workforce agency needs a rapid response operations product after a major layoff. Employer representatives provide affected worker lists, union contacts, separation dates, worksite locations, and available benefits sessions. Workforce navigators coordinate reemployment workshops, unemployment insurance referrals, training providers, interpreter requests, and follow-up appointments. Agency leaders need a verified view of service coverage by site. The product coordinates workforce response and does not determine benefit eligibility or career choices.",
+      "required_terms": ["rapid response", "affected worker", "reemployment workshops", "unemployment insurance"],
+      "leakage_terms": ["separation dates", "training providers", "interpreter requests"],
+      "tags": ["workforce", "public-sector", "economic-development"],
+      "stressors": ["long-first-path", "multi-role-tribunal", "latency-pressure", "path-grant"]
+    },
+    {
+      "name": "winter operations service desk",
+      "prompt": "A municipal public works department needs a winter operations desk for snow and ice response. Dispatch needs to combine snow route priorities, plow assignments, salt inventory, sidewalk accessibility complaints, contractor invoices, road temperature observations, and emergency facility access. Supervisors need clear shift handoffs and evidence for reimbursement claims after storms. The product should support service coordination and public updates without predicting travel safety or replacing field judgment.",
+      "required_terms": ["snow route priorities", "plow assignments", "salt inventory", "road temperature"],
+      "leakage_terms": ["sidewalk accessibility", "shift handoffs", "reimbursement claims"],
+      "tags": ["municipal-operations", "public-sector", "accessibility"],
+      "stressors": ["scientific-casing", "latency-pressure", "atlas-label-pressure", "final-memory-pressure"]
+    },
+    {
+      "name": "municipal election accessibility roster",
+      "prompt": "A city elections office needs an operations product for accessible polling place readiness. Election staff track polling place contracts, accessible entrance surveys, curbside voting procedures, language assistance rosters, ballot delivery schedules, equipment testing, and election day incident reports. Building managers, disability advocates, vendors, and precinct leads need assigned obligations and proof of completion. The product must preserve election administration records without influencing voter choices or tabulating results.",
+      "required_terms": ["polling place", "curbside voting", "language assistance", "equipment testing"],
+      "leakage_terms": ["accessible entrance", "election day", "proof of completion"],
+      "tags": ["public-sector", "elections", "disability-accessibility"],
+      "stressors": ["multi-role-tribunal", "domain-depth-obligations", "registry-contract-pressure", "path-grant"]
+    },
+    {
+      "name": "court interpreter assignment calendar",
+      "prompt": "A county court administration office needs a scheduling product for court interpreter assignments. Clerks need to match hearing calendars with certified interpreter availability, language dialect, remote appearance links, disability accommodations, continuance notices, invoice approvals, and qualification records. Judges, attorneys, court staff, and contracted interpreters require different views of the same assignment status. The product supports administrative access to proceedings and must not interpret testimony or provide legal guidance.",
+      "required_terms": ["court interpreter", "hearing calendars", "language dialect", "qualification records"],
+      "leakage_terms": ["remote appearance", "continuance notices", "invoice approvals"],
+      "tags": ["public-sector", "justice-administration", "accessibility"],
+      "stressors": ["multi-role-tribunal", "noun-verb-homonym", "latency-pressure", "final-memory-pressure"]
+    },
+    {
+      "name": "wastewater surveillance reporting chain",
+      "prompt": "A public health laboratory needs an operational product for wastewater surveillance reporting. Laboratory staff receive influent samples, record chain-of-custody, track RT-qPCR runs, Ct values, quality-control flags, sampling site metadata, and reporting approval. Epidemiology, utilities, and communications teams need a common release calendar that distinguishes preliminary signals from published data. The product manages laboratory workflow and public reporting; it must not infer individual infection status or offer medical advice.",
+      "required_terms": ["wastewater surveillance", "RT-qPCR", "Ct values", "quality-control"],
+      "leakage_terms": ["influent samples", "sampling site", "published data"],
+      "tags": ["public-health", "laboratory-operations", "municipal-operations"],
+      "stressors": ["scientific-casing", "domain-depth-obligations", "registry-contract-pressure", "latency-pressure"]
+    },
+    {
+      "name": "health records retention disposition",
+      "prompt": "A county health system needs an administrative product for health records retention and disposition. Records managers track retention schedules, legal holds, scanned legacy charts, destruction certificates, storage vendor inventories, access requests, and audit exceptions across clinics and administrative offices. Privacy officers, compliance staff, and department custodians need controlled tasks and evidence before any record is destroyed. The product governs records lifecycle administration and does not expose clinical content for care decisions.",
+      "required_terms": ["records retention", "legal holds", "destruction certificates", "storage vendor"],
+      "leakage_terms": ["retention schedules", "access requests", "audit exceptions"],
+      "tags": ["healthcare-administration", "public-sector", "records-management"],
+      "stressors": ["registry-contract-pressure", "final-memory-pressure", "multi-role-tribunal", "domain-depth-obligations"]
+    },
+    {
+      "name": "aging services caregiver respite queue",
+      "prompt": "An area agency on aging needs a caregiver respite administration product. Intake staff record caregiver eligibility documents, respite provider capacity, language preference, wheelchair access, service authorization dates, waitlist priority rationale, and satisfaction follow-up. County contract managers, nonprofit providers, and family navigators need coordinated status with permission-based access. The product should make unmet capacity visible for planning while leaving service approval and care decisions to authorized human staff.",
+      "required_terms": ["caregiver respite", "respite provider", "service authorization", "waitlist priority"],
+      "leakage_terms": ["wheelchair access", "eligibility documents", "unmet capacity"],
+      "tags": ["public-health", "nonprofit", "accessibility"],
+      "stressors": ["multi-role-tribunal", "path-grant", "final-memory-pressure", "modal-expert-lens"]
+    },
+    {
+      "name": "municipal building retrofit portfolio",
+      "prompt": "A city facilities office needs a capital portfolio product for municipal building energy retrofits. Engineers track energy audits, EUI baselines, electrification scopes, utility incentives, procurement packages, construction phasing, commissioning reports, and occupied-building accessibility impacts. Finance, facilities, sustainability, and department occupants need approval checkpoints before work proceeds. The product should link technical evidence to capital planning and reporting, without producing engineering stamps or guaranteeing energy savings.",
+      "required_terms": ["energy audits", "EUI baselines", "electrification scopes", "commissioning reports"],
+      "leakage_terms": ["utility incentives", "construction phasing", "capital planning"],
+      "tags": ["municipal-operations", "climate-resilience", "public-sector"],
+      "stressors": ["scientific-casing", "long-first-path", "registry-contract-pressure", "atlas-label-pressure"]
+    },
+    {
+      "name": "nonprofit restricted grant stewardship",
+      "prompt": "A multiservice nonprofit needs a grant stewardship product for restricted grants supporting housing, workforce, and youth programs. Development staff enter award terms, program leads allocate approved costs, finance reconciles restricted revenue, and compliance staff collect outcome evidence, amendment notices, and closeout reports. Executives need portfolio risk visibility without altering donor restrictions. The product should trace each obligation to a responsible role and prepare funder-ready reporting without inventing program results.",
+      "required_terms": ["restricted grants", "award terms", "restricted revenue", "closeout reports"],
+      "leakage_terms": ["approved costs", "outcome evidence", "donor restrictions"],
+      "tags": ["nonprofit", "grants", "workforce"],
+      "stressors": ["registry-contract-pressure", "multi-role-tribunal", "final-memory-pressure", "domain-depth-obligations"]
+    },
+    {
+      "name": "regional workforce data sharing council",
+      "prompt": "A regional workforce partnership needs a governed workspace for workforce data sharing. Community colleges, workforce boards, employers, labor groups, and nonprofits need to maintain data sharing agreements, approved data elements, cohort definitions, suppression thresholds, refresh schedules, and research requests. A review council must record purpose limitations, privacy conditions, and publication approval before aggregates are released. The product coordinates governance and evidence, not individual employment scoring or automated eligibility decisions.",
+      "required_terms": ["data sharing agreements", "cohort definitions", "suppression thresholds", "purpose limitations"],
+      "leakage_terms": ["approved data elements", "research requests", "publication approval"],
+      "tags": ["workforce", "education", "nonprofit"],
+      "stressors": ["multi-role-tribunal", "registry-contract-pressure", "scientific-casing", "final-memory-pressure"]
+    }
+  ]
+}

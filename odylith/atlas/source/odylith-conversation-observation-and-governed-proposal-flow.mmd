@@ -1,4 +1,5 @@
 %% Reviewed 2026-04-17 for B-096, CB-122, CB-123, and v0.1.11 to show the proposition-first visible intervention value engine, Guidance Behavior evidence handoff, compact alignment evidence adapter, and proposition-native voice composition replacing the block-first signal-ranker and moment-kind phrase-bank paths: evidence intake -> proposition ledger -> hard gates -> value features -> conflict graph and subset optimizer -> visibility broker -> ruled renderer -> Compass decision log and adjudication report.
+%% 2026-10-14 CB-305: unadmitted native events retain private history; shared readers select published canonical bytes and merge pending events.
 flowchart LR
     User["Live conversation turn<br/>prompt + assistant summary + edit or bash checkpoint"] --> Hosts
     Packet["Grounded packet + delivery truth<br/>context packet summary + active refs + lane context<br/>guidance_behavior_summary when relevant"] --> Alignment
@@ -9,8 +10,9 @@ flowchart LR
     Alignment["alignment_context + alignment_evidence hot path<br/>merged Context packet + compact Execution summary<br/>session memory + delivery ledger<br/>Guidance Behavior + Tribunal summary<br/>material gates, no provider calls or repo-wide search"] --> Envelope
 
     subgraph Hosts["Host adapters"]
-        Codex["Codex hooks<br/>prompt context + stop summary<br/>Bash post-tool checkpoint"]
-        Claude["Claude hooks<br/>prompt context + prompt teaser<br/>stop + post-edit + post-bash checkpoint"]
+        Codex["Codex hooks<br/>prompt context + Bash post-tool checkpoint"]
+        Claude["Claude hooks<br/>prompt context + prompt teaser<br/>post-edit + post-bash checkpoint"]
+        NativeStop["Codex and Claude native Stop<br/>retain the exact session summary"]
     end
 
     Codex --> Envelope["ObservationEnvelope<br/>host_family + session_id + turn_phase<br/>prompt_excerpt + assistant_summary<br/>changed_paths + packet/context summary<br/>execution + memory + Guidance Behavior<br/>Tribunal + visibility summaries<br/>delivery_snapshot + active_target_refs"]
@@ -56,14 +58,32 @@ flowchart LR
     Renderer --> Chatter["Odylith Chatter + assistant render<br/>friendly + delightful + soulful<br/>simple + clear + accurate + human"]
     Chatter --> HookPayloads["Hook payloads<br/>systemMessage + additionalContext<br/>structured evidence, not visibility proof"]
     HookPayloads --> AssistantFallback["Assistant-render fallback<br/>speak exact Markdown when host hides hooks<br/>hard fail-visible while proof is missing"]
-    Chatter --> ManualVisible["visible-intervention CLI<br/>plain Markdown escape hatch"]
+    Chatter --> ManualVisible["Manual visible-intervention CLI<br/>explicit stop_summary rendering<br/>plain Markdown escape hatch"]
     AssistantFallback --> Chat["Chat-visible UX<br/>Observation / Proposal / Assist actually shown"]
     ManualVisible --> Chat
-    HookPayloads --> StopGuard["Stop one-shot continuation<br/>recover missed Assist or late Observation"]
-    StopGuard --> Chat
+    NativeStop --> HostQueue["Private history journal<br/>separate from edit checkpoints<br/>fsync the original event and session identity"]
+    Events --> EventAdmission{"Admitted canonical writer<br/>holding the repository lock?"}
+    EventAdmission -->|Yes| Stream
+    EventAdmission -->|No active publication| Stream
+    EventAdmission -->|No; active publication| HostQueue
+    HostQueue --> LiveEvents["Shared live event reader<br/>published canonical bytes + pending intervention events<br/>exact identity deduplication + cache invalidation"]
+    Stream --> LiveEvents
+    HostQueue --> PendingMemory["Next-prompt session memory<br/>newest four exact-session summaries<br/>unverified historical claims"]
+    PendingMemory --> Alignment
+    HostQueue --> Foreground["Non-hook compass log or sync<br/>resume only an exact queued receipt<br/>publish history after the writer succeeds"]
+    Foreground --> HostContinuation["Canonical Compass continuation<br/>preserve receipt and append at most once"]
+    HostContinuation --> HostPublish["Immutable publication<br/>read back the exact event bytes"]
+    HostPublish --> HostAck["Acknowledge only the unchanged queued event"]
+    HostPublish --> Stream
+    Foreground -->|Unrelated receipt| HostBlocked["Block the normal writer<br/>require explicit compass log --complete"]
+    Foreground -->|Failure or remaining events| HostQueue
+    HostContinuation -->|Failure| HostQueue
+    HostPublish -->|Missing or different bytes| HostQueue
+    HostBlocked --> HostQueue
     DeliveryMetadata --> Events
-    Events --> Ledger["Delivery ledger<br/>Teaser + Ambient + Observation<br/>Proposal + Assist visibility"]
-    Ledger --> Status["intervention-status CLI<br/>static readiness + active lanes<br/>unproven vs proven-this-session<br/>exact fallback smoke"]
+    LiveEvents --> Ledger["Delivery ledger<br/>Teaser + Ambient + Observation<br/>Proposal + Assist visibility"]
+    Ledger --> NativeActivation["Native activation evidence<br/>Codex prompt-submit + Stop share one confirmation identity<br/>static files or manual fallback alone stay unverified"]
+    NativeActivation --> Status["read-only intervention-status CLI<br/>static readiness + native evidence + active lanes<br/>unproven vs proven-this-session<br/>exact fallback smoke"]
     Status --> ChatProbe["Status transcript probe<br/>promotes only exact rendered Markdown<br/>to assistant_chat_confirmed"]
     ChatProbe --> Ledger
     Status --> Chat
@@ -80,7 +100,7 @@ flowchart LR
     Apply --> Refresh["Selective owned-surface refresh<br/>Radar / Registry / Atlas / Compass"]
     Apply --> Events
     Decline --> Events
-    Events --> Pending["Compass pending proposal state<br/>derived from stream, no second truth store"]
+    LiveEvents --> Pending["Compass pending proposal state<br/>derived from selected stream and exact pending events"]
 
     Voice["Voice composition<br/>fixed structural frame<br/>claim + consequence + next step from evidence"] --> Chatter
     Pending --> Lanes["Same product contract across lanes<br/>detached source-local + pinned dogfood + consumer pinned-runtime"]

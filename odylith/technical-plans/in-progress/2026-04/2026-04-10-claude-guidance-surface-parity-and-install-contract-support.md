@@ -124,3 +124,20 @@ Related Bugs:
       recognize the Claude guidance surface explicitly.
 - [ ] Capability claims remain honest: guidance parity lands here, while
       native spawn and benchmark proof stay deferred until measured.
+
+## Traceability
+
+Managed host guidance installation and repair, with consumer-owned truth preserved.
+
+### Runbooks
+
+- `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
+
+### Developer Docs
+
+- `docs/specs/odylith-repo-integration-contract.md`
+
+### Code References
+
+- `src/odylith/install/agents.py`
+- `src/odylith/runtime/common/consumer_profile.py`

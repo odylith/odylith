@@ -415,7 +415,7 @@ def apply_context_signal_adjustments(*, request: router.RouteRequest, context_si
         if odylith_recommended_profile in {router.RouterProfile.CODEX_HIGH, router.RouterProfile.GPT54_HIGH, router.RouterProfile.GPT54_XHIGH}:
             scores.requested_depth = signal_summary._clamp_score(scores.requested_depth + 1)
             scores.accuracy_bias = signal_summary._clamp_score(scores.accuracy_bias + 1)
-            feature_reasons.setdefault('requested_depth', []).append('odylith execution profile recommended a deeper coding or GPT-5.4 tier for this bounded slice')
+            feature_reasons.setdefault('requested_depth', []).append('odylith execution profile recommended a deeper writing or frontier tier for this bounded slice')
         elif odylith_recommended_profile in {router.RouterProfile.MINI_MEDIUM, router.RouterProfile.SPARK_MEDIUM} and context_signal_summary['support_leaf'] and (not request.correctness_critical):
             scores.mechanicalness = signal_summary._clamp_score(scores.mechanicalness + 1)
             scores.requested_depth = signal_summary._clamp_score(scores.requested_depth - 1)

@@ -90,9 +90,12 @@ def assistant_visible_fallback_context(visible_text: str) -> str:
         [
             "Odylith visible delivery recovery:",
             (
-                "If this chat has not already shown the note below, include it once "
-                "in the next visible assistant reply as normal Markdown. Keep the "
-                "wording intact; do not paraphrase, summarize, or fence it."
+                "Answer the user's current request directly and completely first. "
+                "Use the note below only when it is relevant to that same request "
+                "and adds material value; if used, integrate at most one concise "
+                "line after the answer. Never reproduce the block wholesale or let "
+                "it replace the answer. Omit stale, unrelated, conflicting, or "
+                "already visible material."
             ),
             "",
             _VISIBLE_DELIVERY_BEGIN,
@@ -146,22 +149,6 @@ def _semantic_visible_delivery_text(value: str) -> str:
     return " ".join(text.split())
 
 
-def stop_visible_delivery_reason(visible_text: str) -> str:
-    visible = canonical_visible_delivery_text(visible_text)
-    if not visible:
-        return ""
-    return "\n\n".join(
-        [
-            (
-                "Show the Odylith note below once in the next visible assistant "
-                "message if it is not already visible. Keep it as normal Markdown "
-                "and do not wrap it in a code fence."
-            ),
-            visible,
-        ]
-    ).strip()
-
-
 def visible_delivery_with_assist(
     *,
     developer_context: str,
@@ -211,7 +198,6 @@ __all__ = [
     "canonical_live_delivery_text",
     "canonical_visible_delivery_text",
     "developer_context_with_visible_fallback",
-    "stop_visible_delivery_reason",
     "strip_visible_delivery_boundary",
     "strip_visible_delivery_tail",
     "split_assist_suffix",

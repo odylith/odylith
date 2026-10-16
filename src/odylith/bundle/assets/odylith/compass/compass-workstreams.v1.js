@@ -20,11 +20,28 @@
         .filter((token) => /^D-\d{3,}$/.test(token));
     }
 
+    const COMPASS_WORKSTREAM_RELEASE_TARGET_VERSION_RE = /\bv?(\d+(?:\.\d+){1,3})\b/i;
+    const MAX_COMPASS_WORKSTREAM_RELEASE_TARGET_LABEL_CHARS = 18;
+
+    function compactCompassWorkstreamReleaseTargetLabel(value) {
+      const text = String(value || "").trim().replace(/\s+/g, " ");
+      const match = COMPASS_WORKSTREAM_RELEASE_TARGET_VERSION_RE.exec(text);
+      if (match && match[1]) return match[1];
+      if (text.length <= MAX_COMPASS_WORKSTREAM_RELEASE_TARGET_LABEL_CHARS) return text;
+      return `${text.slice(0, MAX_COMPASS_WORKSTREAM_RELEASE_TARGET_LABEL_CHARS - 3).trimEnd()}...`;
+    }
+
     function compassWorkstreamReleaseLabel(release) {
       const row = release && typeof release === "object" ? release : {};
-      const nameLabel = String(row.name || row.version || row.tag || row.display_label || row.effective_name || "").trim();
+      const nameLabel = (
+        compactCompassWorkstreamReleaseTargetLabel(row.version) ||
+        compactCompassWorkstreamReleaseTargetLabel(row.tag) ||
+        compactCompassWorkstreamReleaseTargetLabel(row.display_label) ||
+        compactCompassWorkstreamReleaseTargetLabel(row.effective_name) ||
+        compactCompassWorkstreamReleaseTargetLabel(row.name)
+      );
       if (nameLabel) return nameLabel;
-      return String(row.release_id || "").trim();
+      return compactCompassWorkstreamReleaseTargetLabel(row.release_id);
     }
 
     function numericProgressOrNull(value) {
@@ -120,16 +137,6 @@
       return `${shown.join(", ")}${suffix}`;
     }
 
-    function clipFocusText(value, maxChars = 160) {
-      const text = String(value || "").replace(/\s+/g, " ").trim();
-      if (!text) return "";
-      if (text.length <= maxChars) return text;
-      const hardLimit = Math.max(8, maxChars - 1);
-      const boundary = text.lastIndexOf(" ", hardLimit);
-      const cutAt = boundary >= Math.floor(maxChars * 0.6) ? boundary : hardLimit;
-      return `${text.slice(0, cutAt).trimEnd()}…`;
-    }
-
     function toSentence(text) {
       const token = String(text || "").trim();
       if (!token) return "";
@@ -194,14 +201,6 @@
         }
       });
       return { source, generated };
-    }
-
-    function isGeneratedOnlyLocalEvent(eventRow) {
-      const kind = String(eventRow && eventRow.kind ? eventRow.kind : "").trim();
-      if (kind !== "local_change") return false;
-      const files = Array.isArray(eventRow && eventRow.files) ? eventRow.files : [];
-      const fileSplit = splitNarrativeFiles(files);
-      return fileSplit.source.length === 0 && fileSplit.generated.length > 0;
     }
 
     function buildSignalSummary(kindCounts) {
@@ -311,7 +310,7 @@
         pushRow("Proof state", `Ambiguous across ${resolutionLaneIds.join(", ") || "multiple lanes"}`);
       }
       if (!String(proofState.current_blocker || "").trim() && resolutionState === "none") {
-        pushRow("Proof state", "No dominant proof lane is resolved for this workstream yet.");
+        pushRow("Proof state", "Verification status is not yet determined.");
       }
       if (allowedNextWork.length) {
         pushRow("Allowed next work", allowedNextWork.join(", "));
@@ -355,10 +354,16 @@
 
     function renderCurrentWorkstreams(payload, state, events, transactions, navigationState) {
       const scopedRows = scopeWorkstreams(payload, state);
+      const hasProgramLanes = executionWavePrograms(payload).length > 0;
       const representedIds = state.workstream ? new Set() : compassGovernanceRepresentedWorkstreamIds(payload);
       const rows = state.workstream
         ? scopedRows
         : scopedRows.filter((row) => !representedIds.has(String(row && row.idea_id ? row.idea_id : "").trim()));
+      const rowsAreProgramCovered = !state.workstream && !rows.length && scopedRows.length;
+      const representedPreviewLimit = 6;
+      const renderRows = rows.length
+        ? rows
+        : (rowsAreProgramCovered ? scopedRows.slice(0, representedPreviewLimit) : []);
       const target = document.getElementById("current-workstreams");
       const windowKey = state.window === "24h" ? "24h" : "48h";
       const planLookup = planHrefLookup(payload);
@@ -391,18 +396,15 @@
         if (state.workstream) {
           return "No active workstreams in this scope.";
         }
-        if (!scopedRows.length) {
-          return "No active workstreams yet. Create or open one from Radar, then Compass will summarize it here.";
-        }
-        return "No additional current workstreams. Program and release lanes already cover the active work.";
+        return "No active workstreams yet. Create or open one from Radar, then Compass will summarize it here.";
       };
 
-      if (!rows.length) {
+      if (!renderRows.length) {
         target.innerHTML = `<p class="empty">${escapeHtml(emptyWorkstreamCopy())}</p>`;
         return;
       }
 
-      const records = rows.map((row) => {
+      const records = renderRows.map((row) => {
         const ideaId = String(row.idea_id || "").trim();
         const plan = row.plan || {};
         const timeline = row.timeline || {};
@@ -434,10 +436,9 @@
         const costLabel = wsCostBadge(row, windowKey);
 
         const whyText = String(why.why_now || why.opportunity || why.founder_pov || "").trim();
-        const shortWhy = clipFocusText(whyText, 280);
         const nextTasks = Array.isArray(plan.next_tasks) ? plan.next_tasks.map((item) => String(item || "").trim()).filter(Boolean) : [];
         const nextCheckpoint = nextTasks.length
-          ? clipFocusText(nextTasks[0], 180)
+          ? nextTasks[0]
           : "No explicit next checkpoint captured in current plan checklist.";
 
         const strictScopedTransactions = txRows.filter((tx) => {
@@ -486,8 +487,7 @@
         const latestTxTs = latestTx ? (latestTx.end_ts_iso || latestTx.start_ts_iso || "") : "";
         const latestTxId = String((latestTx && latestTx.transaction_id) || "").trim();
         const latestTxLabel = compactTimestamp(latestTxTs || timeline.last_activity_iso);
-        const latestHeadlineRaw = latestTx ? String(latestTx.headline || "").trim() : "";
-        const latestHeadline = clipFocusText(latestHeadlineRaw, 140);
+        const latestHeadline = latestTx ? String(latestTx.headline || "").trim() : "";
 
         const liveFocus = focusByWorkstream && focusByWorkstream[ideaId] && typeof focusByWorkstream[ideaId] === "object"
           ? focusByWorkstream[ideaId]
@@ -501,7 +501,10 @@
         const scopedAreaFiles = scopedFileSplit.source.length ? scopedFileSplit.source : scopedFiles;
         const scopedAreas = focusAreaSummary(scopedAreaFiles);
         const scopedSignalSummary = buildSignalSummary(scopedKindCounts);
-        const hasScopedImplementationSignal = Boolean(scopedKindCounts.implementation || scopedKindCounts.decision || scopedKindCounts.statement);
+        const hasScopedImplementationSignal = (
+          !timelineSummaryGovernanceOnly({ events: strictScopedEvents })
+          && Boolean(scopedKindCounts.implementation || scopedKindCounts.decision || scopedKindCounts.statement)
+        );
         const implementationFocusParts = [];
         if (hasStrictScopeLink && scopedAreas.length) {
           implementationFocusParts.push(`implementing ${joinWithAnd(scopedAreas)}`);
@@ -513,7 +516,7 @@
           implementationFocusParts.push("execution is currently active");
         }
         const implementationFocus = hasStrictScopeLink && hasScopedImplementationSignal && implementationFocusParts.length
-          ? toSentence(clipFocusText(`Currently ${implementationFocusParts.join("; ")}`, 280))
+          ? toSentence(`Currently ${implementationFocusParts.join("; ")}`)
           : "";
 
         const commitCount = Number(activity.commit_count || 0);
@@ -537,24 +540,15 @@
         const lineageSummary = lineageSummaryParts.join("; ");
         const planHref = String(planLookup[ideaId] || "").trim();
         const tableTitle = String(row.title || "").trim();
-        const focusContext = clipFocusText(
-          String(liveFocus.context || liveFocus.headline || liveFocus.latest_event_summary || "").trim(),
-          140,
-        );
+        const focusContext = String(liveFocus.context || liveFocus.headline || liveFocus.latest_event_summary || "").trim();
         const eventContext = prioritizedContextEvent
-          ? clipFocusText(
-              String(
+          ? String(
                 prioritizedContextEvent.context
                 || prioritizedContextEvent.summary
                 || "",
-              ).trim(),
-              140,
-            )
+              ).trim()
           : "";
-        const digestContext = clipFocusText(
-          String(digestContextByWorkstream[ideaId] || "").trim(),
-          140,
-        );
+        const digestContext = String(digestContextByWorkstream[ideaId] || "").trim();
         const latestContext = (hasStrictScopeLink ? latestHeadline : "")
           || (hasStrictScopeLink ? focusContext : "")
           || digestContext
@@ -599,7 +593,7 @@
           liveLast,
           txSignalCount,
           nextCheckpoint,
-          whyText: shortWhy || "-",
+          whyText: whyText || "-",
           implementationFocus,
           latestContext: latestContext || "-",
           lineageSummary,
@@ -718,19 +712,26 @@
       };
 
       const renderWaveSummaryCell = (item) => {
+        if (!hasProgramLanes) {
+          return `<span class="muted">${item.releaseLabel ? "Release target" : "Workstream"}</span>`;
+        }
         if (!item.waveSpanLabel) {
           return '<span class="muted">-</span>';
         }
         return `<div class="ws-wave-chip-row"><span class="label execution-wave-label ${item.hasActiveWaveMembership ? "wave-status-active" : "wave-status-planned"}">${escapeHtml(item.waveSpanLabel)}</span>${item.waveRoleLabel ? `<span class="label execution-wave-label wave-role-chip">${escapeHtml(item.waveRoleLabel)}</span>` : ""}</div>`;
       };
 
-      const renderSummaryRowAttrs = (item, rowKind, isSelected) => (
-        `class="ws-summary-row ${rowKind}${isSelected ? " is-selected" : ""}" data-ws-id="${escapeHtml(item.ideaId)}" tabindex="0" role="button" aria-expanded="${isSelected ? "true" : "false"}" aria-label="Open detail for ${escapeHtml(item.ideaId)}"`
-      );
+      const renderSummaryRowAttrs = (item, rowKind, isSelected) => {
+        const idAttr = rowsAreProgramCovered ? "data-covered-ws-id" : "data-ws-id";
+        return `class="ws-summary-row ${rowKind}${isSelected ? " is-selected" : ""}" ${idAttr}="${escapeHtml(item.ideaId)}" tabindex="0" role="button" aria-expanded="${isSelected ? "true" : "false"}" aria-label="Open detail for ${escapeHtml(item.ideaId)}"`;
+      };
 
       const rowHtml = records.map((item) => {
         const isSelected = item.ideaId === initiallyExpandedId;
         const radarHref = radarWorkstreamHref(item.ideaId);
+        const idMarkup = rowsAreProgramCovered
+          ? `<a class="chip-link ws-covered-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-covered-ws-id="${escapeHtml(item.ideaId)}"${workstreamTooltipAttrs(item.ideaId, workstreamTitles, hasProgramLanes ? `Open radar for ${item.ideaId}; also covered by program and release lanes` : `Open radar for ${item.ideaId}; also covered by a release target`)}>${escapeHtml(item.ideaId)}</a>`
+          : `<a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"${workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Open radar for ${item.ideaId}`)}>${escapeHtml(item.ideaId)}</a>`;
         return `
         <tr ${renderSummaryRowAttrs(item, "ws-row-title", isSelected)}>
           <td class="ws-title-cell ws-title-row-cell" colspan="5">
@@ -738,7 +739,7 @@
           </td>
         </tr>
         <tr ${renderSummaryRowAttrs(item, "ws-row-meta", isSelected)}>
-          <td class="ws-col-id"><div class="ws-id-stack"><a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"${workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Open radar for ${item.ideaId}`)}>${escapeHtml(item.ideaId)}</a>${item.releaseLabel ? `<span class="chip subtle">${escapeHtml(item.releaseLabel)}</span>` : ""}</div></td>
+          <td class="ws-col-id"><div class="ws-id-stack">${idMarkup}${item.releaseLabel ? `<span class="chip subtle">${escapeHtml(item.releaseLabel)}</span>` : ""}</div></td>
           <td class="ws-col-wave">${renderWaveSummaryCell(item)}</td>
           <td class="ws-col-phase"><span class="chip ${item.phaseClass}">${escapeHtml(item.phaseLabel)}</span></td>
           <td class="ws-col-live"><span class="chip ${item.liveIsActive ? "" : "subtle"}">${escapeHtml(item.liveLabel)}</span></td>
@@ -750,13 +751,25 @@
       `;
       }).join("");
 
+      const representedPreviewNote = rowsAreProgramCovered && scopedRows.length > renderRows.length
+        ? `<p class="muted">Showing ${renderRows.length} of ${scopedRows.length} covered active workstreams.</p>`
+        : "";
+
       target.innerHTML = `
+        ${representedPreviewNote}
         <div class="ws-table-wrap">
           <table class="ws-table">
+            <colgroup>
+              <col class="ws-col-id" />
+              <col class="ws-col-wave" />
+              <col class="ws-col-phase" />
+              <col class="ws-col-live" />
+              <col class="ws-col-progress" />
+            </colgroup>
             <thead>
               <tr>
                 <th class="ws-col-id">ID</th>
-                <th class="ws-col-wave">Wave</th>
+                <th class="ws-col-wave">${hasProgramLanes ? "Wave" : "Plan"}</th>
                 <th class="ws-col-phase">Phase</th>
                 <th class="ws-col-live">Live</th>
                 <th class="ws-col-progress">Progress</th>
@@ -778,7 +791,7 @@
         target.dataset.selectedWorkstream = selected ? selected.ideaId : "";
 
         tableBody.querySelectorAll("tr.ws-summary-row").forEach((node) => {
-          const rowWs = String(node.getAttribute("data-ws-id") || "").trim();
+          const rowWs = String(node.getAttribute("data-ws-id") || node.getAttribute("data-covered-ws-id") || "").trim();
           const isSelected = Boolean(selected) && rowWs === selected.ideaId;
           node.classList.toggle("is-selected", isSelected);
           node.setAttribute("aria-expanded", isSelected ? "true" : "false");
@@ -806,8 +819,12 @@
       };
 
       tableBody.querySelectorAll("tr.ws-summary-row").forEach((rowNode) => {
-        const wsId = String(rowNode.getAttribute("data-ws-id") || "").trim();
-        rowNode.addEventListener("click", () => {
+        const wsId = String(rowNode.getAttribute("data-ws-id") || rowNode.getAttribute("data-covered-ws-id") || "").trim();
+        rowNode.addEventListener("click", (event) => {
+          const interactive = event.target && event.target.closest
+            ? event.target.closest("a, button, input, select, textarea, summary")
+            : null;
+          if (interactive) return;
           selectRow(wsId);
         });
         rowNode.addEventListener("keydown", (event) => {
@@ -952,11 +969,42 @@
         `;
       };
 
+      const renderTimelineEventList = (events) => {
+        const localChanges = events.filter((row) => row.kind === "local_change");
+        if (localChanges.length < 2) return events.map(renderTimelineEventCard).join("");
+        let grouped = false;
+        return events.map((row) => {
+          if (row.kind !== "local_change") return renderTimelineEventCard(row);
+          if (grouped) return "";
+          grouped = true;
+          return `
+            <details class="tx-card workspace-change-group">
+              <summary>
+                <div class="tx-headline">Uncommitted changes (${localChanges.length})</div>
+                <div class="tx-meta">Expand to inspect every file-change event.</div>
+              </summary>
+              <div class="tx-detail">${localChanges.map(renderTimelineEventCard).join("")}</div>
+            </details>
+          `;
+        }).join("");
+      };
+
+      const visibleTransactions = relevantTransactions.filter((row) => {
+        if (isInternalSyncTransaction(row)) return false;
+        const ts = toDate(row.end_ts_iso || row.start_ts_iso);
+        const bounds = visibleHourBoundsForDay(toLocalDateToken(ts), state, payload);
+        return ts && bounds && hourInCompassTimeZone(ts) >= bounds.min
+          && hourInCompassTimeZone(ts) <= bounds.max;
+      });
+      const transactionEventIds = new Set(visibleTransactions.flatMap((row) =>
+        (Array.isArray(row.events) ? row.events : []).map((event) => String(event.id || ""))
+      ).filter(Boolean));
+
       for (const dayToken of renderDays) {
-        const dayTransactions = txRows.filter((row) => {
+        const dayTransactions = visibleTransactions.filter((row) => {
           const token = toLocalDateToken(row.end_ts_iso || row.start_ts_iso);
           return token === dayToken;
-        }).filter((row) => !isInternalSyncTransaction(row));
+        });
         const dayEvents = eventRows.filter((row) => {
           const token = toLocalDateToken(row.ts_iso);
           return token === dayToken;
@@ -983,18 +1031,11 @@
           const items = byHour[hour];
           const hourEventItems = eventByHour[hour];
           const hourLabel = `${String(hour).padStart(2, "0")}:00`;
-          if (!items.length && !hourEventItems.length) {
-            hourRows.push(`
-              <div class="hour-row">
-                <div class="hour-label">${escapeHtml(hourLabel)}</div>
-                <div class="hour-empty">No audit events.</div>
-              </div>
-            `);
-            continue;
-          }
+          if (!items.length && !hourEventItems.length) continue;
 
-          if (!items.length && hourEventItems.length) {
-            const orderedEvents = [...hourEventItems].sort((left, right) => {
+          const orderedStandaloneEvents = hourEventItems
+            .filter((row) => !transactionEventIds.has(String(row.id || "")))
+            .sort((left, right) => {
               const leftTs = toDate((left && left.ts_iso) || "");
               const rightTs = toDate((right && right.ts_iso) || "");
               const leftMs = leftTs ? leftTs.getTime() : 0;
@@ -1004,24 +1045,12 @@
               const rightId = String(right && right.id ? right.id : "");
               return rightId.localeCompare(leftId);
             });
-            const compactedGenerated = orderedEvents.filter((row) => isGeneratedOnlyLocalEvent(row)).length;
-            const visibleStandalone = orderedEvents.filter((row) => !isGeneratedOnlyLocalEvent(row));
-            const shownStandalone = visibleStandalone.slice(0, 24);
-            const hiddenStandalone = Math.max(0, visibleStandalone.length - shownStandalone.length);
-            const compactSummary = [];
-            if (compactedGenerated > 0) {
-              compactSummary.push(`<div class="tx-meta">Compacted ${compactedGenerated} generated events.</div>`);
-            }
-            if (hiddenStandalone > 0) {
-              compactSummary.push(`<div class="tx-meta">Showing ${shownStandalone.length} of ${visibleStandalone.length} standalone events.</div>`);
-            }
-            const eventHtml = shownStandalone.length
-              ? `${compactSummary.join("")}${shownStandalone.map((eventRow) => renderTimelineEventCard(eventRow)).join("")}`
-              : `<div class="hour-event"><div class="hour-event-title">Compacted ${compactedGenerated} generated events.</div><div class="hour-event-meta">${escapeHtml(hourLabel)} • compacted</div></div>`;
+          if (!items.length) {
+            if (!orderedStandaloneEvents.length) continue;
             hourRows.push(`
               <div class="hour-row">
                 <div class="hour-label">${escapeHtml(hourLabel)}</div>
-                <div class="hour-events">${eventHtml}</div>
+                <div class="hour-events">${renderTimelineEventList(orderedStandaloneEvents)}</div>
               </div>
             `);
             continue;
@@ -1077,20 +1106,9 @@
               ? `<div><h3>Files</h3><ul class="tx-files">${fileRows.join("")}</ul></div>`
               : `<div><h3>Files</h3><p class="empty">No files captured for this transaction.</p></div>`;
 
-            const compactedGeneratedEvents = eventsList.filter((eventRow) => isGeneratedOnlyLocalEvent(eventRow)).length;
-            const visibleEvents = eventsList.filter((eventRow) => !isGeneratedOnlyLocalEvent(eventRow));
-            const shownEvents = visibleEvents.slice(0, 24);
-            const hiddenVisibleEvents = Math.max(0, visibleEvents.length - shownEvents.length);
-            const eventCompactionRows = [];
-            if (compactedGeneratedEvents > 0) {
-              eventCompactionRows.push(`<div class="tx-meta">Compacted ${compactedGeneratedEvents} generated events.</div>`);
-            }
-            if (hiddenVisibleEvents > 0) {
-              eventCompactionRows.push(`<div class="tx-meta">Showing ${shownEvents.length} of ${visibleEvents.length} non-generated events.</div>`);
-            }
-            const eventRowsHtml = shownEvents.length
-              ? `<div class="tx-events">${shownEvents.map((eventRow) => renderTimelineEventCard(eventRow)).join("")}</div>`
-              : `<p class="empty">No high-signal event details captured.</p>`;
+            const eventRowsHtml = eventsList.length
+              ? `<div class="tx-events">${renderTimelineEventList(eventsList)}</div>`
+              : `<p class="empty">No event details captured.</p>`;
             return `
               <details class="tx-card">
                 <summary>
@@ -1105,7 +1123,6 @@
                   ${fileHtml}
                   <div>
                     <h3>Events</h3>
-                    ${eventCompactionRows.join("")}
                     ${eventRowsHtml}
                   </div>
                 </div>
@@ -1116,11 +1133,12 @@
           hourRows.push(`
             <div class="hour-row">
               <div class="hour-label">${escapeHtml(hourLabel)}</div>
-              <div class="hour-events">${eventHtml}</div>
+              <div class="hour-events">${eventHtml}${renderTimelineEventList(orderedStandaloneEvents)}</div>
             </div>
           `);
         }
 
+        if (!hourRows.length) continue;
         rows.push(`
           <section class="timeline-day">
             <div class="timeline-day-title">${escapeHtml(formatTimelineDayHeader(dayToken))}</div>
@@ -1130,7 +1148,9 @@
       }
 
       if (!rows.length) {
-        target.innerHTML = '<div class="empty">No audit events in this scope and window.</div>';
+        target.innerHTML = state.workstream
+          ? '<div class="empty">No audit events in this scope and window.</div>'
+          : '<div class="empty">No audit events in this window.</div>';
         return;
       }
       target.innerHTML = rows.join("");

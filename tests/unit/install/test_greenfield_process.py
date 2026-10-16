@@ -1,0 +1,369 @@
+from __future__ import annotations
+
+import contextlib
+import importlib.util
+import json
+import os
+import signal
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+import pytest
+
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
+
+
+def _load_module(path: Path, name: str):
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _module():
+    from odylith.runtime.domain_intelligence import greenfield_process
+    return greenfield_process
+
+
+@pytest.mark.parametrize("phase", ["started", "communicate", "completed"])
+def test_exception_retains_available_streams_without_leaking_to_telemetry(monkeypatch, tmp_path: Path, phase: str) -> None:
+    module = _module()
+    events = []
+
+    class FakeProcess:
+        pid = 4242
+        returncode = -15
+
+        def communicate(self, timeout=None):
+            if phase == "communicate" and timeout == 1:
+                raise KeyboardInterrupt
+            return "private stdout", "private stderr"
+
+    monkeypatch.setattr(module.subprocess, "Popen", lambda *a, **kw: FakeProcess())
+    monkeypatch.setattr(module.os, "killpg", lambda *a: None)
+
+    def observe(event):
+        events.append(dict(event))
+        if phase in ("started", "completed") and event["state"] == phase:
+            raise OSError("recording unavailable")
+
+    error_type = KeyboardInterrupt if phase == "communicate" else (
+        module.CommandLifecycleObserverError if phase == "completed" else OSError)
+    with module.command_lifecycle_observer(observe), pytest.raises(error_type) as caught:
+        module.run_command_with_group_timeout(cwd=tmp_path, env={}, command=["python"], timeout=1)
+    assert caught.value.stdout == "private stdout"
+    assert caught.value.stderr == "private stderr"
+    assert "private" not in json.dumps(events)
+
+
+def test_run_command_with_group_timeout_terminates_process_group(monkeypatch, tmp_path: Path) -> None:
+    module = _module()
+    popen_kwargs: dict[str, object] = {}
+    killed: list[tuple[int, int]] = []
+
+    class FakeProcess:
+        pid = 4242
+        returncode = -15
+
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def communicate(self, timeout=None):  # noqa: ANN001
+            self.calls += 1
+            if self.calls == 1:
+                raise module.subprocess.TimeoutExpired(
+                    ["bash", "install.sh"],
+                    timeout,
+                    output="partial stdout",
+                    stderr="partial stderr",
+                )
+            return "final stdout", "final stderr"
+
+    fake_process = FakeProcess()
+
+    def fake_popen(*_args, **kwargs):  # noqa: ANN001
+        popen_kwargs.update(kwargs)
+        return fake_process
+
+    monkeypatch.setattr(module.subprocess, "Popen", fake_popen)
+    monkeypatch.setattr(module.os, "killpg", lambda pid, sig: killed.append((pid, sig)))
+
+    events: list[dict[str, object]] = []
+    with module.command_lifecycle_observer(events.append):
+        result = module.run_command_with_group_timeout(
+            cwd=tmp_path,
+            env={},
+            command=["bash", "install.sh"],
+            timeout=0.01,
+            on_started=lambda _pid, _pgid: None,
+        )
+
+    assert result.returncode == 124
+    assert popen_kwargs["start_new_session"] is True
+    assert killed == [(4242, module.signal.SIGTERM)]
+    assert "partial stdout" in result.stdout
+    assert "partial stderr" in result.stderr
+    assert "process group was terminated" in result.stderr
+    assert [event["state"] for event in events] == ["started", "timed_out"]
+    assert events[1]["termination_observation"] == "output_pipes_closed_after_sigterm"
+
+
+def test_command_lifecycle_observer_records_redacted_start_and_completion(tmp_path: Path) -> None:
+    module = _module()
+    events: list[dict[str, object]] = []
+    secret_prompt = "--customer-private launch narrative"
+
+    with module.command_lifecycle_observer(events.append):
+        result = module.run_command_with_group_timeout(
+            cwd=tmp_path,
+            env={},
+            command=[sys.executable, "-c", "print('ok')", "--prompt", secret_prompt],
+            timeout=5,
+        )
+
+    serialized = json.dumps(events, sort_keys=True)
+    assert result.returncode == 0
+    assert [event["state"] for event in events] == ["started", "completed"]
+    assert events[0]["command_kind"] == "python"
+    assert events[0]["option_count"] == 2
+    assert events[1]["stdout_bytes"] == len("ok\n")
+    assert secret_prompt not in serialized
+    assert "print('ok')" not in serialized
+
+
+def test_command_lifecycle_redacts_an_untrusted_executable_name() -> None:
+    module = _module()
+    secret_executable = "/tmp/customer-private-launch-narrative"
+
+    shape = module._redacted_command_shape([secret_executable, "--prompt", "private value"])
+
+    assert shape == {"command_kind": "other", "argument_count": 3, "option_count": 1}
+    assert secret_executable not in json.dumps(shape, sort_keys=True)
+
+
+def test_terminal_command_telemetry_failure_preserves_the_command_outcome(tmp_path: Path) -> None:
+    module = _module()
+
+    def failing_observer(event) -> None:  # noqa: ANN001
+        if event["state"] == "completed":
+            raise OSError("fsync unavailable")
+
+    with module.command_lifecycle_observer(failing_observer), pytest.raises(module.CommandLifecycleObserverError) as exc_info:
+        module.run_command_with_group_timeout(
+            cwd=tmp_path,
+            env={},
+            command=[sys.executable, "-c", "pass"],
+            timeout=5,
+        )
+
+    assert exc_info.value.command_kind == "python"
+    assert exc_info.value.returncode == 0
+    assert exc_info.value.state == "completed"
+
+
+def test_run_command_with_group_timeout_reaps_child_when_start_callback_fails(monkeypatch, tmp_path: Path) -> None:
+    module = _module()
+    killed: list[tuple[int, int]] = []
+
+    class FakeProcess:
+        pid = 4242
+        returncode = -15
+
+        def communicate(self, timeout=None):  # noqa: ANN001
+            return "", ""
+
+    monkeypatch.setattr(module.subprocess, "Popen", lambda *_args, **_kwargs: FakeProcess())
+    monkeypatch.setattr(module.os, "killpg", lambda pid, sig: killed.append((pid, sig)))
+
+    with pytest.raises(RuntimeError, match="telemetry unavailable"):
+        module.run_command_with_group_timeout(
+            cwd=tmp_path,
+            env={},
+            command=["bash", "install.sh"],
+            timeout=0.01,
+            on_started=lambda _pid, _pgid: (_ for _ in ()).throw(RuntimeError("telemetry unavailable")),
+        )
+
+    assert killed == [(4242, module.signal.SIGTERM)]
+
+
+def test_run_command_with_group_timeout_reaps_child_when_start_callback_is_interrupted(monkeypatch, tmp_path: Path) -> None:
+    module = _module()
+    killed: list[tuple[int, int]] = []
+
+    class FakeProcess:
+        pid = 4242
+
+        def communicate(self, timeout=None):  # noqa: ANN001
+            return "", ""
+
+    monkeypatch.setattr(module.subprocess, "Popen", lambda *_args, **_kwargs: FakeProcess())
+    monkeypatch.setattr(module.os, "killpg", lambda pid, sig: killed.append((pid, sig)))
+
+    with pytest.raises(KeyboardInterrupt):
+        module.run_command_with_group_timeout(
+            cwd=tmp_path,
+            env={},
+            command=["bash", "install.sh"],
+            timeout=1,
+            on_started=lambda _pid, _pgid: (_ for _ in ()).throw(KeyboardInterrupt),
+        )
+
+    assert killed == [(4242, module.signal.SIGTERM)]
+
+
+def test_run_command_with_group_timeout_reaps_child_when_communicate_is_interrupted(monkeypatch, tmp_path: Path) -> None:
+    module = _module()
+    killed: list[tuple[int, int]] = []
+    events: list[dict[str, object]] = []
+
+    class FakeProcess:
+        pid = 4242
+
+        def communicate(self, timeout=None):  # noqa: ANN001
+            if timeout == 5:
+                return "", ""
+            raise KeyboardInterrupt
+
+    monkeypatch.setattr(module.subprocess, "Popen", lambda *_args, **_kwargs: FakeProcess())
+    monkeypatch.setattr(module.os, "killpg", lambda pid, sig: killed.append((pid, sig)))
+
+    with module.command_lifecycle_observer(events.append), pytest.raises(KeyboardInterrupt):
+        module.run_command_with_group_timeout(cwd=tmp_path, env={}, command=["bash", "install.sh"], timeout=1)
+
+    assert killed == [(4242, module.signal.SIGTERM)]
+    assert [event["state"] for event in events] == ["started", "interrupted"]
+    assert events[1]["termination_observation"] == "output_pipes_closed_after_sigterm"
+
+
+def test_interrupted_command_preserves_telemetry_write_failure_as_an_exception_note(monkeypatch, tmp_path: Path) -> None:
+    module = _module()
+
+    class FakeProcess:
+        pid = 4242
+
+        def communicate(self, timeout=None):  # noqa: ANN001
+            if timeout == 5:
+                return "", ""
+            raise KeyboardInterrupt
+
+    monkeypatch.setattr(module.subprocess, "Popen", lambda *_args, **_kwargs: FakeProcess())
+    monkeypatch.setattr(module.os, "killpg", lambda *_args: None)
+
+    def failing_observer(event) -> None:  # noqa: ANN001
+        if event["state"] == "interrupted":
+            raise OSError("fsync unavailable")
+
+    with module.command_lifecycle_observer(failing_observer), pytest.raises(KeyboardInterrupt) as exc_info:
+        module.run_command_with_group_timeout(cwd=tmp_path, env={}, command=["bash", "install.sh"], timeout=1)
+
+    assert any("telemetry failed after process cleanup" in note for note in exc_info.value.__notes__)
+
+
+def test_run_command_with_group_timeout_reaps_real_child_when_runner_receives_sigint(tmp_path: Path) -> None:
+    child_pid_path = tmp_path / "child.pid"
+    runner_script = tmp_path / "interrupted_runner.py"
+    runner_script.write_text(
+        "from pathlib import Path\n"
+        "import sys\n"
+        "sys.path.insert(0, " + repr(str(SCRIPTS_ROOT)) + ")\n"
+        "from odylith.runtime.domain_intelligence.greenfield_process import run_command_with_group_timeout\n"
+        "def record(pid, _pgid):\n"
+        "    Path(sys.argv[1]).write_text(str(pid), encoding='utf-8')\n"
+        "run_command_with_group_timeout(\n"
+        "    cwd=Path.cwd(),\n"
+        "    env={},\n"
+        "    command=[sys.executable, '-c', 'import time; time.sleep(30)'],\n"
+        "    timeout=30,\n"
+        "    on_started=record,\n"
+        ")\n",
+        encoding="utf-8",
+    )
+    runner = subprocess.Popen(
+        [sys.executable, str(runner_script), str(child_pid_path)],
+        cwd=str(tmp_path),
+        start_new_session=True,
+    )
+    child_pid: int | None = None
+    try:
+        deadline = time.monotonic() + 5
+        while not child_pid_path.is_file() and time.monotonic() < deadline:
+            time.sleep(0.02)
+        assert child_pid_path.is_file()
+        child_pid = int(child_pid_path.read_text(encoding="utf-8"))
+
+        os.kill(runner.pid, signal.SIGINT)
+        assert runner.wait(timeout=5) != 0
+
+        deadline = time.monotonic() + 3
+        while time.monotonic() < deadline:
+            try:
+                os.kill(child_pid, 0)
+            except ProcessLookupError:
+                break
+            time.sleep(0.02)
+        else:
+            raise AssertionError(f"interrupted runner left installer process {child_pid} alive")
+    finally:
+        if runner.poll() is None:
+            with contextlib.suppress(ProcessLookupError, PermissionError):
+                os.killpg(runner.pid, signal.SIGKILL)
+        if child_pid is not None:
+            with contextlib.suppress(ProcessLookupError, PermissionError):
+                os.kill(child_pid, signal.SIGKILL)
+
+
+@pytest.mark.parametrize("timeout", (0, -1, float("inf"), float("nan")))
+def test_run_command_with_group_timeout_rejects_non_positive_or_non_finite_timeout(monkeypatch, tmp_path: Path, timeout: float) -> None:
+    module = _module()
+    monkeypatch.setattr(module.subprocess, "Popen", pytest.fail)
+
+    with pytest.raises(ValueError, match="positive finite"):
+        module.run_command_with_group_timeout(cwd=tmp_path, env={}, command=["bash", "install.sh"], timeout=timeout)
+
+
+def test_run_command_with_group_timeout_stops_detached_live_descendant_before_leader_exit(tmp_path: Path) -> None:
+    module = _module()
+    child_pid_path = tmp_path / "detached-child.pid"
+    script = tmp_path / "spawn_detached_child.py"
+    script.write_text(
+        "from pathlib import Path\n"
+        "import os\n"
+        "import subprocess\n"
+        "import sys\n"
+        "import time\n"
+        "child = subprocess.Popen([sys.executable, '-c', 'import os, time; os.setsid(); time.sleep(30)'])\n"
+        "Path(os.environ['CHILD_PID_PATH']).write_text(str(child.pid), encoding='utf-8')\n"
+        "time.sleep(30)\n",
+        encoding="utf-8",
+    )
+    environment = os.environ.copy()
+    environment["CHILD_PID_PATH"] = str(child_pid_path)
+    started = time.monotonic()
+    result = module.run_command_with_group_timeout(
+        cwd=tmp_path,
+        env=environment,
+        command=[sys.executable, str(script)],
+        timeout=0.1,
+    )
+
+    try:
+        assert result.returncode == 124
+        assert time.monotonic() - started < 8
+        assert "process group was terminated" in result.stderr
+        assert "escaped descendant cleanup is unverified" not in result.stderr
+        assert result.termination_observation in {"output_pipes_closed_after_sigterm", "output_pipes_closed_after_sigkill"}
+        assert child_pid_path.is_file()
+        child_pid = int(child_pid_path.read_text(encoding="utf-8"))
+        result_state = subprocess.run(["ps", "-p", str(child_pid), "-o", "stat="], capture_output=True, text=True)
+        assert not result_state.stdout.strip() or result_state.stdout.strip().startswith("Z")
+    finally:
+        if child_pid_path.is_file():
+            with contextlib.suppress(ProcessLookupError, PermissionError):
+                os.kill(int(child_pid_path.read_text(encoding="utf-8")), signal.SIGKILL)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -22,7 +23,7 @@ def _seed_codex_repo(repo_root: Path) -> None:
     (codex_root / "config.toml").write_text("[features]\ncodex_hooks = true\n", encoding="utf-8")
     (codex_root / "hooks.json").write_text(
         json.dumps(
-            {
+            {"hooks": {
                 "UserPromptSubmit": [
                     {
                         "hooks": [
@@ -51,7 +52,7 @@ def _seed_codex_repo(repo_root: Path) -> None:
                         ]
                     }
                 ],
-            }
+            }}
         ),
         encoding="utf-8",
     )
@@ -546,12 +547,12 @@ def test_codex_intervention_status_is_low_latency_and_human_readable(tmp_path: P
     )
     rendered = host_intervention_status.render_intervention_status(report)
 
-    assert report["activation"] == "ready"
+    assert report["activation"] == "unverified"
     assert report["chat_visible_proof"]["status"] == "ledger_visible_unconfirmed"
     assert report["delivery_ledger"]["visible_event_count"] == 1
     assert report["delivery_ledger"]["chat_confirmed_event_count"] == 0
     assert "**Odylith Intervention Status**" in rendered
-    assert "Activation: ready" in rendered
+    assert "Activation: unverified" in rendered
     assert "Chat visibility: recorded but not confirmed in chat" in rendered
     assert "1 recorded-visible event(s)" in rendered
     assert "proven-visible event(s)" not in rendered
@@ -577,12 +578,53 @@ def test_codex_intervention_status_separates_static_ready_from_visible_proof(tmp
     )
     rendered = host_intervention_status.render_intervention_status(report)
 
-    assert report["activation"] == "ready"
+    assert report["activation"] == "unverified"
     assert report["delivery_ledger"]["visible_event_count"] == 0
     assert report["chat_visible_proof"]["status"] == "unproven_this_session"
     assert "Chat visibility: not confirmed in this session" in rendered
     assert "End-to-end claim gate: only `Activation: ready` with chat visibility confirmed in this session counts as fully active" in rendered
     assert "assistant must render assistant-visible Odylith text directly" in rendered
+
+
+def test_codex_intervention_status_accepts_native_prompt_to_stop_delivery_pair(tmp_path: Path) -> None:
+    _seed_codex_repo(tmp_path)
+    markdown = "**Odylith Assist:** Native delivery is visible."
+    common = {
+        "repo_root": tmp_path,
+        "kind": "assist_closeout",
+        "summary": markdown,
+        "session_id": "session-native-ready",
+        "host_family": "codex",
+        "intervention_key": "assist",
+        "turn_phase": "prompt_submit",
+        "display_markdown": markdown,
+    }
+    stream_state.append_intervention_event(
+        **common,
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+        render_surface="codex_user_prompt_submit",
+    )
+    stream_state.append_intervention_event(
+        **common,
+        delivery_channel="assistant_chat_transcript",
+        delivery_status="assistant_chat_confirmed",
+        render_surface="codex_stop",
+    )
+
+    report = host_intervention_status.inspect_intervention_status(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="session-native-ready",
+    )
+    rendered = host_intervention_status.render_intervention_status(report)
+
+    assert report["activation"] == "ready"
+    assert report["native_activation_evidence"]["status"] == "proven_this_session"
+    assert report["native_activation_evidence"]["matched_delivery_count"] == 1
+    assert report["chat_visible_proof"]["status"] == "proven_this_session"
+    assert "Activation: ready" in rendered
+    assert "Native activation evidence: proven_this_session" in rendered
 
 
 def test_codex_intervention_status_does_not_count_hidden_ready_payload_as_visible(tmp_path: Path) -> None:
@@ -608,7 +650,7 @@ def test_codex_intervention_status_does_not_count_hidden_ready_payload_as_visibl
     )
     rendered = host_intervention_status.render_intervention_status(report)
 
-    assert report["activation"] == "ready"
+    assert report["activation"] == "unverified"
     assert report["delivery_ledger"]["event_count"] == 1
     assert report["delivery_ledger"]["visible_event_count"] == 0
     assert report["delivery_ledger"]["chat_confirmed_event_count"] == 0
@@ -619,6 +661,42 @@ def test_codex_intervention_status_does_not_count_hidden_ready_payload_as_visibl
     assert "Next assistant-visible replay:" in rendered
     assert rendered.count("**Odylith Observation:** Hidden host context is not chat visibility.") == 1
     assert "---\n\n**Odylith Observation:** Hidden host context is not chat visibility.\n\n---" in rendered
+
+
+def test_intervention_status_preserves_old_unconfirmed_proof_without_replaying_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _seed_codex_repo(tmp_path)
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="ambient_signal",
+        summary="Old routing note.",
+        session_id="session-old-note",
+        host_family="codex",
+        intervention_key="old-note",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Insight:** Old routing note.",
+        delivery_channel="assistant_visible_fallback",
+        delivery_status="assistant_render_required",
+        render_surface="codex_post_bash_checkpoint",
+    )
+    original_load = stream_state.load_recent_intervention_events
+    old_time = (datetime.now(timezone.utc) - timedelta(days=3)).isoformat()
+
+    def load_old_event(**kwargs):
+        return [{**row, "ts_iso": old_time} for row in original_load(**kwargs)]
+
+    monkeypatch.setattr(stream_state, "load_recent_intervention_events", load_old_event)
+    report = host_intervention_status.inspect_intervention_status(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="session-old-note",
+    )
+
+    assert report["activation"] == "unverified"
+    assert report["delivery_ledger"]["unconfirmed_event_count"] == 1
+    assert report["assistant_visible_replay_count"] == 0
+    assert "Next assistant-visible replay:" not in host_intervention_status.render_intervention_status(report)
 
 
 def test_intervention_status_keeps_proven_session_honest_when_new_hidden_beat_is_pending(
@@ -747,7 +825,7 @@ def test_hook_payload_visible_text_without_ledger_proof_stays_unproven(tmp_path:
     )
 
     assert visible_candidate == "---\n\n**Odylith Observation:** Hidden hook context is not chat proof.\n\n---"
-    assert report["activation"] == "ready"
+    assert report["activation"] == "unverified"
     assert report["delivery_ledger"]["event_count"] == 0
     assert report["delivery_ledger"]["visible_event_count"] == 0
     assert report["chat_visible_proof"]["status"] == "unproven_this_session"
@@ -773,10 +851,10 @@ def test_claude_intervention_status_checks_prompt_teaser_and_edit_hooks(tmp_path
 
 def test_host_intervention_status_cli_dispatches_for_both_hosts(tmp_path: Path, capsys) -> None:
     _seed_codex_repo(tmp_path)
-    assert cli.main(["codex", "intervention-status", "--repo-root", str(tmp_path), "--json"]) == 0
+    assert cli.main(["codex", "intervention-status", "--repo-root", str(tmp_path), "--json"]) == 1
     codex_payload = json.loads(capsys.readouterr().out)
     assert codex_payload["host_family"] == "codex"
-    assert codex_payload["activation"] == "ready"
+    assert codex_payload["activation"] == "unverified"
     assert codex_payload["chat_visible_proof"]["status"] == "unproven_this_session"
 
     _seed_claude_repo(tmp_path)
@@ -784,3 +862,19 @@ def test_host_intervention_status_cli_dispatches_for_both_hosts(tmp_path: Path, 
     claude_payload = json.loads(capsys.readouterr().out)
     assert claude_payload["host_family"] == "claude"
     assert claude_payload["activation"] == "ready"
+
+
+def test_unsupported_host_status_does_not_fall_back_to_codex(tmp_path: Path) -> None:
+    report = host_intervention_status.inspect_intervention_status(
+        repo_root=tmp_path,
+        host_family="gemini",
+        session_id="unsupported-host",
+    )
+
+    assert report["host_family"] == "gemini"
+    assert report["activation"] == "unsupported"
+    assert report["static_readiness"]["checks"] == {"supported_host": False}
+    assert report["smoke_command"] == ""
+    rendered = host_intervention_status.render_intervention_status(report)
+    assert "Host: Unsupported host" in rendered
+    assert "odylith gemini visible-intervention" not in rendered

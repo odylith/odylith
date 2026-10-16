@@ -15,10 +15,118 @@
   platform seamless" may rank voice or integration inspection affordances, but
   it must still stay silent when no hard law is violated and no immediate
   user-visible value is earned.
-Last updated: 2026-05-02
+Last updated: 2026-10-14
 
+## Manual delivery publication boundary
 
-Last updated (UTC): 2026-04-28
+For both hosts, `visible-intervention` and `intervention-status` use the normal
+CLI mutation boundary, not the launcher's direct-module hook shortcuts. Manual
+delivery and optional transcript confirmation can append governed Compass
+events; those writes must publish a verified successor together with their
+delivery state. Exit 1 from these completed status assessments means non-ready
+activation, not a failed confirmation write: seal changed fingerprints and
+preserve exit 1. Ordinary failed writers retain their existing behavior.
+The existing hook execution budgets and transport routes
+remain separate. CB-242 records the reproduced bypass and recovery evidence;
+installed repair and native automatic delivery require separate proof.
+
+## Foreground hook lifetime
+
+Both host adapters use `host_hook_execution.run_hook_command` for owned
+foreground subprocesses. Within a whole-hook budget, one alarm-suspended
+command lifetime covers launch, communication and cleanup. Communication uses
+the remaining monotonic deadline; deadline expiry cannot interrupt entry into
+cleanup. The caller's alarm is restored afterward, and work outside the command
+remains subject to the whole-hook alarm. A child process group remains owned
+after its leader exits, with the existing TERM grace before forced cleanup.
+Budget expiry remains a distinct cancellation outcome, never a successful
+closeout. CB-242 carries the scheduling regression and cross-host proof;
+configured or trusted hooks still require separate visible-delivery evidence.
+
+## Protected intervention-stream retention boundary
+
+When an active immutable publication exists, every bounded native hook or
+read-only intervention-event caller without an admitted managed governance
+writer holding the repository lock queues its exact event in
+`.odylith/runtime/host-hooks/compass-events.v1.jsonl` under a stable
+`host-event-<ID>` transaction. This shared rule covers Stop, PostToolUse, and
+other protected-stream callers; none may escape into a direct canonical append.
+An admitted normal governance writer that owns the repository lock retains the
+canonical append and continuation path.
+
+This journal has separate replacement ownership from dirty-path checkpoints.
+An older runtime clearing its checkpoint file must preserve pending history.
+
+Codex and Claude Stop remain silent private-memory producers. They may retain a
+meaningful assistant summary and a matching delivery-confirmation observation,
+but they do not run sync, settle a continuation, publish a generation, or render
+or replay an Ambient Highlight, Observation, Proposal, or Assist.
+
+Canonical publication belongs to a later successful non-hook foreground
+`odylith compass log` or `odylith sync`. That writer may publish at most four
+pending events per maintenance pass and acknowledges each only after immutable
+published bytes are read back; the rest remain queued. Publication proves byte
+custody only. Automatically captured assistant assertions and confirmation
+observations remain historical observations with `UNKNOWN` semantic validity,
+even after publication. They do not become current verified truth.
+
+Shared intervention loaders snapshot the inbox first, then select immutable
+published canonical bytes and merge eligible pending intervention events.
+Failed working appends stay invisible; publication before acknowledgment keeps
+events present during concurrent publication. The bounded read validates the
+selected manifest and path without scanning unrelated surfaces. Loaders
+invalidate cached views when either store changes and dedupe
+by exact transaction identity. A pending event that disagrees with the same
+canonical transaction identity refuses. This keeps the intervention and memory
+engines active while preserving the pending event's noncanonical authority.
+
+Manual `visible-intervention --phase stop_summary` remains a separate explicit
+rendering path. It neither drains the private Stop ledger nor changes the
+authority of retained or published observations.
+
+## Explicit current closeout and pending replay
+
+An explicit `visible-intervention --phase stop_summary --include-closeout`
+with a supplied summary displays that current Assist through the existing
+visible-quality gate. Historical replay cannot replace it. Pending messages
+remain stored and unconfirmed, but only a moment no older than 30 minutes is
+eligible for assistant-visible replay. Confirming the current text cannot
+confirm text that was not shown. A useful closeout does not
+need a generic visibility Observation prepended to it.
+
+The renderer preserves the complete supplied summary and punctuation. It does
+not clip characters or invent the next action. This is manual, host-authored
+narration, not source-fact admission, native activation proof or permission to
+publish a proposal. Input-free replay and normal live Observation/Proposal
+selection retain their existing owners and eligibility contracts.
+
+## Native activation proof boundary
+
+Codex configuration, native hook trust, callback execution and chat visibility
+are separate evidence. The capability reader uses the native feature registry's
+`hooks` key, with the older `codex_hooks` alias only when that is what the registry
+exposes. The low-latency status reader parses the actual TOML features table;
+comments, strings, unrelated tables, malformed input and explicit disablement
+cannot establish readiness. Neither reader grants trust or starts a model turn.
+
+Configured Codex assets yield `baseline_safe_hooks_configured` compatibility and
+`Activation: unverified`, not a native-ready claim. The current session advances
+to `Activation: ready` only from separately qualified current-session visible
+evidence. A native `codex_stop` delivery-confirmation observation retained in
+the private host ledger may later be published for historical custody, but that
+publication leaves its semantic validity `UNKNOWN` and cannot by itself prove
+current activation. Static files, a manual visible command, or an unrelated
+chat confirmation cannot satisfy that gate. New or changed hook definitions
+require a fresh/reloaded session and new qualified evidence; status never
+modifies native trust.
+
+Plain `intervention-status` is a read-only inspection and remains usable while
+operator-owned managed files differ from the published generation. Supplying
+`--last-assistant-message` is different: it records confirmation evidence and
+therefore remains inside the governed mutation/publication boundary. CB-242
+owns native activation and visible-delivery evidence; CB-304 owns confirmation
+fault safety.
+
 
 ## Purpose
 Governance Intervention Engine is Odylith's shared conversation-observation
@@ -28,7 +136,7 @@ stable governed write opportunities into confirmation-gated
 `Odylith Proposal` bundles, and keeps that whole lifecycle auditable
 through Compass instead of leaving it as host-local improvisation. It also
 owns the live mid-turn surface contract for teaser and explicit intervention
-beats so prompt, stop, post-edit, and post-bash hooks do not have to route
+beats so prompt, post-edit, and post-bash hooks do not have to route
 through the heavier closeout chatter stack just to speak one truthful line.
 In v0.1.11 it also owns the visible intervention value engine: a
 proposition-first deterministic selector that turns locally supported evidence
@@ -184,13 +292,13 @@ claiming ML calibration.
   `Odylith Proposal`.
 - `src/odylith/runtime/intervention_engine/conversation_surface.py`
   Shared low-latency live-surface bundle builder and renderer for prompt,
-  stop, post-edit, and post-bash host phases.
+  post-edit, post-bash, and explicit manual fallback phases.
 - `src/odylith/runtime/intervention_engine/host_surface_runtime.py`
   Shared host payload builder that keeps one hidden developer-context bundle
-  for continuity while composing the visible checkpoint or stop surface for
-  Codex and Claude.
+  for continuity while composing visible prompt, checkpoint, or explicit
+  manual fallback surfaces for Codex and Claude.
 - `src/odylith/runtime/intervention_engine/alignment_context.py`
-  Hot-path alignment reader that feeds prompt, checkpoint, Stop, manual
+  Hot-path alignment reader that feeds prompt, checkpoint, manual
   fallback, and status surfaces with the same compact Context Engine packet,
   Execution Engine snapshot summary, session-memory snapshot, delivery-ledger
   visibility state, and Tribunal summary. It reads only cached local runtime
@@ -202,8 +310,10 @@ claiming ML calibration.
   It turns the compact alignment context into a JSON-friendly lane summary
   across Context Engine, Execution Engine, Tribunal, Intervention Engine,
   Governance, Subagent Orchestration, Discipline, Surface DAGs, Delivery,
-  Analysis, and Memory Substrate. Required lanes must be covered or
-  policy-deferred before a visibility-recovery beat can report `status=ready`,
+  Analysis, Memory Substrate, Topology, Taxonomies/FSMs, Greenfield Domain
+  Intelligence, and Overall UX. Required lanes must be covered or
+  policy-deferred before a visibility-recovery beat can report `status=ready`;
+  non-relevant lanes are explicitly policy-deferred instead of being omitted,
   and the proof object records that the host path used local summaries only,
   with no provider call or repo scan.
 - `src/odylith/runtime/intervention_engine/alignment_evidence.py`
@@ -229,6 +339,8 @@ claiming ML calibration.
 - `src/odylith/runtime/intervention_engine/stream_state.py`
   Compass stream reads plus cached derived session-memory and
   pending-proposal state.
+- `src/odylith/runtime/common/agent_runtime_contract.py`
+  Shared bounded published-stream selection used by intervention and Context Engine readers.
 - `src/odylith/runtime/intervention_engine/delivery_ledger.py`
   Low-latency delivery read model that derives active chat-visible posture,
   recent Observation/Proposal/Ambient/Assist delivery, and pending proposal
@@ -247,10 +359,11 @@ claiming ML calibration.
   been confirmed in the assistant transcript. It dedupes by display-aware
   confirmation key, repairs missing live rulers, keeps Assist outside live
   rulers, applies the live ambient/intervention budget, and feeds prompt,
-  checkpoint, manual visible-intervention, status, and Stop surfaces.
+  checkpoint, manual visible-intervention, and status surfaces. Native Stop
+  does not invoke replay.
 - `src/odylith/runtime/intervention_engine/visibility_broker.py`
   Shared chat-visible decision broker consumed by Codex, Claude, manual
-  fallback, Stop recovery, status probes, and tests. It is the only runtime
+  fallback, status probes, and tests. It is the only runtime
   surface allowed to decide whether an earned beat is visible, fallback-ready,
   assistant-render-required, or chat-confirmed.
 - `src/odylith/runtime/surfaces/host_intervention_support.py`
@@ -389,8 +502,8 @@ claiming ML calibration.
      governance-readiness to choose one dominant interjection instead of
      flattening the first matching fact into stock copy
   4. stable moment identity selection from prompt-rooted identity signatures
-     plus governed anchors so prompt-submit, stop-summary, and
-     post-edit/post-bash upgrades can evolve the same moment across phases
+     plus governed anchors so prompt-submit and post-edit/post-bash upgrades
+     can evolve the same visible moment across phases
   5. continuity lookup from cached Compass stream events so the engine knows
      whether the moment already emitted a teaser, Observation, pending
      Proposal, decline, or apply outcome
@@ -419,6 +532,11 @@ claiming ML calibration.
   `hookSpecificOutput.additionalContext` with fallback instructions, while
   `prompt-teaser` prints the earned teaser as a best-effort stdout source when
   the host exposes it.
+- Prompt `systemMessage` is owned only by the current prompt decision. Pending
+  blocks from earlier turns remain available to explicit status/manual
+  visibility surfaces but must not be replayed wholesale into a later prompt:
+  host/session identity alone does not prove relevance to the user's new
+  request.
 - Codex live-ready posture must not be inferred from `codex debug
   prompt-input` alone. That probe proves repo guidance reaches model context.
   The intervention engine requires `features.codex_hooks = true`,
@@ -429,18 +547,10 @@ claiming ML calibration.
   remain parser-supported for tests and manual fallback but are not automatic
   hook coverage until the host exposes them.
 - `stop_summary`
-  May upgrade to a full `Odylith Observation` when corroboration exists, even
-  when proposal readiness is still too low to surface `Odylith Proposal` yet.
-  In shipped Codex and Claude host lanes, stop-summary is the fallback visible
-  surface rather than the primary intervention moment. It should recover a
-  missed late Observation and may pair that with a shared closeout Assist line
-  when the closeout-side bundle is eligible.
-  Claude Stop must never use the blocking visible-delivery payload path for
-  this recovery lane: Claude renders that path as Stop-hook failure/control
-  transcript noise instead of a clean product beat. Claude Stop may return a
-  `systemMessage` for host context, but visibility fallback proof still needs
-  normal assistant-rendered Markdown or a host-visible channel that is proven
-  visible in the active session.
+  Native Stop retains bounded private memory under the boundary above. It does
+  not select, upgrade, render, or replay a visible beat and must never block the
+  user's next turn. An explicit manual `visible-intervention` command is the
+  separate path for a requested stop-summary rendering.
 - `post_edit_checkpoint` and `post_bash_checkpoint`
   are the primary visible intervention lanes. They may upgrade an earned
   observation into a proposal by attaching concrete changed-path evidence and
@@ -490,8 +600,11 @@ claiming ML calibration.
   non-visible context such as Assist closeout state or anchor summaries. This
   keeps hidden hook paths useful without turning invisible intervention
   delivery into avoidable model-context token burn. The fallback instruction
-  itself should stay compact; the signal, not framework prose, deserves the
-  token budget.
+  itself must require a complete direct answer to the current user request
+  before any Odylith note, permit at most one relevant concise line afterward,
+  and suppress stale, unrelated, conflicting, or already-visible material. A
+  fallback note must never replace the requested answer. The instruction stays
+  compact; the signal, not framework prose, deserves the token budget.
 - `odylith codex visible-intervention` and `odylith claude
   visible-intervention` render plain Markdown fallback output for the assistant
   to show directly when host hook display is unproven or hidden.
@@ -501,55 +614,44 @@ claiming ML calibration.
   ledger-visible delivery events, strict chat-confirmed event count, family
   visibility ratios for Teaser diagnostics, Ambient, Observation/Proposal,
   and Assist, pending proposal count, an exact assistant-visible replay block
-  for unconfirmed branded events, and a fast smoke command.
+  for a recent unconfirmed branded moment, and a fast smoke command. Older
+  unconfirmed events remain diagnostic evidence, not instructions to speak.
   These commands are the cheap operator proof before claiming a session has
   live Observation/Proposal/Ambient/Assist delivery; `Activation: ready` alone
   is static wiring, not session-visible proof.
 - `assistant_fallback_ready`, `assistant_render_required`, and structured
   `systemMessage` generation are hidden-ready or assistant-required states,
   not session-visible proof. The delivery ledger may retain those events for
-  Stop replay and continuity, but they stay pending until a visible delivery
+  continuity and explicit visibility surfaces, but they stay pending until a visible delivery
   path or strict transcript confirmation exists.
 - `manual_visible`, `best_effort_visible`, and `stop_continuation_ready` are
   ledger-visible fallback states. They prove Odylith produced assistant-facing
   visible Markdown through a fallback path, but they do not prove the host chat
   transcript contains that Markdown. Status surfaces must report these as
   `ledger_visible_unconfirmed` or `ledger_visible_with_pending_confirmation`
-  until exact assistant transcript confirmation promotes the event.
-- `assistant_chat_confirmed` is recorded only when a status probe or Stop path
-  sees the exact Odylith Markdown from a prior non-visible or fallback-visible
-  beat in the latest assistant message. A generated hook payload,
+  until exact assistant transcript confirmation promotes the event. The
+  `stop_continuation_ready` value remains legacy event vocabulary; native Stop
+  does not emit a new visible continuation.
+- `assistant_chat_confirmed` requires an exact prior Odylith Markdown match in
+  assistant transcript evidence. Native Stop may retain a matching confirmation
+  observation privately, but later publication proves only its event bytes; its
+  semantic validity remains `UNKNOWN`. A generated hook payload,
   `systemMessage`, or `additionalContext` field must never promote itself to
-  chat-visible proof.
+  chat-visible proof or current verified truth.
 - Delivery snapshots must infer host family from legacy `render_surface`
   values such as `codex_visible_intervention` or
   `claude_visible_intervention` when older events lack an explicit
   `host_family`, so status does not undercount visible fallback rows during
   v0.1.10 to v0.1.11 migration.
-- Stop-summary hooks may block once with a continuation reason when a real
-  Observation or `Odylith Assist:` closeout was generated but is not already
-  visible in the last assistant message. The `stop_hook_active` guard prevents
-  loops.
-- Stop-summary is also the hard visibility fallback for earlier live beats.
-  If a prompt/checkpoint generated an Ambient Highlight, `Odylith Observation`,
-  or `Odylith Proposal` through a host path that may have stayed hidden, Stop
-  may replay the bounded set of distinct unconfirmed live beats before the
-  Assist line and send the combined text through the same one-shot continuation
-  mechanism. Manual-visible, best-effort, and Stop-continuation rows remain
-  replayable until exact transcript confirmation proves the assistant message
-  actually carried the Markdown.
-- Stop-summary Assist may use concrete validation/pass signals from the
-  assistant summary when changed paths are unavailable. This recovery path is
-  proof-only: it may say the proof stayed tight, but it must not claim
-  artifact updates without changed-path or governed-target evidence.
-- Stop-summary Assist may also recover from explicit user feedback about
-  missing Odylith visibility, ambient highlights, Observations, Proposals,
-  Assist, hooks, or chat surfacing. This lane is intentionally narrow: it may
-  say the UX signal stayed alive, but it must stay silent for ordinary
-  low-signal short turns.
-- Stop-summary visibility dedupe must compare the labels in the generated
-  visible text, not merely the existence of any prior Odylith label. A prior
-  Observation is not proof that the current Assist closeout was already shown.
+- Native Stop must never block with a continuation reason. The
+  `stop_hook_active` guard still prevents recursive execution, while successful
+  private retention stays silent. Bounded storage or budget failure may report
+  only compact save status; it does not authorize visible recovery or replay.
+- Summary text, validation language, visibility feedback, and delivery
+  confirmation captured by Stop are retained as historical observations. They
+  do not authorize an artifact claim, a current proof claim, or a new visible
+  beat. Explicit manual rendering and later governed foreground publication
+  retain their separate owners.
 - Ambient Highlight duplicate suppression must make the same distinction.
   A prior teaser, card, or proposal that only reached `assistant_fallback_ready`
   or another hidden-ready hook surface is not proof that the human saw the
@@ -605,14 +707,13 @@ claiming ML calibration.
   regression, not a harmless formatting change.
 - Session memory must preserve the human conversation, not Odylith's own
   summaries. Intervention lifecycle events therefore carry the originating
-  `prompt_excerpt` forward so later stop, post-edit, and post-bash hooks reason
+  `prompt_excerpt` forward so later prompt, post-edit, and post-bash hooks reason
   from the user's actual prompt instead of `Odylith Proposal pending.` or other
   self-generated summaries.
-- Stop-time recovery should also preserve the active slice, not only the last
-  prompt sentence. Derived changed paths, workstreams, components, and target
-  refs recovered from the shared event stream are part of the stop-surface
-  contract so closeout and Observation upgrades do not speak from an empty
-  context.
+- Native Stop retention preserves only the bounded host/session evidence it
+  actually receives. It does not derive expanded repository context or use
+  inferred changed paths, workstreams, components, or target refs to create a
+  closeout or Observation.
 - Closeout recovery may name affected workstream, component, diagram, or bug
   IDs from bounded request, packet, changed-path, or target-ref truth. It must
   distinguish updated governed records from contracts merely kept in scope.
@@ -794,27 +895,29 @@ parallel payload schemas.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-05-02 · Implementation:** B-141 activation pass keeps source-local memory on Lance/Tantivy, preserves visible Assist recovery, and leaves consumer pinned runtimes on the managed feature pack.
+- **2026-09-30 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
+  - Scope: B-096
+  - Evidence: `src/odylith/runtime/intervention_engine/visibility_replay.py`
+- **2026-09-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-04-30-intervention-visibility-fallback-leaks-internal-instructions-into-claude-chat.md`, `src/odylith/runtime/intervention_engine/host_surface_runtime.py`, `src/odylith/runtime/intervention_engine/visible_delivery_runtime.py`, `src/odylith/runtime/surfaces/codex_host_stop_summary.py`
+- **2026-07-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-096
+  - Evidence: `src/odylith/runtime/intervention_engine/host_surface_runtime.py`, `src/odylith/runtime/intervention_engine/visibility_broker.py`, `src/odylith/runtime/surfaces/host_intervention_support.py`
+- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-141
-  - Evidence: odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md, odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md +2 more
-- **2026-05-02 · Implementation:** B-140/B-141 v0.1.13 dev-maintainer surfaces now keep source-local proof distinct from pinned 0.1.12 and default Release Targets to current/next aliases.
+  - Evidence: `odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md`, `odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md`, `src/odylith/install/runtime.py`, `src/odylith/runtime/intervention_engine/prompt_signal_runtime.py`
+- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-140, B-141
-  - Evidence: odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md, src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py +1 more
-- **2026-05-02 · Implementation:** B-141 source-local QA tightened Compass Release Targets to current/next aliases, restored Codex live intervention checkpoint output, and reran browser/migration proof for v0.1.13.
+  - Evidence: `odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md`, `src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py`, `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js`
+- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-141
-  - Evidence: odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md, src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py +1 more
-- **2026-05-01 · Implementation:** Restored substrate-backed quiet prompt and SessionStart fast paths for B-141 while keeping conversation bundles off the low-signal path.
-  - Scope: B-141
-  - Evidence: agents/bin/odylith-host-launcher.py, src/odylith/runtime/surfaces/claude_host_prompt_bundle.py +5 more
-- **2026-04-16 · Implementation:** Hardened intervention chat-visible delivery with a shared broker, assistant-render-required proof states, transcript confirmation, D-038 proposal visibility gating, and focused runtime/browser validation.
-  - Scope: B-096
-  - Evidence: src/odylith/runtime/intervention_engine/visibility_broker.py, tests/integration/runtime/test_intervention_visibility_browser.py +1 more
-- **2026-04-15 · Implementation:** Completed intervention chat-visibility hardening: Codex and Claude now report assistant-visible readiness, visible-intervention renders Observation/Proposal/Assist Markdown, Stop Assist recovers from validation proof without claiming artifacts, and CB-121 plus B-096 governance records were updated.
-  - Scope: B-096
-  - Evidence: odylith/casebook/bugs/2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md, src/odylith/runtime/intervention_engine/host_surface_runtime.py +1 more
+  - Evidence: `odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md`, `src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py`, `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js`
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-10-14: Extended private retention from Stop to every bounded native hook or read-only intervention caller that lacks an admitted managed writer while an immutable publication is active. Shared loaders now merge pending events with cache invalidation and exact transaction dedupe without granting canonical authority. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Bug: `CB-305`)
+- 2026-10-14: Restricted native Codex and Claude Stop to silent private memory retention. Foreground Compass publication now verifies event-byte custody while leaving automatically captured assertions at `UNKNOWN` semantic validity; manual stop-summary rendering stays separate. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Bug: `CB-305`)
 - 2026-04-30: Removed Claude Stop's blocking visible-delivery fallback so chat-visibility recovery no longer appears as Claude Code Stop hook error or Stop says transcript noise. Claude Stop may still return host context, but chat-visible proof requires normal assistant-rendered Markdown or a proven visible host channel. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
 - 2026-04-25: Captured and fixed `CB-127`: plain help/show passthrough prompts now suppress live intervention narration and replay, raw CLI help stdout is excluded from fact/evidence scoring, and generic topology Observation copy names the current request instead of treating command catalogs as conversation truth. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-127`)
 - 2026-04-28: Moved prompt-visible Assist continuity into shared host prompt support so Codex prompt context, Claude prompt context, Claude prompt teaser, and manual visible-intervention fallback all render the same Assist line for normal non-passthrough prompts while help/show route locks remain narration-free. This closes a v0.1.12 slop class where the manual fallback knew how to stay visible but the real prompt-submit hooks could still go silent. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-122`)

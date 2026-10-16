@@ -1,0 +1,591 @@
+{
+  "receipt": {
+    "decision_set": {
+      "decisions": {
+        "A1": {
+          "role_ref_indexes": [
+            0,
+            1
+          ],
+          "support_ref_indexes": [
+            0
+          ],
+          "verdict": "yes"
+        },
+        "A2": {
+          "role_ref_indexes": [
+            0,
+            1
+          ],
+          "support_ref_indexes": [
+            0
+          ],
+          "verdict": "yes"
+        },
+        "F1": {
+          "role_ref_indexes": [
+            0
+          ],
+          "support_ref_indexes": [
+            0
+          ],
+          "verdict": "yes"
+        },
+        "F2": {
+          "role_ref_indexes": [
+            0
+          ],
+          "support_ref_indexes": [
+            0
+          ],
+          "verdict": "yes"
+        },
+        "T1": {
+          "role_ref_indexes": [
+            0
+          ],
+          "support_ref_indexes": [
+            0
+          ],
+          "verdict": "yes"
+        }
+      },
+      "source_completeness": {
+        "omissions": [],
+        "verdict": "yes"
+      },
+      "verifier_task_sha256": "5457e8fced6a85e205123686671d7c875b5de057622abcd84ef55c789c1acbb0",
+      "version": "odylith.greenfield.source-duty-decisions.v4"
+    },
+    "decision_set_sha256": "73576964b645652db33653c0346c435b2ef398f34ef88f64bb672dc07d4c8042",
+    "ledger": {
+      "boundaries": [],
+      "conditional_guards": [],
+      "evidence_controls": [],
+      "first_path_actions": [
+        {
+          "action": "opens",
+          "actor_ref": {
+            "context": "A steward opens the dossier",
+            "quote": "steward"
+          },
+          "event_ref": {
+            "context": "steward opens the dossier",
+            "quote": "steward opens the dossier"
+          },
+          "id": "A1",
+          "observable_result": "dossier opened",
+          "performer_role": "human_actor",
+          "role_refs": [
+            {
+              "context": "steward opens the dossier",
+              "quote": "steward opens the dossier"
+            }
+          ],
+          "source_refs": [],
+          "statement": "steward opens the dossier",
+          "target": "the dossier"
+        },
+        {
+          "action": "approves",
+          "actor_ref": {
+            "context": "reviewer",
+            "quote": "reviewer"
+          },
+          "event_ref": {
+            "context": "reviewer approves the dossier",
+            "quote": "reviewer approves the dossier"
+          },
+          "id": "A2",
+          "observable_result": "dossier approved",
+          "performer_role": "human_actor",
+          "role_refs": [
+            {
+              "context": "reviewer approves the dossier",
+              "quote": "reviewer approves the dossier"
+            }
+          ],
+          "source_refs": [],
+          "statement": "reviewer approves the dossier",
+          "target": "the dossier"
+        }
+      ],
+      "off_path_transitions": [
+        {
+          "effects": [
+            {
+              "change": "closed",
+              "field": "access",
+              "observable_check": "access closed"
+            },
+            {
+              "change": "erased",
+              "field": "cache",
+              "observable_check": "cache empty"
+            }
+          ],
+          "governed_object": "dossier",
+          "id": "T1",
+          "source_refs": [
+            {
+              "context": "Withdrawal closes dossier access and erases the cached copy",
+              "quote": "Withdrawal closes dossier access and erases the cached copy"
+            }
+          ],
+          "trigger": "withdrawal"
+        }
+      ],
+      "proof_duties": [],
+      "question": "",
+      "state_fields": [
+        {
+          "field": "access",
+          "id": "F1",
+          "meaning": "access status",
+          "source_refs": [
+            {
+              "context": "dossier access",
+              "quote": "dossier access"
+            }
+          ],
+          "state_object": "dossier"
+        },
+        {
+          "field": "cache",
+          "id": "F2",
+          "meaning": "cached copy",
+          "source_refs": [
+            {
+              "context": "cached copy",
+              "quote": "cached copy"
+            }
+          ],
+          "state_object": "dossier"
+        }
+      ],
+      "status": "inventory",
+      "supporting_human_actions": [],
+      "system_duties": [],
+      "version": "odylith.greenfield.source-duty-ledger.v5"
+    },
+    "ledger_sha256": "a5a643bf43d27f44720d3feb687c46155e0982aeedf1d4bbb5cf0de7003dad71",
+    "source_sha256": "920fbac70190cb8156310fb9d1f51ad8d91781ad2e858d35caa1dede02b9aad7",
+    "verifier_task_sha256": "5457e8fced6a85e205123686671d7c875b5de057622abcd84ef55c789c1acbb0",
+    "version": "odylith.greenfield.source-duty-ledger-receipt.v7"
+  },
+  "source": "A steward opens the dossier. A reviewer approves the dossier. Withdrawal closes dossier access and erases the cached copy.",
+  "task": {
+    "authority_source": "A steward opens the dossier. A reviewer approves the dossier. Withdrawal closes dossier access and erases the cached copy.",
+    "decision_set_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "decisions": {
+          "additionalProperties": false,
+          "properties": {
+            "A1": {
+              "additionalProperties": false,
+              "properties": {
+                "role_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "support_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "verdict": {
+                  "enum": [
+                    "yes",
+                    "no",
+                    "uncertain"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "verdict",
+                "support_ref_indexes",
+                "role_ref_indexes"
+              ],
+              "type": "object"
+            },
+            "A2": {
+              "additionalProperties": false,
+              "properties": {
+                "role_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "support_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "verdict": {
+                  "enum": [
+                    "yes",
+                    "no",
+                    "uncertain"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "verdict",
+                "support_ref_indexes",
+                "role_ref_indexes"
+              ],
+              "type": "object"
+            },
+            "F1": {
+              "additionalProperties": false,
+              "properties": {
+                "role_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "support_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "verdict": {
+                  "enum": [
+                    "yes",
+                    "no",
+                    "uncertain"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "verdict",
+                "support_ref_indexes",
+                "role_ref_indexes"
+              ],
+              "type": "object"
+            },
+            "F2": {
+              "additionalProperties": false,
+              "properties": {
+                "role_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "support_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "verdict": {
+                  "enum": [
+                    "yes",
+                    "no",
+                    "uncertain"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "verdict",
+                "support_ref_indexes",
+                "role_ref_indexes"
+              ],
+              "type": "object"
+            },
+            "T1": {
+              "additionalProperties": false,
+              "properties": {
+                "role_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "support_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "verdict": {
+                  "enum": [
+                    "yes",
+                    "no",
+                    "uncertain"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "verdict",
+                "support_ref_indexes",
+                "role_ref_indexes"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "A1",
+            "A2",
+            "F1",
+            "F2",
+            "T1"
+          ],
+          "type": "object"
+        },
+        "source_completeness": {
+          "additionalProperties": false,
+          "properties": {
+            "omissions": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "omission_id": {
+                    "maxLength": 200,
+                    "type": "string"
+                  },
+                  "source_ref": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "context": {
+                        "maxLength": 2400,
+                        "type": "string"
+                      },
+                      "quote": {
+                        "maxLength": 2400,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "quote",
+                      "context"
+                    ],
+                    "type": "object"
+                  },
+                  "typed_role": {
+                    "enum": [
+                      "first_path_action",
+                      "supporting_human_action",
+                      "system_duty",
+                      "state_field",
+                      "off_path_transition",
+                      "conditional_guard",
+                      "boundary",
+                      "proof_duty"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "omission_id",
+                  "typed_role",
+                  "source_ref"
+                ],
+                "type": "object"
+              },
+              "maxItems": 32,
+              "type": "array"
+            },
+            "verdict": {
+              "enum": [
+                "yes",
+                "no",
+                "uncertain"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "verdict",
+            "omissions"
+          ],
+          "type": "object"
+        },
+        "verifier_task_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "version": {
+          "enum": [
+            "odylith.greenfield.source-duty-decisions.v4"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "version",
+        "verifier_task_sha256",
+        "decisions",
+        "source_completeness"
+      ],
+      "type": "object"
+    },
+    "reference_index_order": "Resolve citation IDs through the citation bank. For action rows, support references are event_ref followed by source_refs; role references are actor_ref followed by role_refs. Deduplicate identical quote/context pairs in each list, preserving first occurrence. For other rows, both lists equal source_refs with identical-pair deduplication. Return zero-based indexes of those derived lists. A yes action must select its event, actor, and every authored role context. Judge every normalized statement, action, target and role semantically against the full source; substring placement in a normalized statement does not prove entailment. Object key order cannot change workflow order. Return compact JSON only.",
+    "source_duty_ledger": {
+      "boundaries": [],
+      "citations": [
+        {
+          "c": "steward opens the dossier",
+          "id": "c0",
+          "q": "steward opens the dossier"
+        },
+        {
+          "c": "A steward opens the dossier",
+          "id": "c1",
+          "q": "steward"
+        },
+        {
+          "c": "reviewer approves the dossier",
+          "id": "c2",
+          "q": "reviewer approves the dossier"
+        },
+        {
+          "c": "reviewer",
+          "id": "c3",
+          "q": "reviewer"
+        },
+        {
+          "c": "dossier access",
+          "id": "c4",
+          "q": "dossier access"
+        },
+        {
+          "c": "cached copy",
+          "id": "c5",
+          "q": "cached copy"
+        },
+        {
+          "c": "Withdrawal closes dossier access and erases the cached copy",
+          "id": "c6",
+          "q": "Withdrawal closes dossier access and erases the cached copy"
+        }
+      ],
+      "conditional_guards": [],
+      "evidence_controls": [],
+      "first_path_actions": [
+        {
+          "action": "opens",
+          "actor_ref": "c1",
+          "event_ref": "c0",
+          "id": "A1",
+          "observable_result": "dossier opened",
+          "performer_role": "human_actor",
+          "role_refs": [
+            "c0"
+          ],
+          "source_refs": [],
+          "statement": "steward opens the dossier",
+          "target": "the dossier"
+        },
+        {
+          "action": "approves",
+          "actor_ref": "c3",
+          "event_ref": "c2",
+          "id": "A2",
+          "observable_result": "dossier approved",
+          "performer_role": "human_actor",
+          "role_refs": [
+            "c2"
+          ],
+          "source_refs": [],
+          "statement": "reviewer approves the dossier",
+          "target": "the dossier"
+        }
+      ],
+      "off_path_transitions": [
+        {
+          "effects": [
+            {
+              "change": "closed",
+              "field": "access",
+              "observable_check": "access closed"
+            },
+            {
+              "change": "erased",
+              "field": "cache",
+              "observable_check": "cache empty"
+            }
+          ],
+          "governed_object": "dossier",
+          "id": "T1",
+          "source_refs": [
+            "c6"
+          ],
+          "trigger": "withdrawal"
+        }
+      ],
+      "proof_duties": [],
+      "question": "",
+      "state_fields": [
+        {
+          "field": "access",
+          "id": "F1",
+          "meaning": "access status",
+          "source_refs": [
+            "c4"
+          ],
+          "state_object": "dossier"
+        },
+        {
+          "field": "cache",
+          "id": "F2",
+          "meaning": "cached copy",
+          "source_refs": [
+            "c5"
+          ],
+          "state_object": "dossier"
+        }
+      ],
+      "status": "inventory",
+      "supporting_human_actions": [],
+      "system_duties": [],
+      "version": "odylith.greenfield.source-duty-compact.v3"
+    },
+    "task": "Judge every material duty row against the complete authority source, including hierarchy, reference-only controls, and contradictions outside its cited excerpt. Assess every source-asserted field in each ledger row and its typed section/role. For actions, the cited event and typed role must support the full actor, action, target, and normalized statement; a shared verb can support distinct targets. A yes action decision must affirm that actor_ref names exactly ONE action performer of the asserted typed role. Reject an actor quote containing a whole action sentence, additional performers, or whole duty or paragraph context, even when its bytes are source-cited. Event and role refs carry that wider context separately. An identity from explicit role context may resolve a pronoun or inherited verb; judge that performer assignment against the complete source. Check that repeated actor citations identify the same performer across actions and supporting duties while distinct source performers retain distinct identities. The identity quote must be retained literally in the normalized statement, but containment alone proves custody, not semantic atomicity or performer entailment. For state fields, transitions, guards, boundaries, and proof duties, verify the meaning of every field against the exact source refs. A transition observable_check may express a consistent check of its cited effect without literal source wording. Do not promote reference context into a product duty. Return one decision per material row, keyed by its exact duty ID. The compiler owns claim hashes and canonical order; do not return or invent hashes. A yes decision must cite indexes of exact source and role references; use no or uncertain otherwise. Then scan the complete authority source from start to end for material actions, state fields, off-path transitions, guards, boundaries, and proof duties missing from the inventory. Return one source_completeness verdict: yes with no omissions only if every material source duty is represented; no or uncertain with at least one omission_id, typed_role, and exact source quote/context otherwise. Reference-only material is not a product duty. Do not author a candidate, add or omit row decisions, or give a second global pass.",
+    "verifier_task_sha256": "5457e8fced6a85e205123686671d7c875b5de057622abcd84ef55c789c1acbb0"
+  }
+}

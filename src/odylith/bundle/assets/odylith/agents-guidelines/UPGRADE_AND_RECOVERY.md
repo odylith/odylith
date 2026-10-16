@@ -24,6 +24,11 @@
 - In consumer repos, do not run the mutating commands above as a self-directed Odylith fix. Capture the exact failing command, touched paths, and symptoms for the maintainer instead.
 - Upgrade should switch versions only after validation succeeds.
 - Recovery should restore a healthy install without manual file surgery.
+- If upgrade activates its target but dashboard rendering fails, use the exact
+  dashboard refresh command reported by that upgrade. The installed target is
+  retained while the previous complete dashboard stays published. Retry proceeds
+  only from the recorded unchanged failed state; changed project or activation
+  bytes require explicit recovery, and `--force` never accepts unexplained drift.
 - For the 0.1.11 `odylith component register` drift where
   `odylith/registry/source/component_registry.v1.json` contains
   `category: detected` or `qualification: detected`, the supported recovery

@@ -59,6 +59,8 @@ class ExecutionWave:
     label: str
     status: str
     summary: str
+    exit_gate: str
+    validation: tuple[str, ...]
     depends_on: tuple[str, ...]
     primary_workstreams: tuple[str, ...]
     carried_workstreams: tuple[str, ...]
@@ -86,6 +88,8 @@ class ExecutionWave:
             "label": self.label,
             "status": self.status,
             "summary": self.summary,
+            "exit_gate": self.exit_gate,
+            "validation": list(self.validation),
             "depends_on": list(self.depends_on),
             "primary_workstreams": list(self.primary_workstreams),
             "carried_workstreams": list(self.carried_workstreams),
@@ -223,6 +227,10 @@ def _load_program(
         label = str(raw_wave.get("label", "")).strip()
         status = str(raw_wave.get("status", "")).strip().lower()
         summary = str(raw_wave.get("summary", "")).strip()
+        exit_gate = str(raw_wave.get("exit_gate", "")).strip()
+        validation = _dedupe_ids(
+            raw_wave.get("validation", []) if isinstance(raw_wave.get("validation"), list) else []
+        )
         depends_on = _dedupe_ids(raw_wave.get("depends_on", []) if isinstance(raw_wave.get("depends_on"), list) else [])
         primary = _dedupe_ids(
             raw_wave.get("primary_workstreams", []) if isinstance(raw_wave.get("primary_workstreams"), list) else []
@@ -345,6 +353,8 @@ def _load_program(
                 label=label,
                 status=status,
                 summary=summary,
+                exit_gate=exit_gate,
+                validation=tuple(validation),
                 depends_on=tuple(depends_on),
                 primary_workstreams=tuple(primary),
                 carried_workstreams=tuple(carried),

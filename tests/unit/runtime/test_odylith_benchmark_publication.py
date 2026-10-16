@@ -3,6 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
+from odylith.runtime.evaluation import benchmark_compare, benchmark_metric_helpers, benchmark_snapshot_fallbacks
 from odylith.runtime.evaluation import odylith_benchmark_publication as publication
 from odylith.runtime.evaluation import odylith_benchmark_tree_identity as tree_identity_runtime
 
@@ -164,6 +167,7 @@ def test_render_benchmark_tables_markdown_uses_current_tables() -> None:
     assert "| Lane role | primary candidate | odylith_off / raw host CLI honest baseline | Odylith policy vs raw host | Keeps the benchmark honest. |" in rendered
     assert "Current live-proof status: `provisional_pass`." in rendered
     assert "Current diagnostic status: `hold`." in rendered
+    assert "release-warn" not in rendered
 
 
 def test_write_publication_artifacts_is_content_addressed(tmp_path: Path) -> None:
@@ -250,3 +254,201 @@ def test_publication_main_refuses_explicit_stale_report(monkeypatch, tmp_path: P
         assert "does not match the current repo tree identity" in str(exc)
     else:
         raise AssertionError("expected stale explicit benchmark report publication to fail")
+
+
+def _full_proof_report(*, report_id="proof-baseline", version="0.1.5", status="provisional_pass") -> dict:
+    report = _report(
+        profile="proof", claim="full_product_assistance_vs_raw_agent", status=status, report_id=report_id,
+    )
+    quality = {
+        "required_path_recall_rate": 0.992,
+        "validation_success_rate": 0.98,
+        "critical_required_path_recall_rate": 0.979,
+        "critical_validation_success_rate": 0.96,
+        "hallucinated_surface_rate": 0.0,
+        "unnecessary_widening_rate": 0.02,
+    }
+    report.update(
+        report_id=report_id,
+        product_version=version,
+        git_commit="a" * 40,
+        source_posture="source-local",
+        selection_fingerprint="selection-fingerprint",
+        corpus_fingerprint="corpus-fingerprint",
+        generated_utc="2026-10-15T05:00:41Z",
+        benchmark_profile="proof",
+        comparison_contract="full_product_assistance_vs_raw_agent",
+        latest_eligible=True,
+        selection={"full_corpus_selected": True},
+        cache_profiles=["warm", "cold"],
+        published_cache_profiles=["warm", "cold"],
+        published_view_strategy="conservative_multi_profile",
+        acceptance={"status": status, "hard_quality_gate_cleared": status == "provisional_pass"},
+        scenario_count=65,
+        mode_summaries={"odylith_on": dict(quality), "raw_agent_baseline": dict(quality)},
+        published_mode_summaries={"odylith_on": dict(quality), "raw_agent_baseline": dict(quality)},
+        published_scenarios=[{"results": [{"mode": "odylith_on"}, {"mode": "raw_agent_baseline"}]} for _ in range(65)],
+    )
+    return report
+
+
+def _compare_to_stored_summary(monkeypatch, tmp_path: Path, summary: dict):
+    path = tmp_path / "docs/benchmarks/release-baselines.v1.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"0.1.5": summary}), encoding="utf-8")
+    candidate = _full_proof_report(report_id="candidate", version="0.1.6")
+    candidate["repo_root"] = str(tmp_path)
+    monkeypatch.setattr(benchmark_compare, "product_source_version", lambda **kwargs: "0.1.6")
+    monkeypatch.setattr(benchmark_compare.runner, "load_latest_benchmark_report", lambda **kwargs: candidate)
+    monkeypatch.setattr(tree_identity_runtime, "benchmark_report_matches_current_tree", lambda **kwargs: True)
+    monkeypatch.setattr(benchmark_compare, "_history_reports", lambda **kwargs: [])
+    monkeypatch.setattr(benchmark_compare, "_latest_published_release_version", lambda **kwargs: "0.1.5")
+    return benchmark_compare.compare_latest_to_baseline(repo_root=tmp_path)
+
+
+@pytest.mark.parametrize("status,expected", [("provisional_pass", "pass"), ("hold", "warn")])
+def test_canonical_publication_survives_stored_release_baseline_comparison(monkeypatch, tmp_path: Path, status, expected) -> None:
+    proof = _full_proof_report(status=status)
+    diagnostic = _report(profile="diagnostic", claim="internal_packet_prompt_diagnostic", status="hold", report_id="diagnostic")
+    publication.write_publication_artifacts(repo_root=tmp_path, live_report=proof, diagnostic_report=diagnostic)
+    canonical = json.loads((tmp_path / "docs/benchmarks/latest-summary.v1.json").read_text(encoding="utf-8"))
+
+    assert canonical["absolute_odylith_on_quality"] == proof["published_mode_summaries"]["odylith_on"]
+    assert canonical["critical_required_path_recall_delta"] == 0.22
+    assert canonical["release_quality_evidence"]["contract"] == "odylith_release_quality_summary.v1"
+    assert canonical["release_quality_evidence"]["git_commit"] == proof["git_commit"]
+    assert canonical["release_quality_evidence"]["absolute_odylith_on_quality"] == canonical["absolute_odylith_on_quality"]
+    result = _compare_to_stored_summary(monkeypatch, tmp_path, canonical)
+
+    assert benchmark_snapshot_fallbacks.load_release_baseline_summary(repo_root=tmp_path, version="0.1.5") == canonical
+    assert result.status == expected
+    assert result.blocking is False
+    assert result.baseline_report_id == "proof-baseline"
+    assert result.summary["baseline"]["absolute_odylith_on_quality"]["critical_required_path_recall_rate"] == 0.979
+    assert all(result.deltas[field] == 0.0 for field in benchmark_metric_helpers.RELEASE_QUALITY_FIELDS)
+
+
+@pytest.mark.parametrize("section,field,value", [
+    (None, "release_quality_evidence", None),
+    ("release_quality_evidence", "contract", "legacy"),
+    (None, "report_id", "other-report"),
+    (None, "product_version", "0.1.4"),
+    (None, "git_commit", ""),
+    (None, "source_posture", ""),
+    (None, "selection_fingerprint", ""),
+    (None, "corpus_fingerprint", ""),
+    (None, "status", "failed"),
+    (None, "benchmark_profile", "diagnostic"),
+    (None, "scenario_count", 0),
+    (None, "evaluated_mode_count", 0),
+    (None, "published_cache_profiles", ["warm"]),
+    (None, "published_view_strategy", "primary_profile"),
+    ("release_quality_evidence", "full_corpus_selected", False),
+    ("release_quality_evidence", "published_scenario_count", 64),
+    ("release_quality_evidence", "absolute_odylith_on_quality", {}),
+    ("absolute_odylith_on_quality", "critical_required_path_recall_rate", None),
+    ("absolute_odylith_on_quality", "critical_required_path_recall_rate", float("nan")),
+    ("absolute_odylith_on_quality", "critical_required_path_recall_rate", 1.1),
+])
+def test_stored_release_summary_with_invalid_authority_fails_closed(monkeypatch, tmp_path: Path, section, field, value) -> None:
+    summary = publication._summary(_full_proof_report())
+    target = summary if section is None else summary[section]
+    target[field] = value
+
+    result = _compare_to_stored_summary(monkeypatch, tmp_path, summary)
+
+    assert result.status == "unavailable"
+    assert result.blocking is True
+    assert result.deltas == {}
+
+
+def test_legacy_publication_without_absolute_evidence_cannot_authorize_comparison(monkeypatch, tmp_path: Path) -> None:
+    legacy = publication.odylith_benchmark_runner.compact_report_summary(_full_proof_report())
+
+    result = _compare_to_stored_summary(monkeypatch, tmp_path, legacy)
+
+    assert result.status == "unavailable"
+    assert result.blocking is True
+
+
+@pytest.mark.parametrize("field", benchmark_metric_helpers.RELEASE_QUALITY_FIELDS.values())
+@pytest.mark.parametrize("side", ["summary", "evidence"])
+def test_stored_release_quality_value_tampering_is_rejected(monkeypatch, tmp_path: Path, field, side) -> None:
+    summary = publication._summary(_full_proof_report())
+    bound = summary["release_quality_evidence"]["absolute_odylith_on_quality"]
+    assert bound is not summary["absolute_odylith_on_quality"]
+    target = summary["absolute_odylith_on_quality"] if side == "summary" else bound
+    target[field] = 0.5
+
+    result = _compare_to_stored_summary(monkeypatch, tmp_path, summary)
+
+    assert result.status == "unavailable"
+    assert result.blocking is True
+    assert result.deltas == {}
+
+
+@pytest.mark.parametrize("side", ["summary", "evidence", "both"])
+@pytest.mark.parametrize("change", ["missing", "extra"])
+def test_stored_release_quality_maps_require_exact_complete_fields(monkeypatch, tmp_path: Path, side, change) -> None:
+    summary = publication._summary(_full_proof_report())
+    top = summary["absolute_odylith_on_quality"]
+    bound = summary["release_quality_evidence"]["absolute_odylith_on_quality"]
+    targets = [top, bound] if side == "both" else [top if side == "summary" else bound]
+    for target in targets:
+        if change == "missing":
+            del target["critical_required_path_recall_rate"]
+        else:
+            target["unknown_quality_rate"] = 0.5
+
+    result = _compare_to_stored_summary(monkeypatch, tmp_path, summary)
+
+    assert result.status == "unavailable"
+    assert result.blocking is True
+
+
+@pytest.mark.parametrize("side", ["summary", "evidence"])
+@pytest.mark.parametrize("value", [0, False])
+def test_stored_release_quality_requires_exact_numeric_types(monkeypatch, tmp_path: Path, side, value) -> None:
+    summary = publication._summary(_full_proof_report())
+    target = summary if side == "summary" else summary["release_quality_evidence"]
+    target["absolute_odylith_on_quality"]["hallucinated_surface_rate"] = value
+
+    result = _compare_to_stored_summary(monkeypatch, tmp_path, summary)
+
+    assert result.status == "unavailable"
+    assert result.blocking is True
+
+
+def test_diagnostic_publication_keeps_actual_metrics_without_release_authority() -> None:
+    diagnostic = _report(profile="diagnostic", claim="internal_packet_prompt_diagnostic", status="hold", report_id="diagnostic")
+
+    summary = publication._summary(diagnostic)
+
+    assert summary["status"] == "hold"
+    assert summary["benchmark_profile"] == "diagnostic"
+    assert summary["prompt_token_delta"] == 53
+    assert summary["critical_required_path_recall_delta"] == 0.22
+    assert summary["absolute_odylith_on_quality"] == {}
+    assert summary["release_quality_evidence"] == {}
+    assert benchmark_metric_helpers.release_quality_measurements(summary, cache_profiles=("warm", "cold")) == {}
+
+
+@pytest.mark.parametrize("field,value", [
+    ("report_id", ""), ("product_version", ""), ("git_commit", ""), ("source_posture", ""),
+    ("selection_fingerprint", ""), ("corpus_fingerprint", ""), ("generated_utc", ""),
+    ("benchmark_profile", "diagnostic"),
+    ("comparison_contract", "internal_packet_prompt_diagnostic"),
+    ("latest_eligible", False),
+    ("selection", {"full_corpus_selected": False}),
+    ("cache_profiles", ["warm"]),
+    ("published_scenarios", []),
+])
+def test_canonical_release_evidence_requires_completed_full_proof_source_metadata(field, value) -> None:
+    proof = _full_proof_report()
+    proof[field] = value
+
+    summary = publication._summary(proof)
+
+    assert summary["release_quality_evidence"] == {}
+    assert summary["absolute_odylith_on_quality"] == {}
+    assert summary["status"] == "provisional_pass"

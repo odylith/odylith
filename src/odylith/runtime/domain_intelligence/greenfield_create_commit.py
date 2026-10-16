@@ -1,0 +1,281 @@
+"""Commit-only executor for verified greenfield create transactions."""
+
+from __future__ import annotations
+
+import time
+from pathlib import Path
+from typing import Any
+
+from odylith.runtime.domain_intelligence import greenfield_compiled_write
+from odylith.runtime.domain_intelligence import greenfield_create_lifecycle
+from odylith.runtime.domain_intelligence import greenfield_generation_store
+from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence import greenfield_repository_lock
+from odylith.runtime.domain_intelligence.greenfield_commit_transaction import load_sealed_product_create_commit
+from odylith.runtime.domain_intelligence.greenfield_commit_transaction import require_sealed_commit_transaction
+from odylith.runtime.domain_intelligence.greenfield_create_manifest import (
+    finalize_greenfield_commit_manifest,
+)
+from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
+from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournalError
+from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
+from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldCommitInterrupted
+from odylith.runtime.surfaces.host_hook_execution import HookBudgetExpired
+from odylith.runtime.governance import restore_published_files
+
+
+class GreenfieldCreateCommitError(RuntimeError):
+    """Post-confirm commit failure after the compiled transaction entered the write boundary."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        rollback_status: str,
+        rollback_error: str = "",
+        root_cause: BaseException | None = None,
+        failure_kind: str = "post_confirm_commit_invariant_failure",
+        recovery_path: str = "",
+    ) -> None:
+        super().__init__(message)
+        self.rollback_status = rollback_status
+        self.rollback_error = rollback_error
+        self.root_cause_type = type(root_cause).__name__ if root_cause is not None else ""
+        self.failure_kind = failure_kind
+        self.recovery_path = recovery_path
+
+    def to_dict(self) -> dict[str, str]:
+        payload = {
+            "failure_kind": self.failure_kind,
+            "rollback_status": self.rollback_status,
+            "root_cause_type": self.root_cause_type,
+        }
+        if self.rollback_error:
+            payload["rollback_error"] = self.rollback_error
+        if self.recovery_path:
+            payload["recovery_path"] = self.recovery_path
+        return payload
+
+
+def commit_greenfield_create_transaction(
+    *,
+    repo_root: Path,
+    transaction_file: Path,
+    transaction_hash: str,
+    confirm: bool,
+    completion_receipt: Path | str | None = None,
+    started_at: float | None = None,
+) -> dict[str, Any]:
+    """Hash-check and atomically commit the user-confirmed precompiled package."""
+
+    if not confirm:
+        raise ValueError("--confirm is required before greenfield apply writes accepted product records")
+    root = Path(repo_root).expanduser().resolve()
+    path = Path(transaction_file).expanduser()
+    if not path.is_absolute():
+        path = root / path
+    expected_hash = str(transaction_hash or "").strip()
+    if not expected_hash:
+        raise ValueError(
+            "greenfield create requires the confirmed ProductCreateTransaction hash before it can enter the write boundary"
+        )
+    started = time.perf_counter() if started_at is None else float(started_at)
+    transaction = None
+    write_transaction: GreenfieldApplyTransaction | None = None
+    journal: GreenfieldCommitJournal | None = None
+    generation: greenfield_generation_store.PinnedGreenfieldGeneration | None = None
+    result: dict[str, Any] | None = None
+    try:
+        with greenfield_repository_lock.greenfield_repository_lock(root):
+            restore_published_files.require_restoration_writer_admission(repo_root=root)
+            from odylith.runtime.domain_intelligence.greenfield_pending_transaction_store import require_pending_transaction_released
+            require_pending_transaction_released(path, repo_root=root, transaction_hash=expected_hash,
+                                                completion_receipt=completion_receipt)
+            transaction = load_sealed_product_create_commit(path, repo_root=root)
+            if transaction.transaction_hash != expected_hash:
+                raise ValueError("ProductCreateTransaction hash does not match the confirmed transaction hash")
+            require_sealed_commit_transaction(transaction)
+            GreenfieldCommitJournal.recover_pending_journals(
+                repo_root=root,
+                excluding_transaction_hash=transaction.transaction_hash,
+            )
+            sealed_write_set = transaction.prewrite_package.repository_write_set
+            journal = GreenfieldCommitJournal(
+                repo_root=root,
+                transaction_hash=transaction.transaction_hash,
+                write_set=sealed_write_set,
+            )
+            committed_result = journal.recover_or_return_committed()
+            if committed_result is not None:
+                return committed_result
+            journal.discard_recovered_abort()
+            write_set = greenfield_repository_write_set.require_greenfield_repository_preconditions(
+                repo_root=root,
+                write_set=sealed_write_set,
+            )
+            journal.prepare()
+            write_transaction = GreenfieldApplyTransaction(
+                root,
+                paths=journal.paths,
+                snapshot_root=journal.snapshot_root,
+                retain_snapshot=True,
+            )
+            with write_transaction:
+                journal.mark_prepared()
+                result = greenfield_compiled_write.compiled_greenfield_commit_result(transaction=transaction)
+                final_manifest = finalize_greenfield_commit_manifest(
+                    transaction.commit_manifest_preview,
+                    create_elapsed_seconds=time.perf_counter() - started,
+                    write_transaction_status="committed",
+                )
+                transaction_summary = transaction.summary()
+                final_manifest["product_create_transaction"] = transaction_summary
+                write_manifest = dict(final_manifest.get("write_transaction") or {})
+                write_manifest["product_create_transaction_hash"] = transaction.transaction_hash
+                write_manifest["product_facts_sha256"] = str(
+                    transaction_summary.get("product_facts_sha256", "")
+                ).strip()
+                write_manifest["repository_write_set_hash"] = str(write_set["write_set_hash"])
+                write_manifest["commit_only"] = True
+                write_manifest["lifecycle_version"] = greenfield_create_lifecycle.CREATE_LIFECYCLE_VERSION
+                write_manifest["lifecycle_state"] = greenfield_create_lifecycle.CLOSED
+                final_manifest["write_transaction"] = write_manifest
+                final_manifest["create_elapsed_seconds"] = round(time.perf_counter() - started, 3)
+                result["commit_manifest"] = final_manifest
+                result["product_create_transaction"] = transaction_summary
+                generation = greenfield_generation_store.materialize_immutable_greenfield_generation(
+                    repo_root=root,
+                    write_set=write_set,
+                    manifest_text=transaction.prewrite_package.generation_manifest_text,
+                )
+                journal.mark_projecting(
+                    result,
+                    generation_manifest_sha256=generation.manifest_sha256,
+                    publication_entry_text=transaction.prewrite_package.publication_entry_text,
+                )
+                actual_result = greenfield_compiled_write.write_compiled_greenfield_package(
+                    root=root,
+                    transaction=transaction,
+                    temporary_directory=journal.staging_root,
+                )
+                expected_result = greenfield_compiled_write.compiled_greenfield_commit_result(
+                    transaction=transaction,
+                )
+                if actual_result != expected_result:
+                    raise RuntimeError("compiled Greenfield commit result drifted after materialization")
+                write_transaction.publish(
+                    lambda: greenfield_generation_store.publish_greenfield_generation(
+                        repo_root=root,
+                        generation=generation,
+                        write_set=write_set,
+                        publication_entry_text=transaction.prewrite_package.publication_entry_text,
+                    ),
+                    published_probe=journal.publication_is_active,
+                )
+                journal.mark_published(
+                    result,
+                    generation_manifest_sha256=generation.manifest_sha256,
+                )
+                greenfield_generation_store.pin_active_greenfield_generation(root)
+                greenfield_repository_write_set.require_greenfield_repository_after_state(
+                    repo_root=root,
+                    write_set=write_set,
+                )
+                result = journal.mark_closed(
+                    result,
+                    generation_manifest_sha256=generation.manifest_sha256,
+                )
+            try:
+                journal.discard_committed_snapshot()
+            except OSError:
+                pass
+    except BaseException as exc:
+        if isinstance(exc, GreenfieldCreateCommitError):
+            raise
+        if isinstance(exc, greenfield_repository_lock.GreenfieldRepositoryBusyError):
+            raise GreenfieldCreateCommitError(
+                "another greenfield transaction decision owns the repository lock; retry after it finishes",
+                rollback_status="not_started",
+                root_cause=exc,
+                failure_kind="post_confirm_repository_busy",
+            ) from exc
+        if isinstance(exc, greenfield_repository_lock.GreenfieldRepositoryLockError):
+            raise GreenfieldCreateCommitError(
+                "greenfield create could not acquire its repository lock; no governed records were written",
+                rollback_status="not_started",
+                root_cause=exc,
+                failure_kind="post_confirm_commit_environment_or_io_failure",
+            ) from exc
+        if isinstance(exc, ValueError) and write_transaction is None:
+            raise
+        if (
+            journal is not None
+            and write_transaction is not None
+            and write_transaction.rollback_status == "rolled_back"
+        ):
+            try:
+                journal.mark_aborted()
+            except GreenfieldCommitJournalError:
+                pass
+        elif (
+            journal is not None
+            and generation is not None
+            and result is not None
+            and transaction is not None
+            # Cancellation is not evidence of drift. Preserve the admitted
+            # interrupted phase so a same-hash retry must reverify publication.
+            and not isinstance(exc, HookBudgetExpired)
+            and journal.publication_is_active()
+        ):
+            try:
+                journal.mark_recovery_required(
+                    result,
+                    generation_manifest_sha256=generation.manifest_sha256,
+                )
+            except GreenfieldCommitJournalError:
+                pass
+        rollback_status = write_transaction.rollback_status if write_transaction is not None else "not_started"
+        rollback_phrase = (
+            "rollback completed; no governed records were committed"
+            if rollback_status == "rolled_back"
+            else f"rollback_status={rollback_status}; commit did not complete"
+        )
+        raise GreenfieldCreateCommitError(
+            "greenfield create failed while committing the verified ProductCreateTransaction; "
+            f"{rollback_phrase}. "
+            f"Root cause: {exc}",
+            rollback_status=rollback_status,
+            rollback_error=write_transaction.rollback_error if write_transaction is not None else "",
+            root_cause=exc,
+            failure_kind=(
+                exc.failure_kind
+                if isinstance(exc, GreenfieldCommitJournalError)
+                else "post_confirm_commit_interrupted"
+                if isinstance(exc, (GreenfieldCommitInterrupted, KeyboardInterrupt, SystemExit, HookBudgetExpired))
+                else "post_confirm_commit_environment_or_io_failure"
+                if isinstance(exc, OSError)
+                else "post_confirm_commit_invariant_failure"
+            ),
+            recovery_path=(
+                write_transaction.recovery_path
+                if write_transaction is not None and write_transaction.recovery_path
+                else exc.recovery_path
+                if isinstance(exc, GreenfieldCommitJournalError)
+                else journal.recovery_path
+                if journal is not None
+                else ""
+            ),
+        ) from exc
+    if result is None:
+        raise GreenfieldCreateCommitError(
+            "greenfield create did not produce a durable commit result",
+            rollback_status="not_started",
+            failure_kind="post_confirm_commit_invariant_failure",
+        )
+    return result
+
+
+__all__ = [
+    "GreenfieldCreateCommitError",
+    "commit_greenfield_create_transaction",
+]

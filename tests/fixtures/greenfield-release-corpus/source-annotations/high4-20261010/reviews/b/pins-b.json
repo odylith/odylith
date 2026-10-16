@@ -1,0 +1,17 @@
+{
+  "owner": "independent-source-annotation-b",
+  "status": "frozen",
+  "input_pins": {
+    "sourcecases-draft.json": "5da8ec8a344d3097ad5a65a14e4f0af0756943a03d6a22e4ff8557e67694e485",
+    "canonical-source-frames.json": "3020f24efae67a669b72574a24ed4f4146b235449180e91854faae32633a7c4a"
+  },
+  "artifacts": {
+    "predeclaration-b.json": "632df5e71a22f720b5299a0f8f595d7ae95588da7b23f3195ca1f48a4bc5d635",
+    "census-capacity-b.json": "5d338f253fff743cbb6ca2ffef41499ace3cb3a2a755ce718280bc2aff563db2",
+    "validation-b.json": "4d291733cd45987fb6f7fed9229e0551c4150fa509a2174c2789f257b1ab117d",
+    "README-b.md": "64eb1fc55fbc50324d1131cc9326b87c98918050714ca0fee50309762cf6f5bb",
+    "superseded-broad-predeclaration-b.json": "824d82d8c387bdba512938e8bf52aec53c48267b13cc5d6e63dc9d3230f5d568",
+    "superseded-broad-census-capacity-b.json": "5346bd33afe18bb0ff3fc216f9833dbe00a114d29b2605025ad24baa62c85425",
+    "superseded-broad-validation-b.json": "8f171898bcd581629a9701ad96de1536f980586fb749e58c96524b76aa8eea94"
+  }
+}

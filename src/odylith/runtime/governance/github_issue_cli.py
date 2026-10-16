@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance.github_issue_pipeline import IssueIntakePlan
 from odylith.runtime.governance.github_issue_pipeline import apply_github_plan
 from odylith.runtime.governance.github_issue_pipeline import apply_governance_plan
@@ -42,6 +43,16 @@ def _render_plan_summary(plan: IssueIntakePlan) -> str:
     )
 
 
+def _refresh_casebook_if_changed(*, repo_root: Path, changed_paths: Sequence[Path], operation_label: str) -> None:
+    if not changed_paths:
+        return
+    owned_surface_refresh.raise_for_failed_refresh(
+        repo_root=repo_root,
+        surface="casebook",
+        operation_label=operation_label,
+    )
+
+
 def _cmd_triage(args: argparse.Namespace, transport: GitHubTransport) -> int:
     repo_root = Path(args.repo_root).resolve()
     ref = parse_issue_reference(args.issue, default_repo=args.repo)
@@ -56,9 +67,13 @@ def _cmd_triage(args: argparse.Namespace, transport: GitHubTransport) -> int:
     )
     applied: dict[str, Any] = {"governance": False, "github": False}
     if args.apply_governance:
-        applied["governance_paths"] = [
-            str(path) for path in apply_governance_plan(repo_root=repo_root, plan=plan)
-        ]
+        governance_paths = apply_governance_plan(repo_root=repo_root, plan=plan)
+        _refresh_casebook_if_changed(
+            repo_root=repo_root,
+            changed_paths=governance_paths,
+            operation_label="GitHub issue governance apply",
+        )
+        applied["governance_paths"] = [str(path) for path in governance_paths]
         applied["governance"] = True
     if args.apply_github:
         apply_github_plan(
@@ -93,8 +108,14 @@ def _cmd_sweep(args: argparse.Namespace, transport: GitHubTransport) -> int:
         for issue in issues
     ]
     if args.apply_governance:
+        governance_paths: list[Path] = []
         for plan in plans:
-            apply_governance_plan(repo_root=repo_root, plan=plan)
+            governance_paths.extend(apply_governance_plan(repo_root=repo_root, plan=plan))
+        _refresh_casebook_if_changed(
+            repo_root=repo_root,
+            changed_paths=governance_paths,
+            operation_label="GitHub issue sweep governance apply",
+        )
     if args.apply_github:
         for plan in plans:
             apply_github_plan(
@@ -181,9 +202,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             return _cmd_sweep(args, transport)
         if args.domain == "issue" and args.issue_command == "release-closeout":
             return _cmd_release_closeout(args, transport)
-    except (GitHubPipelineError, ValueError) as exc:
+    except (GitHubPipelineError, ValueError, RuntimeError) as exc:
         print(str(exc), file=sys.stderr)
-        return 2
+        return 2 if isinstance(exc, (GitHubPipelineError, ValueError)) else 1
     return 2
 
 

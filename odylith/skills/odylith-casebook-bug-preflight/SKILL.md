@@ -16,6 +16,15 @@ Use before any substantive fix, debug loop, or governed closeout slice that migh
 ## Rules
 
 - Check existing Casebook entries before opening new bug work.
+- Governance-learning: treat preflight as fail-closed for durable learning if a named failure
+  mode, escaped defect, failed mechanism, failed simulation, live repro, bad generated artifact,
+  semantic drift, quality-gate failure, latency breach, validator miss, or
+  repeated-debug loop is present, the slice must link to existing Casebook
+  truth or capture/update it before continuing.
+- Read prior failed mechanisms, failed fix attempts, rejected approaches,
+  guardrails, and validation history before editing. Do not repeat a fix path
+  that already failed; update the governed record with the new hypothesis and
+  mechanism-level learning instead.
 - Search the related workstream, components, diagrams, and validation obligations alongside the bug history so you can decide whether to update an existing bug, reopen it, or capture a genuinely new failure mode.
 - Carry related bug ids or explicit `no related bug found` evidence into the active plan or handoff.
 - If the slice already has a named failure mode or repeated-debug loop, escalate into `casebook-bug-capture` in the same turn instead of deferring durable bug memory.

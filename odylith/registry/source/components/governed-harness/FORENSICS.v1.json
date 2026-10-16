@@ -1,12 +1,14 @@
 {
   "component_id": "governed-harness",
-  "diagrams": [],
+  "diagrams": [
+    "D-044"
+  ],
   "forensic_coverage": {
     "empty_reasons": [],
     "explicit_event_count": 1,
     "mapped_workstream_evidence_count": 1,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 1,
+    "spec_history_event_count": 2,
     "status": "forensic_coverage_present",
     "timeline_event_count": 1
   },
@@ -17,8 +19,9 @@
   "spec_ref": "odylith/registry/source/components/governed-harness/CURRENT_SPEC.md",
   "timeline": [
     {
+      "artifact_count": 1,
       "artifacts": [
-        "AGENTS.md"
+        "sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9"
       ],
       "confidence": "high",
       "event_index": 275,
@@ -62,7 +65,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Tribunal already has CB-122 in the decision path.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-20T03:26:23Z",
       "workstreams": [
         "B-001",
@@ -196,6 +199,8 @@
   "why_tracked": "Owns the shared product path that prevents benchmark-only closure behavior: benchmarks, hooks, SDK adapters, and host surfaces must observe the same governed decision and receipt contract.",
   "workstreams": [
     "B-118",
+    "B-119",
+    "B-120",
     "B-121",
     "B-122",
     "B-123",

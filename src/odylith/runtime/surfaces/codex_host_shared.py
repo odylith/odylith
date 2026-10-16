@@ -20,19 +20,10 @@ from odylith.runtime.intervention_engine import prompt_signal_runtime
 from odylith.runtime.surfaces import bash_guard_policy
 from odylith.runtime.surfaces import claude_host_shared
 from odylith.runtime.surfaces import host_hook_payload
+from odylith.runtime.surfaces import host_hook_execution
 
 
 _WORKSTREAM_RE = re.compile(r"\bB-\d{3,}\b")
-_ACTION_TOKEN_RE = re.compile(
-    r"\b("
-    r"added|aligned|closed|fixed|hardened|implemented|materialized|passed|"
-    r"proved|refreshed|regenerated|rendered|removed|shipped|specialized|"
-    r"synced|tightened|updated|validated|verified|wired"
-    r")\b",
-    re.IGNORECASE,
-)
-_MARKDOWN_TOKEN_RE = re.compile(r"[*_`]+")
-_CODE_FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
 _EDIT_LIKE_RE = re.compile(
     r"\b("
     r"apply_patch|cp|mv|touch|mkdir|sed\s+-i|perl\s+-0pi|tee|cat\s+>|python3?\s+-c|node\s+-e"
@@ -45,6 +36,7 @@ load_compass_runtime = claude_host_shared.load_compass_runtime
 active_workstream_headline = claude_host_shared.active_workstream_headline
 freshness_label = claude_host_shared.freshness_label
 collapse_whitespace = claude_host_shared.collapse_whitespace
+meaningful_stop_summary = claude_host_shared.meaningful_stop_summary
 
 
 def load_payload(raw: str | None = None) -> dict[str, Any]:
@@ -72,17 +64,11 @@ def run_odylith(
     launcher = project_launcher(project_dir)
     if not launcher.is_file():
         return None
-    try:
-        return subprocess.run(
-            [str(launcher), *args],
-            cwd=str(resolve_repo_root(project_dir)),
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=timeout,
-        )
-    except (OSError, subprocess.SubprocessError):
-        return None
+    return host_hook_execution.run_hook_command(
+        command=[str(launcher), *args],
+        cwd=resolve_repo_root(project_dir),
+        timeout=timeout,
+    )
 
 
 def json_payload_from_output(output: str) -> dict[str, Any]:
@@ -103,7 +89,7 @@ def json_payload_from_output(output: str) -> dict[str, Any]:
 
 
 def start_payload(project_dir: Path | str) -> Mapping[str, Any] | None:
-    completed = run_odylith(project_dir=project_dir, args=["start", "--repo-root", "."], timeout=20)
+    completed = run_odylith(project_dir=project_dir, args=["start", "--repo-root", ".", "--json"], timeout=20)
     if completed is None:
         return None
     payload = json_payload_from_output(completed.stdout)
@@ -235,35 +221,6 @@ def edit_like_bash(command: str) -> bool:
     return bool(_EDIT_LIKE_RE.search(str(command or "").strip()))
 
 
-def meaningful_stop_summary(text: str) -> str:
-    raw = str(text or "").strip()
-    if len(raw) < 60:
-        return ""
-    text_wo_code = _CODE_FENCE_RE.sub(" ", raw)
-    cleaned_lines: list[str] = []
-    for raw_line in text_wo_code.splitlines():
-        line = raw_line.strip()
-        if not line:
-            continue
-        line = re.sub(r"^#+\s*", "", line)
-        line = re.sub(r"^[-*]\s+", "", line)
-        line = _MARKDOWN_TOKEN_RE.sub("", line)
-        line = " ".join(line.split()).strip()
-        if line:
-            cleaned_lines.append(line)
-    if not cleaned_lines:
-        return ""
-    joined = " ".join(cleaned_lines)
-    if joined.endswith("?"):
-        return ""
-    if not _ACTION_TOKEN_RE.search(joined):
-        return ""
-    if re.match(r"^(I can|Would you like|If you want)\b", joined, flags=re.IGNORECASE):
-        return ""
-    sentence = re.split(r"(?<=[.!])\s+", joined, maxsplit=1)[0]
-    return collapse_whitespace(sentence, limit=180)
-
-
 def extract_workstreams(text: str) -> list[str]:
     seen: set[str] = set()
     tokens: list[str] = []
@@ -274,16 +231,3 @@ def extract_workstreams(text: str) -> list[str]:
         seen.add(token)
         tokens.append(token)
     return tokens
-
-
-def run_compass_log(
-    *,
-    project_dir: Path | str,
-    summary: str,
-    workstreams: list[str] | None = None,
-) -> bool:
-    args = ["compass", "log", "--repo-root", ".", "--kind", "implementation", "--summary", summary]
-    for workstream in (workstreams or [])[:4]:
-        args.extend(["--workstream", workstream])
-    completed = run_odylith(project_dir=project_dir, args=args, timeout=20)
-    return bool(completed and completed.returncode == 0)

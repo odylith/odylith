@@ -7,35 +7,68 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import os
 from pathlib import Path
 import re
+import shutil
 import threading
 import traceback
-from typing import Iterator
+from typing import Callable, Iterator
 from urllib.parse import parse_qs, urlparse
 
 import pytest
+
+from odylith.runtime.domain_intelligence.greenfield_repository_write_set import greenfield_repository_layout
+from tests.integration.runtime.surface_browser_request_observer import (
+    PageObservation as _new_page,
+    assert_clean_page as _assert_clean_page,
+)
 
 playwright_sync = pytest.importorskip("playwright.sync_api")
 
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-_LOCAL_SURFACE_HTML_RE = re.compile(
-    r"^http://127\.0\.0\.1:\d+/odylith/(radar|registry|casebook|atlas|compass)/[^?#]+\.html(?:[?#].*)?$"
-)
-_LOCAL_COMPASS_HISTORY_JSON_RE = re.compile(
-    r"^http://127\.0\.0\.1:\d+/odylith/compass/runtime/history/(?:index|\d{4}-\d{2}-\d{2})\.v1\.json(?:[?#].*)?$"
-)
-_LOCAL_COMPASS_RUNTIME_JSON_RE = re.compile(
-    r"^http://127\.0\.0\.1:\d+/odylith/compass/runtime/current\.v1\.(?:json|js)(?:[?#].*)?$"
-)
-_LOCAL_COMPASS_SOURCE_TRUTH_JSON_RE = re.compile(
-    r"^http://127\.0\.0\.1:\d+/odylith/compass/compass-source-truth\.v1\.json(?:[?#].*)?$"
-)
-_LOCAL_DETAIL_SHARD_JS_RE = re.compile(
-    r"^http://127\.0\.0\.1:\d+/odylith/(?:radar/(?:backlog-detail|backlog-document)|registry/registry-detail|casebook/casebook-detail)-shard-\d+\.v1\.js(?:[?#].*)?$"
-)
-_EXTERNAL_MERMAID_CDN_REQUEST_RE = re.compile(
-    r"^GET https://cdn\.jsdelivr\.net/npm/mermaid@11/dist/mermaid\.min\.js(?:\s+.*)?$"
-)
+_SHELL_QUERY_PARAM_TIMEOUT_MS = 60000
+
+
+def _copy_logical_working_fixture(
+    source_root: Path,
+    fixture_root: Path,
+    *,
+    include_file: Callable[[Path], bool] | None = None,
+) -> dict[str, Path]:
+    """Copy a mutable logical view, never the source's sealed browser entry.
+
+    Returned paths retain physical source provenance when the working shell is
+    mapped to index.html. Neither publication state nor immutable generations
+    belong to this disposable, deliberately inactive fixture.
+    """
+    source_root = source_root.resolve()
+    source_dir = source_root / "odylith"
+    shell = greenfield_repository_layout(source_root).target_path("odylith/index.html")
+    if shell.is_symlink() or not shell.is_file():
+        raise ValueError("Browser fixture requires a regular logical working shell")
+    if b"odylith-publication" in shell.read_bytes():
+        raise ValueError("Browser fixture logical working shell is a publication carrier")
+    sources = {"index.html": shell}
+    directories = []
+    for path in sorted(source_dir.rglob("*")):
+        relative = path.relative_to(source_dir)
+        if relative.as_posix() in {"index.html", "tooling-shell.html"}:
+            continue
+        if path.is_symlink():
+            raise ValueError(f"Browser fixture source contains an unsafe symlink: {relative}")
+        if path.is_dir():
+            directories.append(relative)
+        elif path.is_file() and (include_file is None or include_file(relative)):
+            sources[relative.as_posix()] = path
+    destination = fixture_root / "odylith"
+    destination.mkdir(parents=True, exist_ok=False)
+    if include_file is None:
+        for relative in directories:
+            (destination / relative).mkdir(parents=True, exist_ok=True)
+    for relative, source in sources.items():
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+    return sources
 
 
 @contextlib.contextmanager
@@ -96,104 +129,12 @@ def compact_browser_context() -> Iterator[tuple[str, object]]:
                 context.close()
 
 
-def _new_page(context) -> tuple[object, list[str], list[str], list[str], list[str]]:  # noqa: ANN001
-    page = context.new_page()
-    console_errors: list[str] = []
-    page_errors: list[str] = []
-    failed_requests: list[str] = []
-    bad_responses: list[str] = []
-
-    def _on_console(message) -> None:  # noqa: ANN001
-        if message.type == "error":
-            console_errors.append(message.text)
-
-    def _on_page_error(error) -> None:  # noqa: ANN001
-        page_errors.append(str(error))
-
-    def _on_request_failed(request) -> None:  # noqa: ANN001
-        url = str(getattr(request, "url", "") or "")
-        if not url or url.startswith(("about:", "data:", "blob:")):
-            return
-        resource_type = str(getattr(request, "resource_type", "") or "").strip().lower()
-        failure = getattr(request, "failure", None)
-        error_text = ""
-        if callable(failure):
-            payload = failure() or {}
-            if isinstance(payload, dict):
-                error_text = str(payload.get("errorText") or "").strip()
-        lowered_error = error_text.lower()
-        if (
-            resource_type == "document"
-            and _LOCAL_SURFACE_HTML_RE.match(url)
-            and (not lowered_error or "err_aborted" in lowered_error or "abort" in lowered_error)
-        ):
-            return
-        if _LOCAL_COMPASS_HISTORY_JSON_RE.match(url) and (
-            not lowered_error or "err_aborted" in lowered_error or "abort" in lowered_error
-        ):
-            return
-        if _LOCAL_COMPASS_RUNTIME_JSON_RE.match(url) and (
-            not lowered_error or "err_aborted" in lowered_error or "abort" in lowered_error
-        ):
-            return
-        if _LOCAL_COMPASS_SOURCE_TRUTH_JSON_RE.match(url) and (
-            not lowered_error or "err_aborted" in lowered_error or "abort" in lowered_error
-        ):
-            return
-        if _LOCAL_DETAIL_SHARD_JS_RE.match(url) and (
-            not lowered_error or "err_aborted" in lowered_error or "abort" in lowered_error
-        ):
-            return
-        failed_requests.append(f"{request.method} {url} {error_text}".strip())
-
-    def _on_response(response) -> None:  # noqa: ANN001
-        url = str(getattr(response, "url", "") or "")
-        if not url.startswith("http://127.0.0.1:"):
-            return
-        status = int(getattr(response, "status", 0) or 0)
-        if status >= 400:
-            bad_responses.append(f"{status} {url}")
-
-    page.on("console", _on_console)
-    page.on("pageerror", _on_page_error)
-    page.on("requestfailed", _on_request_failed)
-    page.on("response", _on_response)
-    return page, console_errors, page_errors, failed_requests, bad_responses
-
-
 def _failure_screenshot_path(name: str) -> Path | None:
     root = str(os.environ.get("ODYLITH_BROWSER_FAILURE_SCREENSHOTS") or "").strip()
     if not root:
         return None
     slug = re.sub(r"[^a-z0-9._-]+", "-", str(name).strip().lower()).strip("-") or "browser-failure"
     return Path(root).expanduser().resolve() / f"{slug}.png"
-
-
-def _assert_clean_page(
-    page,
-    console_errors: list[str],
-    page_errors: list[str],
-    failed_requests: list[str],
-    bad_responses: list[str],
-    *,
-    screenshot_path: Path | None = None,
-) -> None:  # noqa: ANN001
-    if any((console_errors, page_errors, failed_requests, bad_responses)) and screenshot_path is not None:
-        screenshot_path.parent.mkdir(parents=True, exist_ok=True)
-        with contextlib.suppress(Exception):
-            page.screenshot(path=str(screenshot_path), full_page=True)
-    assert console_errors == [], f"console errors: {console_errors}"
-    assert page_errors == [], f"page errors: {page_errors}"
-    assert failed_requests == [], f"request failures: {failed_requests}"
-    assert bad_responses == [], f"http error responses: {bad_responses}"
-    page.close()
-
-
-def _discard_external_mermaid_cdn_failures(failed_requests: list[str]) -> None:
-    """Drop known standalone-doc Mermaid CDN misses from route-integrity assertions."""
-    failed_requests[:] = [
-        entry for entry in failed_requests if not _EXTERNAL_MERMAID_CDN_REQUEST_RE.match(entry)
-    ]
 
 
 def _extract_query_param(href: str, key: str) -> str:
@@ -227,11 +168,14 @@ def _casebook_index_counts() -> tuple[int, int]:
 
 
 def _assert_casebook_counts(casebook, *, expected_open_total: int, expected_total_cases: int) -> None:  # noqa: ANN001
-    """Assert the visible Casebook counters and row count stay aligned."""
-    assert casebook.locator("#kpiOpenTotal").inner_text().strip() == str(expected_open_total)
-    assert casebook.locator("#kpiTotalCases").inner_text().strip() == str(expected_total_cases)
-    assert casebook.locator("button.bug-row").count() == expected_total_cases
-    assert casebook.locator("#listMeta").inner_text().strip() == f"Visible: {expected_total_cases}"
+    """Wait for rendered counts, including an actual empty result for zero cases."""
+    playwright_sync.expect(casebook.locator("#kpiOpenTotal")).to_have_text(str(expected_open_total), timeout=15000)
+    playwright_sync.expect(casebook.locator("#kpiTotalCases")).to_have_text(str(expected_total_cases), timeout=15000)
+    playwright_sync.expect(casebook.locator("button.bug-row")).to_have_count(expected_total_cases, timeout=15000)
+    playwright_sync.expect(casebook.locator("#listMeta")).to_have_text(f"{expected_total_cases} visible", timeout=15000)
+    if expected_total_cases == 0:
+        for pane in ("#bugList", "#detailPane"):
+            playwright_sync.expect(casebook.locator(f'{pane} .empty-state[role="status"]')).to_be_visible(timeout=15000)
 
 
 def _pane_hidden(page, frame_selector: str) -> bool:  # noqa: ANN001
@@ -274,6 +218,55 @@ def _run_in_browser_thread(callback) -> None:  # noqa: ANN001
         raise AssertionError(str(error.get("traceback") or error["exc"])) from error["exc"]
 
 
+def _click_visible_radar_row(button) -> None:  # noqa: ANN001
+    """Click the visible part of the same row after queued window rendering."""
+    handle = button.element_handle()
+    assert handle is not None, "Radar row is absent; refusing a forced click"
+    try:
+        frame = handle.owner_frame()
+        assert frame is not None, "Radar frame is absent; refusing a forced click"
+        idea_id = handle.evaluate(
+            """node => {
+                if (!node.isConnected || !node.dataset.ideaId) return null;
+                const list = node.closest('#list'), controls = document.querySelector('.controls');
+                list.scrollTop += node.getBoundingClientRect().top - list.getBoundingClientRect().top - 8;
+                window.scrollBy(0, list.getBoundingClientRect().top - controls.getBoundingClientRect().height - 24);
+                return node.dataset.ideaId;
+            }"""
+        )
+    finally:
+        handle.dispose()
+    assert idea_id, "Radar row is absent; refusing a forced click"
+    point = frame.evaluate(
+        """async ideaId => {
+            // Scrolling dispatches an event that queues the list's rendering RAF.
+            await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            const matches = document.querySelectorAll(`#list button[data-idea-id="${CSS.escape(ideaId)}"]`);
+            if (matches.length !== 1 || !matches[0].isConnected) return {reachable: false};
+            const node = matches[0], list = node.closest('#list'), controls = document.querySelector('.controls');
+            const row = node.getBoundingClientRect(), clip = list.getBoundingClientRect();
+            const left = Math.max(row.left, clip.left, 0), right = Math.min(row.right, clip.right, innerWidth);
+            const top = Math.max(row.top, clip.top, controls.getBoundingClientRect().bottom, 0);
+            const bottom = Math.min(row.bottom, clip.bottom, innerHeight);
+            const x = (left + right) / 2, y = (top + bottom) / 2;
+            return {x, y, reachable: right > left && bottom > top && node.contains(document.elementFromPoint(x, y))};
+        }""",
+        idea_id,
+    )
+    assert point["reachable"], "Radar row is clipped or obstructed; refusing a forced click"
+    if frame.parent_frame is not None:
+        point = button.page.evaluate(
+            """([frame, point]) => {
+                const box = frame.getBoundingClientRect();
+                const x = box.left + frame.clientLeft + point.x, y = box.top + frame.clientTop + point.y;
+                return {x, y, reachable: frame.isConnected && document.elementFromPoint(x, y) === frame};
+            }""",
+            [frame.frame_element(), point],
+        )
+        assert point["reachable"], "Radar frame is clipped or obstructed; refusing a forced click"
+    button.page.mouse.click(point["x"], point["y"])
+
+
 def _select_radar_row_with_link(
     radar,
     link_selector: str,
@@ -290,8 +283,8 @@ def _select_radar_row_with_link(
         idea_id = str(button.get_attribute("data-idea-id") or "").strip()
         if not idea_id:
             continue
-        button.click()
-        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=idea_id).wait_for(timeout=15000)
+        _click_visible_radar_row(button)
+        _wait_for_radar_detail_id(radar, idea_id)
         links = radar.locator(f"#detail {link_selector}")
         if links.count():
             href = str(links.first.get_attribute("href") or "").strip()
@@ -371,7 +364,7 @@ def _select_radar_workstream_with_detail_selector(
         idea_id = str(button.get_attribute("data-idea-id") or "").strip()
         if not idea_id:
             continue
-        button.click()
+        _click_visible_radar_row(button)
         _wait_for_shell_query_param(page, tab="radar", key="workstream", value=idea_id)
         radar.locator(detail_ready_selector).wait_for(timeout=15000)
         if _locator_appears(radar.locator(f"#detail {detail_selector}"), timeout=selector_timeout):
@@ -383,16 +376,51 @@ def _wait_for_radar_detail_id(radar, idea_id: str) -> None:  # noqa: ANN001
     """Wait for the Radar detail pane to settle on the requested workstream id."""
     radar.locator(f'button[data-idea-id="{idea_id}"].active').wait_for(timeout=15000)
     radar.locator("#detail .detail-title").wait_for(timeout=15000)
-    radar.locator("#detail").filter(has_text=idea_id).wait_for(timeout=15000)
+    playwright_sync.expect(radar.locator('#detail [data-kpi="workstream-id"] .v')).to_have_text(idea_id, timeout=15000)
+
+
+def _wait_for_radar_frame_workstream(page, workstream: str) -> None:  # noqa: ANN001
+    """Wait until the Radar iframe itself has navigated to the target workstream."""
+    page.wait_for_function(
+        """({ workstream }) => {
+            const frame = document.querySelector("#frame-radar");
+            const doc = frame && frame.contentDocument;
+            const win = frame && frame.contentWindow;
+            if (!doc || !win) return false;
+            try {
+              const params = new URLSearchParams(win.location.search || "");
+              if (params.get("workstream") === workstream) return true;
+            } catch (_error) {
+              // Fall through to DOM checks when the frame URL is unavailable.
+            }
+            const detailId = doc.querySelector('#detail [data-kpi="workstream-id"] .v');
+            if (detailId && String(detailId.textContent || "").trim() === workstream) return true;
+            const standaloneId = doc.querySelector("p.id");
+            return Boolean(standaloneId && String(standaloneId.textContent || "").trim() === workstream);
+        }""",
+        arg={"workstream": workstream},
+        timeout=15000,
+    )
 
 
 def _open_radar_topology_relations(radar) -> None:  # noqa: ANN001
     """Expand the Radar topology-relations panel if it is present but still closed."""
+    support = radar.locator("#detail > details.detail-disclosure").filter(
+        has=radar.get_by_text("Links and topology", exact=True),
+    )
+    if support.count():
+        if support.get_attribute("open") is None:
+            summary = support.locator(":scope > summary")
+            summary.focus()
+            summary.press("Enter")
+        assert support.get_attribute("open") is not None
     panel = radar.locator("#detail details.topology-relations-panel").first
     panel.wait_for(timeout=15000)
     if panel.get_attribute("open") is None:
-        panel.evaluate("node => { node.open = true; }")
-    panel.locator(".topology-relations").wait_for(timeout=15000)
+        summary = panel.locator(":scope > summary")
+        summary.focus()
+        summary.press("Enter")
+    panel.locator(".topology-relations").wait_for(state="visible", timeout=15000)
 
 
 def _select_radar_workstream(radar, idea_id: str) -> None:  # noqa: ANN001
@@ -406,6 +434,11 @@ def _select_radar_workstream(radar, idea_id: str) -> None:  # noqa: ANN001
     _wait_for_radar_detail_id(radar, idea_id)
     radar.locator("#query").fill("")
     _wait_for_radar_detail_id(radar, idea_id)
+
+
+def _wait_for_registry_detail_id(registry, component_id: str) -> None:  # noqa: ANN001
+    """Wait for the selected component's detail, not its loading-state row."""
+    registry.locator(f'#detail[data-selected-component="{component_id}"] .component-name').wait_for(timeout=15000)
 
 
 def _select_registry_component_with_detail_selector(
@@ -428,6 +461,7 @@ def _select_registry_component_with_detail_selector(
         button.click()
         _wait_for_shell_query_param(page, tab="registry", key="component", value=component_id)
         registry.locator(f'button[data-component="{component_id}"].active').wait_for(timeout=15000)
+        _wait_for_registry_detail_id(registry, component_id)
         registry.locator(detail_ready_selector).wait_for(timeout=15000)
         if _locator_appears(registry.locator(f"#detail {detail_selector}"), timeout=selector_timeout):
             return registry, component_id
@@ -480,7 +514,7 @@ def _wait_for_shell_query_param(
     tab: str,
     key: str,
     value: str,
-    timeout: int = 15000,
+    timeout: int = _SHELL_QUERY_PARAM_TIMEOUT_MS,
 ) -> None:  # noqa: ANN001
     page.wait_for_function(
         """({ tab, key, value }) => {
@@ -614,7 +648,7 @@ def _collect_sample_tokens(page, base_url: str) -> dict[str, str]:  # noqa: ANN0
     assert response is not None and response.ok
     compass = page.frame_locator("#frame-compass")
     compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
-    compass_workstream = compass.locator("a.ws-id-btn").first.inner_text().strip()
+    compass_workstream = compass.locator("a.ws-id-btn, a.ws-covered-id-btn").first.inner_text().strip()
     assert re.fullmatch(r"B-\d{3,}", compass_workstream), compass_workstream
 
     return {
@@ -629,23 +663,49 @@ def _collect_sample_tokens(page, base_url: str) -> dict[str, str]:  # noqa: ANN0
 
 def _assert_radar_selection(page, workstream: str) -> None:  # noqa: ANN001
     assert page.locator("#tab-radar").get_attribute("aria-selected") == "true"
+    _wait_for_radar_frame_workstream(page, workstream)
     radar = page.frame_locator("#frame-radar")
-    radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
-    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=workstream).wait_for(timeout=15000)
+    try:
+        radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=5000)
+    except playwright_sync.TimeoutError:
+        radar.locator("a.back", has_text=re.compile(r"Back to Backlog .*Radar")).wait_for(timeout=15000)
+        radar.locator("p.id", has_text=workstream).wait_for(timeout=15000)
+        return
+    _wait_for_radar_detail_id(radar, workstream)
 
 
 def _assert_registry_selection(page, component_id: str) -> None:  # noqa: ANN001
+    page.locator('#tab-registry[aria-selected="true"]').wait_for(timeout=15000)
     assert page.locator("#tab-registry").get_attribute("aria-selected") == "true"
     registry = page.frame_locator("#frame-registry")
     registry.locator("h1", has_text="Component Registry").wait_for(timeout=15000)
     registry.locator(f'button[data-component="{component_id}"].active').wait_for(timeout=15000)
+    _wait_for_registry_detail_id(registry, component_id)
 
 
 def _assert_atlas_selection(page, *, workstream: str, diagram_id: str) -> None:  # noqa: ANN001
     assert page.locator("#tab-atlas").get_attribute("aria-selected") == "true"
     atlas = page.frame_locator("#frame-atlas")
     atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
-    atlas.locator("#diagramId", has_text=diagram_id).wait_for(timeout=15000)
+    identity = atlas.locator("#diagramId")
+    identity.wait_for(state="attached", timeout=15000)
+    playwright_sync.expect(identity).to_have_text(diagram_id, timeout=15000)
+    selected = atlas.locator(f'.diagram-item.active button[data-diagram="{diagram_id}"]')
+    selected.wait_for(state="visible", timeout=15000)
+    title = selected.locator(".diagram-name").inner_text().strip()
+    assert title
+    playwright_sync.expect(atlas.locator("#diagramTitle")).to_be_visible(timeout=15000)
+    playwright_sync.expect(atlas.locator("#diagramTitle")).to_have_text(title, timeout=15000)
+    atlas.locator("#viewerImage").wait_for(state="visible", timeout=15000)
+    page.wait_for_function(
+        """() => {
+            const image = document.querySelector("#frame-atlas")?.contentDocument?.querySelector("#viewerImage");
+            const rect = image?.getBoundingClientRect();
+            return image?.complete && image.naturalWidth > 0 && image.naturalHeight > 0
+              && rect.width > 0 && rect.height > 0;
+        }""",
+        timeout=15000,
+    )
     if workstream:
         _wait_for_shell_query_param(page, tab="atlas", key="workstream", value=workstream)
     else:
@@ -758,6 +818,7 @@ def _assert_compass_live_state(compass, *, window_token: str) -> None:  # noqa: 
     assert "stale last known good" not in brief_notice
     assert _compass_kpi_value(compass, "Critical Risks") >= 0
     assert compass.locator("#risk-list .risk, #risk-list .empty").count() > 0
+    assert "FixedPendingRelease" not in compass.locator("#risk-list").inner_text().strip()
     assert compass.locator(
         "#timeline .tx-card, #timeline .empty, #timeline .timeline-day-title, #timeline .hour-empty"
     ).count() > 0

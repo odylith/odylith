@@ -1,0 +1,61 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "climate",
+    "weather",
+    "energy",
+    "emission",
+    "carbon",
+    "environment"
+  ],
+  "matched_description_evidence_terms": [
+    "climate"
+  ],
+  "repository": {
+    "default_branch": "main",
+    "description": "Climate Group Helper for Home Assistant: Control multiple thermostats, ACs and heaters as one. Includes TRV calibration, window & presence control, schedule automation, and advanced sync modes. A powerful HACS integration for serious home climate management.",
+    "full_name": "bjrnptrsn/climate_group_helper",
+    "id": 1051195242,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "climate_group_helper",
+    "node_id": "R_kgDOPqf3ag",
+    "pushed_at": "2026-07-10T09:33:29Z",
+    "topics": [
+      "air-conditioning",
+      "automation",
+      "climate",
+      "danfoss-ally",
+      "energy-saving",
+      "hacs",
+      "heating-control",
+      "home-assistant",
+      "hvac",
+      "smart-heating",
+      "smart-home-heating",
+      "smarthome",
+      "thermostat",
+      "trv",
+      "zigbee2mqtt"
+    ]
+  },
+  "response_item_index": 21,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aclimate&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:15:51 GMT",
+    "x-github-request-id": "D11F:1970B5:13E88A8:144CDCD:6A5B6064"
+  },
+  "search_response_path": "responses/climate.json",
+  "search_response_sha256": "a54b64b33b56141f273c98e7740de87a1cea68dd3d7568861ad24d90624787b7",
+  "selection_index": 8,
+  "source_family": "climate",
+  "source_id": "github-repository:1051195242",
+  "source_uri": "https://github.com/bjrnptrsn/climate_group_helper",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

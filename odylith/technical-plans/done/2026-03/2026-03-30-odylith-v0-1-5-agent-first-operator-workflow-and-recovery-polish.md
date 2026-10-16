@@ -115,16 +115,13 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [x] Risk: `odylith start` becomes opaque.
-  - [x] Mitigation: always print one explicit final lane plus the exact next
-        command when Odylith cannot proceed safely.
+  - [x] Mitigation: always print one explicit final lane plus the exact next command when Odylith cannot proceed safely.
 - [x] Risk: preview drifts from execution.
   - [x] Mitigation: execute the same step graph that dry-run prints.
 - [x] Risk: heartbeat output becomes noisy.
-  - [x] Mitigation: limit heartbeats to 10-second intervals and only for
-        subprocess-backed or worker-backed waits.
+  - [x] Mitigation: limit heartbeats to 10-second intervals and only for subprocess-backed or worker-backed waits.
 - [x] Risk: docs and bundle assets drift again.
-  - [x] Mitigation: patch source-owned and bundled mirrors together and keep
-        focused contract tests on the updated text.
+  - [x] Mitigation: patch source-owned and bundled mirrors together and keep focused contract tests on the updated text.
 
 ## Validation/Test Plan
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/test_cli.py tests/unit/install/test_agents.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_auto_update_mermaid_diagrams.py tests/unit/runtime/test_tooling_context_routing.py tests/integration/install/test_manager.py`

@@ -1,8 +1,8 @@
 # Odylith Operator Instructions
 
-Everything you can say to a coding agent in an Odylith-enabled repo. The agent
-translates each instruction into Odylith CLI calls — you never need to know the
-CLI surface. Works identically on Codex and Claude Code.
+Use these requests to work with Odylith through a coding agent. Codex and Claude
+Code share the governance workflow; available actions depend on the host and
+installed runtime. Greenfield publication requires an explicit terminal decision.
 
 ---
 
@@ -29,22 +29,29 @@ Build governance records that give the agent durable context.
 
 ### Greenfield proposals
 
-Use these when the repo is new, thin, or the project exists mostly as intent.
-Odylith does not invent source evidence. The active host model authors the
-project-specific proposal in chat, while Odylith owns the evidence contract,
-validation, confirmation gate, topology hygiene, and apply path.
+Describe the project and supply the evidence you have. Odylith prepares a
+reviewable governance package with a project summary, delivery work, component
+boundaries and architecture diagrams. It creates neither application code nor a
+deployed service. Material uncertainty produces one focused question.
 
 | Say this | What happens |
 |---|---|
-| **"Odylith, build an ecommerce site for me"** | Drafts a confirmation-gated greenfield proposal with backlog candidates, program waves, release plan, planned components, Atlas topology, assumptions, risks, validation obligations, open questions, and exact apply commands. `odylith greenfield propose` |
+| **"Odylith, help me plan an ecommerce site"** | Runs `odylith greenfield prepare --repo-root . --prompt "<your request>"` and returns a sealed preview or one material question. Codex and Claude orchestration share the pinned Codex inference route; a missing supported runtime returns an environment outcome without publishing. |
 | **"Help me govern a physics simulation project"** | Produces a science-aware proposal that distinguishes model, solver, data, experiment runner, visualization, reproducibility, and validation surfaces without inventing scientific claims. |
-| **"Apply this greenfield proposal"** | Validates the accepted proposal, requires confirmation, rejects missing or duplicated Atlas topology, then writes through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths. `odylith greenfield apply --confirm` |
+
+Review the preview, then use its exact printed terminal command and delivered
+completion receipt. `CONFIRM` publishes the reviewed bytes and verifies readback;
+`EDIT` prepares a new preview from your correction; `REJECT` publishes nothing.
+Chat approval cannot authorize publication. Confirmation does not call a model,
+regenerate artifacts or rebuild projections. See the
+[Greenfield runbook](runbooks/odylith-greenfield.md) for the terminal choices and
+recovery procedure.
 
 ### Workstreams (Radar)
 
 | Say this | What happens |
 |---|---|
-| **"Create a workstream for shopping cart redesign"** | Creates a Radar record with schema, ordering score, and INDEX patching. `odylith backlog create --title "Shopping cart redesign"` |
+| **"Create a workstream for shopping cart redesign"** | Gathers grounded Problem, Customer, Opportunity, Product View, and Success Metrics, then creates a Radar record with an ordering score and INDEX entry. `odylith backlog create --help` shows the required arguments. |
 | **"Plan the implementation for B-073"** | Grounds the workstream, then builds a bounded technical plan under `odylith/technical-plans/`. |
 | **"Split B-073 into two workstreams"** | Creates child workstreams with proper parent-child traceability and split lineage. |
 | **"Reopen B-041"** | Reopens a finished or parked workstream with proper reopen lineage tracking. |
@@ -55,6 +62,7 @@ validation, confirmation gate, topology hygiene, and apply path.
 | Say this | What happens |
 |---|---|
 | **"Register a component for the payments service"** | Creates a registry entry and scaffolds `CURRENT_SPEC.md`. `odylith component register --id payments --path src/payments --label "Payments"` |
+| **"Correct the payments component description"** | Updates only the existing component's inventory description and refreshes Registry; other metadata and `CURRENT_SPEC.md` stay unchanged. `odylith component update-description --id payments --what-it-is "..."` supports `--dry-run`. |
 | **"Update the component spec for payments"** | Spawns the registry-scribe subagent to edit the living spec with implementation evidence. |
 | **"What components exist?"** | Reads the component registry manifest. `odylith context <component-id>` for a specific dossier. |
 | **"Sync the component specs"** | Folds Compass requirement evidence into per-component living specs. `odylith governance sync-component-spec-requirements` |
@@ -75,7 +83,7 @@ validation, confirmation gate, topology hygiene, and apply path.
 | Say this | What happens |
 |---|---|
 | **"Create a diagram for the checkout flow"** | Creates catalog entry and optional Mermaid source. `odylith atlas scaffold --slug checkout-flow --title "Checkout Flow" --kind flowchart` |
-| **"Update diagram D-017"** | Spawns the atlas-diagrammer subagent to edit the `.mmd` source with rendered-artifact discipline. |
+| **"Update diagram D-017"** | Updates supplied metadata and refreshes that diagram only. Omitted fields, authored review date and unrelated records stay unchanged. `odylith atlas update --diagram-id D-017 --summary "..." --code path/to/current-owner.py --watch path/to/current-owner.py` |
 | **"Render the Atlas diagrams"** | Validates the Mermaid catalog and checks diagram freshness. `odylith atlas render` |
 | **"Auto-update impacted diagrams"** | Refreshes diagrams based on change-watch metadata. `odylith atlas auto-update` |
 | **"Which diagrams are stale?"** | Reads the Atlas catalog for diagrams whose change-watch paths have been modified since last review. |
@@ -148,6 +156,13 @@ See what happened, what matters now, and what's next.
 | **"What's the execution state?"** | Reads the Execution Engine snapshot — admissibility outcome, frontier phase, active blocker, pressure signals. |
 | **"What changed recently?"** | Reads the Compass timeline events and transaction history from the runtime payload. |
 | **"Show me the execution timeline for B-073"** | Reads the workstream-scoped Compass timeline with all related events. |
+
+If a canonical log records its event but reports an incomplete refresh, do not
+repeat the append. When Odylith provides the completion command, run
+`odylith compass log --repo-root . --complete` without event fields. It completes
+only that admitted operation after checking its recorded state. Older failures
+without a completion receipt, changed inputs or unknown interruptions are refused;
+preserve their evidence rather than reconstructing or replaying the event.
 
 ---
 

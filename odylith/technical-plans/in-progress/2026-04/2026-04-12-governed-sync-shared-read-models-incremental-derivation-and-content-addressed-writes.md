@@ -439,3 +439,21 @@ Related Bugs:
       context for every payload inside one sync generation; it reuses one
       generation-gated, traceability-scoped snapshot and falls back to a cold
       rebuild immediately when the sync generation advances.
+
+## Traceability
+
+Shared derivation generations, provenance/cache diagnosis, and content-addressed governed sync.
+
+### Runbooks
+
+- `odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md`
+
+### Developer Docs
+
+- `odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md`
+
+### Code References
+
+- `src/odylith/runtime/governance/sync_session.py`
+- `src/odylith/runtime/context_engine/runtime_read_session.py`
+- `src/odylith/runtime/governance/sync_workstream_artifacts.py`

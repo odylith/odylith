@@ -27,7 +27,7 @@
 - Visual dashboard changes still need rendered review after regeneration; static HTML assertions do not replace looking at the generated surface.
 - Provider-backed reasoning changes need the owning fail-closed contract checked in the same pass.
 - Compass brief work follows [Briefs Voice Contract](../registry/source/components/briefs-voice-contract/CURRENT_SPEC.md): validate deterministic substrate building, exact substrate-cache reuse, provider-worthiness gating, fresh `provider`, exact `cache`, explicit `unavailable`, subset repair, bounded diagnostics, daemon hot reuse, and voice-truth rejection together.
-- Commentary or closeout-contract changes need source, bundle, install, and benchmark-story regressions so ambient mid-task signals stay task-first, labeled `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` beats stay rare and earned, and any closeout or explicit visibility-feedback `Odylith Assist:` note remains evidence-backed. Prefer `**Odylith Assist:**` when Markdown is available. Lead with the user win, keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual, link updated governance IDs inline only when they actually changed, name affected governance-contract IDs from bounded request or packet truth when no governed file moved, and tie concrete observed counts, measured deltas, or validation outcomes back to `odylith_off` or the broader unguided path; explicit visibility feedback may also use a concrete chat-visibility complaint as evidence. Silence is better than filler.
+- Commentary or closeout-contract changes need source, bundle, install, and benchmark-story regressions so ambient mid-task signals stay task-first, labeled `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` beats stay rare and earned, and any concrete decision/proof-boundary prompt, meaningful closeout, or explicit intervention-feedback `Odylith Assist:` note remains evidence-backed. Prefer `**Odylith Assist:**` when Markdown is available. Lead with the user win, keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual, link updated governance IDs inline only when they actually changed, name affected governance-contract IDs from bounded request or packet truth when no governed file moved, and tie concrete observed counts, measured deltas, or validation outcomes back to `odylith_off` or the broader unguided path; explicit intervention feedback may also use a concrete chat-visibility complaint as evidence. Silence is better than filler.
 - Intervention visibility changes need delivery-ledger regressions too:
   `intervention-status` must prove static host readiness without a slow host
   probe, recent Compass events must preserve `delivery_channel` and
@@ -61,9 +61,14 @@
 - Pre-commit and pytest harnesses must stay hermetic to maintainer-local Odylith reasoning overrides.
 - Registry/component-spec fixtures must satisfy the same fail-closed feature-history plan-link contract as production specs.
 - In consumer repos, validate consumer application code with the consumer repo's own `python`, `uv`, Poetry, Conda, or equivalent project toolchain even when Odylith commands ran through `./.odylith/bin/odylith`.
-- In the Odylith product repo's maintainer mode, never make current-workspace code or tracked-file edits directly on `main`; if the current branch is `main`, create and switch to a new branch before the first edit, and if work is already on a non-`main` branch, keep using that branch.
 - In the Odylith product repo's maintainer mode, use pinned dogfood validation to prove shipped-runtime behavior and detached `source-local` validation only when the slice intentionally exercises live unreleased `src/odylith/*`.
-- In the Odylith product repo, `make dev-validate` is the explicit detached `source-local` validation lane for current unreleased workspace changes; `make release-preflight` remains the canonical clean-checkout release-proof lane.
+- Product-repo branch, authorship, and release-proof rules live in product-repo
+  root or maintainer guidance. Consumer-installed guidance must not impose
+  product-repo branch names, commit identities, or product release commands on
+  downstream repos.
+- In consumer repos, use Odylith to narrow and refresh Odylith-owned surfaces,
+  then validate application code with the consumer repo's native toolchain and
+  Git policy.
 - Guidance Behavior must stay lane-correct: consumer validation uses the
   installed repo-local launcher and diagnosis-first product-fix posture;
   pinned dogfood proves the shipped runtime in the product repo; detached

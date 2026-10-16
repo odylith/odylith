@@ -1,21 +1,34 @@
-%% Reviewed 2026-03-30 for isolated clean release-proof checkout and explicit detached source-local validation.
+%% Reviewed 2026-10-16 for frozen source validation, one hosted candidate D, exact promotion, and canonical benchmark publication.
 flowchart TD
     maintainer["Maintainer Workspace"]
+    frozen["Freeze canonical release commit H"]
+    source_proof["FULL source-local proof B<br/>compare with actual shipped predecessor"]
     preview["release-version-preview / release-version-show"]
-    devvalidate["dev-validate<br/>detached source-local lane"]
-    preflight["release-preflight"]
-    session[".odylith/locks/release-session.json"]
-    dispatch["release-dispatch"]
+    devvalidate["dev-validate<br/>detached source-local lane<br/>fresh-process pytest shards"]
+    prepare["release-preflight --prepare<br/>reserve tag/session; return candidate dependency"]
+    session["Prepared release session<br/>version, commit, and candidate dependency"]
+    validate["Full local source validation<br/>bin/validate; clean and staged checks<br/>forensics and self-host posture"]
+    acquire["Local acquisition<br/>GREENFIELD_RELEASE_BUILD_RUN_ID<br/>actual hosted logs outside D"]
+    authenticate["Authenticate final signed D<br/>seal prepared-package.v3"]
+    primary["Primary public family<br/>40 prompts"]
+    high_variance["High-variance public family<br/>4 prompts"]
+    genuine_edit["Genuine EDIT public family<br/>4 lifecycle cases"]
+    composition["Composed qualification gate<br/>authenticate one D and each family result<br/>seal composition.v3"]
+    complete["release-preflight --complete<br/>claim the qualified tuple and run<br/>the one protected terminal holdout"]
+    dispatch["release-dispatch<br/>operation=promote with closed tuple"]
     isolated["Isolated clean checkout<br/>detached at origin/main when needed"]
 
     subgraph local["Local Canonical Release Lane"]
-        preview --> preflight
-        preflight --> session
-        session --> dispatch
+        frozen --> source_proof --> preview --> prepare --> session
+        acquire --> authenticate
+        authenticate --> primary --> composition
+        authenticate --> high_variance --> composition
+        authenticate --> genuine_edit --> composition
+        composition --> complete --> dispatch
     end
 
     subgraph dev["Maintainer Dev Lane"]
-        devvalidate --> preview
+        devvalidate --> frozen
     end
 
     subgraph guards["Canonical Lane Guards"]
@@ -26,21 +39,36 @@ flowchart TD
         detached["wrapper may materialize<br/>isolated clean checkout"]
     end
 
-    subgraph publish["GitHub Release Workflow"]
-        workflow["release.yml"]
-        commit_guard["verify tag + expected_sha + GITHUB_SHA"]
-        posture["validate self-host-posture --mode release"]
-        build["build wheel"]
-        assets["publish install.sh + manifest + provenance + SBOM"]
+    subgraph candidate["Hosted Candidate Custody"]
+        candidate_workflow["release.yml operation=candidate<br/>reserve draft before build"]
+        candidate_guard["verify tag + canonical H"]
+        candidate_build["build one wheel"]
+        candidate_sign["generate and sign assets once"]
+        candidate_stage["stage complete signed draft D<br/>capture complete asset census"]
+    end
+
+    subgraph promotion["Hosted Exact Promotion"]
+        promote_workflow["release.yml operation=promote"]
+        revalidate["Revalidate closed tuple<br/>same asset IDs and successful hosted build"]
+        promote["Publish the same D<br/>no build, sign, regeneration, or replacement"]
+        readback["Post-publication asset readback"]
     end
 
     subgraph proof["Post-Publish Proof"]
+        hosted["Hosted release installation"]
         dogfood["dogfood-activate"]
         consumer["consumer-rehearsal"]
         ga["ga-gate"]
+        pinned_proof["Mandatory FULL pinned proof P<br/>canonical comparison<br/>selected baseline may be the new version"]
+        diagnostic["Matching diagnostic report<br/>same clean tree and pinned posture"]
+        publication["Canonical final publication<br/>12 generated files + README"]
+        publication_merge["Reviewed metadata-only publication PR J<br/>merge after all H-bound commands"]
+        planning_close["Release planning closeout"]
+        archive["Archive completed session"]
+        clear["release-session-clear"]
     end
 
-    maintainer --> preview
+    maintainer --> frozen
     maintainer --> devvalidate
     maintainer --> origin
     maintainer --> actor
@@ -49,19 +77,17 @@ flowchart TD
     detached --> isolated
     isolated --> clean
 
-    origin --> preflight
-    actor --> preflight
-    clean --> preflight
-    sync --> preflight
+    origin --> prepare
+    actor --> prepare
+    clean --> prepare
+    sync --> prepare
 
-    dispatch --> workflow
-    session --> workflow
-    workflow --> commit_guard
-    commit_guard --> posture
-    posture --> build
-    build --> assets
-
-    assets --> dogfood
-    assets --> consumer
+    session --> candidate_workflow
+    candidate_workflow --> candidate_guard --> candidate_build --> candidate_sign --> candidate_stage --> validate --> acquire
+    dispatch --> promote_workflow --> revalidate --> promote --> readback --> hosted
     dogfood --> ga
     consumer --> ga
+    hosted --> dogfood
+    hosted --> consumer
+    ga --> pinned_proof --> diagnostic --> publication --> publication_merge
+    publication_merge --> planning_close --> archive --> clear

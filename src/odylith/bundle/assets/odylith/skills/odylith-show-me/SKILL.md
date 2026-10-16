@@ -1,5 +1,8 @@
 # Odylith Show Me
 
+## Governance-Learning Default
+Before acting on a durable error, escaped defect, failed mechanism, failed simulation, bad generated artifact, semantic drift, quality-gate miss, latency breach, architecture decision, validation result, or release-risk learning, search Casebook and related governance truth first. Read prior failed mechanisms, failed fix attempts, rejected approaches, guardrails, and validation history; do not repeat a fix path that already failed. Capture new mechanism-level learning in Casebook or Compass, and update Radar or plans, Registry, and Atlas when the learning changes planned work, component contracts, or flows.
+
 Use this skill when the operator says "show me what you can do", "what can
 Odylith do", "what can you do for this repo", or any similar first-time
 exploration request. Works identically on Claude Code and Codex.
@@ -11,7 +14,9 @@ This is a first-match route lock. If you have not run a show command and
 captured stdout, do not answer. Never replace `odylith show` stdout with a
 hand-written "here's what Odylith demonstrated" summary, install diagnosis,
 dirty-path analysis, impact-packet recap, module-count scan, tmp-clone warning,
-spawn-policy note, or follow-up question.
+spawn-policy note, or follow-up question. Never create, scaffold, edit, or test
+example application files such as HTML/CSS/JS demos, toy apps, sample devices, or
+placeholder products in response to a show-me request.
 
 1. Run the first available show command and capture stdout only:
    - Installed or dogfood repo with launcher:
@@ -25,16 +30,68 @@ spawn-policy note, or follow-up question.
    that intervention UX is active in the current chat.
 3. Do not paste progress, repair, runtime, status, or failed-fallback chatter
    from stderr. If every show command fails, report only the shortest actionable
-   blocker.
+   blocker. If there is no repo-local launcher and no `odylith` CLI available,
+   say Odylith is not installed in this folder; do not substitute generic host
+   work.
 4. Print the full stdout directly in your response as-is. Do not summarize,
    diagnose, reformat, or wrap it in a code block. Do not add bullets before
-   or after it. The scenario-aware output is already written as a trust-first action report with a short mental-model line and should be shown verbatim so the operator sees exactly what Odylith said.
+   or after it. Do not run `pwd`, `ls`, `rg`, `git status`, `echo`, or any
+   other Bash command after the show command succeeds. End the turn immediately
+   after the stdout is visible. The scenario-aware output is already written as
+   a trust-first action report with a short mental-model line and should be
+   shown verbatim so the operator sees exactly what Odylith said.
 5. If the operator names a new project, architecture, research goal, or
    feature after an empty/thin show result, do not refuse because source is
-   absent. Run the proposal-first path instead:
-   `./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<their request>"`.
-   Render backlog, program waves, release plan, Registry, Atlas, assumptions,
-   risks, and validation; wait for confirmation before writes.
+   absent. Run `./.odylith/bin/odylith greenfield candidate-contract --repo-root .
+   --prompt "<their request>"` first. Run one constrained `authority_gate` pass
+   outside the repository, then `greenfield authority-check --repo-root . --prompt
+   "<their request>" --gate-file '<gate-file>' --format json`. Stop on
+   clarification. Inventory source duties using `source_ledger_schema` outside
+   the repository and run `greenfield source-ledger-check --repo-root . --prompt
+   "<their request>" --ledger-file '<ledger-file>' --format json`. Stop on
+   clarification. Give its `decision_task` to one bounded source-only verifier
+   and save the matching verdict JSON outside the repository. Rerun
+   `greenfield source-ledger-check --repo-root . --prompt "<their request>"
+   --ledger-file '<ledger-file>' --decision-file '<decision-file>' --format json`.
+   Any non-yes stops before candidate authoring. Only this second admitted check
+   supplies the accepted receipt to save outside the repository. Then the
+   active host reasons once over the candidate contract, writes one matching
+   candidate outside the repository, and runs `./.odylith/bin/odylith greenfield
+   propose --repo-root . --prompt "<their request>" --gate-file '<gate-file>'
+   --candidate-file '<candidate-file>' --ledger-file '<receipt-file>'`.
+   `propose` deterministically validates that untrusted candidate, compiles typed
+   evidence, and quality-gates the full staged ProductCreateTransaction
+   for read-only review. It publishes nothing, but prints `odylith greenfield decide
+   --repo-root '<path>' CONFIRM '<hash>'`, `odylith greenfield decide --repo-root
+   '<path>' EDIT '<hash>' --edit '<corrections>'` (or `--edit-evidence '<file>'`),
+   and `odylith greenfield decide --repo-root '<path>' REJECT '<hash>'`. No qualified
+   confirmation interface comes from ordinary chat approval, host names, or hooks.
+   No semantic, model, or provider call runs after candidate receipt. Independent
+   semantic and UX review qualifies frozen release evidence only; it never admits,
+   mutates, or denies an individual consumer transaction. Do not append chat
+   decision commands, offer publication, or run create from a chat approval. Ask one
+   focused question only for material uncertainty; otherwise show assumptions.
+   CONFIRM and REJECT share one bounded owner without compiler or model work. EDIT
+   verifies the retained hash, repeats the gate, source-ledger preflight, one
+   bounded source-only verifier, and receipt check with `--decision-file` against
+   sealed original source plus new untrusted correction. Both source checks require
+   the prior `--transaction-hash`, exact retained `--prompt` and separate correction
+   via `--edit` or `--edit-evidence`; bounded seals also require the delivered
+   `--completion-receipt`. Every prior lifecycle duty requires its own disposition;
+   changes/removals require exact correction evidence, and missing/uncertain rows
+   stop before the candidate. Current affirmative carriers must remain in the same
+   typed section; an explicitly merged carrier may support several prior duties.
+   Pass the fresh compiler-emitted accepted receipt through `--ledger-file` to
+   `decide EDIT`. Historical receipts permit passive readback only. Retain the immutable
+   old seal and return a new hash and preview. The standard gate/candidate share
+   300 seconds plus 15 for completion; 90/120/150 targets remain advisory. Explicit terminal operator `greenfield create` with `--transaction-file`,
+   `--transaction-hash`, and `--confirm` (plus the delivered `--completion-receipt`
+   for bounded seals) remains a separate deterministic interface:
+   receipt/hash/precondition verification, sealed bytes under rollback guard and
+   exact readback, with no model, generation or repair after confirmation.
+   Do not invent a host confirmation path, expose proposal JSON, inspect source
+   for schema or narrate parser/schema retries. Surface the preview and material
+   blocker plainly.
 6. Do not create governance records unless the operator explicitly asks.
    The default posture is advisory — show what's possible and let the operator
    choose.

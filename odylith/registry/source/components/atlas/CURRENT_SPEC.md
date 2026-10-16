@@ -6,10 +6,8 @@
   affordances, admissible action, proof, compact learning, benchmark evidence,
   updated priors, and the cross-system loop through Context, Execution,
   Memory, Intervention, Tribunal, Surfaces, and Benchmarks.
-Last updated: 2026-05-03
+Last updated: 2026-10-04
 
-
-Last updated (UTC): 2026-04-09
 
 ## Purpose
 Atlas is Odylith's architecture and diagram-governance surface. It manages the
@@ -18,10 +16,77 @@ architecture evidence that Context Engine consumes for topology-sensitive
 grounding.
 
 ## Scope And Non-Goals
+### Catalog reference integrity
+
+Atlas catalog related-code and change-watch paths must resolve to existing
+sources. A deleted owner requires an explicit diagram update and matching Mermaid
+catalog timing; review fingerprints must not retain the deleted path.
+
+### Empty component descriptions
+
+Atlas omits empty component descriptions and does not substitute generic
+responsibility prose. Authored narrative, graph labels, raw metadata, and author
+overrides remain available through their existing paths.
+
+### Inventory-tail display boundary
+
+Complete source label inventory remains machine payload. Unknown roles and
+descriptions render no visible prose; visible narrative is limited to authored
+summary, read-guide, and boxes. Raw labels, author overrides, graph validation,
+engines, and history remain accessible through their existing paths.
+
+### Default field suppression
+
+Atlas omits default generic action, source, and performer fields when they add no
+authored fact. Diagram labels, authored explanations, and source metadata remain
+accessible through existing detail paths.
+
+### Human-first authored detail
+
+For Greenfield diagrams, primary box copy uses the existing authored event,
+meaning, or lifecycle change. Actor, source, field, check, state, result, proof,
+and non-goal details remain available in closed native detail rather than
+repeating the same event in the primary reading flow. Delivery boxes use the
+existing short workstream title and show supplied deliverable and verification
+once each. This is presentation-only: sealed labels, node identity, source
+ordering, display hashes, and passive validation remain authoritative.
+
+### Graph-fact fallback prose
+
+Atlas fallback description prose may state an existing graph fact. If no such
+fact is available, it omits the prose rather than inventing a responsibility or
+advising users to name a domain object. Singular and plural node descriptions
+follow the same rule.
+
+### Readable Greenfield source support
+
+The existing authored design-view owner renders first-path order and required
+upstream supporting components without crowding the sequence with full exchange
+and delivery contracts. Those contracts remain complete in the associated box
+details and dedicated diagrams. Capability support uses selectable references
+to exact responsibilities, verification, actions, scope and proof; source
+lifecycle changes remain visibly distinct. Compact references do not summarize
+or replace accepted source facts. Dense civic and inherited lifecycle PNG/SVG
+characterizations cover readability and preservation; installed Read selection
+and the full browser state matrix remain separate gates. CB-324 retains the
+failed v19 artifacts and tracks fresh output qualification.
+
+### Viewer lifecycle and empty states
+`atlas_viewer_asset_runtime.py` owns loading, clear state, asset fallback and
+selected-versus-empty presentation. A truly empty catalog hides selection-only
+metadata and the source-less image, disables unavailable controls, and offers
+Open Project. Filters hiding a retained selection explain that distinction;
+filters with no selection offer filter recovery. Re-showing the same loaded
+diagram preserves viewport state. CB-330 requires real rendered desktop/mobile
+checks, including hidden action styling, rather than hidden-attribute assertions.
+
 ### Atlas owns
 - The canonical diagram catalog.
 - Diagram metadata linking workstreams, components, docs, code, and change
   watch paths.
+- Governance-learning topology updates for changed flows, post-confirm paths,
+  repair loops, governance-write paths, host lanes, projection boundaries, and
+  failed mechanisms whose architecture shape must not be rediscovered.
 - Mermaid render/update tooling.
 - Shared workstream pill links in Atlas must use Dashboard's compact
   workstream-button contract rather than Atlas-local chip sizing.
@@ -41,8 +106,121 @@ grounding.
   paths.
 - Context Engine architecture mode uses Atlas evidence for topology-sensitive
   packets, so catalog quality directly affects grounding quality.
+- Atlas search must index diagram ids in canonical, compact, padded numeric,
+  and unpadded numeric forms. A query such as `003` must find `D-003` and make
+  that exact diagram-id hit the active detail even when related workstream
+  text also matches the query.
 
 ## Runtime Contract
+
+Greenfield Atlas presentation carries the complete already-validated typed
+design. Proposed First Run keeps source-owned performers and events distinct,
+then adds visibly proposed component stages, support links, and typed exchanges
+from the candidate's provisional design. System Context gives a named person
+without a source action one dotted `participant context; no action assigned`
+link to the product boundary. That edge communicates product context without
+inventing an action, ownership transfer, event order, or source fact. The sealed
+diagram authority continues to hash the exact Mermaid, box inventory, narrative,
+and component display rows.
+
+Greenfield's authored Proposed First Run view projects existing typed semantic
+relations rather than reparsing Mermaid or source prose. Every distinct typed
+performer gets a concept box and an explicit `performs` edge to its event; a
+different typed owner system may add an ownership edge. This guarantees useful
+relationship depth for a valid single-event path without inventing a second
+concept from keywords or treating diagram layout as product truth.
+
+The supporting component set includes the upstream closure of declared exchanges
+and delivery prerequisites for selected event components. Support-only components
+are labeled separately; unrelated downstream consumers are excluded. This adds
+required architecture without changing source-owned action membership or order.
+Sequence rendering belongs to the shared authored design-view owner. Lifecycle,
+safety and proof labels preserve complete source statements as separate labeled
+fields, without punctuation joins or clipping. Bounded characterization and real
+Mermaid rendering pass; fresh installed package and browser qualification remain
+required under CB-324.
+
+`odylith atlas update --updates-file <file>` accepts a versioned list of explicit
+patches for existing diagrams. It preserves omitted metadata and immutable diagram
+identity/source paths. The existing catalog builder, artifact Tribunal, path
+validation and box inventory validate the entire merged catalog before one atomic
+catalog write and one refresh. A bad final row must leave every row unchanged.
+Full `diagram_boxes` replacements must explain exactly the visible source labels.
+
+Selected `atlas update` and `atlas scaffold` authoring carry their validated
+diagram IDs through the shared refresh, renderer, freshness check and cache.
+They retain authored review dates and leave every unrelated catalog row and
+asset unchanged. Selected failure advice uses exact-ID `atlas auto-update`
+with `--preserve-review-date --fail-on-stale`. Unknown, duplicate or conflicting
+selectors fail before writes. Direct automatic selection and explicitly
+requested `--all-stale`/`--atlas-sync` retain their acknowledgement semantics;
+cache identities keep selected and global proof separate. CB-357's final
+independent actual-chain review is clear; root's corrected D-025 CLI replay
+preserves every unrelated catalog object exactly. The initial failed scaffold
+review is retained. Full runtime and installed proof remain required.
+
+Prewrite metadata validation skips only generated-asset existence and rendered
+presentation/freshness work; ordinary rendering retains those checks. A refresh
+failure after the catalog write reports failure without claiming publication or
+recovery success. This command does not bypass managed mutation admission or
+repair failed-writer residue. Successful source validation alone is not browser
+or release qualification.
+
+Box metadata is literal presentation data. The detail-layout owner renders label,
+role and description through textContent with their supplied line breaks and
+punctuation intact. It takes the diagram and destination elements explicitly;
+the catalog template must not retain a competing box renderer or run a second
+text interpreter. CSS preserves action-line separation and wraps complete text.
+Markup-looking values remain inert text. These guarantees apply during normal
+image display, PNG fallback and image failure; an empty box list remains hidden.
+Proof must compare exact field content and visible line/text geometry at desktop
+and mobile widths, not just word counts or element presence.
+
+The viewport owner preserves the initial full-bounds overview and provides an
+explicit Read at 100% action that reveals and focuses the labelled stage.
+Arrow keys pan only while the stage owns focus; filter entry cannot zoom or
+switch diagrams, and selecting the already-ready diagram preserves reading
+position. Unavailable images visibly disable reading actions while preserving
+recovery navigation. The 2026-09-07 source-local checkpoint passes 74 focused
+controls, 1139 runtime checks and 1116 install/dashboard browser checks, plus a
+32-cell seven-surface synthetic consumer matrix with 113 exact published files.
+Twenty native desktop/mobile journeys verify five actual SVGs and five PNG
+fallbacks. These results establish bounded reading behavior, not complete
+accessibility, semantic quality or consumer latency. Diagram semantics and the
+frozen dashboard header remain unchanged.
+
+Authored Greenfield diagrams preserve their existing authority marker when
+selected for rendering. Both native Mermaid routes can render their exact labels
+and topology; if both fail, the authored job fails closed. The emergency static
+subset renderer is not admissible for these diagrams because it loses authored
+relationship labels and PNG text. Non-authored legacy fallback is unchanged.
+The shared Greenfield label encoder uses Mermaid decimal entities so source
+punctuation, literal entities and markup-looking text remain display text.
+
+Source-grounded Greenfield views may have no source-owned components. They
+preserve typed performer events and the exact product story as a Product
+description; they never assign a human or external terminal output to the
+product. Proposed Registry links remain separate from source component facts.
+The three proposed-design views still require nonempty component descriptions.
+The sealed Atlas validator owns this distinction through proposal validation
+and publication; a generic component-count gate must not reinterpret it.
+The v50 human-only and live-flood replay controls preserve this separation across
+desktop/mobile surfaces. Small initial-fit diagrams remain intentional overviews;
+explicit native-size reading is verified separately. Long mobile KPI stacks
+remain usability debt, not functional-pass exemptions.
+
+At the existing stacked-layout breakpoint, explicit catalog activation reveals
+and focuses the named viewer shell. Keyboard Tab then reaches Prev/Next first.
+Asset loading, SVG-to-PNG fallback, terminal failure, initial render and filter
+recomputation do not independently scroll or take focus. Desktop activation and
+the frozen dashboard header retain their existing behavior. Recovery copy uses
+direction-neutral source-link guidance. The asset runtime owns this handoff;
+generated Atlas assets are never hand-patched. The 2026-09-07 source-local proof
+passes 147 focused checks, 1006 install unit checks and a fresh 32-cell native
+package matrix with 113 exact sealed/readback files. This closes the explicit
+mobile selection/error discoverability finding, not full accessibility or
+complete Greenfield semantic qualification.
+
 ### Source truth
 - `odylith/atlas/source/catalog/diagrams.v1.json`
   Canonical diagram catalog metadata.
@@ -63,15 +241,31 @@ grounding.
 ### Owning modules
 - `src/odylith/runtime/surfaces/render_mermaid_catalog.py`
   Atlas renderer.
+- `src/odylith/runtime/surfaces/atlas_viewer_viewport_runtime.py`
+  Sole viewport owner for image sizing, transforms, readiness and pointer,
+  pinch, wheel and focus-scoped keyboard input.
+- `src/odylith/runtime/surfaces/atlas_detail_layout.py`
+  Atlas detail-pane contract for diagram explanation, read guidance, component
+  cards, and linked engineering context layout.
+- `src/odylith/runtime/surfaces/atlas_box_explanations.py`
+  Generic box-explanation text for Atlas diagram elements. It must not encode
+  simulation-domain triggers; explanations should depend on platform-generic
+  roles, ownership, evidence, provider, and topology cues.
+- `src/odylith/runtime/surfaces/atlas_box_terms.py`
+  Selects the tracked domain object phrase used by generated box explanations
+  without letting generic control verbs become the subject of visible copy.
 - `src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py`
   Watched-change re-renderer and freshness updater.
 - `src/odylith/runtime/surfaces/install_mermaid_autosync_hook.py`
   Git pre-commit autosync hook installer.
 - `src/odylith/runtime/surfaces/scaffold_mermaid_diagram.py`
   Catalog and source scaffolding helper.
+- `src/odylith/runtime/surfaces/update_mermaid_diagram.py`
+  Existing-entry catalog writer that preserves omitted metadata and rejects
+  unknown diagram ids or repo-escaping paths before a write.
 - `src/odylith/runtime/surfaces/assets/mermaid_render_config.json`
-  Shared Mermaid render theme for diagram-internal typography, pastel semantic
-  colors, spacing, and edge shape.
+  Shared Mermaid render theme for diagram-internal typography, semantic state
+  colors, neutral containers, white canvas, and subdued connector shape.
 - `src/odylith/runtime/context_engine/odylith_architecture_mode.py`
   Compiled architecture bundle and architecture dossier builder.
 
@@ -87,6 +281,20 @@ implementation activity. Important fields include:
 - `change_watch_paths`
 - related workstreams, plans, docs, and code
 - linked components
+- optional diagram-specific `read_guide` copy shown in the Atlas detail pane
+- diagram-box explanations shown separately from owning Registry components:
+  Atlas derives every flowchart container and inner node from Mermaid source,
+  then overlays any catalog-authored `diagram_boxes` copy by label
+- an explicitly emitted node is not rediscovered by the graph pass under a
+  differently formatted label. That join uses the original case-sensitive
+  Mermaid node ID; graph-only node discovery remains available.
+- catalog-authored `diagram_boxes` descriptions must be clear complete
+  sentences; terse placeholders are invalid because the generated detail pane
+  is an operator reading surface, not an internal shorthand dump
+- component cards must show the complete nonempty catalog description as text,
+  including safety, dependency and proof clauses. The browser must not reparse,
+  shorten, rename or rewrite responsibility prose. Missing descriptions use an
+  explicit neutral fallback; component-name presentation remains separately owned.
 
 The catalog is the authoritative metadata layer; the image files alone are not
 enough to recover engineering intent.
@@ -101,6 +309,12 @@ enough to recover engineering intent.
 - produces the Atlas HTML surface and externalized JS bundle
 - presents diagrams on a plain white viewer stage with padded first-fit sizing
   so large SVG labels are not clipped or hidden on first paint
+- explains the selected diagram with a summary, a "how to read this view"
+  guide that prefers diagram-specific catalog copy, a row-based box guide that
+  covers containers and inner boxes, and owning components as a separate
+  ownership list
+  compact owning-component rows, and a bottom linked-context list so engineering
+  links support the diagram without turning into horizontal category cards
 - renders Mermaid assets through a shared Atlas theme config so unclassified
   diagrams still get polished typography, softer colors, and readable edges
 
@@ -121,39 +335,67 @@ It also supports `--all-stale` to refresh diagrams selected by the global
 freshness contract rather than by path changes alone.
 
 ### Scaffold
-`scaffold_mermaid_diagram.py` creates a new catalog entry and starter `.mmd`
-source file. Atlas supports an Atlas-first flow: a new diagram may start as a
+`scaffold_mermaid_diagram.py` creates a new catalog entry, starter `.mmd`
+source file, and default reader guidance. Atlas supports an Atlas-first flow:
+a new diagram may start as a
 visible `draft` with empty Radar, plan, and doc link lists when the operator
 asks for topology before the rest of the governance stack exists. These entries
 carry `link_state: atlas_first_draft` and must still have components plus
 non-empty `change_watch_paths`; later Registry/Radar/plan work should tighten
 the same catalog entry instead of forcing a new diagram.
 
+### Existing-entry updates
+`update_mermaid_diagram.py` changes one existing catalog entry by diagram id.
+Only fields named on the command line are replaced; omitted authored and
+derived fields remain intact. Repeated component and path flags replace their
+corresponding lists as a unit. The writer rejects unknown or duplicate ids,
+malformed catalog rows, invalid review dates, missing paths, absolute paths,
+and paths that escape the repository before it writes. It reuses the scaffold
+entry builder and the governed artifact Tribunal, invalidates obsolete watch
+fingerprints when watch ownership changes, and refreshes Atlas after success.
+
 Starter flowcharts use Atlas's visual grammar inside the Mermaid source:
-subgraph lanes where they clarify placement, subtle `classDef`/`style` colors
-for semantic grouping, and wrapped node labels (`<br/>`) where copy would
-otherwise become too wide to read. The Atlas viewer canvas stays plain white;
-it must not simulate lanes, ruled grids, or color bands behind diagrams.
+subgraph lanes where they clarify placement, the shared semantic `classDef`
+system for node state, restrained neutral `style` rules for containers, and
+wrapped node labels (`<br/>`) where copy would otherwise become too wide to
+read. The Atlas viewer canvas stays plain white; it must not simulate lanes,
+ruled grids, or color bands behind diagrams.
 
 Atlas color is a deterministic readability aid, not source truth. Authored
-Mermaid remains topology truth, but rendered fill, stroke, and text color are
-Atlas-owned so legacy diagrams and newly scaffolded diagrams share one visual
-contract. Container/subgraph colors use semantic lane labels first, then a
-restrained darker pastel rotation only when the lane has no clear role. Inner
-node colors respect authored semantic classes such as `input`, `intelligence`,
-`decision`, `apply`, and `memory` before falling back to normalized label text
-through broad semantic buckets: inputs/sources/operators/signals,
-engines/runtimes/planners/Radar/Registry/Atlas/Casebook/proposals,
-decisions/gates/validation/blockers/readiness, writes/apply/render/refresh/
-release/migrate/deploy/register, memory/Compass/state/history/proof/
-observation, and neutral fallback. Color must never assert status, ownership,
-freshness, correctness, or evidence quality; those remain governed by catalog
-metadata, labels, traceability, and source records.
-The decision/gate node bucket uses the Soft Coral accent (`#ffece7` fill,
-`#df8f7d` stroke, `#5c2418` text) so it stays visually distinct without
-reading as warning/status truth. Containers never reuse that full-strength node
-accent over large areas; the matching container rotation uses Soft Coral Wash
-(`#fff3f0` fill, `#efb3a4` stroke) so grouped lanes stay quiet.
+Mermaid remains topology truth, but rendered fill, stroke, connector, and text
+color are Atlas-owned so legacy diagrams and newly scaffolded diagrams share
+one visual contract. Containers default to neutral structure (`#FBFDFF` fill,
+`#D8E5F4` border, `#334155` label) and may use only a semantic border when
+the whole region has a clear role. Nodes carry semantic color: primary blue for
+intent, API entry, diagram metadata, and final reporting; execution teal for
+runtime activity, successful lookup, cache, persistence, notification, and
+record creation; governance violet for policy, grants, ownership, access,
+provenance, authorization, and artifact reasoning; constraint amber for
+ambiguity, missing information, fallback, retry, partial evidence, conflict,
+or conditional outcomes; invalid red only for hard failure, denial, security
+violation, destructive failure, or unrecoverable rejection. Unclassified nodes
+fall back to neutral instead of rotating through arbitrary colors or inheriting
+container tone.
+
+The canonical Mermaid node classes are:
+
+```mermaid
+classDef neutral fill:#FBFDFF,stroke:#D8E5F4,color:#17233A;
+classDef primary fill:#EFF6FF,stroke:#BFD7FE,color:#17233A;
+classDef execution fill:#ECFDFB,stroke:#A7E9E3,color:#17233A;
+classDef governance fill:#F5F3FF,stroke:#DDD6FE,color:#17233A;
+classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#17233A;
+classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#17233A;
+```
+
+Connectors default to subdued blue-gray (`#B9C7D8`, 1.25px, 65% opacity).
+Primary-path, evidence/validation, dependency/retry/assumption, and invalid
+connectors have distinct stroke rules, but dashed edges must remain
+semantically meaningful and cross-links must not dominate the map. Edge labels
+stay `#334155` on white or near-white backgrounds. Color must never assert
+status, ownership, freshness, correctness, or evidence quality beyond the
+semantic state it encodes; those remain governed by catalog metadata, labels,
+traceability, and source records.
 
 Strict callers can pass `--require-links` to preserve the older fail-closed
 behavior when at least one Radar backlog path, technical-plan path, and doc path
@@ -241,6 +483,7 @@ diagram dump.
 - `odylith atlas render --repo-root . --check-only`
 - `odylith atlas auto-update --repo-root . --dry-run`
 - `odylith atlas scaffold --help`
+- `odylith atlas update --help`
 - `odylith sync --repo-root . --check-only`
 
 ## Scope Signal Ladder Contract
@@ -260,13 +503,42 @@ too low-signal for default promotion.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-03-16 · Implementation:** Implemented the Subagent Router runtime, the thin router skill, the component spec and runbook, and the Atlas routing topology diagrams.
-  - Evidence: odylith/atlas/source/catalog/diagrams.v1.json, odylith/registry/source/components/subagent-router/CURRENT_SPEC.md +1 more
-- **2026-03-16 · Decision:** keep Subagent Router accuracy-first, hard-gated, and first-class in Registry and Atlas instead of hiding delegation policy in prompt folklore.
-  - Evidence: odylith/atlas/source/catalog/diagrams.v1.json, odylith/registry/source/components/subagent-router/CURRENT_SPEC.md +1 more
+- **2026-10-02 · Decision:** Decision evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/atlas/source/domain-intelligence-greenfield-governance.mmd`, `odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd`
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `src/odylith/runtime/surfaces/assets/mermaid_cli_worker.mjs`, `src/odylith/runtime/surfaces/assets/mermaid_render_config.json`
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `src/odylith/runtime/surfaces/assets/mermaid_cli_worker.mjs`, `tests/unit/runtime/test_auto_update_mermaid_diagrams.py`
+- **2026-06-30 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/registry/source/components/atlas/CURRENT_SPEC.md`, `src/odylith/runtime/surfaces/atlas_box_explanations.py`, `src/odylith/runtime/surfaces/atlas_box_terms.py`, plus 1 more
+- **2026-06-30 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/atlas/CURRENT_SPEC.md`, `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, plus 1 more
+- **2026-06-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md`, `odylith/registry/source/components/atlas/CURRENT_SPEC.md`, `src/odylith/runtime/surfaces/render_mermaid_catalog.py`, plus 1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-10-06: Final Atlas source proof passes 66 focused checks and two browser cells; fallback remains graph-fact-only and topology/catalog contracts are unchanged. Installed and release proof remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+- 2026-10-06: Installed v39 inspection found repeated generic responsibility/advisory fallback prose across Atlas nodes, including a plural-description leak. The pending renderer change must use an existing graph fact or omit fallback prose; no diagram, catalog, or topology contract changes. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+
+- 2026-09-10: Preserve explicit node identity across Atlas inventory passes so multiline labels do not produce duplicate explanations. The 59 focused controls cover graph-only nodes, case sensitivity, containers, sequence actors and authored D-042 copy. Ten real-shell desktop/mobile checks pass; eighteen screenshots are reviewed. Frozen broad proof passes 5,058 runtime, 1,437 install, 180 CLI and 376 browser checks, with one documented fixture-state skip and all 3,204 inputs unchanged. This closes the bounded correction pending release, not general Atlas or Greenfield quality. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: CB-338)
+- 2026-09-08: Assigned literal box-field presentation to the existing Atlas detail owner, removing browser text reinterpretation and preserving authored action line boundaries. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+- 2026-09-03: Added a fail-closed `odylith atlas update` writer for existing catalog entries. The command preserves omitted fields, replaces only explicit metadata, rejects unknown ids and unsafe paths, and removes the hand-edit escape hatch that left stale change-watch ownership in D-043, D-045, and D-046. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-329`)
+- 2026-07-07: Cleaned generic Atlas evidence-node explanation copy. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-220`)
+  `atlas_box_explanations.py` now describes evidence/log/record nodes as
+  keeping review evidence instead of producing `record records` or
+  `evidence record records` constructions in generated diagram payloads. The
+  change keeps the renderer domain-neutral and pins the shared explanation
+  contract with the existing action-oriented node-copy test.
+
+- 2026-06-30: Tightened Atlas box-explanation custody against platform-domain leakage. `atlas_box_explanations.py` must describe generic topology, provider, ownership, and evidence cues without carrying simulation-domain triggers into platform runtime; fixture and Casebook evidence may retain concrete repro vocabulary, but Atlas runtime explanations and current component contracts stay scenario-neutral. Tracked-object phrase extraction now lives in `atlas_box_terms.py`, keeping the touched explanation owner under the source-size pressure line and pinning generic verb fallback so terms like `stays` do not become the visible domain object. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+- 2026-06-28: Tightened Atlas workstream visibility custody after D-045 was rendered but not visible from B-142 navigation. The renderer now preserves backlog-derived `idea_id` ownership during diagram relationship attachment, and Atlas proof must check route/filter indexes such as `diagram_related_workstreams`, not only catalog rows, payload presence, or SVG/PNG assets. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)
+- 2026-06-28: Added source-local static generated-flowchart visibility proof to the Atlas architecture contract. D-040 now shows static generated-flowchart fallback inside Atlas auto-update, and new diagrams D-045/D-046 were rendered with SVG/PNG assets after the browser renderer degraded. Atlas payload verification confirmed D-040, D-043, D-045, and D-046 as fresh with rendered assets present, so new architecture diagrams must prove rendered visibility, not just catalog/source creation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)
+- 2026-05-09: Promoted diagram-box explanation from a per-diagram convention to a general Atlas contract: Mermaid source now derives every flowchart container and inner node, catalog-authored box copy must be clear complete sentences, and v0.1.15 upgrade migration regenerates older Atlas browser surfaces without rewriting repo-owned diagram source truth. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Assessment: [B-140](odylith/radar/radar.html?view=plan&workstream=B-140))
+- 2026-05-09: Reworked Atlas detail panes so diagrams explain what they show, how to read them, each cataloged diagram box, and their owning components before presenting linked engineering context as a bottom category list. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141))
 - 2026-03-26: Added the first Odylith-owned diagram catalog so product topology can be traced and reviewed inside the public repo rather than through a consumer-specific Atlas tree. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-02: Hardened Atlas Mermaid preflight so valid diagrams no longer false-fail strict refresh on the DOMPurify hook-drift path; Atlas now falls back to browser-backed scratch validation while keeping the fail-fast syntax gate for real source errors. (Plan: [B-022](odylith/radar/radar.html?view=plan&workstream=B-022); Bug: `CB-042`)
 - 2026-04-07: Refreshed the broad runtime maps to show the governed memory family, Tribunal-backed delivery flow, and conversation intelligence path, and added the dedicated memory-substrate diagram `D-025` so Registry can deep-link into projection bundle, snapshot, backend, remote retrieval, and memory-contract topology directly. (Plan: [B-059](odylith/radar/radar.html?view=plan&workstream=B-059))
@@ -274,4 +546,6 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-09: Bound Atlas default active-workstream promotion to Delivery Intelligence's shared Scope Signal Ladder so low-signal governance churn and broad fanout activity stop masquerading as architecture-relevant active work by default. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071); Bug: `CB-090`)
 - 2026-04-09: Added diagram `D-032` so Compass refresh now has a first-class Atlas topology covering the one bounded command lane, cold-start narrated-cache warming, scoped budget gating, and the edge cases that must fail closed instead of reviving a hidden deeper refresh path. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Replaced Atlas watched-path freshness mtimes with stored content fingerprints, taught auto-update to distinguish review-only versus render-needed work before printing its plan, and repaired the persistent Mermaid worker bootstrap so real render jobs work again on the optimized path. Review-only Atlas refresh now updates freshness truth without regenerating unchanged SVG and PNG assets. (Plan: [B-080](odylith/radar/radar.html?view=plan&workstream=B-080); Bugs: `CB-097`, `CB-098`, `CB-099`, `CB-100`)
-- 2026-05-03: Added the v0.1.14 deterministic Atlas visual grammar: pure-white viewer stage, darker harmonious container and semantic node palettes, Soft Coral decision/gate node coloring instead of amber or warning-coded yellow, lighter Soft Coral Wash for decision/gate lanes, semantic-label-first container coloring, managed render-color precedence over legacy Mermaid color tokens, render-style fingerprints, and migration-backed rerendering for stale SVG/PNG assets from 0.1.10/0.1.11/0.1.12/0.1.13 installs. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-162`)
+- 2026-05-03: Added the v0.1.14 deterministic Atlas visual grammar: pure-white viewer stage, harmonious container and semantic node palettes, Soft Coral decision/gate node coloring instead of amber or warning-coded yellow, lighter wash tones for grouped lanes, semantic-label-first container coloring, managed render-color precedence over legacy Mermaid color tokens, render-style fingerprints, and migration-backed rerendering for stale SVG/PNG assets from 0.1.10/0.1.11/0.1.12/0.1.13 installs. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-162`)
+- 2026-05-04: Tightened the Atlas palette rule so container/subgraph fills use a near-white wash layer while inner node boxes keep the stronger semantic tone. The migration detector treats old full-strength container fills and container-inherited node fills as stale, forcing existing consumer diagrams to rerender during upgrade. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-162`)
+- 2026-05-07: Added short-token diagram-id search so `D-003`, `D003`, `003`, and `3` all resolve through Atlas search, with exact diagram-id token hits preferred for the active detail. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-179`)

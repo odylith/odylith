@@ -35,13 +35,8 @@ _WARN_WIDENING_RATE_DELTA = 0.01
 _SUMMARY_DELTA_FIELDS = {
     "latency_delta_ms": "latency_delta_ms",
     "prompt_token_delta": "prompt_token_delta",
-    "required_path_recall_delta": "required_path_recall_delta",
-    "validation_success_delta": "validation_success_delta",
-    "critical_required_path_recall_delta": "critical_required_path_recall_delta",
-    "critical_validation_success_delta": "critical_validation_success_delta",
-    "hallucinated_surface_rate_delta": "hallucinated_surface_rate_delta",
-    "unnecessary_widening_rate_delta": "unnecessary_widening_rate_delta",
 }
+_ABSOLUTE_QUALITY_FIELDS = benchmark_metric_helpers.RELEASE_QUALITY_FIELDS
 
 
 @dataclass(frozen=True)
@@ -109,6 +104,23 @@ def _summary_with_version(summary: Mapping[str, Any], *, product_version: str) -
     return merged
 
 
+def _comparison_summary(report: Mapping[str, Any]) -> dict[str, Any]:
+    """Keep relative observations and attach only authoritative conservative On quality."""
+    complete = benchmark_metric_helpers.benchmark_report_completed(report)
+    summary = runner.compact_report_summary(report) if complete else {
+        "report_id": str(report.get("report_id") or ""),
+        "status": "unavailable",
+    }
+    summary = _summary_with_version(summary, product_version=_report_product_version(report))
+    summary.update(benchmark_metric_helpers.release_quality_summary_fields(report, cache_profiles=runner.DEFAULT_CACHE_PROFILES))
+    return summary
+
+
+def _missing_absolute_quality(summary: Mapping[str, Any], *, label: str) -> list[str]:
+    quality = benchmark_metric_helpers.release_quality_measurements(summary, cache_profiles=runner.DEFAULT_CACHE_PROFILES)
+    return [f"{label}.{field}" for field in _ABSOLUTE_QUALITY_FIELDS.values() if field not in quality]
+
+
 def _eligible_release_report(report: Mapping[str, Any]) -> bool:
     selection = dict(report.get("selection", {})) if isinstance(report.get("selection"), Mapping) else {}
     cache_profiles = report.get("cache_profiles")
@@ -117,6 +129,7 @@ def _eligible_release_report(report: Mapping[str, Any]) -> bool:
         and bool(selection.get("full_corpus_selected"))
         and isinstance(cache_profiles, list)
         and [str(token).strip() for token in cache_profiles if str(token).strip()] == list(runner.DEFAULT_CACHE_PROFILES)
+        and benchmark_metric_helpers.benchmark_report_completed(report)
     )
 
 
@@ -126,15 +139,9 @@ def _resolve_candidate_summary(*, repo_root: Path) -> tuple[dict[str, Any] | Non
         repo_root=repo_root,
         report=candidate_report,
     ):
-        return _summary_with_version(
-            runner.compact_report_summary(candidate_report),
-            product_version=_report_product_version(candidate_report),
-        ), "latest-runtime-report"
+        return _comparison_summary(candidate_report), "latest-runtime-report"
     if candidate_report:
-        stale_summary = _summary_with_version(
-            runner.compact_report_summary(candidate_report),
-            product_version=_report_product_version(candidate_report),
-        )
+        stale_summary = _comparison_summary(candidate_report)
         stale_summary["current_tree_identity_match"] = False
         stale_summary["stale_runtime_report"] = True
         return stale_summary, "latest-runtime-report-stale"
@@ -159,11 +166,8 @@ def _resolve_baseline_report(*, repo_root: Path, baseline: str, candidate_report
     candidate_report_id = str(candidate_report.get("report_id") or "").strip()
     if normalized != "last-shipped":
         for report in reports:
-            if str(report.get("report_id") or "").strip() != candidate_report_id:
-                return _summary_with_version(
-                    runner.compact_report_summary(report),
-                    product_version=_report_product_version(report),
-                ), "latest-history"
+            if str(report.get("report_id") or "").strip() != candidate_report_id and benchmark_metric_helpers.benchmark_report_completed(report):
+                return _comparison_summary(report), "latest-history"
         return None, "missing-history"
 
     published_version = _latest_published_release_version(repo_root=repo_root)
@@ -174,13 +178,13 @@ def _resolve_baseline_report(*, repo_root: Path, baseline: str, candidate_report
                 and _eligible_release_report(report)
                 and _report_product_version(report) == published_version
             ):
-                return _summary_with_version(
-                    runner.compact_report_summary(report),
-                    product_version=_report_product_version(report),
-                ), "last-shipped"
+                return _comparison_summary(report), "last-shipped"
         baseline_summary = load_release_baseline_summary(repo_root=repo_root, version=published_version)
         if baseline_summary:
-            return baseline_summary, "last-shipped"
+            quality = benchmark_metric_helpers.release_quality_measurements(baseline_summary, cache_profiles=runner.DEFAULT_CACHE_PROFILES)
+            if _report_product_version(baseline_summary) != published_version:
+                quality = {}
+            return {**baseline_summary, "absolute_odylith_on_quality": quality}, "last-shipped"
     return None, "missing-last-shipped"
 
 
@@ -335,12 +339,15 @@ def compare_latest_to_baseline(*, repo_root: str | Path, baseline: str = "last-s
     if baseline_summary is None:
         published_version = _latest_published_release_version(repo_root=repo_root)
         if not published_version and baseline_source == "missing-last-shipped":
+            missing = _missing_absolute_quality(candidate_summary, label="candidate")
             notes = (
                 "No published release exists yet, so there is no last-shipped benchmark baseline to compare against.",
                 "Treat this as a first-release warning; record the baseline after the first release ships.",
             )
-            return BenchmarkComparison(
-                status="warn",
+            if missing:
+                notes = ("Authoritative conservative absolute Odylith On quality measurements are missing or invalid.", *missing)
+            result = BenchmarkComparison(
+                status="unavailable" if missing else "warn",
                 candidate_report_id=str(candidate_summary.get("report_id", "")).strip(),
                 candidate_product_version=str(candidate_summary.get("product_version", "")).strip(),
                 baseline_report_id="",
@@ -349,8 +356,9 @@ def compare_latest_to_baseline(*, repo_root: str | Path, baseline: str = "last-s
                 summary={"candidate": candidate_summary, "baseline": {}},
                 deltas={},
                 notes=notes,
-                blocking=False,
+                blocking=bool(missing),
             )
+            return _downgrade_blocking_result(result, override=override) if missing and override is not None else result
         if override is not None:
             return _override_unavailable(
                 override=override,
@@ -378,11 +386,50 @@ def compare_latest_to_baseline(*, repo_root: str | Path, baseline: str = "last-s
             ),
             blocking=True,
         )
+    comparison_summary = {
+        "candidate": candidate_summary,
+        "baseline": baseline_summary,
+        "quality_comparison_basis": "conservative absolute Odylith On, candidate minus baseline",
+        "relative_advantage_diagnostics": {
+            "basis": "within-release Odylith On minus raw; cross-release change is diagnostic only",
+            "candidate": {field: candidate_summary.get(field) for field in _ABSOLUTE_QUALITY_FIELDS},
+            "baseline": {field: baseline_summary.get(field) for field in _ABSOLUTE_QUALITY_FIELDS},
+            "change": {
+                field: round(candidate_summary[field] - baseline_summary[field], 3)
+                for field in _ABSOLUTE_QUALITY_FIELDS
+                if isinstance(candidate_summary.get(field), (int, float))
+                and isinstance(baseline_summary.get(field), (int, float))
+            },
+        },
+    }
+    missing = [
+        *_missing_absolute_quality(candidate_summary, label="candidate"),
+        *_missing_absolute_quality(baseline_summary, label="baseline"),
+    ]
+    if missing:
+        result = BenchmarkComparison(
+            status="unavailable",
+            candidate_report_id=str(candidate_summary.get("report_id", "")).strip(),
+            candidate_product_version=candidate_version,
+            baseline_report_id=str(baseline_summary.get("report_id", "")).strip(),
+            baseline_product_version=str(baseline_summary.get("product_version", "")).strip(),
+            baseline_source=baseline_source,
+            summary=comparison_summary,
+            deltas={},
+            notes=("Authoritative conservative absolute Odylith On quality measurements are missing or invalid.", *missing),
+            blocking=True,
+        )
+        return _downgrade_blocking_result(result, override=override) if override is not None else result
     deltas = benchmark_metric_helpers.summary_deltas(
         candidate=candidate_summary,
         baseline=baseline_summary,
         field_map=_SUMMARY_DELTA_FIELDS,
     )
+    deltas.update(benchmark_metric_helpers.summary_deltas(
+        candidate=candidate_summary["absolute_odylith_on_quality"],
+        baseline=baseline_summary["absolute_odylith_on_quality"],
+        field_map=_ABSOLUTE_QUALITY_FIELDS,
+    ))
     notes: list[str] = []
     failures: list[str] = []
     warnings: list[str] = []
@@ -445,7 +492,7 @@ def compare_latest_to_baseline(*, repo_root: str | Path, baseline: str = "last-s
         baseline_report_id=str(baseline_summary.get("report_id", "")).strip(),
         baseline_product_version=str(baseline_summary.get("product_version", "")).strip(),
         baseline_source=baseline_source,
-        summary={"candidate": candidate_summary, "baseline": baseline_summary},
+        summary=comparison_summary,
         deltas=deltas,
         notes=tuple(notes),
         blocking=blocking,
@@ -532,6 +579,9 @@ def build_benchmark_story(*, repo_root: str | Path, baseline: str = "last-shippe
             ),
         },
     ]
+    for metric, field in zip(metrics, ("prompt_token_delta", "latency_delta_ms", "required_path_recall_delta", "validation_success_delta")):
+        if field not in comparison.deltas:
+            metric.update(direction="unavailable", value="unavailable")
     history_rows: list[dict[str, str]] = []
     candidate_report_id = comparison.candidate_report_id
     baseline_report_id = comparison.baseline_report_id
@@ -572,6 +622,9 @@ def build_benchmark_story(*, repo_root: str | Path, baseline: str = "last-shippe
 
 
 def render_compare_text(result: BenchmarkComparison) -> str:
+    def delta(field: str) -> str:
+        return f"{result.deltas[field]:.3f}" if field in result.deltas else "unavailable"
+
     return "\n".join(
         [
             "odylith benchmark compare",
@@ -581,14 +634,12 @@ def render_compare_text(result: BenchmarkComparison) -> str:
             f"- baseline_report_id: {result.baseline_report_id or '<none>'}",
             f"- baseline_product_version: {result.baseline_product_version or '<none>'}",
             f"- baseline_source: {result.baseline_source or '<none>'}",
-            f"- latency_delta_ms: {float(result.deltas.get('latency_delta_ms', 0.0) or 0.0):.3f}",
-            f"- prompt_token_delta: {float(result.deltas.get('prompt_token_delta', 0.0) or 0.0):.3f}",
-            f"- required_path_recall_delta: {float(result.deltas.get('required_path_recall_delta', 0.0) or 0.0):.3f}",
-            f"- validation_success_delta: {float(result.deltas.get('validation_success_delta', 0.0) or 0.0):.3f}",
-            f"- critical_required_path_recall_delta: {float(result.deltas.get('critical_required_path_recall_delta', 0.0) or 0.0):.3f}",
-            f"- critical_validation_success_delta: {float(result.deltas.get('critical_validation_success_delta', 0.0) or 0.0):.3f}",
-            f"- hallucinated_surface_rate_delta: {float(result.deltas.get('hallucinated_surface_rate_delta', 0.0) or 0.0):.3f}",
-            f"- unnecessary_widening_rate_delta: {float(result.deltas.get('unnecessary_widening_rate_delta', 0.0) or 0.0):.3f}",
+            f"- quality_comparison_basis: {result.summary.get('quality_comparison_basis', 'unavailable')}",
+            *[f"- {field}: {delta(field)}" for field in (*_SUMMARY_DELTA_FIELDS, *_ABSOLUTE_QUALITY_FIELDS)],
+            *[
+                f"- diagnostic_on_minus_raw_advantage_change.{field}: {value:+.3f}"
+                for field, value in result.summary.get("relative_advantage_diagnostics", {}).get("change", {}).items()
+            ],
             *[f"- note: {item}" for item in result.notes],
         ]
     )

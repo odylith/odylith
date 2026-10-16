@@ -1,0 +1,107 @@
+%% Atlas visual contract: colored lanes group ownership/phase; node classes mark semantic role; labels stay wrapped.
+flowchart LR
+    subgraph evidence_lane["Evidence intake"]
+      direction TB
+      prompt["User prompt<br/>and host family"]
+      repo["Repo fingerprint<br/>head + dirty state"]
+      context["Context Engine<br/>bounded evidence packet"]
+      governance["Governance hints<br/>Registry, Radar,<br/>Casebook, Atlas,<br/>Compass"]
+    end
+
+    subgraph turn_gate_lane["Governed Harness Turn Gate"]
+      direction TB
+      decision["Turn Gate decision<br/>answer-only, diagnostic,<br/>bounded edit,<br/>unsafe"]
+      sufficiency{"Evidence<br/>enough?"}
+      cache["Proof cache<br/>prompt class + evidence refs<br/>+ command set"]
+      capsule["Execution capsule<br/>owned paths, commands,<br/>validation, receipt id"]
+    end
+
+    subgraph enforcement_lane["Admissibility and side effects"]
+      direction TB
+      execution["Execution Engine<br/>admissibility and boundary"]
+      tool_gate{"Tool gate<br/>allow, ask,<br/>deny, defer"}
+      stop_gate{"Stop gate<br/>proof before done"}
+      proof_state["Proof State<br/>claim tier + obligation"]
+    end
+
+    subgraph host_lane["Host-neutral delivery"]
+      direction TB
+      cli["CLI surfaces<br/>turn-gate decide,<br/>tool-check, stop-check"]
+      codex["Codex hooks<br/>advice or enforcement"]
+      claude["Claude hooks<br/>advice or enforcement"]
+      sdk["Managed SDK adapters<br/>zero-model early exit<br/>where host permits"]
+    end
+
+    subgraph proof_lane["Measurement and governed memory"]
+      direction TB
+      receipt["Harness receipt<br/>product_turn_gate source"]
+      benchmark["Benchmark runner<br/>no private shortcut"]
+      compass["Compass + release proof<br/>accepted state and timeline"]
+      release["Release gate<br/>public claim closure"]
+    end
+
+    subgraph waves_lane["B-118 execution waves"]
+      direction TB
+      b118["B-118 umbrella<br/>Governed Harness spine"]
+      b119["B-119 W1<br/>benchmark baseline proof"]
+      b120["B-120 W2<br/>manifest contract"]
+      b121["B-121 W3<br/>guardrails policy"]
+      b122["B-122 W4<br/>receipts and tracing"]
+      b123["B-123 W5<br/>generic SDK adapter"]
+      b124["B-124 W6<br/>cross-host ablations"]
+      b125["B-125 W7<br/>docs + release closure"]
+    end
+
+    prompt --> context
+    repo --> context
+    governance --> context
+    context --> decision
+    decision --> sufficiency
+    cache --> sufficiency
+    sufficiency -- "yes" --> capsule
+    sufficiency -- "no" --> cli
+    capsule --> execution
+    execution --> tool_gate
+    execution --> stop_gate
+    proof_state --> stop_gate
+    tool_gate --> receipt
+    stop_gate --> receipt
+    decision --> cli
+    cli --> codex
+    cli --> claude
+    cli --> sdk
+    receipt --> benchmark
+    receipt --> compass
+    benchmark --> release
+    compass --> release
+
+    b118 --> b119 --> b120 --> b121 --> b122 --> b123 --> b124 --> b125
+    b119 -. "proves" .-> benchmark
+    b120 -. "defines" .-> capsule
+    b121 -. "guards" .-> tool_gate
+    b122 -. "records" .-> receipt
+    b123 -. "delivers" .-> sdk
+    b124 -. "compares" .-> codex
+    b124 -. "compares" .-> claude
+    b125 -. "closes" .-> release
+
+    classDef input fill:#EFF6FF,stroke:#BFD7FE,color:#132033,stroke-width:1.2px;
+    classDef engine fill:#ECFDFB,stroke:#A7E9E3,color:#132033,stroke-width:1.2px;
+    classDef gate fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1.3px;
+    classDef delivery fill:#F5F3FF,stroke:#DDD6FE,color:#132033,stroke-width:1.2px;
+    classDef memory fill:#ECFDFB,stroke:#A7E9E3,color:#132033,stroke-width:1.2px;
+    classDef neutral fill:#FBFDFF,stroke:#D8E5F4,color:#132033,stroke-width:1.1px;
+    class prompt,repo,context,governance input;
+    class decision,cache,capsule,execution engine;
+    class sufficiency,tool_gate,stop_gate,proof_state gate;
+    class cli,codex,claude,sdk delivery;
+    class receipt,benchmark,compass,release memory;
+    class b118,b119,b120,b121,b122,b123,b124,b125 neutral;
+
+    style evidence_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
+    style turn_gate_lane fill:#FBFDFF,stroke:#A7E9E3,stroke-width:1px,color:#293D52
+    style enforcement_lane fill:#FBFDFF,stroke:#F6D98B,stroke-width:1px,color:#293D52
+    style host_lane fill:#FBFDFF,stroke:#DDD6FE,stroke-width:1px,color:#293D52
+    style proof_lane fill:#FBFDFF,stroke:#A7E9E3,stroke-width:1px,color:#293D52
+    style waves_lane fill:#FBFDFF,stroke:#D8E5F4,stroke-width:1px,color:#293D52
+    linkStyle default stroke:#B9C7D8,stroke-width:1.25px

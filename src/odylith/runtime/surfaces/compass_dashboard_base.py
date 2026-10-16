@@ -40,6 +40,13 @@ _CONVENTIONAL_COMMIT_PREFIX_RE = re.compile(
 _RETIRED_SURFACE_MARKER = "sentinel"
 _RETIRED_SURFACE_LABEL = "retired control surface"
 _CASEBOOK_BUG_PATH_PREFIX = "odylith/casebook/bugs/"
+_SUPPRESSED_ACTIVITY_SHAS: frozenset[str] = frozenset(
+    {
+        "119dcfc141bf097928670358952d0c869a84fe1f",
+        "dd7dcca4c0db3290032caa2b4849192aaa596aa8",
+        "d1f2e8c800afcb0dcbd2aee55c2cd33d68ab5dff",
+    }
+)
 _GENERIC_TX_HEADLINE_RE = re.compile(
     r"^(?:"
     r"(?:edited|updated|modified|changed)\s+(?:\d+\s+)?files?"
@@ -83,7 +90,6 @@ _DEFAULT_RECENT_FOCUS_WINDOW_MINUTES = 90
 _TIMELINE_EVENT_LOOKBACK_HOURS = 72
 _TIMELINE_EVENT_MAX_ROWS = 1200
 _TIMELINE_GENERATED_NOISE_MAX_ROWS = 300
-_TX_HEADLINE_MAX_CHARS = 180
 _COMPASS_TIMEZONE = "America/Los_Angeles"
 _COMPASS_TZ = ZoneInfo(_COMPASS_TIMEZONE)
 
@@ -404,33 +410,9 @@ def _event_public_payload(event: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def _truncate_sentence(text: str, *, limit: int) -> str:
-    token = " ".join(str(text or "").split()).strip()
-    if not token:
-        return ""
-    if len(token) <= limit:
-        return token
-    if limit <= 4:
-        return token[:limit]
-    hard_limit = max(1, limit - 3)
-    boundary = token.rfind(" ", 0, hard_limit + 1)
-    if boundary < int(hard_limit * 0.6):
-        boundary = hard_limit
-    clipped = token[:boundary].rstrip(" ,;:-")
-    if not clipped:
-        clipped = token[:hard_limit].rstrip()
-    return f"{clipped}..."
-
-
-def _clip_sentence(text: str, *, limit: int = 160) -> str:
-    token = " ".join(str(text or "").split()).strip()
-    if not token:
-        return ""
-    return _truncate_sentence(token, limit=limit)
-
-
 def _narrative_excerpt(text: str, *, max_sentences: int = 1, max_chars: int = 220) -> str:
-    token = " ".join(str(text or "").split()).strip()
+    """Select whole sentences; the character budget only limits additional ones."""
+    token = _normalize_sentence(text)
     if not token:
         return ""
     sentences = re.split(r"(?<=[.!?])\s+", token)
@@ -443,15 +425,13 @@ def _narrative_excerpt(text: str, *, max_sentences: int = 1, max_chars: int = 22
         projected = current_len + (1 if chosen else 0) + len(part)
         if chosen and projected > max_chars:
             break
-        if not chosen and len(part) > max_chars:
-            return _truncate_sentence(part, limit=max_chars)
         chosen.append(part)
         current_len = projected
         if len(chosen) >= max_sentences:
             break
     if chosen:
         return " ".join(chosen)
-    return _truncate_sentence(token, limit=max_chars)
+    return token
 
 
 def _normalize_sentence(text: str) -> str:
@@ -570,8 +550,8 @@ def _run_git(repo_root: Path, args: Sequence[str]) -> tuple[int, str]:
 
 
 def _git_identity(repo_root: Path) -> tuple[str, str]:
-    _, name_out = _run_git(repo_root, ["config", "user.name"])
-    _, email_out = _run_git(repo_root, ["config", "user.email"])
+    _, name_out = _run_git(repo_root, ["config", "--local", "--get", "user.name"])
+    _, email_out = _run_git(repo_root, ["config", "--local", "--get", "user.email"])
     return name_out.strip(), email_out.strip()
 
 
@@ -622,7 +602,8 @@ def _collect_git_commits(repo_root: Path, *, since_hours: int, my_name: str, my_
                     files=files,
                     live_casebook_bug_paths=live_casebook_bug_paths,
                 )
-                commits.append(current)
+                if _is_publishable_commit_activity(current):
+                    commits.append(current)
             parts = raw.split("\x1f")
             if len(parts) < 5:
                 current = None
@@ -656,7 +637,8 @@ def _collect_git_commits(repo_root: Path, *, since_hours: int, my_name: str, my_
             files=files,
             live_casebook_bug_paths=live_casebook_bug_paths,
         )
-        commits.append(current)
+        if _is_publishable_commit_activity(current):
+            commits.append(current)
 
     name_token = my_name.strip().lower()
     email_token = my_email.strip().lower()
@@ -675,6 +657,16 @@ def _collect_git_commits(repo_root: Path, *, since_hours: int, my_name: str, my_
     mine = [item for item in commits if _is_mine(item)]
     mine.sort(key=lambda item: item.get("ts", dt.datetime.min.replace(tzinfo=dt.timezone.utc)), reverse=True)
     return mine
+
+
+def _is_publishable_commit_activity(commit: Mapping[str, Any]) -> bool:
+    sha = str(commit.get("sha", "")).strip().lower()
+    if sha in _SUPPRESSED_ACTIVITY_SHAS:
+        return False
+    files = commit.get("files", [])
+    if isinstance(files, Sequence) and not isinstance(files, (str, bytes)):
+        return any(str(item or "").strip() for item in files)
+    return True
 
 
 def _collect_git_local_changes(repo_root: Path) -> list[dict[str, str]]:
@@ -747,6 +739,8 @@ def _should_skip_publishable_activity_path(
     if _contains_retired_surface_marker(token):
         return True
     if _is_retired_surface_module_path(token):
+        return True
+    if _is_missing_retired_greenfield_artifact_path(repo_root=repo_root, path=token):
         return True
     if _should_skip_internal_runtime_artifact(token):
         return True
@@ -831,6 +825,19 @@ def _should_skip_deleted_legacy_bug_path(
     if not token.startswith("bugs/"):
         return False
     if not (repo_root / "odylith" / "casebook" / "bugs" / "INDEX.md").is_file():
+        return False
+    return not surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=token).exists()
+
+
+def _is_missing_retired_greenfield_artifact_path(*, repo_root: Path, path: str) -> bool:
+    token = str(path or "").strip()
+    if not token:
+        return False
+    retired_prefixes = (
+        "src/odylith/runtime/governance/greenfield_",
+        "tests/unit/runtime/test_greenfield_",
+    )
+    if not token.startswith(retired_prefixes):
         return False
     return not surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=token).exists()
 
@@ -993,6 +1000,8 @@ def _load_agent_stream_events(
         transaction_seq = int(transaction_seq_raw) if isinstance(transaction_seq_raw, int) and transaction_seq_raw >= 0 else None
         context = " ".join(str(payload.get("context", "")).split()).strip()
         headline_hint = " ".join(str(payload.get("headline_hint", "")).split()).strip()
+        evidence_tier = " ".join(str(payload.get("evidence_tier", "")).split()).strip()
+        work_category = " ".join(str(payload.get("work_category", "")).split()).strip()
         boundary = str(payload.get("transaction_boundary", "")).strip().lower()
         if boundary not in {"start", "end"}:
             boundary = ""
@@ -1017,6 +1026,8 @@ def _load_agent_stream_events(
                 "transaction_seq": transaction_seq,
                 "context": context,
                 "headline_hint": headline_hint,
+                "evidence_tier": evidence_tier,
+                "work_category": work_category,
                 "transaction_boundary": boundary,
             }
         )

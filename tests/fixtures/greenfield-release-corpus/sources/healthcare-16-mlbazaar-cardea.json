@@ -1,0 +1,49 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "health",
+    "medical",
+    "clinical",
+    "patient",
+    "hospital",
+    "disease"
+  ],
+  "matched_description_evidence_terms": [
+    "health"
+  ],
+  "repository": {
+    "default_branch": "master",
+    "description": "An open source automl library for using machine learning in healthcare.",
+    "full_name": "MLBazaar/Cardea",
+    "id": 142302922,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "Cardea",
+    "node_id": "MDEwOlJlcG9zaXRvcnkxNDIzMDI5MjI=",
+    "pushed_at": "2024-03-20T17:14:56Z",
+    "topics": [
+      "automl",
+      "healthcare",
+      "machine-learning"
+    ]
+  },
+  "response_item_index": 33,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Ahealthcare&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:15:54 GMT",
+    "x-github-request-id": "D121:271456:14FD971:155F8BF:6A5B6067"
+  },
+  "search_response_path": "responses/healthcare.json",
+  "search_response_sha256": "dd9a346780606538891bd660e3dd48ae99e49bfda96e908fd0b34d8ef03f34a0",
+  "selection_index": 16,
+  "source_family": "healthcare",
+  "source_id": "github-repository:142302922",
+  "source_uri": "https://github.com/MLBazaar/Cardea",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

@@ -1,5 +1,222 @@
 # Odylith
 
+## Source-duty Greenfield contract (2026-10-02)
+
+For the unreleased Greenfield path, Odylith carries a source-duty ledger and
+independent material-duty decision receipt into candidate admission. The ledger
+inventories first-path human actions, supporting human actions, system duties,
+cited state fields, passive off-path transitions, conditional guards,
+boundaries, and proof duties. Ledger v5 owns each normalized action, target,
+statement, typed performer role, and exact event/actor/role citations once.
+One shared ledger identity owner also requires unique declared object/field
+pairs and exact transition-effect references before source verification.
+The inventory author must account for every material duty across the complete
+source in order, preserving its conditions and effects. Explicit EDIT changes
+replace only the duties they change; unchanged original duties remain required.
+Distinct action, guard and proof meanings retain their own existing typed roles.
+This task refinement remains unqualified pending fixed independent source proof.
+The inventory author receives that requirement where field labels originate;
+candidate binding and lifecycle projection enforce the same identity, while
+ordered changes and observable checks retain distinct effects on one field.
+No string-prefix inference, additional semantic stage, or receipt repair is
+part of this correction. Fresh complete-package admission remains required.
+Verb and target microcitations and duplicated actor/action fields are removed.
+Host contract v49 authors compact v3; the installed CLI expands it to v5 for
+preflight, while the verifier receives compact material rows and citations
+once with the complete authority source. Duplicate and unknown bank entries
+reject. Every bank quote/context, including unused selections, must validate
+against the exact complete source; only unused storage may be omitted from the
+canonical material ledger. Expansion without source still rejects unused
+selections. This path is unqualified pending a fresh complete public
+package; the previous compact v1 failure remains retained under CB-324.
+A source-only verifier sees the complete authority source and must return one
+affirmative cited decision per row across all eight material duty sections and
+one affirmative source-wide inventory-completeness verdict before candidate
+authoring; omitted duties are cited in a non-affirmative completeness verdict.
+Decision v4 uses a closed table keyed by duty ID. The compiler owns judgment
+order, derived event/actor/role indexes, claim hashes, and receipt expansion.
+Missing, extra, or duplicate IDs, absent event/actor/role support, and invalid
+selections fail closed. Source workflow order remains in the ledger.
+Any negative,
+uncertain, missing, or mismatched decision stops the path. Preparation preserves
+bounded checker refusal details; any reported omission excerpt is explicitly
+untrusted diagnostic evidence and cannot authorize admission. Both nonzero and
+unadmitted proposal failures retain the existing bounded stream excerpt as
+diagnostic detail, without confirmation authority. The accepted receipt
+binds source, ledger, the full verifier task, claims, and decisions by hash through
+proposal and create. Action-only and rows-only receipts are rejected by the
+current contract.
+The exact actor citation owns its source occurrence and the compiler includes
+it first among role references. Additional role contexts remain required and
+the source-only verifier judges the actual performer and role. No repeated
+actor alias or role-context enclosure of that same byte occurrence is required.
+Exact citation, proper identity slice, reference-only exclusion, semantic
+refusal, and source/ledger/task/decision hash binding remain mandatory.
+Candidate transport v1 carries the full source, candidate requirements/schema,
+admitted authority, and lossless compact accepted inventory with custody
+hashes. The complete receipt remains compiler-owned outside the model for
+proposal admission. Completed-stage schemas and verifier output do not enter
+candidate authorship. This representation change adds no semantic stage and
+does not qualify the path until complete public packages pass independent
+review.
+Host candidate v21 selects actor fact addresses and design. A closed v3 binding
+must map every candidate event to exactly one cited ledger action,
+preserve the selected first-run order, and bind every transition effect to a cited state field plus
+one Registry component and Radar workstream. The lifecycle projection preserves
+the source trigger, governed object, effect, observable check, citations, and
+bound component/workstream; Atlas receives that passive state transition.
+Guard, boundary, and proof duties require typed design owners and remain visible
+in canonical intent, preview, Registry, and Radar projections.
+
+Canonical Product Intent keeps the selected `first_path` separate from
+`supporting_events`; supporting and system events remain available to the
+design without becoming participant first-run work. These deterministic gates
+prove receipt integrity, exact citation custody, exhaustive role coverage,
+ordering, and projection custody. A verifier's affirmative decision remains a
+model judgment; hashes cannot establish its correctness or source-duty
+completeness. The source-wide verdict addresses the separate omission bypass;
+complete-row decision coverage closes the earlier bypass in which
+contradictory state, transition, guard, boundary, or proof text could ride an
+affirmative action-only receipt. Atomic fact ledger v4 carries verified action
+relations whose source support is the complete exact event and whose projection
+is the exact action/target slice of the normalized statement. It does not invent
+verb or target source coordinates. Non-action facts keep exact source custody.
+The normalized representation
+can express shared-verb clauses such as `A reviewer defines scope and audience.`
+Independent source-first semantic review of complete public packages is still
+required before release credit; the broad evidence envelope remains unqualified.
+
+The unreleased standard profile v21 has a 315-second proposal phase limit and
+one shared 300-second gate/candidate model window with 15 seconds reserved
+for deterministic completion. The release controller keeps its hard
+660-second diagnostic whole-journey ceiling; phase maxima are non-additive
+and candidate dispatch is clamped to remaining whole time minus the reserve.
+Historical v20's 180/165-second failures remain unchanged. This implements
+the operator-authorized longer bounded flow; it adds no retry or model ladder.
+Broad free-form evidence
+may take a separately bounded asynchronous verification journey, but its finite
+whole-journey bound is unmeasured and must not be represented as qualified. The
+commit-only confirmation contract remains separately bounded at 60 seconds.
+This work is tracked by B-142 and CB-324; it is not a release-success claim.
+
+## Participant-first Greenfield integration (2026-09-18)
+
+The unreleased production path now selects participants before remaining source
+and design authoring, then reviews the complete deterministically joined candidate.
+One owner replaces competing participant authorship; no regex inference, semantic
+repair, retry or new projection mechanism is added. Successful proposals have three
+truthful model-role observations under the existing shared window. Clarification
+has two calls and no governed writes. The release checker cross-binds retained
+model evidence to the public decision or sealed candidate-review hashes. Timing,
+diagnostic-redaction and split-proof defects found during integration are resolved
+with negative controls and independent rechecks. Installed lifecycle, supported
+profiles, native-host behavior, recovery, browser and final evaluation still require
+fresh qualification before a release claim.
+
+## Portable Greenfield constraints (2026-09-18)
+
+The unreleased author/reviewer contract requires each independently projected
+constraint quote to preserve its source-stated subject, behavior and material
+condition or scope. Exact surrounding context is allowed; complete subjectless
+constraints remain valid. Seven live positive/negative controls and 1,843 runtime
+tests pass. No new schema or parsing path is introduced. Two fresh experimental
+participant-first packages now pass independent review with no P0/P1, each
+containing five workstreams, five components and five diagrams in 76.165/77.288
+seconds, plus all 32 browser cells per case. This closes the demonstrated
+standalone constraint-subject defect and selects the mechanism for bounded
+production integration. It does not qualify the experimental three-call profile,
+publication, installed/native-host behavior or release. Preserve existing safety
+and final holdout obligations without adding optional presentation work.
+
+## Greenfield proof meaning (2026-09-18)
+
+The unreleased author/reviewer contract treats a faithful complete source statement
+identifying an observable result as valid proof. Citation brevity is advisory;
+unsupported facts and a purpose without an identified result still fail. The narrow
+shared-definition correction follows an independently diagnosed false denial and
+does not adopt the external participant-first model stage or qualify release.
+The same author/reviewer contract now explicitly permits the existing whole-product
+title/internal-owner alias, without treating a human role or external organization
+as product-owned merely because the source mentions it.
+Project boundary labels preserve source-stated scope limits rather than imposing
+a first-release exclusion. This does not reinterpret canonical non-goals or qualify
+the experimental profile; standalone constraint-subject fidelity remains open.
+
+## Greenfield performance contract update (2026-09-18)
+
+Greenfield's 90/120/150-second tier timings are now operator-approved performance
+targets. The unreleased implementation reports overruns without rejecting an otherwise
+valid package, while retaining a separate 180-second operational timeout and all
+no-write, exact-confirmation and source-fidelity laws. This does not authorize
+unbounded model calls, retries, feature growth, or a production-ready claim.
+The separate stronger-author comparison fails source fidelity in 80.942 seconds,
+not timing, and is not adopted. Keep the original model roles while qualifying the
+new timing contract; no complete package or release win is claimed.
+
+## Reviewed working-file restoration
+
+`odylith governance restore-published-files` owns explicit restoration of selected
+managed working files from a pinned active publication. Preview seals repository
+identity, publication, selected preimages/replacements, modes and the complete
+managed fingerprint boundary. Apply restores only the reviewed hash under the
+existing repository lock; it neither publishes nor creates provenance for an
+earlier failed command. Unselected state remains fixed, and interrupted apply
+accepts only its sealed pre/post states before verified closure.
+
+The shared governed-mutation boundary, direct Greenfield commit and baseline
+activation consult the same pending-restoration owner before recovery or writes.
+Routine admission checks small status markers, not archived preimage payloads.
+Unclosed or corrupt admission refuses competing writes; harmless previews and
+closed receipts do not. File modes and managed directory inventory are covered;
+ACLs, ownership, hostile same-user mutation and universal power-loss durability
+are not implied. Broader runtime, installation and release proof remain required.
+
+## Product-repo host-settings repair
+
+Product-repo install and repair preserve authored guidance while refreshing
+existing Codex and Claude host settings through the shared preserving writers.
+Pre-activation refresh does not change host settings. Install, upgrade, rollback
+and doctor carry the stored integration state into completion refreshes and must
+not mutate host registration while integration is disabled. Regeneration
+preserves custom hooks, configuration,
+metadata and first preimage backups; it does not grant native hook trust or
+prove chat delivery. Native activation remains a separate host/session gate.
+
+Deferred host checkpoint records retain event identity, session and affected
+paths, not shell command contents. Settlement consumes the stored path scope;
+it does not require or reparse a persisted copy of the command. This rule
+applies to new records; historical logs are not silently rewritten.
+
+Codex Stop has one 14-second foreground budget across settlement, logging and
+rendering. The shared Codex/Claude command runner owns its foreground process
+group; timed sync children inherit that group only within the hook-owned scope.
+The owned group receives its full bounded TERM grace even if its leader exits
+first, so existing child cleanup handlers can finish before escalation.
+Unsettled events survive interruption for retry. Ordinary standalone execution
+and independently bounded background engines retain their own lifetime. Native
+browser-descendant cleanup and automatic chat visibility remain separate proof
+obligations, not implied by command-group tests.
+
+Governed sync subprocesses use the shared command-execution owner. It preserves
+the invoking runtime's import path and explicitly forwarded lock descriptors
+when rendering another repository. Timed execution waits for child completion
+within each bounded observation interval; it does not impose an unconditional
+half-second delay on finished work. Heartbeat checks, exit-code forwarding,
+timeout termination/escalation and inherited hook-group ownership remain intact.
+This local latency contract does not certify a complete Greenfield request's
+v13 90/120/150-second proposal ceilings, advisory 60-second normal-case target,
+or separate commit-only limit below 60 seconds.
+
+Host alignment reads the existing Compass runtime posture; it does not run
+architecture evaluation or rebuild projections while preparing chat context.
+Recorded posture retains its evidence fields but is explicitly freshness-
+unverified: the enclosing Compass refresh time cannot certify the age of a
+reused summary. Missing or malformed snapshots stay unavailable without
+opportunistic repair. The current disabled switch takes precedence over cached
+enabled state. Explicit engine evaluation and refresh owners remain active.
+Shared intervention voice preserves complete selected propositions; brevity
+comes from selecting facts, not cutting character windows out of their meaning.
+
 ## Odylith Discipline Contract
 - For v0.1.11, Odylith owns Odylith Discipline as a platform
   contract: local pressure observations, deterministic hard laws, adaptive
@@ -17,10 +234,8 @@
   are first-class host families, dev/dogfood/consumer are first-class lanes,
   and host model aliases resolve to adapter families without turning Odylith Discipline
   classification into a model-consuming path.
-Last updated: 2026-05-02
+Last updated: 2026-10-02
 
-
-Last updated (UTC): 2026-04-14
 
 ## Purpose
 Odylith is the installable local governance and execution agent and platform
@@ -67,6 +282,43 @@ remediation, and rendering.
 - Install, doctor, repair, on/off, sync, routing, orchestration, diagnosis,
   and surface generation are all parts of one product, not separate tools that
   happen to share a repository.
+- An upgrade's read-only activation smoke must pass before an explicitly
+  requested new version pin is written. A failed smoke result or raised smoke
+  exception restores the previous runtime and launcher, retains exact prior pin
+  bytes and permissions (including pre-existing operator target intent), and
+  records failure without publishing a successor generation. Supported commands
+  must remain usable after that recovery. Eleven focused controls and all nine
+  lifecycle-simulator tests pass under CB-305. The frozen integrated checkpoint
+  also passes 1,345 install unit/integration tests and canonical clean local-release
+  smoke, with independent installed baseline and manager-byte readback. This is
+  not arbitrary crash, missing-pin repair, or legacy generation migration proof;
+  the exact migration-assessment release gate remains open.
+
+- Upgrade dashboard completion runs in the newly activated runtime through a
+  fixed render-only worker. The admitted parent explicitly passes its repository
+  lock descriptor through the launcher and renderer children, waits for terminal
+  results, and alone activates the first baseline or publishes a successor.
+  Incomplete, queued or failed rendering is not successful upgrade completion.
+  The shared dashboard-completion owner enforces this contract for initial
+  rendering and public dashboard refresh too. Focused tests, full runtime and
+  canonical installed smoke pass. The genuine published-v0.1.14 launcher safely
+  refuses this migration-required candidate; hosted upgrade of that same empty
+  predecessor then passes complete baseline/readback and unavailable-author safety.
+  Populated migration and installed failed-render recovery remain open under
+  CB-305. The source-local completion candidate retains an exact failed-upgrade
+  receipt and admits only the advertised full dashboard retry. Repository,
+  predecessor publication, runtime selection, launcher, install state and pin
+  remain fixed anchors; working bytes must match before dispatch. A retry cannot
+  recover another pending transaction. It validates anchors before renewing a
+  failed attempt or publishing a successful successor, and removes continuation
+  authority only after published readback. Ordinary force refresh never grants
+  authority over unexplained drift. This is not arbitrary crash or same-user
+  adversary authentication. Expanded conflicts and three kernel SIGKILL controls
+  pass with simulated release payloads and rendering. The frozen source candidate
+  also passes 5,036 runtime, 1,418 install and 364 browser controls; one absent
+  Radar diagnostic is skipped. Actual installed recovery and the four current
+  migration assessments remain unqualified. These counts do not establish
+  successful model-created packages or consumer latency compliance.
 
 ### Control-plane leverage
 - Odylith is not trying to beat the underlying model weights. It is trying to
@@ -139,6 +391,12 @@ Public docs should describe these commands, not direct module entrypoints.
   routes through a lightweight proxy module.
 
 ## Coding-Agent Host Contract
+- Codex hook documents use the native top-level `hooks` event map. The common
+  capability owner emits, migrates and reads that shape; intervention status
+  uses the same reader and command matcher. Legacy flat maps are migration
+  inputs, never evidence of current native activation. Migration preserves user
+  hooks, metadata and the first preimage backup. Project trust, exact-hook trust,
+  callback execution and visible completion remain distinct proof obligations.
 - The default Odylith host contract is shared across Codex and Claude Code:
   repo-root `AGENTS.md`, the repo-local launcher `./.odylith/bin/odylith`,
   truthful `odylith ... --help`, and the grounded governance workflow should
@@ -165,6 +423,18 @@ Public docs should describe these commands, not direct module entrypoints.
   `odylith component register --help`, `odylith atlas scaffold --help`, and
   `odylith compass log --help` must expose backend help instead of shim-only
   parser surfaces.
+- Greenfield consumer-lane governance must keep confirmation deterministic.
+  `odylith greenfield propose --prompt ...` compiles and quality-gates the
+  complete `ProductCreateTransaction`, including the exact governed/rendered
+  write set, file and directory deletions, repo preconditions, readback
+  fingerprints, and operator success result before it renders the sole
+  hash-bound `CONFIRM`, `EDIT`, and `REJECT` rail. `odylith greenfield create
+  --transaction-file ... --transaction-hash ... --confirm` only verifies the
+  detached compiler receipt, transaction hash, compiler identity, and repo
+  preconditions; applies the sealed write set under rollback guard; validates
+  readback; and reports the precompiled result. Post-confirm create must not
+  rebuild proposals, repair product semantics, refresh surfaces, or accept
+  prompt/intent edits; edits are new evidence that require a rebuilt transaction.
 - Consumer-facing narration must keep `.agents/skills` lookup, missing-shim,
   and fallback-source-path details implicit unless they change the next
   user-visible action.
@@ -442,6 +712,23 @@ Public docs should describe these commands, not direct module entrypoints.
   Sync must delay heartbeat emission until a step crosses a real slow-step
   threshold, and fast steps must complete without paying a steady polling lane
   or emitting misleading heartbeat chatter.
+- Active-plan traceability and risk checks must include dated subdirectories.
+  Traceability and risk checks report the same selected inventory they validate;
+  an existing empty applicable plan scope is not applicable, never a zero-check
+  pass. A missing required scope and invalid references remain failures.
+  Markdown-delimited paths retain dot-prefixed directory identity; punctuation
+  stripping must not reinterpret a source reference.
+- Risk-format normalization must preserve complete logical list items and the
+  ownership and checkbox state of their mitigations across source line wrapping;
+  wrapping alone must never generate placeholder risks or mitigations.
+  CommonMark list ancestry owns relationships across blank lines and owned
+  paragraphs, quotes, and code blocks. Inline literals and link/image labels must
+  not become live mitigation delimiters. Inline record splits must preserve
+  enclosing HTML and Markdown emphasis, including actual labels after a closed
+  container; text-token eligibility alone is insufficient. Source-preserving
+  formatting must retain code whitespace and hard breaks; whitespace-collapsed comparisons and
+  idempotency alone do not prove semantic preservation. CB-335 remains open until
+  the complete formatter, not only its paragraph adapter, meets this boundary.
 - Projection/compiler/backend writes remain single-writer and atomic. Lock
   batching is allowed, but the product must not weaken advisory-lock plus
   atomic-replace semantics in order to chase latency.
@@ -635,20 +922,20 @@ Public docs should describe these commands, not direct module entrypoints.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-05-02 · Implementation:** Host-surface diet kept startup/context/intervention substrate intact while removing duplicate Claude guidance, no-op prompt marker hooks, generic low-signal receipts, and exact non-governed Claude Bash checkpoint cost; 0.1.13 migration-observer markers pass.
+- **2026-10-02 · Decision:** Decision evidence linked this component to governed work with 1 verifiable artifact reference.
+  - Evidence: `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
+- **2026-08-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-145
+  - Evidence: `sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9`, `odylith/casebook/bugs/2026-08-01-fresh-install-compact-guidance-omitted-greenfield-commit-only-boundary.md`, `src/odylith/install/agents.py`, `tests/unit/install/test_agents.py`
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 7 verifiable artifact references.
+  - Evidence: `sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9`, `odylith/AGENTS.md`, `odylith/README.md`, `src/odylith/bundle/assets/odylith/README.md`, plus 3 more
+- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved.
   - Scope: B-141
-- **2026-05-02 · Implementation:** B-141 now enforces serial Odylith startup before context/search across host guidance, skills, and installed bundle assets, with Casebook index-only migration guard proof.
+- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-141
-  - Evidence: AGENTS.md, agents/skills/odylith-start/SKILL.md +2 more
-- **2026-05-02 · Implementation:** Fresh-host proof for v0.1.13 B-141 passed in /private/tmp/odylith-fresh-host-final-aezgVP: current-source install against shipped 0.1.12 verified version, doctor, Codex prompt context, Claude prompt-bundle fallback, both intervention-status surfaces, visible-intervention smokes, stale-label scans, and expected start narrowing.
-  - Scope: B-141
-- **2026-04-11 · Implementation:** B-090 is closed.
+  - Evidence: `sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9`, `sha256:2578ef93b5dac059562561a3d24005fb9dd0a8771590dff49d56bb173d616627`, `sha256:61a82c8db99693b7a2b3de56c6e2ff31e6679544c761fa414231280d0b8dfb8e`, `src/odylith/install/casebook_metadata_migration.py`
+- **2026-04-11 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved.
   - Scope: B-090
-- **2026-04-11 · Implementation:** B-089 has landed on 2026/freedom/v0.1.11 as the planned two-commit pair, working tree clean: 9402f5d — Mirror Codex host parity into Claude with baked CLI dispatchers (56 files:...
-  - Scope: B-089
-- **2026-04-05 · Implementation:** Refreshed the benchmark publication story to the April 5 source-local full proof pass 52aa3f76538cf12f: README, benchmark docs, registry spec, plans, and radar now reflect that odylith_on clears the hard gate and secondary guardrails against odylith_off while benchmark_compare still warns until the first shipped release baseline exists.
-  - Scope: B-021, B-022
-  - Evidence: README.md, docs/benchmarks/README.md +3 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -676,7 +963,13 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-14: Re-profiled the old worst-row CLI lanes on the live source-local runtime and confirmed the earlier screenshot-class latency is stale: `dashboard refresh` now measures `7.75s` cold / `0.98s` warm, `context-engine warmup` `5.00s` cold / `1.47s` warm, `show` `1.03s` cold / `0.53s` warm, `governance-slice` `0.89s`, `query` `1.45s` cold / `1.37s` warm, `context-engine query` `1.40s` cold / `1.32s` warm, and `claude session-start` `1.96s` cold / `2.14s` warm. `impact` remains the main cold-path outlier at `5.65s` cold / `1.90s` warm. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
 - 2026-04-14: Narrowed the repo-root Codex skill surface to explicit command shims for the high-frequency CLI lane so routine governance upkeep defaults back to `AGENTS.md`, the launcher, and truthful help instead of a mirrored specialist skill stack. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))
 - 2026-04-14: Extended the consumer-lane fast path so common governed authoring commands (`bug capture`, `backlog create`, `component register`, `atlas scaffold`, `compass log`) forward backend help and the installed guidance keeps shim and fallback plumbing out of normal user-facing narration. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))
+- 2026-06-28: Re-compacted always-loaded guidance after governance-learning duplication breached byte guards: root managed `AGENTS.md`, install-generated guidance, and the Claude project bridge now preserve greenfield no-source/no-hand-authored-JSON safety, failed-mechanism learning, and subagent routing while staying under their enforced byte budgets. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-149`)
+- 2026-07-02: Tightened install-generated guidance parity after validation found scoped consumer guidance carrying the updated governance/commentary contract while the repo-root managed block still used shortened wording. The install generators now keep root and scoped guidance intentionally distinct but preserve exact task-progress, quiet-command, evidence-backed closeout, diagnosis-boundary, and governance-learning custody across fresh install, upgrade, and product-repo install paths. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-149`)
 - 2026-04-14: Tightened the forwarded-help contract so Atlas public help surfaces keep the real `odylith atlas ...` command name and user-facing descriptions instead of leaking `cli.py`, `__main__.py`, or refresh-wrapper copy. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))
 - 2026-04-14: Reframed the host guidance so the default lane stays shared across Codex and Claude Code, while Codex-only advice is limited to capability-gated project-asset optimizations such as `odylith codex compatibility`. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))
 - 2026-04-29: Added `odylith github issue ...` as the draft-first public issue intake and release-closeout command lane, with Codex/Claude skills and guidance mirrors for Casebook-linked GitHub issue handling. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127); Casebook: CB-136)
 - 2026-04-30: Corrected `odylith uninstall` so consumer repos preserve `odylith/` governed source truth, remove only `.odylith/` runtime state, detach root guidance, and leave host config directories in place. (Plan: [B-140](odylith/radar/radar.html?view=plan&workstream=B-140); Casebook: CB-143)
+- 2026-05-07: Added the one-command `odylith greenfield create` path and made `greenfield propose` render from an internally validated canonical proposal object, so empty-repo greenfield setup no longer depends on host-side prose-to-JSON reconstruction or repeated schema repair loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-173`, `CB-176`, `CB-181`)
+- 2026-05-08: Tightened greenfield Registry component dossiers so apply keeps project-wide topology in Radar/Atlas while component specs render only the component's primary child workstream, non-project-level diagrams, component-authored proof matrix, and component-local security/policy posture required by Tribunal. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Casebook: CB-187)
+- 2026-05-08: Deepened the greenfield project-first UX so `greenfield propose` renders a fuller project intelligence board, design board, host-independent customization examples, and no-code-until-plan flow before backlog, while `greenfield apply/create` closeouts present the child lane as future implementation after gates rather than immediate coding. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
+- 2026-05-08: Hardened the product-owned engine activation contract so `odylith capabilities` names command paths, source anchors, and activation posture for every requested engine lane, and `odylith validate engine-integrity` now fails closed when an engine is command-only, source-only, activation-prose-only, or points at an unknown top-level command. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141))

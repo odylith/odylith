@@ -47,6 +47,7 @@ from odylith.install.managed_runtime import (  # noqa: E402
     supported_managed_runtime_feature_packs,
     supported_managed_runtime_platforms,
 )
+from odylith.install.migration_definitions import registered_migration_specs  # noqa: E402
 from odylith.install.python_env import PYTHON_ENV_SCRUB_LINES  # noqa: E402
 from odylith.runtime import release_notes  # noqa: E402
 
@@ -55,11 +56,11 @@ DEFAULT_REPO_SCHEMA_VERSION = 1
 MANIFEST_SCHEMA_VERSION = "odylith-release-manifest.v1"
 PROVENANCE_SCHEMA_VERSION = "odylith-release-provenance.v1"
 SBOM_LICENSE = "MIT"
-AUTHORITATIVE_RELEASE_REPO = "odylith/odylith"
-AUTHORITATIVE_RELEASE_ACTOR = "freedom-research"
-WORKFLOW_PATH = ".github/workflows/release.yml"
-WORKFLOW_REF = "refs/heads/main"
-OIDC_ISSUER = "https://token.actions.githubusercontent.com"
+from hosted_release_custody import (AUTHORITATIVE_RELEASE_REPO, AUTHORITATIVE_RELEASE_ACTOR,
+    WORKFLOW_PATH, WORKFLOW_REF, OIDC_ISSUER, _repo_signer_identity,
+    _identity, _require_canonical_release_context, _sign_asset, _write_placeholder_sigstore_bundle)
+RELEASE_DOWNLOAD_TIMEOUT_SECONDS = 90
+RELEASE_DOWNLOAD_CHUNK_SIZE = 1024 * 1024
 
 
 def _sha256(path: Path) -> str:
@@ -74,32 +75,45 @@ def _run(cmd: Sequence[str]) -> None:
     subprocess.run(list(cmd), check=True)
 
 
-def _repo_signer_identity(repo: str) -> str:
-    return f"https://github.com/{repo}/{WORKFLOW_PATH}@{WORKFLOW_REF}"
+def _git_output(args: Sequence[str]) -> str:
+    try:
+        completed = subprocess.run(
+            ["git", *args],
+            cwd=REPO_ROOT,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return ""
+    return completed.stdout.strip()
 
 
-def _require_canonical_release_context(*, repo: str) -> None:
-    if repo != AUTHORITATIVE_RELEASE_REPO:
-        raise ValueError(
-            f"release assets may only be published for the canonical repo `{AUTHORITATIVE_RELEASE_REPO}`, got `{repo}`"
-        )
-    if os.getenv("GITHUB_ACTIONS", "").strip().lower() != "true":
-        raise ValueError("release asset publishing is only allowed from the canonical GitHub Actions workflow")
-    github_repo = str(os.getenv("GITHUB_REPOSITORY") or "").strip()
-    if github_repo != AUTHORITATIVE_RELEASE_REPO:
-        raise ValueError(
-            f"release asset publishing requires GITHUB_REPOSITORY={AUTHORITATIVE_RELEASE_REPO}, got `{github_repo or '<empty>'}`"
-        )
-    github_actor = str(os.getenv("GITHUB_ACTOR") or "").strip()
-    if github_actor != AUTHORITATIVE_RELEASE_ACTOR:
-        raise ValueError(
-            f"release asset publishing requires GITHUB_ACTOR={AUTHORITATIVE_RELEASE_ACTOR}, got `{github_actor or '<empty>'}`"
-        )
-    github_ref = str(os.getenv("GITHUB_REF") or "").strip()
-    if github_ref != WORKFLOW_REF:
-        raise ValueError(
-            f"release asset publishing requires GITHUB_REF={WORKFLOW_REF}, got `{github_ref or '<empty>'}`"
-        )
+def _local_git_sha(*, allow_local: bool) -> str:
+    github_sha = str(os.getenv("GITHUB_SHA") or "").strip()
+    if github_sha:
+        return github_sha
+    if not allow_local:
+        return ""
+    return _git_output(("rev-parse", "HEAD"))
+
+
+def _local_source_tree(*, allow_local: bool) -> dict[str, Any]:
+    status_output = _git_output(("status", "--porcelain"))
+    status_lines = tuple(
+        line
+        for line in status_output.splitlines()
+        if line.strip()
+    )
+    head = _git_output(("rev-parse", "HEAD"))
+    branch = _git_output(("branch", "--show-current"))
+    return {
+        "branch": branch,
+        "dirty": bool(status_lines),
+        "dirty_file_count": len(status_lines),
+        "head": head,
+    }
 
 
 def _target_python_site_packages(*, runtime_root: Path) -> Path:
@@ -108,13 +122,23 @@ def _target_python_site_packages(*, runtime_root: Path) -> Path:
 
 def _download(url: str, destination: Path, *, sha256: str | None = None) -> Path:
     destination.parent.mkdir(parents=True, exist_ok=True)
-    with urllib.request.urlopen(url) as response:  # noqa: S310 - trusted release asset url
-        payload = response.read()
-    if sha256:
-        digest = hashlib.sha256(payload).hexdigest()
-        if digest != sha256:
-            raise ValueError(f"upstream asset sha256 mismatch for {destination.name}: {digest} != {sha256}")
-    destination.write_bytes(payload)
+    temporary_path = destination.with_name(f".{destination.name}.download")
+    request = urllib.request.Request(url, headers={"User-Agent": "odylith-release-assets"})
+    digest = hashlib.sha256()
+    try:
+        with urllib.request.urlopen(request, timeout=RELEASE_DOWNLOAD_TIMEOUT_SECONDS) as response:  # noqa: S310 - trusted release asset url
+            with temporary_path.open("wb") as handle:
+                for chunk in iter(lambda: response.read(RELEASE_DOWNLOAD_CHUNK_SIZE), b""):
+                    digest.update(chunk)
+                    handle.write(chunk)
+        if sha256 and digest.hexdigest() != sha256:
+            raise ValueError(
+                f"upstream asset sha256 mismatch for {destination.name}: {digest.hexdigest()} != {sha256}"
+            )
+        os.replace(temporary_path, destination)
+    except Exception:
+        temporary_path.unlink(missing_ok=True)
+        raise
     return destination
 
 
@@ -448,8 +472,8 @@ def _write_install_script(*, output_path: Path, tag: str, repo: str, odylith_whe
         "    raise SystemExit('unexpected release manifest schema version')",
         "if str(manifest.get('repo') or '').strip() != repo:",
         "    raise SystemExit('release manifest repo mismatch')",
-        "if bool(manifest.get('migration_required')):",
-        "    raise SystemExit('migration-marked releases require an explicit maintainer adoption flow')",
+        "if not isinstance(manifest.get('migration_required'), bool):",
+        "    raise SystemExit('release manifest migration_required must be a boolean')",
         "version = str(manifest.get('version') or '').strip()",
         "if requested_version != 'latest' and version != requested_version:",
         "    raise SystemExit(f'release manifest version mismatch: {version} != {requested_version}')",
@@ -630,6 +654,22 @@ def _write_install_script(*, output_path: Path, tag: str, repo: str, odylith_whe
         "    echo \"Odylith install requires '$1' on PATH.\" >&2",
         "    exit 2",
         "  fi",
+        "}",
+        "remove_runtime_version_root() {",
+        "  local target attempt",
+        "  target=\"$1\"",
+        "  [[ -n \"$target\" ]] || return 0",
+        "  for attempt in 1 2 3; do",
+        "    [[ -e \"$target\" || -L \"$target\" ]] || return 0",
+        "    chmod -R u+w \"$target\" 2>/dev/null || true",
+        "    find \"$target\" \\( -name '.DS_Store' -o -name '._*' \\) -type f -exec rm -f {} + 2>/dev/null || true",
+        "    rm -rf \"$target\" 2>/dev/null || true",
+        "    [[ -e \"$target\" || -L \"$target\" ]] || return 0",
+        "    sleep 0.2",
+        "  done",
+        "  echo \"Odylith could not remove existing managed runtime: $target\" >&2",
+        "  echo \"Close editors, terminals, or file browsers touching .odylith/runtime, then rerun the installer.\" >&2",
+        "  exit 2",
         "}",
         "detect_repo_root() {",
         '  local candidate git_candidate="" start_dir',
@@ -941,7 +981,7 @@ def _write_install_script(*, output_path: Path, tag: str, repo: str, odylith_whe
         'progress_done "check" "Release verified."',
         "state_root=\"$repo_root/.odylith\"",
         "version_root=\"$state_root/runtime/versions/$release_version\"",
-        "rm -rf \"$version_root\"",
+        "remove_runtime_version_root \"$version_root\"",
         "mkdir -p \"$state_root/runtime/versions\" \"$state_root/bin\"",
         'progress_start "setup" "Installing local runtime."',
         "mv \"$bootstrap_runtime\" \"$version_root\"",
@@ -968,8 +1008,23 @@ def _write_install_script(*, output_path: Path, tag: str, repo: str, odylith_whe
         'install_state_path="$repo_root/.odylith/install.json"',
         'migration_state_dir="$repo_root/.odylith/state/migrations"',
         'customer_tree_path="$repo_root/odylith/AGENTS.md"',
+        'previous_active_version=""',
+        'if [[ -f "$install_state_path" ]]; then',
+        '  previous_active_version="$("$bootstrap_python" -c '"'"'import json, sys; from pathlib import Path; p = Path(sys.argv[1]); payload = json.loads(p.read_text(encoding="utf-8") or "{}"); print(str(payload.get("active_version") or "").strip())'"'"' "$install_state_path" 2>/dev/null || true)"',
+        'elif [[ -L "$state_root/runtime/current" ]]; then',
+        '  previous_active_version="$(basename "$(readlink "$state_root/runtime/current")")"',
+        "fi",
+        "install_child_env=(",
+        '  "ODYLITH_REASONING_MODE=disabled"',
+        '  "ODYLITH_REASONING_PROVIDER=auto-local"',
+        '  "ODYLITH_REASONING_TIMEOUT_SECONDS=1"',
+        '  "ODYLITH_REASONING_CODEX_BIN=/usr/bin/false"',
+        '  "ODYLITH_REASONING_CLAUDE_BIN=/usr/bin/false"',
+        '  "ODYLITH_COMPASS_STANDUP_BACKGROUND_DISABLE=1"',
+        ")",
         'if [[ -f "$pin_path" && -f "$install_state_path" && -f "$customer_tree_path" ]]; then',
-        '  "$version_root/bin/python" -m odylith.cli upgrade --repo-root "$repo_root" --to "$release_version" --write-pin',
+        '  say "upgrade Running upgrade lifecycle and refreshing dashboard."',
+        '  env "${install_child_env[@]}" "$version_root/bin/python" -m odylith.cli upgrade --repo-root "$repo_root" --to "$release_version" --write-pin',
         "else",
         '  if [[ -f "$install_state_path" || -L "$state_root/runtime/current" ]]; then',
         '    say "resume Completing local install."',
@@ -980,7 +1035,7 @@ def _write_install_script(*, output_path: Path, tag: str, repo: str, odylith_whe
         '  elif [[ -d "$migration_state_dir" && ! -L "$repo_root/.odylith" && ! -L "$repo_root/.odylith/state" ]]; then',
         '    rm -rf "$migration_state_dir"',
         "  fi",
-        '  ODYLITH_INSTALL_COMPACT=1 ODYLITH_BOOTSTRAP_RUNTIME_PRESTAGED=1 "$version_root/bin/python" -m odylith.cli install --repo-root "$repo_root" --version "$release_version"',
+        '  env "${install_child_env[@]}" ODYLITH_INSTALL_PREVIOUS_ACTIVE_VERSION="$previous_active_version" ODYLITH_INSTALL_COMPACT=1 ODYLITH_BOOTSTRAP_RUNTIME_PRESTAGED=1 "$version_root/bin/python" -m odylith.cli install --repo-root "$repo_root" --version "$release_version"',
         "fi",
         'say "done   Install finished."',
         "",
@@ -992,6 +1047,42 @@ def _write_install_script(*, output_path: Path, tag: str, repo: str, odylith_whe
 def _write_sha256sums(*, output_path: Path, files: list[Path]) -> None:
     rows = [f"{_sha256(path)}  {path.name}" for path in files]
     output_path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+
+
+def _release_manifest_policy(*, version: str) -> dict[str, object]:
+    """Return release manifest policy from checked-in version and migration truth."""
+    path = REPO_ROOT / "odylith" / "runtime" / "source" / "product-version.v1.json"
+    defaults: dict[str, object] = {
+        "repo_schema_version": DEFAULT_REPO_SCHEMA_VERSION,
+        "migration_required": _release_version_requires_migration(version),
+    }
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return defaults
+    if not isinstance(payload, dict):
+        return defaults
+    pinned_version = str(payload.get("odylith_version") or "").strip()
+    if pinned_version != version:
+        return defaults
+    repo_schema_version = payload.get("repo_schema_version", DEFAULT_REPO_SCHEMA_VERSION)
+    try:
+        resolved_schema_version = int(repo_schema_version)
+    except (TypeError, ValueError):
+        resolved_schema_version = DEFAULT_REPO_SCHEMA_VERSION
+    return {
+        "repo_schema_version": resolved_schema_version,
+        "migration_required": _release_version_requires_migration(version),
+    }
+
+
+def _release_version_requires_migration(version: str) -> bool:
+    """Return whether the target release has a registered consumer migration."""
+    target = str(version or "").strip()
+    return any(
+        str(spec.get("introduced_version") or "").strip() == target
+        for spec in registered_migration_specs()
+    )
 
 
 def _write_release_manifest(
@@ -1009,13 +1100,14 @@ def _write_release_manifest(
     release_note: release_notes.ReleaseNotesSource | None = None,
 ) -> None:
     version = tag.removeprefix("v")
+    release_policy = _release_manifest_policy(version=version)
     payload = {
         "schema_version": MANIFEST_SCHEMA_VERSION,
         "version": version,
         "tag": tag,
         "repo": repo,
-        "repo_schema_version": DEFAULT_REPO_SCHEMA_VERSION,
-        "migration_required": False,
+        "repo_schema_version": release_policy["repo_schema_version"],
+        "migration_required": release_policy["migration_required"],
         "supported_platforms": [runtime_platform.slug for runtime_platform, _ in runtime_bundles],
         "published_at": (
             str(release_note.published_at).strip()
@@ -1084,8 +1176,9 @@ def _write_provenance(
             "ref": WORKFLOW_REF,
             "run_id": os.getenv("GITHUB_RUN_ID", ""),
             "run_attempt": os.getenv("GITHUB_RUN_ATTEMPT", ""),
-            "sha": os.getenv("GITHUB_SHA", ""),
+            "sha": _local_git_sha(allow_local=allow_local),
         },
+        "source_tree": _local_source_tree(allow_local=allow_local),
         "artifacts": {
             "wheel": {
                 "name": wheel.name,
@@ -1144,62 +1237,12 @@ def _write_sbom(*, output_path: Path, tag: str, repo: str, wheel: Path) -> None:
     output_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def _sign_asset(path: Path) -> Path:
-    bundle_path = path.with_name(f"{path.name}.sigstore.json")
-    _run(
-        [
-            sys.executable,
-            "-m",
-            "sigstore",
-            "sign",
-            "--bundle",
-            str(bundle_path),
-            "--overwrite",
-            str(path),
-        ]
-    )
-    return bundle_path
-
-
-def _write_placeholder_sigstore_bundle(path: Path) -> Path:
-    bundle_path = path.with_name(f"{path.name}.sigstore.json")
-    bundle_path.write_text("{}\n", encoding="utf-8")
-    return bundle_path
-
-
-def _release_upload_artifacts(
-    *,
-    wheel: Path,
-    install_sh: Path,
-    release_manifest: Path,
-    provenance: Path,
-    sbom: Path,
-    sha256sums: Path,
-    third_party_attribution: Path,
-    feature_packs: list[tuple[ManagedRuntimeFeaturePack, ManagedRuntimePlatform, Path]],
-    runtime_bundles: list[tuple[ManagedRuntimePlatform, Path]],
-    signature_bundles: list[Path],
-) -> list[Path]:
-    return [
-        wheel,
-        install_sh,
-        release_manifest,
-        provenance,
-        sbom,
-        sha256sums,
-        third_party_attribution,
-        *(path for _, _, path in feature_packs),
-        *(path for _, path in runtime_bundles),
-        *signature_bundles,
-    ]
-
-
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Publish Odylith GitHub release assets.")
     parser.add_argument("--repo", default="odylith/odylith", help="GitHub repo.")
     parser.add_argument("--tag", required=True, help="Release tag, for example v0.1.0.")
     parser.add_argument("--dist-dir", default="dist", help="Directory containing built wheels.")
-    parser.add_argument("--upload", action="store_true", help="Sign and upload the generated assets to GitHub Releases.")
+    parser.add_argument("--candidate", action="store_true", help="Build and sign once in the canonical candidate workflow; staging follows smoke.")
     parser.add_argument(
         "--allow-local",
         action="store_true",
@@ -1210,22 +1253,30 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    if args.upload:
+    if args.candidate:
+        if args.allow_local:
+            raise ValueError("canonical candidate cannot use local placeholder mode")
         _require_canonical_release_context(repo=str(args.repo))
+        _identity(args.tag, os.environ.get("GITHUB_SHA"))
     elif not args.allow_local:
-        raise ValueError("local asset generation requires --allow-local; canonical upload requires --upload")
+        raise ValueError("local asset generation requires --allow-local; canonical signing requires --candidate")
     dist_dir = Path(args.dist_dir).expanduser().resolve()
     odylith_wheels = sorted(dist_dir.glob("odylith-*.whl"))
     if len(odylith_wheels) != 1:
         raise ValueError("expected exactly one odylith wheel in dist/")
 
     wheel = odylith_wheels[0]
+    if args.candidate and list(dist_dir.iterdir()) != [wheel]:
+        raise RuntimeError("candidate assets require a fresh one-wheel destination")
     install_sh = dist_dir / "install.sh"
     sha256sums = dist_dir / "SHA256SUMS"
     release_manifest = dist_dir / "release-manifest.json"
     provenance = dist_dir / "build-provenance.v1.json"
     sbom = dist_dir / "odylith.sbom.spdx.json"
     third_party_attribution = dist_dir / "THIRD_PARTY_ATTRIBUTION.md"
+    source_before = _local_source_tree(allow_local=bool(args.allow_local))
+    if args.candidate and (source_before["dirty"] or source_before["head"] != os.environ.get("GITHUB_SHA")):
+        raise RuntimeError("canonical candidate build source is not clean H")
     feature_packs = _build_managed_runtime_feature_packs(dist_dir=dist_dir)
     runtime_bundles = _build_managed_runtime_bundles(wheel=wheel, dist_dir=dist_dir)
     third_party_attribution.write_text(
@@ -1287,38 +1338,14 @@ def main(argv: list[str] | None = None) -> int:
         *(path for _, _, path in feature_packs),
         *(path for _, path in runtime_bundles),
     ]
-    bundles = [_sign_asset(path) for path in assets_to_publish] if args.upload else [
-        _write_placeholder_sigstore_bundle(path) for path in assets_to_publish
-    ]
+    if args.candidate and _local_source_tree(allow_local=False) != source_before:
+        raise RuntimeError("candidate source changed before signing")
+    for path in assets_to_publish:
+        if args.candidate:
+            _sign_asset(path)
+        else:
+            _write_placeholder_sigstore_bundle(path)
 
-    if not args.upload:
-        return 0
-
-    upload_args = [
-        "gh",
-        "release",
-        "upload",
-        args.tag,
-        *(
-            str(path)
-            for path in _release_upload_artifacts(
-                wheel=wheel,
-                install_sh=install_sh,
-                release_manifest=release_manifest,
-                provenance=provenance,
-                sbom=sbom,
-                sha256sums=sha256sums,
-                third_party_attribution=third_party_attribution,
-                feature_packs=feature_packs,
-                runtime_bundles=runtime_bundles,
-                signature_bundles=bundles,
-            )
-        ),
-        "--repo",
-        args.repo,
-        "--clobber",
-    ]
-    _run(upload_args)
     return 0
 
 

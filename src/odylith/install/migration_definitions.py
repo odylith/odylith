@@ -5,6 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from odylith.install.atlas_box_explanation_migration import (
+    MIGRATION_ID as ATLAS_BOX_EXPLANATION_MIGRATION_ID,
+    TARGET_VERSION as ATLAS_BOX_EXPLANATION_TARGET_VERSION,
+)
 from odylith.install.atlas_surface_migration import (
     MIGRATION_ID as ATLAS_SURFACE_MIGRATION_ID,
     TARGET_VERSION as ATLAS_SURFACE_TARGET_VERSION,
@@ -20,6 +24,7 @@ from odylith.install.value_engine_migration import (
     MIGRATION_ID as VALUE_ENGINE_MIGRATION_ID,
     TARGET_VERSION as VALUE_ENGINE_TARGET_VERSION,
 )
+from odylith.install.versioning import is_at_least, normalize_version, version_key
 
 _REQUIRED_FIXTURES = (
     "dry_run",
@@ -46,6 +51,24 @@ class MigrationDefinition:
     validation_commands: tuple[str, ...]
     automatic: bool = True
     coverage_fixtures: tuple[str, ...] = _REQUIRED_FIXTURES
+
+    def covers_manifest_target(self, target_version: str) -> bool:
+        """Return whether this migration can satisfy a migration-required release.
+
+        Runtime inspections may still select historical repair migrations when a later
+        release encounters stale repo state. That does not mean the later release has a
+        registered migration contract of its own. Manifest satisfaction is intentionally
+        limited to the release train that introduced the migration so a future
+        migration_required release cannot activate because an older repair happened to
+        run.
+        """
+        target = normalize_version(target_version)
+        introduced = normalize_version(self.introduced_version)
+        if not target or not introduced or not is_at_least(target, introduced):
+            return False
+        target_key = version_key(target)
+        introduced_key = version_key(introduced)
+        return target_key[:2] == introduced_key[:2]
 
     def as_dict(self) -> dict[str, object]:
         """Return a JSON-ready definition payload."""
@@ -195,6 +218,32 @@ def registered_migration_specs() -> tuple[dict[str, Any], ...]:
                 "PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_diagram_freshness.py tests/unit/runtime/test_auto_update_mermaid_diagrams.py tests/unit/runtime/test_render_mermaid_catalog.py tests/unit/runtime/test_build_traceability_graph.py",
                 "PYTHONPATH=src python src/odylith/cli.py validate topology-integrity --repo-root .",
                 "PYTHONPATH=src python -m pytest -q tests/integration/install/test_lifecycle_simulator.py::test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14",
+            ),
+        },
+        {
+            "migration_id": ATLAS_BOX_EXPLANATION_MIGRATION_ID,
+            "introduced_version": ATLAS_BOX_EXPLANATION_TARGET_VERSION,
+            "from_version_range": "<0.1.15 or Atlas generated browser surfaces missing derived container and inner-box explanations",
+            "to_version_range": ">=0.1.15",
+            "scenario_predicates": (
+                "healthy_pinned_consumer",
+                "already_current_consumer",
+                "release_marked_migration_required",
+                "generated_surface_stale_runtime_healthy",
+            ),
+            "required_manifest_fields": ("migration_required", "repo_schema_version"),
+            "write_set": (
+                "odylith/atlas/atlas.html",
+                "odylith/atlas/mermaid-payload.v1.js",
+                "odylith/atlas/mermaid-app.v1.js",
+                "odylith/radar/traceability-graph.v1.json",
+                ".odylith/state/migrations/v0.1.15-atlas-box-explanation-contract.v1.json",
+            ),
+            "rollback_scope": "repo-local Atlas generated surface writes; recover through Git if interrupted",
+            "validation_commands": (
+                "PYTHONPATH=src python -m pytest -q tests/unit/install/test_atlas_box_explanation_migration.py tests/unit/install/test_migration_runtime.py",
+                "PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_mermaid_catalog.py tests/unit/runtime/test_build_traceability_graph.py",
+                "PYTHONPATH=src python -m pytest -q tests/integration/install/test_lifecycle_simulator.py::test_lifecycle_simulator_proves_historical_upgrades_to_0_1_15",
             ),
         },
     )

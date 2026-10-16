@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import datetime as dt
+import stat
 from pathlib import Path
+
+import pytest
 
 from odylith.runtime.governance import legacy_backlog_normalization
 
@@ -99,7 +102,7 @@ def _seed_repo(tmp_path: Path, *, founder_override: str, rationale_lines: list[s
     return repo_root
 
 
-def test_normalize_legacy_backlog_index_preserves_existing_prose_and_adds_missing_defaults(tmp_path: Path) -> None:
+def test_normalize_legacy_backlog_index_preserves_partial_supplied_rationale(tmp_path: Path) -> None:
     repo_root = _seed_repo(
         tmp_path,
         founder_override="no",
@@ -121,10 +124,10 @@ def test_normalize_legacy_backlog_index_preserves_existing_prose_and_adds_missin
     assert "impacted_lanes" not in text
     assert "impacted_lanes" not in idea_text
     assert "operator supplied context stays intact." in text
-    assert "- expected outcome: clearer product truth and faster follow-on implementation planning." in text
-    assert "- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins." in text
-    assert "- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream." in text
-    assert "- ranking basis: score-based rank; no manual priority override." in text
+    assert "- expected outcome:" not in text
+    assert "- tradeoff:" not in text
+    assert "- deferred for now:" not in text
+    assert "- ranking basis:" not in text
 
 
 def test_normalize_legacy_backlog_index_backfills_override_review_checkpoint(tmp_path: Path) -> None:
@@ -179,8 +182,8 @@ def test_normalize_legacy_backlog_index_trims_rationale_boundary_blank_lines(tmp
 
     assert result.changed is True
     assert "### B-101 (rank 1)\n- why now: keep the body, not the padded boundary." in text
-    assert "- ranking basis: score-based rank; no manual priority override.\n" in text
-    assert "- ranking basis: score-based rank; no manual priority override.\n\n\n" not in text
+    assert "- ranking basis:" not in text
+    assert "- why now: keep the body, not the padded boundary.\n\n\n" not in text
 
 
 def test_normalize_legacy_backlog_index_adds_missing_reorder_rationale_section(tmp_path: Path) -> None:
@@ -195,15 +198,19 @@ def test_normalize_legacy_backlog_index_adds_missing_reorder_rationale_section(t
 
     result = legacy_backlog_normalization.normalize_legacy_backlog_index(
         repo_root=repo_root,
-        today=dt.date(2026, 4, 6),
+        today=dt.date(2026, 4, 7),
     )
     text = backlog_index.read_text(encoding="utf-8")
 
     assert result.changed is True
+    assert "Last updated (UTC): 2026-04-07" in text
     assert result.added_sections == ("B-101",)
     assert "## Reorder Rationale Log" in text
     assert "### B-101 (rank 1)" in text
-    assert "- why now: created as a new queued workstream for Legacy Sync Fix." in text
+    assert "- why now:" not in text
+    assert "- expected outcome:" not in text
+    assert "- tradeoff:" not in text
+    assert "- deferred for now:" not in text
     assert "- ranking basis: score-based rank; no manual priority override." in text
 
 
@@ -219,16 +226,84 @@ def test_normalize_legacy_backlog_index_is_idempotent_after_bridge(tmp_path: Pat
         today=dt.date(2026, 4, 6),
     )
     backlog_index = repo_root / "odylith" / "radar" / "source" / "INDEX.md"
-    normalized = backlog_index.read_text(encoding="utf-8")
+    normalized = backlog_index.read_bytes()
+    normalized_mode = stat.S_IMODE(backlog_index.stat().st_mode)
 
     second = legacy_backlog_normalization.normalize_legacy_backlog_index(
         repo_root=repo_root,
-        today=dt.date(2026, 4, 6),
+        today=dt.date(2026, 4, 7),
     )
 
     assert first.changed is True
     assert second.changed is False
-    assert backlog_index.read_text(encoding="utf-8") == normalized
+    assert backlog_index.read_bytes() == normalized
+    assert stat.S_IMODE(backlog_index.stat().st_mode) == normalized_mode
+
+
+def test_normalize_legacy_idea_spec_does_not_rewrite_normalized_index(tmp_path: Path) -> None:
+    repo_root = _seed_repo(
+        tmp_path,
+        founder_override="no",
+        rationale_lines=["- why now: keep the current explanation."],
+    )
+    legacy_backlog_normalization.normalize_legacy_backlog_index(
+        repo_root=repo_root, today=dt.date(2026, 4, 6),
+    )
+    backlog_index = repo_root / "odylith" / "radar" / "source" / "INDEX.md"
+    original_index = backlog_index.read_bytes()
+    original_mode = stat.S_IMODE(backlog_index.stat().st_mode)
+    idea_path = repo_root / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "2026-04-06-legacy-sync-fix.md"
+    idea_text = idea_path.read_text(encoding="utf-8")
+    idea_path.write_text(
+        idea_text.replace("date: 2026-04-06\n\n", "date: 2026-04-06\n\nimpacted_lanes: both\n\n"),
+        encoding="utf-8",
+    )
+
+    result = legacy_backlog_normalization.normalize_legacy_backlog_index(
+        repo_root=repo_root, today=dt.date(2026, 4, 7),
+    )
+
+    assert result.changed is True
+    assert result.normalized_idea_specs == ("2026-04-06-legacy-sync-fix",)
+    assert idea_path.read_text(encoding="utf-8") == idea_text
+    assert backlog_index.read_bytes() == original_index
+    assert stat.S_IMODE(backlog_index.stat().st_mode) == original_mode
+
+
+@pytest.mark.parametrize("decision_lines", [
+    [],
+    ["- tradeoff: Accept manual approval to preserve independent review.",
+     "- deferred for now: Defer the optional summary export."],
+])
+def test_normalization_neither_invents_nor_removes_product_decisions(tmp_path: Path, decision_lines) -> None:
+    supplied = [
+        "- why now: Keep the supplied customer need.",
+        "- expected outcome: Deliver the supplied result.",
+        *decision_lines,
+        "- ranking basis: Preserve the supplied first-path ordering.",
+    ]
+    root = _seed_repo(tmp_path, founder_override="no", rationale_lines=supplied)
+    legacy_backlog_normalization.normalize_legacy_backlog_index(repo_root=root, today=dt.date(2026, 4, 6))
+    text = (root / "odylith/radar/source/INDEX.md").read_text()
+    rationale = text.split("### B-101 (rank 1)\n", maxsplit=1)[1].strip().splitlines()
+    assert rationale == supplied
+    assert not legacy_backlog_normalization.normalize_legacy_backlog_index(
+        repo_root=root, today=dt.date(2026, 4, 6),
+    ).changed
+
+
+def test_normalize_legacy_backlog_index_defaults_last_updated_to_utc_date(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    repo_root = _seed_repo(
+        tmp_path,
+        founder_override="no",
+        rationale_lines=["- why now: keep the current explanation."],
+    )
+    monkeypatch.setattr(legacy_backlog_normalization, "_utc_today", lambda: dt.date(2026, 7, 1))
+
+    legacy_backlog_normalization.normalize_legacy_backlog_index(repo_root=repo_root)
+    text = (repo_root / "odylith" / "radar" / "source" / "INDEX.md").read_text(encoding="utf-8")
+
+    assert "Last updated (UTC): 2026-07-01" in text
 
 
 def test_backlog_next_action_prefers_metadata_repairs_over_hidden_rationale_noise() -> None:

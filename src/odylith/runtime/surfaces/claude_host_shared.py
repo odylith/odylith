@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.surfaces import host_hook_execution
 
 _COMPASS_RUNTIME_RELATIVE = Path("odylith") / "compass" / "runtime" / "current.v1.json"
 _CLAUDE_CONFIG_DIR_ENV = "CLAUDE_CONFIG_DIR"
@@ -309,17 +310,11 @@ def run_odylith(
     launcher = project_launcher(project_dir)
     if not launcher.is_file():
         return None
-    try:
-        return subprocess.run(
-            [str(launcher), *args],
-            cwd=str(Path(project_dir).expanduser().resolve()),
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=timeout,
-        )
-    except (OSError, subprocess.SubprocessError):
-        return None
+    return host_hook_execution.run_hook_command(
+        command=[str(launcher), *args],
+        cwd=Path(project_dir).expanduser().resolve(),
+        timeout=timeout,
+    )
 
 
 def load_runtime_snapshot(project_dir: Path | str) -> dict[str, Any]:
@@ -577,7 +572,7 @@ def build_subagent_context(*, project_dir: Path | str, agent_type: str = "") -> 
 
 
 def meaningful_stop_summary(text: str) -> str:
-    """Extract a single short sentence from a Stop hook payload, or return ''.
+    """Extract a single complete sentence from a Stop hook payload, or return ''.
 
     The Stop hook receives the assistant's final response. Many turns end
     with chit-chat ("Would you like ..."), code blocks, or trivial
@@ -611,7 +606,7 @@ def meaningful_stop_summary(text: str) -> str:
     if re.match(r"^(I can|Would you like|If you want)\b", joined, flags=re.IGNORECASE):
         return ""
     sentence = re.split(r"(?<=[.!])\s+", joined, maxsplit=1)[0]
-    return collapse_whitespace(sentence, limit=180)
+    return sentence
 
 
 def extract_workstreams(text: str) -> list[str]:
@@ -627,37 +622,24 @@ def extract_workstreams(text: str) -> list[str]:
     return tokens
 
 
-def run_compass_log(
-    *,
-    project_dir: Path | str,
-    summary: str,
-    workstreams: list[str] | None = None,
-) -> bool:
-    """Append a Compass timeline event for a meaningful Claude stop summary."""
-    workstreams = workstreams or []
-    args = [
-        "compass",
-        "log",
-        "--repo-root",
-        ".",
-        "--kind",
-        "implementation",
-        "--summary",
-        summary,
-    ]
-    for workstream in workstreams[:4]:
-        args.extend(["--workstream", workstream])
-    completed = run_odylith(project_dir=project_dir, args=args, timeout=20)
-    return bool(completed and completed.returncode == 0)
-
-
 def append_agent_stream_event(
     *,
     project_dir: Path | str,
     event: dict[str, Any],
 ) -> Path | None:
-    """Append one JSONL event to the Compass agent-stream log, fail-soft on errors."""
-    runtime_dir = Path(project_dir).expanduser().resolve() / "odylith" / "compass" / "runtime"
+    """Retain protected-stream events; append legacy events fail-soft on I/O errors."""
+    from odylith.runtime.domain_intelligence import greenfield_generation_state
+    from odylith.runtime.domain_intelligence import greenfield_managed_mutation_boundary
+    from odylith.runtime.surfaces import host_dirty_checkpoint
+
+    project = Path(project_dir).expanduser().resolve()
+    if (
+        greenfield_generation_state.read_active_publication(project) is not None
+        and not greenfield_managed_mutation_boundary.canonical_event_writer_admitted(project)
+    ):
+        host_dirty_checkpoint.record_compass_event(repo_root=project, event=event)
+        return None
+    runtime_dir = project / "odylith" / "compass" / "runtime"
     if not runtime_dir.is_dir():
         return None
     stream_path = runtime_dir / "agent-stream.v1.jsonl"

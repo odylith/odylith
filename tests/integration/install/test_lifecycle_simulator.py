@@ -4,12 +4,14 @@ import json
 import shutil
 from pathlib import Path
 
+from odylith.install.atlas_box_explanation_migration import MIGRATION_ID as ATLAS_BOX_EXPLANATION_MIGRATION_ID
 from odylith.install.atlas_surface_migration import MIGRATION_ID as ATLAS_SURFACE_MIGRATION_ID
 from odylith.install.casebook_metadata_migration import (
     MIGRATION_ID as CASEBOOK_METADATA_MIGRATION_ID,
     STATUS_FSM_MIGRATION_ID as CASEBOOK_STATUS_FSM_MIGRATION_ID,
 )
 from odylith.runtime.surfaces import auto_update_mermaid_diagrams
+from odylith.runtime.domain_intelligence import greenfield_generation_store
 
 from tests.integration.install.simulator import InstallLifecycleSimulator, VerifiedReleaseLifecycleSimulator
 
@@ -29,6 +31,10 @@ HISTORICAL_0_1_RELEASES_BEFORE_0_1_14 = (
     "0.1.11",
     "0.1.12",
     "0.1.13",
+)
+HISTORICAL_0_1_RELEASES_BEFORE_0_1_15 = (
+    *HISTORICAL_0_1_RELEASES_BEFORE_0_1_14,
+    "0.1.14",
 )
 
 
@@ -70,7 +76,7 @@ def _patch_mermaid_render(monkeypatch) -> None:
             svg_path.parent.mkdir(parents=True, exist_ok=True)
             svg_path.write_text(
                 '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 120 80">'
-                '<g class="cluster"><rect style="fill:#effcf9 !important;stroke:#9bd8cf !important;"></rect></g>'
+                '<g class="cluster"><rect style="fill:#FBFDFF !important;stroke:#D8E5F4 !important;"></rect></g>'
                 "</svg>\n",
                 encoding="utf-8",
             )
@@ -134,8 +140,7 @@ def test_lifecycle_simulator_covers_first_install_upgrade_and_rollback(tmp_path:
     assert sim.pin().odylith_version == "1.2.3"
     assert sim.status().detached is False
 
-    sim.write_pin("1.2.4")
-    assert sim.upgrade() == 0
+    assert sim.upgrade_to("1.2.4", write_pin=True) == 0
     assert sim.state()["active_version"] == "1.2.4"
     assert sim.pin().odylith_version == "1.2.4"
     assert sim.active_runtime_name() == "1.2.4"
@@ -163,7 +168,7 @@ def test_lifecycle_simulator_proves_historical_upgrades_to_0_1_13(tmp_path: Path
         sim = InstallLifecycleSimulator(tmp_path=case_root, monkeypatch=monkeypatch)
         sim.register_release(target_version)
 
-        assert sim.install(from_version) == 0
+        sim.seed_historical_unactivated_install(from_version)
         legacy_bug_path = _write_legacy_casebook_metadata_bug(sim.repo_root)
 
         if from_version == "0.1.10":
@@ -223,9 +228,14 @@ def test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14(tmp_path: Path
         sim = InstallLifecycleSimulator(tmp_path=case_root, monkeypatch=monkeypatch)
         sim.register_release(target_version)
 
-        assert sim.install(from_version) == 0
+        sim.seed_historical_unactivated_install(from_version)
         legacy_bug_path = _write_legacy_casebook_metadata_bug(sim.repo_root)
         _write_legacy_atlas_surface(sim.repo_root)
+        atlas_root = sim.repo_root / "odylith" / "atlas"
+        legacy_atlas = {
+            str(path.relative_to(atlas_root)): path.read_bytes()
+            for path in atlas_root.rglob("*") if path.is_file()
+        }
         sim.write_pin(target_version)
 
         assert sim.upgrade() == 0
@@ -248,9 +258,14 @@ def test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14(tmp_path: Path
 
         migration_results = {result["migration_id"]: result for result in upgrade_event["migration_results"]}
         assert migration_results[CASEBOOK_STATUS_FSM_MIGRATION_ID]["state"] == "applied"
-        assert migration_results[ATLAS_SURFACE_MIGRATION_ID]["state"] == "applied"
+        atlas_result = migration_results[ATLAS_SURFACE_MIGRATION_ID]
+        assert atlas_result["state"] == "selected"
+        assert atlas_result["verification_result"] == {
+            "status": "pending", "mode": "target_runtime_completion",
+        }
+        assert atlas_result["written_paths"] == atlas_result["removed_paths"] == []
         assert (sim.repo_root / ".odylith/state/migrations/v0.1.14-casebook-status-fsm.v1.json").is_file()
-        assert (sim.repo_root / ".odylith/state/migrations/v0.1.14-atlas-render-surface-polish.v1.json").is_file()
+        assert not (sim.repo_root / ".odylith/state/migrations/v0.1.14-atlas-render-surface-polish.v1.json").exists()
         legacy_text = legacy_bug_path.read_text(encoding="utf-8")
         assert "- Status: Mitigated" in legacy_text
         assert "- Fixed: Pending" in legacy_text
@@ -258,21 +273,74 @@ def test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14(tmp_path: Path
         payload_text = (sim.repo_root / "odylith" / "casebook" / "casebook-payload.v1.js").read_text(encoding="utf-8")
         assert '"status": "Mitigated"' in payload_text
         assert '"status_token": "mitigated"' in payload_text
-        atlas_html = (sim.repo_root / "odylith" / "atlas" / "atlas.html").read_text(encoding="utf-8")
-        assert ".viewer-stage::before" not in atlas_html
-        assert "background: #ffffff;" in atlas_html
+        assert {
+            str(path.relative_to(atlas_root)): path.read_bytes()
+            for path in atlas_root.rglob("*") if path.is_file()
+        } == legacy_atlas
+
+
+def test_lifecycle_simulator_proves_historical_upgrades_to_0_1_15(tmp_path: Path, monkeypatch) -> None:
+    target_version = "0.1.15"
+    _patch_mermaid_render(monkeypatch)
+
+    for from_version in HISTORICAL_0_1_RELEASES_BEFORE_0_1_15:
+        if from_version not in {"0.1.10", "0.1.11", "0.1.12", "0.1.13", "0.1.14"}:
+            continue
+        case_root = tmp_path / f"v015_{from_version.replace('.', '_')}"
+        case_root.mkdir()
+        sim = InstallLifecycleSimulator(tmp_path=case_root, monkeypatch=monkeypatch)
+        sim.register_release(target_version, migration_required=True)
+
+        sim.seed_historical_unactivated_install(from_version)
+        _write_legacy_casebook_metadata_bug(sim.repo_root)
+        _write_legacy_atlas_surface(sim.repo_root)
+        sim.write_pin(target_version)
+
+        assert sim.upgrade() == 0
+        assert sim.status().active_version == target_version
+        assert sim.pin().odylith_version == target_version
+
+        activated_events = [
+            entry
+            for entry in sim.install_ledger()
+            if entry.get("operation") == "upgrade" and entry.get("status") == "activated"
+        ]
+        assert activated_events
+        upgrade_event = activated_events[-1]
+        assert upgrade_event["previous_version"] == from_version
+        assert upgrade_event["active_version"] == target_version
+        assert upgrade_event["migration_plan"]["target_version"] == target_version
+        assert upgrade_event["migration_plan"]["ledger_state"][ATLAS_BOX_EXPLANATION_MIGRATION_ID] == "selected"
+        assert not upgrade_event["migration_plan"]["blocked"]
+
+        migration_results = {result["migration_id"]: result for result in upgrade_event["migration_results"]}
+        assert migration_results[ATLAS_BOX_EXPLANATION_MIGRATION_ID]["state"] == "applied"
+        assert (
+            sim.repo_root / ".odylith/state/migrations/v0.1.15-atlas-box-explanation-contract.v1.json"
+        ).is_file()
+        payload_text = (sim.repo_root / "odylith" / "atlas" / "mermaid-payload.v1.js").read_text(encoding="utf-8")
+        assert '"label": "Lane"' in payload_text
+        assert '"label": "Source"' in payload_text
+        assert '"label": "Render"' in payload_text
 
 
 def test_lifecycle_simulator_blocks_migration_release_activation(tmp_path: Path, monkeypatch) -> None:
     sim = InstallLifecycleSimulator(tmp_path=tmp_path, monkeypatch=monkeypatch)
     sim.register_release("1.2.4", migration_required=True)
 
-    assert sim.install("1.2.3") == 0
+    # The operator's tracked request predates installation; the real install
+    # publishes that intent instead of editing an already activated baseline.
     sim.write_pin("1.2.4")
+    assert sim.install("1.2.3") == 0
+    assert sim.pin().odylith_version == "1.2.4"
+    publication = (sim.repo_root / "odylith/index.html").read_bytes()
+    greenfield_generation_store.require_greenfield_working_generation(sim.repo_root)
 
     assert sim.upgrade() == 2
     assert sim.status().active_version == "1.2.3"
     assert sim.pin().odylith_version == "1.2.4"
+    assert (sim.repo_root / "odylith/index.html").read_bytes() == publication
+    greenfield_generation_store.require_greenfield_working_generation(sim.repo_root)
 
 
 def test_lifecycle_simulator_recovers_after_failed_upgrade_smoke(tmp_path: Path, monkeypatch) -> None:
@@ -280,16 +348,18 @@ def test_lifecycle_simulator_recovers_after_failed_upgrade_smoke(tmp_path: Path,
     sim.register_release("1.2.4")
 
     assert sim.install("1.2.3") == 0
-    sim.write_pin("1.2.4")
+    publication = (sim.repo_root / "odylith/index.html").read_bytes()
     sim.fail_smoke_for("1.2.4")
 
-    assert sim.upgrade() == 1
+    assert sim.upgrade_to("1.2.4", write_pin=True) == 1
     assert sim.status().active_version == "1.2.3"
     assert sim.active_runtime_name() == "1.2.3"
 
     failed_events = [entry for entry in sim.install_ledger() if entry.get("operation") == "upgrade" and entry.get("status") == "failed"]
     assert len(failed_events) == 1
     assert failed_events[0]["target_version"] == "1.2.4"
+    assert (sim.repo_root / "odylith/index.html").read_bytes() == publication
+    greenfield_generation_store.require_greenfield_working_generation(sim.repo_root)
 
 
 def test_lifecycle_simulator_exercises_source_local_override_and_repair(tmp_path: Path, monkeypatch) -> None:
@@ -322,9 +392,8 @@ def test_verified_release_lifecycle_simulator_exercises_runtime_staging_path(tmp
     sim.register_verified_release("1.2.4")
 
     assert sim.install("1.2.3") == 0
-    sim.write_pin("1.2.4")
 
-    assert sim.upgrade() == 0
+    assert sim.upgrade_to("1.2.4", write_pin=True) == 0
     status = sim.status()
     state = sim.state()
     assert status.active_version == "1.2.4"
@@ -342,11 +411,13 @@ def test_verified_release_lifecycle_simulator_preserves_previous_runtime_after_f
     sim.register_verified_release("1.2.4")
 
     assert sim.install("1.2.3") == 0
-    sim.write_pin("1.2.4")
+    publication = (sim.repo_root / "odylith/index.html").read_bytes()
     sim.fail_smoke_for("1.2.4")
 
-    assert sim.upgrade() == 1
+    assert sim.upgrade_to("1.2.4", write_pin=True) == 1
     status = sim.status()
     assert status.active_version == "1.2.3"
     assert sim.active_runtime_name() == "1.2.3"
     assert sim.runtime_install_marker("1.2.4").endswith("odylith-1.2.4-py3-none-any.whl")
+    assert (sim.repo_root / "odylith/index.html").read_bytes() == publication
+    greenfield_generation_store.require_greenfield_working_generation(sim.repo_root)

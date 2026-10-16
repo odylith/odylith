@@ -1,0 +1,127 @@
+- Bug ID: CB-176
+
+- Status: FixedPendingRelease
+
+- Fixed: Pending
+
+- Created: 2026-05-07
+
+- Severity: P1
+
+- Reproducibility: Always
+
+- Type: OperatorUX
+
+- Description: Local v0.1.15 greenfield apply for a CRISPR Ethics review app accepted a proposal whose first child workstream became the execution-wave program, Registry component specs rendered nested security/compliance lists as raw list literals, and the apply closeout did not tell the operator which workstream starts coding or how to verify the first slice.
+
+- Impact: Operators cannot understand the generated program, component ownership, or next implementation step after accepting a greenfield proposal; release testing shows the experience is not release-ready.
+
+- Components Affected: domain-intelligence
+
+- Environment(s): Odylith product repo local release v0.1.15 installed into an empty consumer repo, exercised from Claude Code on May 6, 2026.
+
+- Detected By: Operator manual release testing with screenshots and Claude CLI trace.
+
+- Failure Signature: Compass execution waves card used 'Identity, sessions, and COI-aware authorization (B-001)' as the program; Registry Risks And Open Questions rendered Python-style list literals; apply required repeated schema repairs and ended without coding/verification sequence.
+
+- Trigger Path: odylith greenfield propose/apply for a CRISPR Ethics review app with waves referencing WS-* proposal-local workstream IDs.
+
+- Ownership: Domain Intelligence greenfield proposal normalization, apply output, execution-wave materialization, and component spec authoring.
+
+- Timeline: 2026-05-06: operator installed local v0.1.15 release, proposed CRISPR Ethics app, confirmed single-institution/no-PHI/TypeScript, applied after repeated schema repairs, then inspected Registry and Compass screenshots showing unreadable specs and fake program identity.
+
+- Follow-up Feedback: 2026-05-07: operator rejected the first mitigation as still not deep enough; the remaining quality gap was that component specs were readable but generic, the first implementation anchor still pointed at the umbrella in some specs, execution waves did not expose exit gates in the UI model, and apply output still under-explained the operator handoff after governance creation.
+
+- Deep-Diagnostics Finding: 2026-05-07: a fresh packaged install smoke found that broad greenfield traceability could still leak the first release workstream into unrelated component specs; `identity-access` correctly started at `B-002`, but `review-workflow-engine` also pointed at `B-002` instead of its explicit `component_focus` child `B-003`.
+
+- Fourth-Diagnostics Finding: 2026-05-07: host-authored scalar quality fields could still bypass compatibility normalization and drip-fail later. A proposal row with `success_metrics` written as `"metric one; metric two"` was interpreted as an iterable of characters by validation, causing misleading errors such as `success_metrics[1] is too shallow`; list-valued `validation` could also be flattened into Python list-literal prose when used as a fallback first slice or wave gate.
+
+- Fifth-Diagnostics Finding: 2026-05-07: a fresh packaged greenfield apply smoke proved a valid normalized proposal could still roll back after writing source truth because the Atlas stale-diagram auto-update step inherited the generic 45 second dashboard timeout. First-run Mermaid CLI/browser startup can legitimately exceed that budget, so the operator would see a failed apply even though Tribunal, Radar, Registry, and Compass authoring had already cleared.
+
+- Sixth-Diagnostics Finding: 2026-05-07: the same packaged smoke showed a residual polish problem after scalar normalization: list-valued wave gates were no longer Python literals, but bare fragments could be joined without punctuation in the fallback `exit_gate`, program-wave materialization copied that joined fallback into the explicit `validation` list, and the operator handoff could show both the joined fallback and the underlying wave-validation bullets.
+
+- Seventh-Diagnostics Finding: 2026-05-07: a fresh robot swarm logistics greenfield run was materially better but still not release-quality. `greenfield propose` rendered a strong human proposal, but the host then hand-built JSON, hit repeated validation and Tribunal failures (`problem`, `recommended_first_slice`, dependency/interface expectations), patched fields ad hoc, and only passed after visible schema repair loops. The closeout still under-explained the first coding lane and the release smoke did not yet prove the exact install -> show -> confirmed greenfield apply journey.
+
+- Eighth-Diagnostics Finding: 2026-05-07: after the runtime path was hardened, shipped AGENTS/README/skill guidance still carried enough old-flow language to steer a host back toward hand-built `odylith-greenfield-proposal.json` repair work instead of the canonical `greenfield create` path. That would reintroduce the same schema-fighting behavior even with a fixed CLI.
+
+- Blast Radius: Any empty-repo greenfield proposal where the host omits the umbrella parent, uses proposal-local WS IDs, or supplies nested security/compliance posture.
+
+- SLO/SLA Impact: Blocks release-readiness for the greenfield project creation flow because accepted governance objects are confusing and unactionable.
+
+- Data Risk: No user data loss, but governed Registry/Radar/Compass source truth can become misleading and require manual cleanup.
+
+- Security/Compliance: Safety-sensitive or regulated greenfield domains can hide access-control, compliance, and verification posture inside unreadable specs.
+
+- Invariant Violated: Accepted greenfield governance must materialize a real umbrella program, readable component specs, resolvable wave/release targets, and an explicit next coding plus validation sequence.
+
+- Root Cause: Greenfield apply assumed backlog[0] was already the umbrella parent, did not resolve proposal-local workstream IDs against created B-* IDs, flattened nested posture values with str(), and returned only artifact counts instead of an implementation handoff.
+
+- Solution: Normalize host proposals by synthesizing a Govern <Project> umbrella when needed, preserve proposal IDs for wave/release/traceability resolution, recursively flatten nested posture text, upgrade component spec template sections, and return start-workstream plus verification gates in apply output.
+
+- Second-Pass Solution: Extracted greenfield handoff shaping into a dedicated runtime owner, carried wave exit gates and validation text through the execution-wave contract and UI model, upgraded candidate Registry specs with implementation runway sections, fixed first component kickoff anchors to prefer the first child workstream over the umbrella, and expanded CLI apply output with first lane, numbered operator handoff, validation gates, and verification commands.
+
+- Deep-Diagnostics Solution: Component handoff selection now prefers backlog rows whose explicit `component_focus`, `components`, `component_ids`, `related_components`, or `related_component_ids` match the Registry component before falling back to release or broad traceability ordering. This keeps each component spec anchored to its own first coding workstream.
+
+- Fourth-Diagnostics Solution: Greenfield normalization now converts scalar and nested list-shaped proposal fields into canonical lists before validation, Tribunal review, release targeting, wave authoring, backlog authoring, and component spec seeding. Text quality fields split on newline or semicolon, reference fields also split comma-separated refs, and list-valued validation or exit gates are joined as human prose instead of Python literal text.
+
+- Fifth-Diagnostics Solution: Dashboard refresh timeouts are now surface-specific: generic surfaces keep the 45 second budget, while Atlas auto-update receives a 180 second budget for Mermaid render startup during first-run or packaged install paths. The sync execution plan carries that Atlas budget on the stale-diagram pre-render step instead of using the generic dashboard constant.
+
+- Sixth-Diagnostics Solution: Greenfield joined prose now uses sentence-aware joining: existing sentence punctuation stays intact, while bare fragments join with semicolons. Program-wave materialization keeps `exit_gate` as the joined fallback but leaves `validation` as the explicit item list, and operator handoff validation gates suppress a joined wave fallback when it exactly duplicates the explicit wave validation list, so the first validation list stays concise and readable.
+
+- Seventh-Diagnostics Solution: `greenfield propose` now builds and validates an apply-ready canonical proposal object before rendering the human proposal, exposes the canonical object and Tribunal gate in JSON output, and points operators to the one-command confirmed path. `odylith greenfield create --prompt ... --release 0.0.1 --confirm` now owns scaffold construction, normalization, validation, Tribunal, apply, refresh, and closeout without host-written proposal JSON. Proposal validation and Tribunal failure reporting now batch missing/shallow fields and dependency/interface gaps, normalization auto-enriches safe dependency/interface expectations, and the CLI closeout prints the first coding workstream, lane, handoff steps, validation gates, verification commands, dashboard refresh, and release targeting.
+
+- Eighth-Diagnostics Solution: Updated live and bundled greenfield guidance (`AGENTS.md`, `odylith/AGENTS.md`, `odylith/README.md`, `odylith-greenfield-governance`, and `odylith-show-me`) so review uses canonical `greenfield propose`, confirmation uses `greenfield create --confirm`, and hosts are explicitly told not to hand-author or reconstruct proposal JSON. Release smoke now also checks installed guidance files for the create path and fails on stale schema-repair instructions.
+
+- Rollback/Forward Fix: Forward fix in the greenfield runtime and generated skill mirror; no runtime rollback is useful because the issue is generated governance quality.
+
+- Verification: Unit regression for CRISPR no-parent proposal, component authoring tests, program wave/view-model tests, Compass/Registry browser smoke, install bundle/lifecycle tests, and local dist rebuild.
+
+- Deep-Diagnostics Verification: `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_component_authoring.py tests/unit/runtime/test_execution_wave_contract.py tests/unit/runtime/test_execution_wave_view_model.py tests/unit/runtime/test_execution_wave_ui_runtime_primitives.py tests/unit/runtime/test_program_wave_authoring.py tests/unit/runtime/test_build_traceability_graph.py tests/unit/runtime/test_compass_dashboard_shell.py tests/unit/runtime/test_compass_governance_source_runtime.py tests/unit/runtime/test_surface_shell_contracts.py tests/unit/runtime/test_dashboard_ui_primitives.py tests/unit/install/test_codex_project_assets.py::test_live_claude_skill_shims_and_review_assets_match_bundle_content tests/unit/install/test_codex_project_assets.py::test_live_claude_skill_shims_cover_repo_owned_odylith_skills tests/unit/runtime/test_show_capabilities.py::test_show_me_skill_blocks_host_status_detours` (`140 passed`); `./.odylith/bin/odylith validate guidance-behavior --repo-root .`; `make local-release-assets VERSION=0.1.15 DIST=/tmp/odylith-local-release-0.1.15`; fresh local install smoke from `http://127.0.0.1:8124` applied the CRISPR proposal and proved `review-workflow-engine` starts from `B-003` while `identity-access` starts from `B-002`, with no raw Python list literals in Registry or Compass.
+
+- Fourth-Diagnostics Verification: `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py` (`30 passed`); `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_component_authoring.py tests/unit/runtime/test_execution_wave_contract.py tests/unit/runtime/test_execution_wave_view_model.py tests/unit/runtime/test_execution_wave_ui_runtime_primitives.py tests/unit/runtime/test_program_wave_authoring.py tests/unit/runtime/test_build_traceability_graph.py tests/unit/runtime/test_compass_dashboard_shell.py tests/unit/runtime/test_compass_governance_source_runtime.py tests/unit/runtime/test_surface_shell_contracts.py tests/unit/runtime/test_dashboard_ui_primitives.py tests/unit/install/test_codex_project_assets.py::test_live_claude_skill_shims_and_review_assets_match_bundle_content tests/unit/install/test_codex_project_assets.py::test_live_claude_skill_shims_cover_repo_owned_odylith_skills tests/unit/runtime/test_show_capabilities.py::test_show_me_skill_blocks_host_status_detours` (`141 passed`); `./.odylith/bin/odylith validate guidance-behavior --repo-root .`; `git diff --check`.
+
+- Fifth-Diagnostics Verification: `PYTHONPATH=src python -m compileall -q src/odylith/runtime/domain_intelligence/proposal_normalization.py src/odylith/runtime/governance/dashboard_refresh_contract.py src/odylith/runtime/governance/sync_workstream_artifacts.py`; `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_sync_cli_compat.py::test_build_sync_execution_plan_refreshes_atlas_for_catalog_only_selective_slice`; `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_normalization_splits_scalar_quality_fields`; `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_sync_cli_compat.py::test_build_sync_execution_plan_refreshes_atlas_for_catalog_only_selective_slice tests/unit/runtime/test_component_authoring.py tests/unit/runtime/test_execution_wave_contract.py tests/unit/runtime/test_execution_wave_view_model.py tests/unit/runtime/test_execution_wave_ui_runtime_primitives.py tests/unit/runtime/test_program_wave_authoring.py tests/unit/runtime/test_build_traceability_graph.py tests/unit/runtime/test_compass_dashboard_shell.py tests/unit/runtime/test_compass_governance_source_runtime.py tests/unit/runtime/test_surface_shell_contracts.py tests/unit/runtime/test_dashboard_ui_primitives.py tests/unit/install/test_codex_project_assets.py::test_live_claude_skill_shims_and_review_assets_match_bundle_content tests/unit/install/test_codex_project_assets.py::test_live_claude_skill_shims_cover_repo_owned_odylith_skills tests/unit/runtime/test_show_capabilities.py::test_show_me_skill_blocks_host_status_detours` (`142 passed`).
+
+- Sixth-Diagnostics Verification: `PYTHONPATH=src python -m compileall -q src/odylith/runtime/domain_intelligence/proposal_normalization.py src/odylith/runtime/domain_intelligence/greenfield_experience.py src/odylith/runtime/domain_intelligence/greenfield_programs.py`; `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_apply_scalar_wave_validation_dedupes_handoff_gates tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_normalization_splits_scalar_quality_fields tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_apply_cli_prints_operator_handoff`; `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_sync_cli_compat.py::test_build_sync_execution_plan_refreshes_atlas_for_catalog_only_selective_slice tests/unit/runtime/test_component_authoring.py tests/unit/runtime/test_execution_wave_contract.py tests/unit/runtime/test_execution_wave_view_model.py tests/unit/runtime/test_execution_wave_ui_runtime_primitives.py tests/unit/runtime/test_program_wave_authoring.py tests/unit/runtime/test_build_traceability_graph.py tests/unit/runtime/test_compass_dashboard_shell.py tests/unit/runtime/test_compass_governance_source_runtime.py tests/unit/runtime/test_surface_shell_contracts.py tests/unit/runtime/test_dashboard_ui_primitives.py tests/unit/install/test_codex_project_assets.py::test_live_claude_skill_shims_and_review_assets_match_bundle_content tests/unit/install/test_codex_project_assets.py::test_live_claude_skill_shims_cover_repo_owned_odylith_skills tests/unit/runtime/test_show_capabilities.py::test_show_me_skill_blocks_host_status_detours` (`143 passed`); `make local-release-assets VERSION=0.1.15 DIST=/tmp/odylith-local-release-0.1.15`; fresh local install smoke from `http://127.0.0.1:8125` applied a scalar-form CRISPR proposal end-to-end with `start coding: B-002`, rendered Atlas assets, kept the first wave `validation` list to the two explicit wave gates, and found no `success_metrics[1] is too shallow`, raw Python list literal, or unsplit `WS-IA, WS-WORKFLOW` remnants in Radar/Registry/Compass/Atlas.
+
+- Seventh-Diagnostics Verification: `PYTHONPATH=src python -m compileall -q src/odylith/runtime/domain_intelligence/greenfield_cli_output.py src/odylith/runtime/domain_intelligence/greenfield_proposals.py src/odylith/runtime/domain_intelligence/proposal_scaffold.py src/odylith/runtime/domain_intelligence/proposal_validation.py src/odylith/runtime/domain_intelligence/proposal_tribunal.py src/odylith/runtime/domain_intelligence/proposal_normalization.py src/odylith/runtime/domain_intelligence/proposal_rendering.py src/odylith/cli.py scripts/release/local_release_smoke.py`; `PYTHONPATH=src python -m pytest -q tests/unit/test_cli.py::test_greenfield_create_help_forwards_backend_flags tests/unit/test_cli.py::test_greenfield_propose_command_is_provider_free tests/unit/test_cli.py::test_install_progress_bar_does_not_glue_child_output_to_elapsed_seconds tests/unit/test_cli_audit.py tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_prompt_returns_host_reasoning_contract tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_text_keeps_host_reasoning_and_no_write_boundary_visible tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_cli_json_is_host_reasoning_contract tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_normalization_enriches_transcript_dependency_gaps tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_apply_reports_validation_issues_in_one_batch tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_create_cli_owns_apply_ready_path tests/unit/install/test_local_release_smoke.py::test_greenfield_create_smoke_runs_show_create_and_checks_surfaces` (`160 passed` with the UI-focused unit tests in the same invocation).
+
+- Eighth-Diagnostics Verification: `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_apply_reports_validation_issues_in_one_batch tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_create_cli_owns_apply_ready_path tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_create_cli_requires_confirmation_before_writes tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_apply_requires_confirmation`; `PYTHONPATH=src python -m pytest -q tests/unit/install/test_local_release_smoke.py::test_greenfield_propose_apply_smoke_runs_exact_release_journey tests/unit/install/test_local_release_smoke.py::test_greenfield_create_smoke_runs_show_create_and_checks_surfaces tests/unit/install/test_local_release_smoke.py::test_release_smoke_requires_installed_greenfield_guidance_uses_create tests/unit/install/test_local_release_smoke.py::test_install_and_create_smoke_installs_then_runs_one_command_path tests/unit/install/test_codex_project_assets.py::test_greenfield_guidance_uses_canonical_create_path_not_host_json_authoring`; `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py tests/unit/install/test_local_release_smoke.py tests/unit/install/test_codex_project_assets.py` (`84 passed`).
+
+- Prevention: Keep Tribunal plus normalization tests covering parent synthesis, proposal ID mapping, nested posture flattening, and post-apply next steps.
+
+- Agent Guardrails: Hosts should still author an explicit WS-00 parent, but apply must not trust that every host did; never hand-repair generated specs after apply when normalization can prevent the bad state.
+
+- Preflight Checks: Before release, run greenfield apply regressions and browser proof for Compass and Registry against a no-source greenfield proposal.
+
+- Regression Tests Added: tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_apply_synthesizes_parent_and_polishes_component_specs plus component/spec and wave suites.
+
+- Second-Pass Regression Tests Added: tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_apply_cli_prints_operator_handoff, tests/unit/runtime/test_component_authoring.py::test_component_spec_template_uses_greenfield_responsibility_and_links, tests/unit/runtime/test_execution_wave_view_model.py::test_build_execution_wave_view_payload_builds_program_and_workstream_context, and tests/unit/runtime/test_execution_wave_ui_runtime_primitives.py::test_execution_wave_runtime_helpers_expose_shared_renderer.
+
+- Deep-Diagnostics Regression Tests Added: tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_apply_synthesizes_parent_and_polishes_component_specs now asserts the workflow component spec uses `B-003` as its first implementation-plan anchor and does not inherit the identity component's `B-002` anchor.
+
+- Fourth-Diagnostics Regression Tests Added: tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_normalization_splits_scalar_quality_fields asserts scalar metrics split into two success metrics, comma-separated release target refs split into canonical workstream refs, list-valued validation produces readable first-slice and wave-gate prose, and the normalized proposal passes both strict validation and the greenfield Tribunal.
+
+- Fifth-Diagnostics Regression Tests Added: tests/unit/runtime/test_sync_cli_compat.py::test_build_sync_execution_plan_refreshes_atlas_for_catalog_only_selective_slice asserts Atlas stale-diagram auto-update carries the Atlas-specific timeout budget instead of the generic dashboard timeout.
+
+- Sixth-Diagnostics Regression Tests Added: tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_normalization_splits_scalar_quality_fields now asserts bare-fragment wave validation joins with a semicolon while sentence-like fallback text remains readable; tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_apply_scalar_wave_validation_dedupes_handoff_gates asserts program-wave validation remains the explicit list and the next-step handoff does not show the joined fallback as a duplicate gate.
+
+- Seventh-Diagnostics Regression Tests Added: tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_create_cli_owns_apply_ready_path asserts the one-command path writes through Odylith without schema/Tribunal repair text; tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_apply_reports_validation_issues_in_one_batch asserts validation reports every missing field in one pass; tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_normalization_enriches_transcript_dependency_gaps asserts safe dependency/interface enrichment; tests/unit/test_cli.py::test_greenfield_create_help_forwards_backend_flags and tests/unit/test_cli_audit.py cover the public command surface; tests/unit/install/test_local_release_smoke.py::test_greenfield_create_smoke_runs_show_create_and_checks_surfaces pins the release smoke journey.
+
+- Eighth-Diagnostics Regression Tests Added: tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_create_cli_requires_confirmation_before_writes asserts `create` cannot write without `--confirm`; tests/unit/install/test_codex_project_assets.py::test_greenfield_guidance_uses_canonical_create_path_not_host_json_authoring asserts live and bundled guidance forbid host-authored proposal JSON; tests/unit/install/test_local_release_smoke.py::test_release_smoke_requires_installed_greenfield_guidance_uses_create asserts installed release guidance keeps the same create-path contract.
+
+- Related Incidents/Bugs: CB-160, CB-167, CB-173
+
+- GitHub Status: fixed_pending_release
+
+- Fixed In: 0.1.15
+
+- Code References: - src/odylith/runtime/domain_intelligence/proposal_normalization.py
+- src/odylith/runtime/domain_intelligence/proposal_scaffold.py
+- src/odylith/runtime/domain_intelligence/greenfield_cli_output.py
+- src/odylith/runtime/domain_intelligence/greenfield_experience.py
+- src/odylith/runtime/domain_intelligence/greenfield_programs.py
+- src/odylith/runtime/domain_intelligence/greenfield_proposals.py
+- src/odylith/runtime/governance/dashboard_refresh_contract.py
+- src/odylith/runtime/governance/sync_workstream_artifacts.py
+- src/odylith/runtime/governance/component_authoring.py

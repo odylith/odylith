@@ -1,0 +1,710 @@
+"""Byte-exact custody proofs for model-authored Greenfield paths."""
+
+from __future__ import annotations
+
+import hashlib
+from typing import Any
+
+import pytest
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import admit_greenfield_host_candidate
+
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    GreenfieldAuthoredSemanticsError,
+    authored_semantics_mapping,
+    validate_first_path_relations,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GreenfieldModelAuthoringError,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    RESCUE_PROFILE_ID,
+    STANDARD_PROFILE_ID,
+)
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    build_product_intent_envelope,
+    product_intent_authority_from_envelope,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
+    GreenfieldSourceDutyBindingError,
+    validate_greenfield_source_duty_binding,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
+    GreenfieldSourceDutyLedgerError,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import (
+    project_greenfield_source_lifecycle,
+)
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    admit_complete_host_candidate,
+    authored_response,
+    host_candidate_response,
+    materialize_complete_host_candidate,
+    model_event_rows,
+    synthetic_source_duty_receipt,
+)
+
+_TEXT_FIELDS = {
+    "title": "Harbor Desk",
+    "product_story": "Dock attendants need clear berth placement",
+    "state_object": "berth occupancy",
+    "first_path": "Dock attendant Ivo enters a vessel tag and the product records berth occupancy before the berth map shows the placement",
+    "proof_boundary": "Verify the placement and retention receipt",
+    "problem": "Berth placement is hard to track",
+    "customer": "Dock attendants",
+    "opportunity": "One reviewable berth workflow",
+    "product_view": "Harbor Desk gives dock attendants a berth workflow",
+}
+_LIST_FIELDS = {
+    "success_metrics": ["The berth map shows the placement"],
+    "evidence_requirements": ["Source evidence preserves berth history"],
+    "operational_constraints": ["Retain source notes for seven years"],
+    "component_responsibilities": ["Record berth occupancy"],
+    "human_actors": ["Dock attendant Ivo"],
+    "external_systems": ["Harbor Ledger"],
+    "internal_systems": ["Berth map"],
+    "assumptions": [],
+    "ambiguities": [],
+    "non_goals": ["Do not manage vessel scheduling"],
+}
+_AUTHORED_FIRST_PATH = "\n".join(
+    (
+        "Dock attendant Ivo enters a vessel tag",
+        "Berth map: the product records berth occupancy",
+        "Berth map: the berth map shows the placement",
+    )
+)
+
+
+def _source() -> str:
+    return ". ".join(
+        [*_TEXT_FIELDS.values(), *(item for rows in _LIST_FIELDS.values() for item in rows)]
+    ) + "."
+
+
+def _response(source: str) -> dict[str, object]:
+    assert source
+    response = authored_response(
+        {**_TEXT_FIELDS, **_LIST_FIELDS},
+        evidence_text=source,
+        component_responsibility_owners=["Berth map"],
+        first_path_relations=[
+            {
+                "order": 1,
+                "actor_kind": "human",
+                "actor_fact_quote": "Dock attendant Ivo",
+                "event_quote": "Dock attendant Ivo enters a vessel tag",
+                "action_verb_quote": "enters",
+                "target_quote": "a vessel tag",
+                "visible_result_quote": "",
+            },
+            {
+                "order": 2,
+                "actor_kind": "product",
+                "owner_system_quote": "Berth map",
+                "event_quote": "the product records berth occupancy",
+                "action_verb_quote": "records",
+                "target_quote": "berth occupancy",
+                "visible_result_quote": "",
+            },
+            {
+                "order": 3,
+                "actor_kind": "product",
+                "owner_system_quote": "Berth map",
+                "event_quote": "the berth map shows the placement",
+                "action_verb_quote": "shows",
+                "target_quote": "the placement",
+                "visible_result_quote": "the berth map shows the placement",
+            },
+        ],
+    )
+    return response
+
+
+def _complete_host_candidate_kwargs(
+    response: dict[str, object], evidence_text: str,
+) -> dict[str, object]:
+    return {
+        "host_candidate": host_candidate_response(
+            response,
+            evidence_text=evidence_text,
+        ),
+    }
+
+
+def _source_duty_for_response(response: dict[str, Any], source: str) -> dict[str, Any]:
+    candidate = host_candidate_response(response, evidence_text=source)
+    receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
+    binding = validate_greenfield_source_duty_binding(
+        candidate["result"]["source_duty_binding"], ledger_receipt=receipt,
+        candidate_result=candidate["result"], evidence_text=source,
+    )
+    return {
+        "ledger_receipt": receipt,
+        "binding": binding,
+        "lifecycle": project_greenfield_source_lifecycle(
+            ledger_receipt=receipt,
+            binding=binding,
+            candidate_result=candidate["result"],
+            evidence_text=source,
+        ),
+    }
+
+
+def _carried_human_actor_response() -> tuple[str, dict[str, Any], dict[str, Any]]:
+    first_path = (
+        "A dock attendant Ivo enters a vessel tag; the attendant checks its status "
+        "and sees the berth placement"
+    )
+    intent = {
+        **_TEXT_FIELDS,
+        **_LIST_FIELDS,
+        "first_path": first_path,
+        "human_actors": ["dock attendant Ivo", "Mara"],
+    }
+    source = ". ".join(
+        str(row)
+        for value in intent.values()
+        for row in (value if isinstance(value, list) else [value])
+        if str(row)
+    ) + "."
+    response = authored_response(
+        intent,
+        evidence_text=source,
+        component_responsibility_owners=["Berth map"],
+        first_path_relations=[
+            {
+                "actor_kind": "human",
+                "actor_fact_quote": "dock attendant Ivo",
+                "event_quote": "A dock attendant Ivo enters a vessel tag",
+                "action_verb_quote": "enters",
+                "target_quote": "a vessel tag",
+                "visible_result_quote": "",
+            },
+            {
+                "actor_kind": "human",
+                "actor_fact_quote": "dock attendant Ivo",
+                "event_quote": "the attendant checks its status",
+                "action_verb_quote": "checks",
+                "target_quote": "its status",
+                "visible_result_quote": "",
+            },
+            {
+                "actor_kind": "human",
+                "actor_fact_quote": "dock attendant Ivo",
+                "event_quote": "sees the berth placement",
+                "action_verb_quote": "sees",
+                "target_quote": "the berth placement",
+                "visible_result_quote": "the berth placement",
+            },
+        ],
+    )
+    return source, response, intent
+
+
+def test_authoring_accepts_only_byte_verified_source_citations() -> None:
+    source = _source()
+    result = admit_complete_host_candidate(
+        evidence_text=source,
+        host_candidate=host_candidate_response(
+            _response(source), evidence_text=source,
+        ),
+        model_profile_id=RESCUE_PROFILE_ID,
+    )
+
+    assert result.intent["first_path"] == _AUTHORED_FIRST_PATH
+    assert result.source_event_relations[0]["actor_fact_quote"] == "Dock attendant Ivo"
+    assert result.source_event_relations[1]["owner_system_path"] == "/internal_systems/0"
+    assert result.source_event_relations[-1]["visible_result_quote"] == "the berth map shows the placement"
+    assert [
+        (
+            row["responsibility_quote"],
+            row["owner_system_path"],
+            row["owner_system_quote"],
+            row["first_path_event_order"],
+        )
+        for row in result.component_responsibility_relations
+    ] == [
+        ("Berth map: the product records berth occupancy", "/internal_systems/0", "Berth map", 2),
+        ("Berth map: the berth map shows the placement", "/internal_systems/0", "Berth map", 3),
+    ]
+    assert result.tier == "rescue"
+    assert len(result.source_spans) == 20
+
+
+def test_product_led_path_keeps_review_recipient_without_inventing_human_event() -> None:
+    event = "The berth map prepares release readiness proof"
+    proof = "release readiness proof for Engineering reviewer Mara"
+    intent = {
+        **_TEXT_FIELDS,
+        **_LIST_FIELDS,
+        "product_story": event,
+        "first_path": event,
+        "proof_boundary": proof,
+        "human_actors": ["Engineering reviewer Mara"],
+        "internal_systems": ["Berth map"],
+        "success_metrics": ["release readiness proof"],
+    }
+    source = ". ".join(
+        str(row)
+        for value in intent.values()
+        for row in (value if isinstance(value, list) else [value])
+        if str(row)
+    ) + "."
+    response = authored_response(
+        intent,
+        evidence_text=source,
+        component_responsibility_owners=["Berth map"],
+        first_path_relations=[
+            {
+                "actor_kind": "product",
+                "owner_system_quote": "Berth map",
+                "event_quote": event,
+                "target_quote": "release readiness proof",
+                "visible_result_quote": "release readiness proof",
+            },
+        ],
+    )
+
+    result = admit_complete_host_candidate(
+        evidence_text=source,
+        **_complete_host_candidate_kwargs(response, source),
+    )
+
+    assert [row["actor_kind"] for row in result.source_event_relations] == ["product"]
+    assert [row["event_quote"] for row in result.source_event_relations] == [f"Berth map: {event}"]
+    assert result.intent["human_actors"] == ["Engineering reviewer Mara"]
+    assert result.intent["proof_boundary"] == proof
+    assert result.intent["assumptions"] == []
+
+
+def test_state_anchor_changes_only_selected_custody_not_canonical_meaning() -> None:
+    source = "berth occupancy training module. " + _source()
+    response = _response(source)
+    response["result"]["facts"]["state_object"] = {
+        "quote": "berth occupancy",
+        "prefix": "the product records ",
+        "anchor_occurrence": 1,
+    }
+    result = admit_complete_host_candidate(
+        evidence_text=source,
+        **_complete_host_candidate_kwargs(response, source),
+    )
+    span = next(row for row in result.source_spans if row["section_key"] == "state_object")
+    expected_start = source.encode().index(b"the product records berth occupancy") + len(b"the product records ")
+
+    assert result.intent["state_object"] == "berth occupancy"
+    assert span["text"] == "berth occupancy"
+    assert span["source_start_byte"] == expected_start
+    assert span["source_end_byte"] == expected_start + len(b"berth occupancy")
+    assert result.source_event_relations[1]["target_quote"] == "berth occupancy"
+    assert result.intent["first_path"] == _AUTHORED_FIRST_PATH
+    assert span["source_start_byte"] == expected_start
+
+
+def test_state_anchor_is_sealed_at_its_selected_location_not_rebound() -> None:
+    source = "berth occupancy training module. " + _source()
+    response = _response(source)
+    response["result"]["facts"]["state_object"] = {
+        "quote": "berth occupancy",
+        "prefix": "",
+        "anchor_occurrence": 1,
+    }
+    result = admit_complete_host_candidate(
+        evidence_text=source,
+        **_complete_host_candidate_kwargs(response, source),
+    )
+    selected = next(row for row in result.source_spans if row["section_key"] == "state_object")
+    assert selected["source_start_byte"] == 0
+    assert source[selected["source_end_byte"] :].startswith(" training module")
+
+
+def test_event_rejects_target_that_is_only_adjacent_in_a_selected_fact() -> None:
+    event = (
+        "pediatric therapy agency practice workspace coordinates referral intake, "
+        "guardian consent, therapist assignment, "
+        "care-plan readiness, visit evidence, and exception review"
+    )
+    target = "children served across multiple schools"
+    product_story = f"A pediatric therapy agency practice workspace {event} for {target}"
+    intent = {
+        **_TEXT_FIELDS,
+        **_LIST_FIELDS,
+        "title": "pediatric therapy agency practice workspace",
+        "product_story": product_story,
+        "first_path": event,
+        "customer": target,
+        "human_actors": ["therapy agency staff"],
+        "internal_systems": [],
+        "component_responsibilities": [],
+    }
+    source = ". ".join(
+        str(row)
+        for value in intent.values()
+        for row in (value if isinstance(value, list) else [value])
+        if str(row)
+    ) + "."
+    response = authored_response(
+        intent,
+        evidence_text=source,
+        first_path_relations=[
+            {
+                "actor_kind": "product",
+                "owner_system_quote": str(intent["title"]),
+                "event_quote": event,
+                "target_quote": target,
+                "visible_result_quote": "visit evidence",
+            }
+        ],
+    )
+
+    with pytest.raises(GreenfieldSourceDutyLedgerError, match="normalized target must be an exact statement slice"):
+        admit_complete_host_candidate(
+            evidence_text=source,
+            **_complete_host_candidate_kwargs(response, source),
+        )
+
+
+def test_event_target_stays_fail_closed_after_ordered_event_simplification() -> None:
+    source = _source()
+    response = _response(source)
+    model_event_rows(response)[0]["target_quote"] = "release readiness proof"
+
+    with pytest.raises(GreenfieldSourceDutyLedgerError, match="normalized target must be an exact statement slice"):
+        admit_complete_host_candidate(
+            evidence_text=source,
+            **_complete_host_candidate_kwargs(response, source),
+        )
+
+
+def test_selected_target_without_event_co_containment_stays_fail_closed() -> None:
+    source = _source()
+    response = _response(source)
+    model_event_rows(response)[0]["target_quote"] = (
+        "Source evidence preserves berth history"
+    )
+
+    with pytest.raises(GreenfieldSourceDutyLedgerError, match="normalized target must be an exact statement slice"):
+        admit_complete_host_candidate(
+            evidence_text=source,
+            **_complete_host_candidate_kwargs(response, source),
+        )
+
+
+def test_coordinated_events_derive_actor_presence_from_one_typed_fact_edge() -> None:
+    source, response, intent = _carried_human_actor_response()
+
+    result = admit_complete_host_candidate(
+        evidence_text=source,
+        **_complete_host_candidate_kwargs(response, source),
+    )
+
+    assert [row["actor_fact_quote"] for row in result.source_event_relations] == [
+        "dock attendant Ivo",
+        "dock attendant Ivo",
+        "dock attendant Ivo",
+    ]
+    assert all(
+        "actor_quote" not in row and "actor_is_carried" not in row
+        for row in result.source_event_relations
+    )
+    assert validate_first_path_relations(
+        result.source_event_relations,
+        first_path=str(result.intent["first_path"]),
+        human_actors=intent["human_actors"],
+        external_systems=intent["external_systems"],
+        internal_systems=intent["internal_systems"],
+        product_title=str(intent["title"]),
+    ) == result.source_event_relations
+
+
+def test_two_human_actor_changes_use_selected_facts_across_sentences() -> None:
+    events = (
+        "Analyst Aya submits a wafer lot",
+        "Reviewer Béla approves release readiness proof",
+    )
+    first_path = "\n".join(events)
+    intent = {
+        **_TEXT_FIELDS,
+        **_LIST_FIELDS,
+        "title": "Review Desk",
+        "product_story": first_path,
+        "state_object": "wafer lot",
+        "first_path": first_path,
+        "proof_boundary": "release readiness proof",
+        "success_metrics": ["release readiness proof"],
+        "component_responsibilities": [],
+        "human_actors": ["Analyst Aya", "Reviewer Béla"],
+        "external_systems": [],
+        "internal_systems": [],
+    }
+    source = ". ".join(
+        str(row)
+        for value in intent.values()
+        for row in (value if isinstance(value, list) else [value])
+        if str(row)
+    ) + "."
+    response = authored_response(
+        intent,
+        evidence_text=source,
+        first_path_segments=events,
+        first_path_relations=[
+            {
+                "actor_kind": "human",
+                "actor_fact_quote": "Analyst Aya",
+                "event_quote": events[0],
+                "action_verb_quote": "submits",
+                "target_quote": "a wafer lot",
+                "visible_result_quote": "",
+            },
+            {
+                "actor_kind": "human",
+                "actor_fact_quote": "Reviewer Béla",
+                "event_quote": events[1],
+                "action_verb_quote": "approves",
+                "target_quote": "release readiness proof",
+                "visible_result_quote": "release readiness proof",
+            },
+        ],
+    )
+
+    result = admit_complete_host_candidate(
+        evidence_text=source,
+        **_complete_host_candidate_kwargs(response, source),
+    )
+
+    assert [row["actor_fact_quote"] for row in result.source_event_relations] == [
+        "Analyst Aya",
+        "Reviewer Béla",
+    ]
+    assert [row["event_quote"] for row in result.source_event_relations] == list(events)
+    assert [row["action_verb_quote"] for row in result.source_event_relations] == [
+        "submits",
+        "approves",
+    ]
+
+
+@pytest.mark.parametrize("relation_index", [0, 1])
+def test_unselected_actor_fact_cannot_start_or_switch_an_actor_chain(
+    relation_index: int,
+) -> None:
+    source, response, _intent = _carried_human_actor_response()
+    candidate = host_candidate_response(response, evidence_text=source)
+    receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
+    candidate["result"]["events"] = [{"actor_fact": {"field": "human_actors", "row": 99}}]
+    with pytest.raises(GreenfieldSourceDutyBindingError, match="must not author source events"):
+        admit_greenfield_host_candidate(candidate, evidence_text=source, source_duty_receipt=receipt)
+
+
+@pytest.mark.parametrize("retired_field", ["actor_quote", "actor_is_carried"])
+def test_canonical_relation_rejects_retired_surface_actor_fields(
+    retired_field: str,
+) -> None:
+    source, response, intent = _carried_human_actor_response()
+    result = admit_complete_host_candidate(
+        evidence_text=source,
+        **_complete_host_candidate_kwargs(response, source),
+    )
+    tampered = [dict(row) for row in result.source_event_relations]
+    tampered[0][retired_field] = (
+        "dock attendant Ivo" if retired_field == "actor_quote" else False
+    )
+
+    with pytest.raises(GreenfieldAuthoredSemanticsError, match="invalid first-path relations"):
+        validate_first_path_relations(
+            tampered,
+            first_path=str(result.intent["first_path"]),
+            human_actors=intent["human_actors"],
+            external_systems=intent["external_systems"],
+            internal_systems=intent["internal_systems"],
+            product_title=str(intent["title"]),
+        )
+
+
+def test_materialization_preserves_exact_event_fact_bytes(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    source = _source()
+    response = _response(source)
+    candidate = materialize_complete_host_candidate(
+        prompt=source,
+        repo_root=tmp_path,
+        host_candidate=host_candidate_response(response, evidence_text=source),
+        authoring_profile_id=STANDARD_PROFILE_ID,
+    )
+
+    assert candidate["first_path"] == _AUTHORED_FIRST_PATH
+    for relation in candidate["authored_semantics"]["source_event_relations"]:
+        start = relation["event_start_byte"]
+        end = relation["event_end_byte"]
+        assert _AUTHORED_FIRST_PATH.encode("utf-8")[start:end] == relation["event_quote"].encode("utf-8")
+
+
+def test_verified_authoring_spans_become_the_product_intent_custody_source() -> None:
+    source = _source()
+    response = _response(source)
+    result = admit_complete_host_candidate(
+        evidence_text=source,
+        **_complete_host_candidate_kwargs(response, source),
+    )
+    sealed_intent = {
+        **result.intent,
+        "authored_semantics": authored_semantics_mapping(
+            result.source_event_relations,
+            result.component_responsibility_relations,
+            first_path_context_relations=result.first_path_context_relations,
+            provisional_design=result.provisional_design,
+            source_duty=_source_duty_for_response(response, source),
+        ),
+    }
+    envelope = build_product_intent_envelope(
+        sealed_intent,
+        source_text=source,
+        source_format="operator_prompt",
+        canonical_candidate_sha256="a" * 64,
+        authored_source_spans=result.source_spans,
+        authored_atomic_claims=result.atomic_claims,
+        authored_source_sha256=result.source_sha256,
+    )
+    authority = product_intent_authority_from_envelope(envelope)
+
+    assert authority["material_fields"]["first_path"]["source_span_ids"] == [
+        "authoring:first_path:1:4",
+        "authoring:first_path:2:5",
+        "authoring:first_path:3:6",
+    ]
+    assert authority["atomic_facts"]
+    action_values = {
+        row["normalized_value"]
+        for row in authority["atomic_facts"]
+        if any(
+            link["relation_role"] == "action_verb_quote"
+            for link in row["projection_links"]
+        )
+    }
+    assert action_values == {"enters", "records", "shows"}
+    first_event = "enters"
+    action_atom = next(
+        row
+        for row in authority["atomic_facts"]
+        if row["normalized_value"] == first_event
+        and any(
+            link["relation_role"] == "action_verb_quote"
+            for link in row["projection_links"]
+        )
+    )
+    assert action_atom["categories"] == ["actions"]
+    assert action_atom["polarity"] == "affirmed"
+    assert action_atom["entailment_relationship"] == "verified_source_action"
+    assert action_atom["source_span_refs"][0]["source_start_byte"] >= 0
+    assert {
+        "field": "first_path",
+        "path": "/first_path",
+        "value_sha256": hashlib.sha256(_AUTHORED_FIRST_PATH.encode("utf-8")).hexdigest(),
+        "projection_start_byte": _AUTHORED_FIRST_PATH.index(first_event),
+        "projection_end_byte": _AUTHORED_FIRST_PATH.index(first_event)
+        + len(first_event.encode("utf-8")),
+        "relation_order": 1,
+        "relation_role": "action_verb_quote",
+    } in action_atom["projection_links"]
+
+
+def test_envelope_rejects_relation_rebound_to_a_duplicate_source_occurrence() -> None:
+    event = "Dock attendant Ivo enters a vessel tag"
+    source = f"{_source()} {event}."
+    response = _response(source)
+    result = admit_complete_host_candidate(
+        evidence_text=source,
+        **_complete_host_candidate_kwargs(response, source),
+    )
+    relations = [dict(row) for row in result.source_event_relations]
+    duplicate_start = source.encode("utf-8").rfind(event.encode("utf-8"))
+    assert duplicate_start != relations[0]["source_start_byte"]
+    assert source.encode("utf-8")[duplicate_start:duplicate_start + len(event.encode("utf-8"))] == event.encode("utf-8")
+    relations[0]["source_start_byte"] = duplicate_start
+    relations[0]["source_end_byte"] = duplicate_start + len(event.encode("utf-8"))
+    sealed_intent = {
+        **result.intent,
+        "authored_semantics": authored_semantics_mapping(
+            relations,
+            result.component_responsibility_relations,
+            first_path_context_relations=result.first_path_context_relations,
+            provisional_design=result.provisional_design,
+            source_duty=_source_duty_for_response(response, source),
+        ),
+    }
+
+    with pytest.raises(ValueError, match="relation differs from its verified source action"):
+        build_product_intent_envelope(
+            sealed_intent,
+            source_text=source,
+            source_format="operator_prompt",
+            canonical_candidate_sha256="a" * 64,
+            authored_source_spans=result.source_spans,
+            authored_atomic_claims=result.atomic_claims,
+            authored_source_sha256=result.source_sha256,
+        )
+
+
+def test_authored_custody_preserves_exact_unicode_markdown_and_deferred_actor_bytes() -> None:
+    actor = "deferred café operator or dock steward"
+    intent = {
+        **_TEXT_FIELDS,
+        **_LIST_FIELDS,
+        "title": "**Harbor Café**",
+        "first_path": (
+            f"{actor} enters `berth-7` and the product records berth occupancy before "
+            "the berth map shows the placement"
+        ),
+        "human_actors": [actor],
+        "internal_systems": ["`berth-map`"],
+    }
+    source = ". ".join(
+        [
+            *(str(value) for key, value in intent.items() if key in _TEXT_FIELDS),
+            *(str(row) for key, rows in intent.items() if key in _LIST_FIELDS for row in rows),
+        ]
+    ) + "."
+    response = authored_response(
+        intent,
+        evidence_text=source,
+        component_responsibility_owners=["`berth-map`"],
+    )
+    result = admit_complete_host_candidate(
+        evidence_text=source,
+        **_complete_host_candidate_kwargs(response, source),
+    )
+
+    sealed_intent = {
+        **result.intent,
+        "authored_semantics": authored_semantics_mapping(
+            result.source_event_relations,
+            result.component_responsibility_relations,
+            first_path_context_relations=result.first_path_context_relations,
+            provisional_design=result.provisional_design,
+            source_duty=_source_duty_for_response(response, source),
+        ),
+    }
+    envelope = build_product_intent_envelope(
+        sealed_intent,
+        source_text=source,
+        source_format="operator_prompt",
+        canonical_candidate_sha256="a" * 64,
+        authored_source_spans=result.source_spans,
+        authored_atomic_claims=result.atomic_claims,
+        authored_source_sha256=result.source_sha256,
+    )
+
+    actor_span = next(span for span in result.source_spans if span["section_key"] == "human_actors")
+    expected_actor_bytes = actor.encode("utf-8")
+    expected_actor_start = source.encode("utf-8").find(expected_actor_bytes)
+    assert envelope["product_facts"]["title"] == "**Harbor Café**"
+    assert envelope["product_facts"]["human_actors"] == [actor]
+    assert "`berth-7`" in envelope["product_facts"]["first_path"]
+    assert actor_span["source_start_byte"] == expected_actor_start
+    assert actor_span["source_end_byte"] == expected_actor_start + len(expected_actor_bytes)
+    assert actor_span["quote_sha256"] == hashlib.sha256(expected_actor_bytes).hexdigest()
+    sealed_actor_span = next(
+        span
+        for span in envelope["source_evidence"]["spans"]
+        if span["span_id"] == actor_span["span_id"]
+    )
+    assert sealed_actor_span["text"] == actor
+    assert sealed_actor_span["text_sha256"] == hashlib.sha256(expected_actor_bytes).hexdigest()

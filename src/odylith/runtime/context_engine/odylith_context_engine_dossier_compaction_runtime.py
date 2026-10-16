@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_delivery_runtime
 
@@ -78,10 +79,16 @@ def _compact_context_dossier(
         if value not in ("", [], {}, None, 0)
     }
     compact_related: dict[str, list[dict[str, Any]]] = {}
+    related_entity_ids: dict[str, list[str]] = {}
     if isinstance(related, Mapping):
         for kind, rows in related.items():
             if not isinstance(rows, list):
                 continue
+            identities = dedupe_strings([
+                row.get("entity_id", "") for row in rows if isinstance(row, Mapping)
+            ])
+            if identities:
+                related_entity_ids[str(kind)] = identities
             compact_rows = [
                 _compact_related_row(row)
                 for row in rows[: max(1, int(relation_limit_per_kind))]
@@ -123,6 +130,7 @@ def _compact_context_dossier(
         "entity": compact_entity,
         "lookup": dict(dossier.get("lookup", {})) if isinstance(dossier.get("lookup"), Mapping) else {},
         "related_entities": compact_related,
+        "related_entity_ids": related_entity_ids,
         agent_runtime_contract.AGENT_EVENT_KEY: compact_events,
         "delivery_scope_summaries": compact_scopes,
         "relation_count": relation_count,

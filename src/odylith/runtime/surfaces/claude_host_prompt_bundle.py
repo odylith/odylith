@@ -10,6 +10,7 @@ from pathlib import Path
 from odylith.runtime.intervention_engine import prompt_signal_runtime
 from odylith.runtime.surfaces import claude_host_prompt_context
 from odylith.runtime.surfaces import claude_host_shared
+from odylith.runtime.surfaces import greenfield_host_confirmation
 from odylith.runtime.surfaces import host_intervention_support
 from odylith.runtime.surfaces import host_prompt_route_locks
 
@@ -46,7 +47,9 @@ def render_prompt_bundle_payload(
     if host_intervention_support.suppress_prompt_live_narration(prompt=prompt):
         return {}
     refs = list(dict.fromkeys(prompt_signal_runtime.ANCHOR_RE.findall(str(prompt or ""))))
-    if not refs and not host_intervention_support.prompt_needs_live_bundle(prompt=prompt):
+    if not refs and not host_intervention_support.prompt_needs_live_bundle(
+        prompt=prompt, repo_root=repo_root, session_id=session_id, host_family="claude"
+    ):
         if suppress_prompt_first_receipt or not host_intervention_support.prompt_first_receipt_eligible(prompt):
             return {}
         receipt = host_intervention_support.prompt_first_receipt_context(
@@ -78,11 +81,6 @@ def render_prompt_bundle_payload(
         delivery_channel="system_message_and_additional_context",
         delivery_status="assistant_render_required",
     )
-    replay = host_intervention_support.preferred_live_replay_markdown(
-        repo_root=repo_path,
-        host_family="claude",
-        session_id=session_id,
-    )
     summary = claude_host_prompt_context.render_prompt_context(
         repo_root=repo_path,
         prompt=prompt,
@@ -95,12 +93,8 @@ def render_prompt_bundle_payload(
         session_id=session_id,
         conversation_bundle_override=bundle,
     )
-    summary = (
-        host_intervention_support.join_sections(replay, summary)
-        if replay
-        else host_intervention_support.join_sections(summary, decision.developer_context)
-    )
-    system_message = replay or decision.visible_markdown or system_message
+    summary = host_intervention_support.join_sections(summary, decision.developer_context)
+    system_message = decision.visible_markdown or system_message
     if decision.visible_markdown or decision.developer_context:
         host_surface_runtime.append_visible_intervention_events(
             repo_root=repo_path,
@@ -132,7 +126,29 @@ def main(argv: list[str] | None = None) -> int:
     payload = claude_host_shared.load_payload(raw)
     prompt = str(payload.get("prompt", "")).strip()
     session_id = claude_host_shared.hook_session_id(payload)
-    if not host_prompt_route_locks.route_lock_context(host_family="claude", prompt=prompt):
+    greenfield_decision = greenfield_host_confirmation.maybe_handle_greenfield_decision(
+        repo_root=repo_root,
+        host_family="claude",
+        prompt=prompt,
+    )
+    if greenfield_decision is not None:
+        sys.stdout.write(json.dumps(greenfield_host_confirmation.host_hook_payload(greenfield_decision)))
+        return 0
+    route_context = host_prompt_route_locks.route_lock_context(host_family="claude", prompt=prompt)
+    if route_context:
+        host_prompt_route_locks.record_active_route_lock(
+            repo_root=repo_root,
+            host_family="claude",
+            prompt=prompt,
+            session_id=session_id,
+        )
+        confirmed_events = []
+    else:
+        host_prompt_route_locks.clear_active_route_lock(
+            repo_root=repo_root,
+            host_family="claude",
+            session_id=session_id,
+        )
         confirmed_events = host_intervention_support.confirm_last_assistant_message(
             repo_root=repo_root,
             host_family="claude",
@@ -140,8 +156,6 @@ def main(argv: list[str] | None = None) -> int:
             payload=payload,
             render_surface="claude_user_prompt_submit",
         )
-    else:
-        confirmed_events = []
     payload_out = render_prompt_bundle_payload(
         repo_root=repo_root,
         prompt=prompt,

@@ -1,4 +1,4 @@
-"""Standalone backlog detail-page renderers extracted from the main Radar UI."""
+"""Render standalone Radar documents without summarizing their source content."""
 
 from __future__ import annotations
 
@@ -10,6 +10,37 @@ from odylith.runtime.surfaces import backlog_rich_text
 from odylith.runtime.surfaces import backlog_render_support
 from odylith.runtime.surfaces import backlog_traceability_paths
 from odylith.runtime.surfaces import dashboard_ui_primitives
+
+
+def _document_completion_js() -> str:
+    """Complete the document's Mermaid enhancement or retain visible source."""
+    return """
+    window.OdylithRadarDocumentCompletion = (async () => {
+      const diagrams = Array.from(document.querySelectorAll(".mermaid"));
+      if (!diagrams.length) return "ready";
+      const sources = diagrams.map(node => node.textContent);
+      try {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js";
+          script.onload = resolve;
+          script.onerror = () => reject(new Error("Mermaid runtime unavailable"));
+          document.head.appendChild(script);
+        });
+        if (!window.mermaid) throw new Error("Mermaid runtime unavailable");
+        window.mermaid.initialize({ startOnLoad: false, securityLevel: "strict", theme: "neutral" });
+        await window.mermaid.run({ querySelector: ".mermaid" });
+        return "ready";
+      } catch (_error) {
+        diagrams.forEach((node, index) => { node.textContent = sources[index]; });
+        const notice = document.createElement("p");
+        notice.setAttribute("role", "status");
+        notice.textContent = "Diagram preview unavailable. Mermaid source is shown below.";
+        diagrams[0].before(notice);
+        return "degraded";
+      }
+    })();
+    """.strip()
 
 
 def _render_idea_spec_html(
@@ -52,18 +83,20 @@ def _render_idea_spec_html(
     meta_pairs = [
         ("Workstream ID", entry.get("idea_id", "")),
         ("Status", metadata.get("status", "")),
-        ("Priority", metadata.get("priority", "")),
+        ("Priority", backlog_render_support.assessment_display(metadata.get("priority"))),
         ("Created Date", entry.get("idea_date_display", entry.get("idea_date", metadata.get("date", "")))),
         ("Age (days)", entry.get("idea_age_days", "")),
         ("Execution Start", entry.get("execution_start_date_display", entry.get("execution_start_date", ""))),
         ("Execution End", entry.get("execution_end_date_display", entry.get("execution_end_date", ""))),
         ("Execution Days", entry.get("execution_duration_days", entry.get("execution_age_days", ""))),
-        ("Sizing", metadata.get("sizing", "")),
-        ("Complexity", metadata.get("complexity", "")),
-        ("Ordering Score", metadata.get("ordering_score", "")),
-        ("Confidence", metadata.get("confidence", "")),
+        ("Sizing", backlog_render_support.assessment_display(metadata.get("sizing"))),
+        ("Complexity", backlog_render_support.assessment_display(metadata.get("complexity"))),
+        ("Ordering Score", backlog_render_support.assessment_display(metadata.get("ordering_score"))),
+        ("Confidence", backlog_render_support.assessment_display(metadata.get("confidence"))),
         ("Priority Override", metadata.get("founder_override", "")),
     ]
+    if metadata.get("assessment_provenance"):
+        meta_pairs.append(("Assessment source", backlog_render_support.assessment_provenance_label(metadata["assessment_provenance"])))
     meta_html = "".join(
         (
             f"<div class=\"meta-item\">"
@@ -139,7 +172,7 @@ def _render_idea_spec_html(
     plan_links: list[str] = []
     if promoted_to_plan_ui_href:
         plan_links.append(
-            f"<a href=\"{html.escape(promoted_to_plan_ui_href)}\">Technical Implementation Plan</a>"
+            f"<a href=\"{html.escape(promoted_to_plan_ui_href)}\" data-radar-view=\"plan\" data-radar-workstream=\"{html.escape(str(entry.get('idea_id', '')).strip())}\">Technical Implementation Plan</a>"
         )
     plan_link_html = (
         "".join(plan_links)
@@ -149,9 +182,9 @@ def _render_idea_spec_html(
 
     title = html.escape(str(entry.get("title", "")).strip() or "Workstream Spec")
     idea_id = html.escape(str(entry.get("idea_id", "")).strip())
-    priority = html.escape(str(entry.get("priority", "")).strip())
+    priority = html.escape(backlog_render_support.assessment_display(entry.get("priority")))
     status = html.escape(str(entry.get("status", "")).strip())
-    score = html.escape(str(entry.get("ordering_score", "")).strip())
+    score = html.escape(backlog_render_support.assessment_display(entry.get("ordering_score")))
     page_body_css = dashboard_ui_primitives.page_body_typography_css(
         selector="body",
         color="var(--ink)",
@@ -248,6 +281,7 @@ def _render_idea_spec_html(
     body {{
       margin: 0;
       background: linear-gradient(180deg, #eef2ff, var(--bg));
+      overflow-wrap: anywhere;
     }}
     {page_body_css}
     {surface_shell_root_css}
@@ -429,7 +463,7 @@ def _render_idea_spec_html(
 </head>
 <body>
   <main class="shell">
-    <a class="back" href="{html.escape(index_href)}">Back to Backlog Radar</a>
+    <a class="back" href="{html.escape(index_href)}" data-radar-view="" data-radar-workstream="">Back to Backlog Radar</a>
     <header class="hero">
       <h1>{title}</h1>
       <p class="id">{idea_id}</p>
@@ -468,17 +502,8 @@ def _render_idea_spec_html(
 
     {section_html}
   </main>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>
-    (function() {{
-      if (!window.mermaid || !document.querySelector(".mermaid")) return;
-      window.mermaid.initialize({{
-        startOnLoad: false,
-        securityLevel: "strict",
-        theme: "neutral"
-      }});
-      window.mermaid.run({{ querySelector: ".mermaid" }});
-    }})();
+    {_document_completion_js()}
   </script>
 </body>
 </html>
@@ -593,7 +618,7 @@ def _render_plan_html(
     plan_status = str(plan_meta.get("Status", "")).strip() or "Unknown"
 
     workstream_traceability_html = (
-        f"<a class=\"trace-workstream-link\" href=\"{html.escape(idea_ui_href)}\">Workstream Spec</a>"
+        f"<a class=\"trace-workstream-link\" href=\"{html.escape(idea_ui_href)}\" data-radar-view=\"spec\" data-radar-workstream=\"{html.escape(plan_id)}\">Workstream Spec</a>"
         if idea_ui_href
         else "<span>No linked workstream page</span>"
     )
@@ -783,6 +808,7 @@ def _render_plan_html(
     body {{
       margin: 0;
       background: linear-gradient(180deg, #ecfeff, var(--bg));
+      overflow-wrap: anywhere;
     }}
     {page_body_css}
     {surface_shell_root_css}
@@ -1087,7 +1113,7 @@ def _render_plan_html(
 </head>
 <body>
   <main class="shell">
-    <a class="back" href="{html.escape(index_href)}">Back to Backlog Workstream Radar</a>
+    <a class="back" href="{html.escape(index_href)}" data-radar-view="" data-radar-workstream="">Back to Backlog Workstream Radar</a>
     <header class="hero">
       <h1>{html.escape(plan_title)}</h1>
       <p class="id">{html.escape(plan_id)}</p>
@@ -1113,17 +1139,8 @@ def _render_plan_html(
 
     {section_html}
   </main>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>
-    (function() {{
-      if (!window.mermaid || !document.querySelector(".mermaid")) return;
-      window.mermaid.initialize({{
-        startOnLoad: false,
-        securityLevel: "strict",
-        theme: "neutral"
-      }});
-      window.mermaid.run({{ querySelector: ".mermaid" }});
-    }})();
+    {_document_completion_js()}
   </script>
 </body>
 </html>

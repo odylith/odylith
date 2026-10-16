@@ -76,14 +76,11 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [x] Risk: heavier profiles get promoted too often and hurt benchmark spend.
-  - [x] Mitigation: keep earned-depth and guarded-history backstops explicit,
-    then rerun the benchmark before closeout.
+  - [x] Mitigation: keep earned-depth and guarded-history backstops explicit, then rerun the benchmark before closeout.
 - [x] Risk: orchestration becomes too eager on merge-heavy slices.
-  - [x] Mitigation: keep merge-burden and guarded parallelism checks in the
-    main-thread and serial gates.
+  - [x] Mitigation: keep merge-burden and guarded parallelism checks in the main-thread and serial gates.
 - [x] Risk: consumer guidance promises behavior the runtime does not emit.
-  - [x] Mitigation: update guidance only after the runtime contract and tests
-    are in place.
+  - [x] Mitigation: update guidance only after the runtime contract and tests are in place.
 
 ## Validation/Test Plan
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_evaluation_ledger.py tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_subagent_surface_validation.py`

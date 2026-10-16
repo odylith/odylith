@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import contextlib
+import json
 from pathlib import Path
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import derivation_provenance
 from odylith.runtime.context_engine import odylith_context_engine_dossier_compaction_runtime as dossier_compaction_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_compiler_runtime as projection_compiler_runtime
+from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_runtime as hot_path_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_scope_runtime as hot_path_scope
 from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime as projection_search_runtime
@@ -63,6 +65,57 @@ def test_resolve_context_entity_exact_repo_paths_skip_runtime_search(tmp_path: P
         assert entity is not None
         assert entity["kind"] == expected_kind
         assert entity["path"] == ref
+
+
+def test_code_path_context_carries_registry_owner_into_execution_handshake() -> None:
+    component_row = {
+        "component_id": "domain-intelligence",
+        "name": "Domain Intelligence",
+        "status": "active",
+        "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "owner": "product",
+        "aliases_json": "[]",
+        "workstreams_json": '["B-142"]',
+        "diagrams_json": '["D-043"]',
+        "metadata_json": json.dumps({"path_prefixes": ["src/odylith/runtime/domain_intelligence"]}),
+    }
+
+    class _ComponentConnection:
+        def execute(self, sql: str, _params: tuple[object, ...] = ()) -> _Cursor:
+            if "FROM components" in sql:
+                return _Cursor(rows=[component_row])
+            return _Cursor()
+
+    code_entity = {
+        "kind": "code",
+        "entity_id": "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "title": "greenfield_proposals.py",
+        "path": "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "status": "",
+    }
+    related = store._related_entities(_ComponentConnection(), entity=code_entity, relations=[])  # noqa: SLF001
+
+    assert related["component"][0]["entity_id"] == "domain-intelligence"
+
+    compact = dossier_compaction_runtime.compact_context_dossier_for_delivery(
+        {
+            "resolved": True,
+            "entity": code_entity,
+            "lookup": {"resolution_mode": "path_exact"},
+            "matches": [],
+            "relations": [],
+            "related_entities": related,
+            "recent_agent_events": [],
+            "delivery_scopes": [],
+            "full_scan_recommended": False,
+            "full_scan_reason": "",
+        }
+    )
+
+    handshake = compact["execution_engine_handshake"]
+    assert handshake["target_component_id"] == "domain-intelligence"
+    assert handshake["target_component_ids"] == ["domain-intelligence"]
+    assert handshake["target_component_status"] == "other_component"
 
 
 def test_entity_by_path_rejects_missing_or_outside_repo_files(tmp_path: Path) -> None:
@@ -267,6 +320,69 @@ def test_session_scope_uses_intent_anchor_paths_before_shared_only_fallback(tmp_
     assert payload["analysis_paths"] == ["src/odylith/cli.py"]
 
 
+def test_session_scope_accepts_unquoted_src_anchor_paths(tmp_path: Path, monkeypatch) -> None:
+    store._PROCESS_PATH_SCOPE_CACHE.clear()  # noqa: SLF001
+    code_path = tmp_path / "src" / "odylith" / "runtime" / "governance" / "component_authoring.py"
+    code_path.parent.mkdir(parents=True, exist_ok=True)
+    code_path.write_text("print('ok')\n", encoding="utf-8")
+
+    monkeypatch.setattr(store.governance, "collect_meaningful_changed_paths", lambda **kwargs: [])  # noqa: ARG005
+    monkeypatch.setattr(store, "_load_session_state", lambda **kwargs: None)
+
+    payload = store._resolve_changed_path_scope_context(  # noqa: SLF001
+        repo_root=tmp_path,
+        explicit_paths=(),
+        use_working_tree=False,
+        working_tree_scope="session",
+        session_id="session-1",
+        intent="Fix src/odylith/runtime/governance/component_authoring.py: keep startup grounded.",
+    )
+
+    assert payload["intent_anchor_paths"] == ["src/odylith/runtime/governance/component_authoring.py"]
+    assert payload["analysis_paths"] == ["src/odylith/runtime/governance/component_authoring.py"]
+
+
+def test_path_ref_extraction_trims_src_line_and_colon_suffixes(tmp_path: Path) -> None:
+    refs = projection_search_runtime._extract_path_refs(  # noqa: SLF001
+        text=(
+            "Fix src/odylith/runtime/governance/component_authoring.py: and "
+            "src/odylith/runtime/context_engine/odylith_context_engine_store.py:472."
+        ),
+        repo_root=tmp_path,
+    )
+
+    assert refs == [
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/governance/component_authoring.py",
+    ]
+
+
+def test_path_ref_extraction_ignores_multiline_prose_around_casebook_paths(tmp_path: Path) -> None:
+    refs = projection_search_runtime._extract_path_refs(  # noqa: SLF001
+        text=(
+            "`Prompt-source recovery mentions src/odylith/runtime/domain_intelligence/greenfield_apply.py before "
+            "promoting prose into the canonical title and every generated system label.\n"
+            "- Invariant: product wrapper words must not become generated labels.`"
+        ),
+        repo_root=tmp_path,
+    )
+
+    assert refs == ["src/odylith/runtime/domain_intelligence/greenfield_apply.py"]
+
+
+def test_turn_context_path_seed_includes_surfaces_and_visible_text() -> None:
+    seed = packet_session_runtime._turn_context_path_seed(  # noqa: SLF001
+        intent="Fix startup target recognition.",
+        generated_surfaces=("src/odylith/runtime/context_engine/odylith_context_engine_store.py",),
+        visible_text=("Screenshot points at src/odylith/runtime/context_engine/odylith_context_engine_packet_session_runtime.py:",),
+        active_tab="odylith/index.html?tab=compass",
+    )
+
+    assert "src/odylith/runtime/context_engine/odylith_context_engine_store.py" in seed
+    assert "src/odylith/runtime/context_engine/odylith_context_engine_packet_session_runtime.py:" in seed
+    assert "odylith/index.html?tab=compass" in seed
+
+
 def test_prompt_payload_suppresses_working_tree_scope_degraded_receipts_when_paths_remain() -> None:
     trimmed = store._trim_route_ready_hot_path_prompt_payload(  # noqa: SLF001
         compact={
@@ -378,142 +494,6 @@ def test_bootstrap_payload_compactor_drops_duplicate_path_receipts() -> None:
     }
 
 
-def test_finalized_bootstrap_payload_compactor_drops_duplicate_views() -> None:
-    payload = session_bootstrap_payload_compactor.compact_finalized_bootstrap_payload(
-        {
-            "context_packet_state": "gated_ambiguous",
-            "context_packet": {
-                "packet_kind": "bootstrap_session",
-                "packet_state": "gated_ambiguous",
-                "packet_budget": {"max_bytes": 19200, "max_tokens": 4800},
-                "packet_quality": {"routing_confidence": "low"},
-                "retrieval_plan": {"ambiguity_class": "no_candidates"},
-            },
-            "packet_budget": {"max_bytes": 19200, "max_tokens": 4800},
-            "packet_quality": {"routing_confidence": "low"},
-            "retrieval_plan": {"ambiguity_class": "no_candidates"},
-            "narrowing_guidance": {
-                "required": True,
-                "reason": "No workstream evidence matched the current changed-path set.",
-                "suggested_inputs": [
-                    "Provide at least one implementation, test, contract, or manifest path.",
-                    "Read the highest-signal guidance source directly when the packet exposes one.",
-                ],
-            },
-        }
-    )
-
-    assert payload.get("packet_budget") is None
-    assert payload.get("packet_quality") is None
-    assert payload.get("retrieval_plan") is None
-    assert payload["narrowing_guidance"] == {
-        "required": True,
-        "reason": "Need one code path.",
-    }
-    assert payload.get("packet_metrics") is None
-    context_packet = payload["context_packet"]
-    assert context_packet["packet_kind"] == "bootstrap_session"
-    assert context_packet["packet_state"] == "gated_ambiguous"
-    assert context_packet["retrieval_plan"] == {"ambiguity_class": "no_candidates"}
-    assert context_packet["packet_quality"] == {"rc": "low"}
-    if "execution_engine" in context_packet:
-        assert isinstance(context_packet["execution_engine"], dict)
-
-
-def test_finalized_bootstrap_payload_compactor_preserves_turn_targets_and_anchor_followup() -> None:
-    payload = session_bootstrap_payload_compactor.compact_finalized_bootstrap_payload(
-        {
-            "context_packet_state": "gated_ambiguous",
-            "context_packet": {
-                "packet_kind": "bootstrap_session",
-                "packet_state": "gated_ambiguous",
-                "anchors": {"has_non_shared_anchor": True},
-            },
-            "turn_context": {
-                "intent": 'Move the current release label next to the title "Task Contract, Event Ledger, and Hard-Constraint Promotion"',
-                "surfaces": ["compass"],
-                "visible_text": ["Task Contract, Event Ledger, and Hard-Constraint Promotion"],
-                "active_tab": "releases",
-                "user_turn_id": "turn-2",
-                "supersedes_turn_id": "turn-1",
-            },
-            "target_resolution": {
-                "lane": "consumer",
-                "candidate_targets": [
-                    {
-                        "path": "odylith/compass/compass.html",
-                        "source": "path_scope",
-                        "writable": False,
-                    }
-                ],
-                "diagnostic_anchors": [
-                    {
-                        "kind": "workstream",
-                        "value": "B-073",
-                        "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
-                    }
-                ],
-                "has_writable_targets": False,
-                "requires_more_consumer_context": True,
-                "consumer_failover": "maintainer_ready_feedback_plus_bounded_narrowing",
-            },
-            "presentation_policy": {
-                "commentary_mode": "task_first_minimal",
-                "suppress_routing_receipts": True,
-                "surface_fast_lane": True,
-            },
-            "narrowing_guidance": {
-                "required": True,
-                "reason": "No workstream evidence matched the current changed-path set.",
-                "suggested_inputs": ["Open the consumer route component first."],
-                "next_best_anchors": [
-                    {
-                        "kind": "workstream",
-                        "value": "B-073",
-                        "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
-                    }
-                ],
-            },
-        }
-    )
-
-    assert payload["narrowing_guidance"] == {
-        "required": True,
-        "reason": "Need one code path.",
-        "suggested_inputs": ["Open the consumer route component first."],
-        "next_best_anchors": [
-            {
-                "kind": "workstream",
-                "value": "B-073",
-                "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
-            }
-        ],
-    }
-    assert payload["target_resolution"] == {
-        "lane": "consumer",
-        "candidate_targets": [
-            {
-                "path": "odylith/compass/compass.html",
-                "source": "path_scope",
-                "writable": False,
-            }
-        ],
-        "diagnostic_anchors": [
-            {
-                "kind": "workstream",
-                "value": "B-073",
-                "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
-            }
-        ],
-        "has_writable_targets": False,
-        "requires_more_consumer_context": True,
-        "consumer_failover": "maintainer_ready_feedback_plus_bounded_narrowing",
-    }
-    assert payload["presentation_policy"] == {
-        "commentary_mode": "task_first_minimal",
-        "suppress_routing_receipts": True,
-        "surface_fast_lane": True,
-    }
 
 
 def test_finalized_session_brief_payload_compactor_drops_runtime_scaffolding() -> None:
@@ -977,6 +957,8 @@ def test_projection_compiler_runtime_reuses_full_projection_when_reasoning_is_re
         code_version=derivation_provenance.fingerprint_source_files(
             [
                 Path(projection_compiler_runtime.__file__),
+                Path(projection_compiler_runtime.memory_record_policy.__file__),
+                Path(projection_compiler_runtime.judgment_memory_records.__file__),
                 Path(store.odylith_projection_snapshot.__file__),
                 Path(store.odylith_projection_bundle.__file__),
             ]

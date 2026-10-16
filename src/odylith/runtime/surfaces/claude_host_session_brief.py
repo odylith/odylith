@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.runtime.surfaces import claude_host_shared
+from odylith.runtime.surfaces import host_startup_summary
 from odylith.runtime.surfaces import host_intervention_support
 from odylith.runtime.surfaces import session_brief_refresh_queue
 
@@ -43,6 +44,8 @@ def _summary_from_start_output(output: str) -> str:
     text = str(output or "").strip()
     if not text:
         return ""
+    if host_startup_summary.startup_output_needs_narrowing(text):
+        return host_startup_summary.narrowing_chat_summary(prefix=_STARTUP_PREFIX)
     lines = [line.strip() for line in text.splitlines() if line.strip()]
     prefix: list[str] = []
     payload_text = ""
@@ -125,7 +128,7 @@ def render_session_brief(
         return _summary_from_snapshot(snapshot, substrate_context=substrate)
     completed = claude_host_shared.run_odylith(
         project_dir=repo_root,
-        args=["start", "--repo-root", "."],
+        args=["start", "--repo-root", ".", "--json"],
         timeout=20,
     )
     if completed is None:

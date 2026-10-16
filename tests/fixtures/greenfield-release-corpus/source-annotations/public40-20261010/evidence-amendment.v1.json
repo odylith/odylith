@@ -1,0 +1,66 @@
+{
+  "version": "odylith.greenfield.public-evidence-amendment.v1",
+  "status": "authorized",
+  "decision_date": "2026-10-10",
+  "user_instruction": "Actually pick a path that is the most optimal",
+  "proposal_sha256": "51e01ab156b1c4e1810bf641035da7c317ea3a68f23f8f4081892d6bc99ca88f",
+  "unavailable_original": {
+    "path": "/private/tmp/odylith-greenfield-public-v47-source-annotations-20261003/public-source-predeclaration.json",
+    "sha256": "31eefdfa1f6d49f4c49a04525c773ca63fd7dc16b3d4ce8f4a1e5957cfdd6481",
+    "qualification_status": "unavailable; prior campaign remains unqualified"
+  },
+  "source_case_file": "tests/fixtures/greenfield-release-corpus/live-subsets/greenfield-release-public-operating-envelope.v2.json",
+  "source_case_file_sha256": "4606712fcee60cfd99e3e45ece28cadf60e899c8e71d7b8b573f6b3e13e383d2",
+  "case_count": 40,
+  "adopted_requirements": [
+    "Retire the unavailable original annotation identity as a requirement for a new prospective campaign, preserving every old failed/unqualified result.",
+    "Before a fresh native campaign, independently annotate the same unchanged 40 source prompts and freeze a new declaration with an explicit new identity.",
+    "Keep all published source faithfulness, semantic, clarification, variance, confidence, timing, host, browser, recovery and release gates unchanged.",
+    "Keep four genuine EDIT journeys as a separate authenticated supplemental family; do not change primary denominators or grant preparation-only credit.",
+    "Keep the final independent holdout untouched until all prior gates pass.",
+    "Store the new public source annotations/declaration durably in version control, with an independent hash-verified backup before execution."
+  ],
+  "prohibited": [
+    "Reconstruct or relabel the lost original file.",
+    "Use previous generated outputs to author source predicates.",
+    "Retroactively grant old campaigns qualification.",
+    "Lower floors, simplify source prompts or inspect holdout."
+  ],
+  "published_floors": {
+    "version": "odylith.greenfield.structural-floors.v4",
+    "atomic_semantic_fidelity": 1.0,
+    "relation_fidelity": 1.0,
+    "clarification_identity": 1.0,
+    "unnecessary_question_rate_ceiling": 0.0,
+    "overall_case_success": 1.0,
+    "worst_slice_success": 1.0,
+    "release_slice_minimum_samples": {
+      "complexity_band": {
+        "bounded": 4,
+        "moderate": 4,
+        "high": 4
+      },
+      "evidence_format": {
+        "operator_prompt": 4,
+        "operator_prompt_with_edit_evidence": 4
+      },
+      "model_profile": {
+        "greenfield-standard-host-candidate-astra-medium-v21": 4
+      }
+    },
+    "statistical_confidence": {
+      "version": "odylith.greenfield.statistical-confidence.v1",
+      "method": "wilson",
+      "confidence_level": 0.95,
+      "atomic_semantic_fidelity": 0.5,
+      "relation_fidelity": 0.5,
+      "clarification_identity": 0.5,
+      "unnecessary_question_rate_ceiling": 0.5,
+      "overall_case_success": 0.5,
+      "worst_slice_success": 0.5
+    }
+  },
+  "published_floors_sha256": "b7874ea0e0812e41e25f363b73d166bcf5e9e39633c45e55b246d9e6e979f55f",
+  "scope": "Prospective public annotation identity only; previous unqualified results remain unqualified. All other release requirements remain in force.",
+  "campaign_execution_authorized_by_this_record": false
+}

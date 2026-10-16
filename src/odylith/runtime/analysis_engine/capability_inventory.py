@@ -16,6 +16,7 @@ class InventoryItem:
     owns: str
     commands: tuple[str, ...] = ()
     anchors: tuple[str, ...] = ()
+    activation: str = ""
 
 
 _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
@@ -33,18 +34,32 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                 ),
                 commands=("odylith show", "odylith capabilities"),
                 anchors=("src/odylith/runtime/analysis_engine/",),
+                activation=(
+                    "direct CLI fast path; analyzes local source evidence and prints advisory posture "
+                    "without creating governance records"
+                ),
             ),
             InventoryItem(
                 name="Domain Intelligence",
                 layer="analysis",
                 kind="engine",
                 owns=(
-                    "provider-free greenfield project classification, backlog proposals, program "
-                    "waves, provisional release plans, planned Registry components, draft Atlas "
-                    "topology, assumptions, risks, and validation obligations before source exists"
+                    "greenfield source-authority and verified-duty contracts, host-authored canonical intent, "
+                    "differentiated governance projections, sealed ProductCreateTransaction compilation, "
+                    "deterministic admission and hash-verified publication of precompiled bytes"
                 ),
-                commands=("odylith greenfield propose", "odylith greenfield apply"),
+                commands=(
+                    "odylith greenfield propose",
+                    "odylith greenfield create",
+                ),
                 anchors=("src/odylith/runtime/domain_intelligence/",),
+                activation=(
+                    "greenfield propose validates and quality-gates one source-verified candidate and seals a "
+                    "read-only preview; a supported confirmation interface binds CONFIRM, EDIT, and REJECT to "
+                    "its hash. Confirmed create verifies the receipt, hash, and preconditions, publishes sealed "
+                    "bytes under journaled recovery, validates readback, and returns a receipt without model "
+                    "calls or projection generation"
+                ),
             ),
             InventoryItem(
                 name="Delivery Intelligence",
@@ -59,6 +74,11 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "src/odylith/runtime/governance/delivery_intelligence_engine.py",
                     "odylith/runtime/delivery_intelligence.v4.json",
                 ),
+                commands=("odylith sync", "odylith governance-slice"),
+                activation=(
+                    "sync and governance-slice refresh the shared delivery snapshot so Radar, Registry, "
+                    "Atlas, Casebook, Compass, and Proof State consume one delivery posture"
+                ),
             ),
             InventoryItem(
                 name="Tribunal",
@@ -69,7 +89,16 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "scoring, provider-gated enrichment, ranked case rows, and bounded correction "
                     "packets"
                 ),
-                anchors=("src/odylith/runtime/reasoning/tribunal_engine.py",),
+                commands=("odylith bug capture", "odylith greenfield propose"),
+                anchors=(
+                    "src/odylith/runtime/reasoning/tribunal_engine.py",
+                    "src/odylith/runtime/domain_intelligence/proposal_tribunal.py",
+                    "src/odylith/runtime/governance/artifact_tribunal.py",
+                ),
+                activation=(
+                    "bug capture and greenfield proposal flows invoke deterministic Tribunal gates before "
+                    "governed writes; provider enrichment remains evidence-gated and optional"
+                ),
             ),
             InventoryItem(
                 name="Reasoning Engine",
@@ -80,7 +109,15 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "policy first, optional provider enrichment only when evidence-gated, and "
                     "degraded states that remain explicit"
                 ),
-                anchors=("src/odylith/runtime/reasoning/", "odylith/runtime/odylith-reasoning.v4.json"),
+                commands=("odylith bug capture", "odylith greenfield propose"),
+                anchors=(
+                    "src/odylith/runtime/reasoning/",
+                    "odylith/atlas/source/odylith-tribunal-multi-actor-reasoning-engine.mmd",
+                ),
+                activation=(
+                    "reasoning packets are built from deterministic actor policy first and degrade "
+                    "explicitly when provider-backed enrichment is unavailable"
+                ),
             ),
             InventoryItem(
                 name="Execution Engine",
@@ -91,7 +128,12 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "frontier state, closure, waits, receipts, contradiction records, and validation "
                     "obligations"
                 ),
+                commands=("odylith context", "odylith governance-slice"),
                 anchors=("src/odylith/runtime/execution_engine/", "docs/EXECUTION_ENGINE.md"),
+                activation=(
+                    "Context Engine packets attach the normalized execution handshake and compact "
+                    "admissibility snapshot before a turn widens into implementation or verification"
+                ),
             ),
             InventoryItem(
                 name="Proof State",
@@ -101,7 +143,12 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "live blocker frontier, claim-tier posture, falsification memory, and proof "
                     "resolution fields consumed by Delivery Intelligence and Execution Engine"
                 ),
+                commands=("odylith sync", "odylith governance-slice"),
                 anchors=("odylith/registry/source/components/proof-state/CURRENT_SPEC.md",),
+                activation=(
+                    "Delivery Intelligence and Execution Engine read proof-state posture as claim-tier "
+                    "frontier data rather than regenerating proof status locally"
+                ),
             ),
             InventoryItem(
                 name="Surface DAGs",
@@ -113,7 +160,33 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "owned source truth, renderer inputs, projection memory, and Delivery "
                     "Intelligence instead of stale local summaries"
                 ),
+                commands=("odylith sync", "odylith dashboard refresh"),
                 anchors=("src/odylith/runtime/governance/surface_refresh_fingerprint_dag.py",),
+                activation=(
+                    "refresh pipelines fingerprint source truth, renderer inputs, projection memory, and "
+                    "delivery snapshots so unchanged surfaces stay cached and impacted surfaces rerender"
+                ),
+            ),
+            InventoryItem(
+                name="Topology Integrity",
+                layer="topology",
+                kind="integrity layer",
+                owns=(
+                    "shared Radar, Registry, Atlas, Program, Release, and wave topology: "
+                    "traceability graph construction, structural edge validation, component and "
+                    "diagram linkage checks, and topology-quality scoring before generated "
+                    "surfaces claim coherence"
+                ),
+                commands=("odylith validate topology-integrity", "odylith architecture"),
+                anchors=(
+                    "src/odylith/runtime/governance/topology_integrity.py",
+                    "src/odylith/runtime/governance/build_traceability_graph.py",
+                    "src/odylith/runtime/governance/traceability_graph_spine.py",
+                ),
+                activation=(
+                    "traceability graph builds and topology-integrity validation score structural Radar, "
+                    "Registry, Atlas, Program, Release, and wave edges before surfaces claim coherence"
+                ),
             ),
         ),
     ),
@@ -138,6 +211,11 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "odylith bug",
                     "odylith compass",
                 ),
+                anchors=("src/odylith/runtime/governance/",),
+                activation=(
+                    "CLI-first authoring and sync routes mutate governed truth through owned writers, "
+                    "then rerender the relevant source-of-truth surfaces"
+                ),
             ),
             InventoryItem(
                 name="Governed Harness / Turn Gate",
@@ -157,6 +235,10 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "src/odylith/runtime/governed_harness/",
                     "odylith/registry/source/components/governed-harness/CURRENT_SPEC.md",
                 ),
+                activation=(
+                    "turn-gate commands classify the proposed move, check tool admission, and preserve "
+                    "proof receipts without delegating the hot path to a host model"
+                ),
             ),
             InventoryItem(
                 name="Governance Intervention Engine",
@@ -168,6 +250,10 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                 ),
                 commands=("odylith claude intervention-status", "odylith codex intervention-status"),
                 anchors=("src/odylith/runtime/intervention_engine/",),
+                activation=(
+                    "host status commands report visible-intervention readiness while conversation timing, "
+                    "proposal shaping, and Assist closeout remain product-owned"
+                ),
             ),
             InventoryItem(
                 name="Discipline Engine",
@@ -178,6 +264,11 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "credit-safe validation for shared Codex and Claude behavior"
                 ),
                 commands=("odylith discipline", "odylith validate discipline"),
+                anchors=("src/odylith/runtime/discipline/", "src/odylith/runtime/governance/validate_discipline.py"),
+                activation=(
+                    "discipline status/check/validate stay local and deterministic, enforcing hard laws "
+                    "without provider calls, subagents, broad scans, or benchmark execution on the hot path"
+                ),
             ),
             InventoryItem(
                 name="Benchmark Harness",
@@ -188,6 +279,32 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "release gates, and public product claims"
                 ),
                 commands=("odylith benchmark",),
+                anchors=("src/odylith/runtime/evaluation/",),
+                activation=(
+                    "benchmark profiles provide explicit proof for public claims while quick families keep "
+                    "developer-loop validation bounded"
+                ),
+            ),
+            InventoryItem(
+                name="Taxonomies and FSMs",
+                layer="governance",
+                kind="integrity layer",
+                owns=(
+                    "controlled product vocabularies and lifecycle state machines, including "
+                    "Casebook status transitions, broad bug-type taxonomy, benchmark family "
+                    "taxonomy, proposal state vocabulary, and migration-normalized legacy tokens"
+                ),
+                commands=("odylith casebook validate", "odylith validate guidance-behavior"),
+                anchors=(
+                    "src/odylith/runtime/common/casebook_metadata.py",
+                    "src/odylith/runtime/governance/casebook_source_validation.py",
+                    "src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py",
+                    "src/odylith/runtime/domain_intelligence/proposal_contract.py",
+                ),
+                activation=(
+                    "casebook and guidance validators normalize controlled vocabularies and lifecycle FSMs "
+                    "before legacy or arbitrary tokens can enter governed truth"
+                ),
             ),
         ),
     ),
@@ -204,6 +321,10 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                 ),
                 commands=("odylith start", "odylith context", "odylith query", "odylith context-engine"),
                 anchors=("src/odylith/runtime/context_engine/",),
+                activation=(
+                    "startup and context commands build bounded packets, resolve anchors, attach execution "
+                    "handshakes, and reuse daemon-backed recall where available"
+                ),
             ),
             InventoryItem(
                 name="Memory Substrate",
@@ -219,6 +340,10 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
                     "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md",
                 ),
+                activation=(
+                    "context/query/session-brief paths read projection memory and bounded packets instead "
+                    "of broad-scanning project history every turn"
+                ),
             ),
             InventoryItem(
                 name="Subagent Router",
@@ -229,6 +354,14 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "without making host transport a product capability boundary"
                 ),
                 commands=("odylith subagent-router",),
+                anchors=(
+                    "src/odylith/runtime/orchestration/subagent_router.py",
+                    "src/odylith/runtime/orchestration/subagent_router_runtime_policy.py",
+                ),
+                activation=(
+                    "router commands score bounded delegation eligibility from host support, route policy, "
+                    "context packets, and validation needs without spawning by themselves"
+                ),
             ),
             InventoryItem(
                 name="Subagent Orchestrator",
@@ -239,9 +372,17 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "and serial or parallel execution-wave discipline"
                 ),
                 commands=("odylith subagent-orchestrator",),
+                anchors=(
+                    "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+                    "src/odylith/runtime/orchestration/subagent_orchestrator_subtasks_runtime.py",
+                ),
+                activation=(
+                    "orchestrator commands shape multi-leaf work into explicit owner, goal, termination, "
+                    "and validation contracts while host policy decides whether native spawn is admissible"
+                ),
             ),
             InventoryItem(
-                name="Install, Upgrade, and Migration Runtime",
+                name="Install / Upgrade / Migration Runtime",
                 layer="lifecycle",
                 kind="engine family",
                 owns=(
@@ -256,6 +397,11 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "odylith uninstall",
                     "odylith release migration-gate",
                 ),
+                anchors=("src/odylith/install/",),
+                activation=(
+                    "install, upgrade, repair, rollback, and migration-gate commands verify release assets, "
+                    "write runtime ledgers, and preserve consumer-governance truth"
+                ),
             ),
             InventoryItem(
                 name="Security and Trust",
@@ -265,7 +411,12 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "release provenance, SBOM and digest checks, trust receipts, hot-file integrity, "
                     "runtime metadata, and archive-safety validation"
                 ),
+                commands=("odylith version", "odylith doctor", "odylith install"),
                 anchors=("src/odylith/install/runtime_integrity.py", "src/odylith/install/release_assets.py"),
+                activation=(
+                    "release verification and runtime-integrity checks validate provenance, digests, and "
+                    "managed hot files before the repo-local launcher trusts an activated runtime"
+                ),
             ),
         ),
     ),
@@ -346,6 +497,31 @@ _SURFACE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                 owns="the local HTML launchpad that links Radar, Registry, Atlas, Compass, and Casebook",
                 commands=("odylith dashboard refresh",),
             ),
+            InventoryItem(
+                name="Operator Experience",
+                layer="operator-ui",
+                kind="experience layer",
+                owns=(
+                    "the cross-host operator UX: stdout-clean fast paths, visible intervention "
+                    "fallbacks, dashboard navigation, browser-rendered governance surfaces, "
+                    "greenfield handoff clarity, and low-latency status/diagnostic commands"
+                ),
+                commands=(
+                    "odylith show",
+                    "odylith dashboard refresh",
+                    "odylith codex intervention-status",
+                    "odylith claude intervention-status",
+                ),
+                anchors=(
+                    "src/odylith/runtime/surfaces/",
+                    "src/odylith/runtime/intervention_engine/",
+                    "src/odylith/runtime/analysis_engine/show_capabilities.py",
+                ),
+                activation=(
+                    "show, dashboard refresh, and host intervention-status commands keep first-turn UX, "
+                    "browser surfaces, and visible recovery affordances low-latency and host-agnostic"
+                ),
+            ),
         ),
     ),
 )
@@ -385,6 +561,9 @@ def _format_item(item: dict[str, object]) -> list[str]:
     anchors = tuple(item.get("anchors") or ())
     if anchors:
         lines.append(f"  Anchors: {', '.join(f'`{anchor}`' for anchor in anchors)}.")
+    activation = str(item.get("activation") or "").strip()
+    if activation:
+        lines.append(f"  Activation: {activation}.")
     return lines
 
 

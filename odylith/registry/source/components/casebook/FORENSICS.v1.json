@@ -32,12 +32,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 75,
-    "mapped_workstream_evidence_count": 71,
+    "explicit_event_count": 155,
+    "mapped_workstream_evidence_count": 132,
     "recent_path_match_count": 0,
     "spec_history_event_count": 5,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 75
+    "timeline_event_count": 155
   },
   "name": "Casebook",
   "path_prefixes": [
@@ -48,6 +48,4481 @@
   "spec_ref": "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
   "timeline": [
     {
+      "artifact_count": 3,
+      "artifacts": [
+        "tests/integration/runtime/test_surface_browser_deep.py",
+        "tests/integration/runtime/test_surface_browser_ux_audit.py",
+        "tests/unit/runtime/test_validate_component_registry_contract.py"
+      ],
+      "confidence": "high",
+      "event_index": 1652,
+      "explicit_components": [
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-10-15T10:02:32-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-07-17-clean-head-component-forensics-fail-to-converge-after-sync-commit.md",
+        "odylith/casebook/bugs/2026-08-02-greenfield-current-view-readers-could-remain-pinned-to-stale-onboarding-state.md"
+      ],
+      "confidence": "high",
+      "event_index": 1651,
+      "explicit_components": [
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-10-15T09:58:19-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "src/odylith/runtime/evaluation/benchmark_compare.py"
+      ],
+      "confidence": "high",
+      "event_index": 1640,
+      "explicit_components": [
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-10-15T06:25:50-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-current-view-readers-could-remain-pinned-to-stale-onboarding-state.md"
+      ],
+      "confidence": "high",
+      "event_index": 1636,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-10-15T03:15:12-07:00",
+      "workstreams": [
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md"
+      ],
+      "confidence": "high",
+      "event_index": 1635,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-10-15T01:52:32-07:00",
+      "workstreams": [
+        "B-140",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md"
+      ],
+      "confidence": "high",
+      "event_index": 1633,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-10-15T00:47:20-07:00",
+      "workstreams": [
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-current-view-readers-could-remain-pinned-to-stale-onboarding-state.md"
+      ],
+      "confidence": "high",
+      "event_index": 1632,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-10-15T00:36:05-07:00",
+      "workstreams": [
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1630,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-10-15T00:00:02-07:00",
+      "workstreams": [
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "sha256:5790e27c46e1dc1ca9321cfc68baa7af7e3dfd614e4db382ee27ad794e00d7b6"
+      ],
+      "confidence": "high",
+      "event_index": 1627,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-10-14T22:48:57-07:00",
+      "workstreams": [
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 5,
+      "artifacts": [
+        "sha256:48934abd652f36d13e2c23d651f502e1ebf6c3c60087122db8fde5716af14289",
+        "sha256:b54fc44abfced334609d235c03a32955dc09c1e824ce34c2429db399a8484ffe",
+        "sha256:04586438809299457866758b2b505853b0dd5b08c3996b0e324f611dcac6042f",
+        "sha256:c321627e65afe2133392b9231233761e6b07b554e31f810bfb631db234d970ca",
+        "sha256:0a42ec824d1b1754c6d6b1ea71b35674cab09ad29e86a6276b8c4da772d3fa57"
+      ],
+      "confidence": "high",
+      "event_index": 1626,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
+      "ts_iso": "2026-10-14T22:35:51-07:00",
+      "workstreams": [
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-current-view-readers-could-remain-pinned-to-stale-onboarding-state.md",
+        "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md"
+      ],
+      "confidence": "high",
+      "event_index": 1625,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-10-14T15:57:08-07:00",
+      "workstreams": [
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-08-execution-engine-quick-benchmark-still-exceeds-secondary-efficiency-guardrails.md",
+        "odylith/casebook/bugs/2026-07-11-host-specific-intervention-transport-hides-odylith-moments.md",
+        "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 1624,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
+      "ts_iso": "2026-10-14T15:24:37-07:00",
+      "workstreams": [
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
+        "odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md"
+      ],
+      "confidence": "high",
+      "event_index": 1587,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-10-08T22:07:35-07:00",
+      "workstreams": [
+        "B-142",
+        "B-145"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/project_intelligence/builder.py",
+        "src/odylith/runtime/surfaces/registry_component_identity_ui.py"
+      ],
+      "confidence": "high",
+      "event_index": 1583,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-10-06T07:19:55-07:00",
+      "workstreams": [
+        "B-142",
+        "B-145"
+      ]
+    },
+    {
+      "artifact_count": 8,
+      "artifacts": [
+        "sha256:5249f4fcc629efa0e6d6b2bf746b6c5de61611ce719ad61ac820fbe5c8cece66",
+        "sha256:4a6d9c023d64f5f1dbd0de60acead16b168d97c5e70edac2f489877752564345",
+        "sha256:7c00f91f96530e0b77efea3deba1c0b408b28f42ddd7855b0c30adeacb9356c8",
+        "sha256:77af778b51abd4a3c51c5ddd97204a9c3ae614ebccb75a606c3b6865aed6744e",
+        "sha256:5f53b0a2be22e28dc4b056f663910c046a33f9b2d779eaf997ea771fe1881a13",
+        "src/odylith/runtime/surfaces/atlas_box_explanations.py;",
+        "src/odylith/runtime/surfaces/atlas_render_metadata.py;",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py;"
+      ],
+      "confidence": "high",
+      "event_index": 1571,
+      "explicit_components": [
+        "execution-engine",
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 8 verifiable artifact references.",
+      "ts_iso": "2026-10-05T20:15:42Z",
+      "workstreams": [
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 8,
+      "artifacts": [
+        "sha256:5249f4fcc629efa0e6d6b2bf746b6c5de61611ce719ad61ac820fbe5c8cece66",
+        "sha256:4a6d9c023d64f5f1dbd0de60acead16b168d97c5e70edac2f489877752564345",
+        "sha256:7c00f91f96530e0b77efea3deba1c0b408b28f42ddd7855b0c30adeacb9356c8",
+        "sha256:77af778b51abd4a3c51c5ddd97204a9c3ae614ebccb75a606c3b6865aed6744e",
+        "sha256:5f53b0a2be22e28dc4b056f663910c046a33f9b2d779eaf997ea771fe1881a13",
+        "src/odylith/runtime/surfaces/atlas_box_explanations.py;",
+        "src/odylith/runtime/surfaces/atlas_render_metadata.py;",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py;"
+      ],
+      "confidence": "high",
+      "event_index": 1570,
+      "explicit_components": [
+        "execution-engine",
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 8 verifiable artifact references.",
+      "ts_iso": "2026-10-05T20:15:42Z",
+      "workstreams": [
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-10-05-compass-cannot-archive-an-unpublished-append-after-rendering-identity-changes.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 1573,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-10-05T16:28:40-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "tests/unit/install/test_greenfield_source_predicate_evaluation.py"
+      ],
+      "confidence": "high",
+      "event_index": 1528,
+      "explicit_components": [
+        "execution-engine",
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-10-04T21:49:11Z",
+      "workstreams": [
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "tests/unit/install/test_greenfield_source_predicate_evaluation.py"
+      ],
+      "confidence": "high",
+      "event_index": 1527,
+      "explicit_components": [
+        "execution-engine",
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-10-04T21:49:11Z",
+      "workstreams": [
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "medium",
+      "event_index": 1392,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-09-27T21:53:07Z",
+      "workstreams": [
+        "B-001",
+        "B-002",
+        "B-096"
+      ]
+    },
+    {
+      "artifact_count": 10,
+      "artifacts": [
+        "sha256:5249f4fcc629efa0e6d6b2bf746b6c5de61611ce719ad61ac820fbe5c8cece66",
+        "sha256:25e0a457e0d57692311247a1a40a295300ab1816a943b98583621b92bfff83a3",
+        "sha256:aa335ec0cbfa761ca9b54e0a30cef16a09b89936fd04a5da535b84153ee63fe1",
+        "sha256:6f932b8d7f1643e65e08a238568a546c281abe9cfe3758a898e07d10c042ad1a",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "sha256:5a5000a3f3ff868603876ea774d1d272912a4949e738597a944cfc6050b8d097",
+        "scripts/release",
+        "tests/unit/install/test_greenfield_commit_recovery_*.py",
+        "tests/unit/install/test_greenfield_matrix_clarification.py",
+        "tests/unit/install/test_greenfield_matrix_clarification_profile_proof.py"
+      ],
+      "confidence": "high",
+      "event_index": 1389,
+      "explicit_components": [
+        "governance-intervention-engine",
+        "odylith-context-engine",
+        "execution-engine",
+        "odylith-memory-backend",
+        "tribunal",
+        "dashboard",
+        "release"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "security",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 10 verifiable artifact references.",
+      "ts_iso": "2026-09-27T21:50:56Z",
+      "workstreams": [
+        "B-001",
+        "B-002",
+        "B-004",
+        "B-005",
+        "B-006",
+        "B-007",
+        "B-008",
+        "B-009",
+        "B-010",
+        "B-011",
+        "B-012",
+        "B-013",
+        "B-014",
+        "B-015",
+        "B-016",
+        "B-017",
+        "B-018",
+        "B-019",
+        "B-020",
+        "B-021",
+        "B-022",
+        "B-023",
+        "B-024",
+        "B-025",
+        "B-026",
+        "B-027",
+        "B-028",
+        "B-030",
+        "B-031",
+        "B-032",
+        "B-033",
+        "B-034",
+        "B-035",
+        "B-036",
+        "B-037",
+        "B-038",
+        "B-039",
+        "B-040",
+        "B-041",
+        "B-042",
+        "B-043",
+        "B-044",
+        "B-045",
+        "B-046",
+        "B-047",
+        "B-048",
+        "B-049",
+        "B-050",
+        "B-051",
+        "B-055",
+        "B-056",
+        "B-057",
+        "B-058",
+        "B-059",
+        "B-060",
+        "B-061",
+        "B-062",
+        "B-063",
+        "B-065",
+        "B-066",
+        "B-067",
+        "B-068",
+        "B-069",
+        "B-071",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-080",
+        "B-081",
+        "B-082",
+        "B-083",
+        "B-084",
+        "B-086",
+        "B-088",
+        "B-089",
+        "B-090",
+        "B-091",
+        "B-092",
+        "B-093",
+        "B-094",
+        "B-095",
+        "B-096",
+        "B-098",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142",
+        "B-143"
+      ]
+    },
+    {
+      "artifact_count": 10,
+      "artifacts": [
+        "sha256:5249f4fcc629efa0e6d6b2bf746b6c5de61611ce719ad61ac820fbe5c8cece66",
+        "sha256:25e0a457e0d57692311247a1a40a295300ab1816a943b98583621b92bfff83a3",
+        "sha256:aa335ec0cbfa761ca9b54e0a30cef16a09b89936fd04a5da535b84153ee63fe1",
+        "sha256:6f932b8d7f1643e65e08a238568a546c281abe9cfe3758a898e07d10c042ad1a",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "sha256:5a5000a3f3ff868603876ea774d1d272912a4949e738597a944cfc6050b8d097",
+        "scripts/release",
+        "tests/unit/install/test_greenfield_commit_recovery_*.py",
+        "tests/unit/install/test_greenfield_matrix_clarification.py",
+        "tests/unit/install/test_greenfield_matrix_clarification_profile_proof.py"
+      ],
+      "confidence": "high",
+      "event_index": 1388,
+      "explicit_components": [
+        "governance-intervention-engine",
+        "odylith-context-engine",
+        "execution-engine",
+        "odylith-memory-backend",
+        "tribunal",
+        "dashboard",
+        "release"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "security",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 10 verifiable artifact references.",
+      "ts_iso": "2026-09-27T21:50:56Z",
+      "workstreams": [
+        "B-001",
+        "B-002",
+        "B-004",
+        "B-005",
+        "B-006",
+        "B-007",
+        "B-008",
+        "B-009",
+        "B-010",
+        "B-011",
+        "B-012",
+        "B-013",
+        "B-014",
+        "B-015",
+        "B-016",
+        "B-017",
+        "B-018",
+        "B-019",
+        "B-020",
+        "B-021",
+        "B-022",
+        "B-023",
+        "B-024",
+        "B-025",
+        "B-026",
+        "B-027",
+        "B-028",
+        "B-030",
+        "B-031",
+        "B-032",
+        "B-033",
+        "B-034",
+        "B-035",
+        "B-036",
+        "B-037",
+        "B-038",
+        "B-039",
+        "B-040",
+        "B-041",
+        "B-042",
+        "B-043",
+        "B-044",
+        "B-045",
+        "B-046",
+        "B-047",
+        "B-048",
+        "B-049",
+        "B-050",
+        "B-051",
+        "B-055",
+        "B-056",
+        "B-057",
+        "B-058",
+        "B-059",
+        "B-060",
+        "B-061",
+        "B-062",
+        "B-063",
+        "B-065",
+        "B-066",
+        "B-067",
+        "B-068",
+        "B-069",
+        "B-071",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-080",
+        "B-081",
+        "B-082",
+        "B-083",
+        "B-084",
+        "B-086",
+        "B-088",
+        "B-089",
+        "B-090",
+        "B-091",
+        "B-092",
+        "B-093",
+        "B-094",
+        "B-095",
+        "B-096",
+        "B-098",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142",
+        "B-143"
+      ]
+    },
+    {
+      "artifact_count": 10,
+      "artifacts": [
+        "sha256:5249f4fcc629efa0e6d6b2bf746b6c5de61611ce719ad61ac820fbe5c8cece66",
+        "sha256:25e0a457e0d57692311247a1a40a295300ab1816a943b98583621b92bfff83a3",
+        "sha256:aa335ec0cbfa761ca9b54e0a30cef16a09b89936fd04a5da535b84153ee63fe1",
+        "sha256:6f932b8d7f1643e65e08a238568a546c281abe9cfe3758a898e07d10c042ad1a",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "sha256:5a5000a3f3ff868603876ea774d1d272912a4949e738597a944cfc6050b8d097",
+        "scripts/release",
+        "tests/unit/install/test_greenfield_commit_recovery_*.py",
+        "tests/unit/install/test_greenfield_matrix_clarification.py",
+        "tests/unit/install/test_greenfield_matrix_clarification_profile_proof.py"
+      ],
+      "confidence": "high",
+      "event_index": 1385,
+      "explicit_components": [
+        "governance-intervention-engine",
+        "odylith-context-engine",
+        "execution-engine",
+        "odylith-memory-backend",
+        "tribunal",
+        "dashboard",
+        "release"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "security",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 10 verifiable artifact references.",
+      "ts_iso": "2026-09-27T21:37:52Z",
+      "workstreams": [
+        "B-001",
+        "B-002",
+        "B-004",
+        "B-005",
+        "B-006",
+        "B-007",
+        "B-008",
+        "B-009",
+        "B-010",
+        "B-011",
+        "B-012",
+        "B-013",
+        "B-014",
+        "B-015",
+        "B-016",
+        "B-017",
+        "B-018",
+        "B-019",
+        "B-020",
+        "B-021",
+        "B-022",
+        "B-023",
+        "B-024",
+        "B-025",
+        "B-026",
+        "B-027",
+        "B-028",
+        "B-030",
+        "B-031",
+        "B-032",
+        "B-033",
+        "B-034",
+        "B-035",
+        "B-036",
+        "B-037",
+        "B-038",
+        "B-039",
+        "B-040",
+        "B-041",
+        "B-042",
+        "B-043",
+        "B-044",
+        "B-045",
+        "B-046",
+        "B-047",
+        "B-048",
+        "B-049",
+        "B-050",
+        "B-051",
+        "B-055",
+        "B-056",
+        "B-057",
+        "B-058",
+        "B-059",
+        "B-060",
+        "B-061",
+        "B-062",
+        "B-063",
+        "B-065",
+        "B-066",
+        "B-067",
+        "B-068",
+        "B-069",
+        "B-071",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-080",
+        "B-081",
+        "B-082",
+        "B-083",
+        "B-084",
+        "B-086",
+        "B-088",
+        "B-089",
+        "B-090",
+        "B-091",
+        "B-092",
+        "B-093",
+        "B-094",
+        "B-095",
+        "B-096",
+        "B-098",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142",
+        "B-143"
+      ]
+    },
+    {
+      "artifact_count": 10,
+      "artifacts": [
+        "sha256:5249f4fcc629efa0e6d6b2bf746b6c5de61611ce719ad61ac820fbe5c8cece66",
+        "sha256:25e0a457e0d57692311247a1a40a295300ab1816a943b98583621b92bfff83a3",
+        "sha256:aa335ec0cbfa761ca9b54e0a30cef16a09b89936fd04a5da535b84153ee63fe1",
+        "sha256:6f932b8d7f1643e65e08a238568a546c281abe9cfe3758a898e07d10c042ad1a",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "sha256:5a5000a3f3ff868603876ea774d1d272912a4949e738597a944cfc6050b8d097",
+        "scripts/release",
+        "tests/unit/install/test_greenfield_commit_recovery_*.py",
+        "tests/unit/install/test_greenfield_matrix_clarification.py",
+        "tests/unit/install/test_greenfield_matrix_clarification_profile_proof.py"
+      ],
+      "confidence": "high",
+      "event_index": 1384,
+      "explicit_components": [
+        "governance-intervention-engine",
+        "odylith-context-engine",
+        "execution-engine",
+        "odylith-memory-backend",
+        "tribunal",
+        "dashboard",
+        "release"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "security",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 10 verifiable artifact references.",
+      "ts_iso": "2026-09-27T21:37:52Z",
+      "workstreams": [
+        "B-001",
+        "B-002",
+        "B-004",
+        "B-005",
+        "B-006",
+        "B-007",
+        "B-008",
+        "B-009",
+        "B-010",
+        "B-011",
+        "B-012",
+        "B-013",
+        "B-014",
+        "B-015",
+        "B-016",
+        "B-017",
+        "B-018",
+        "B-019",
+        "B-020",
+        "B-021",
+        "B-022",
+        "B-023",
+        "B-024",
+        "B-025",
+        "B-026",
+        "B-027",
+        "B-028",
+        "B-030",
+        "B-031",
+        "B-032",
+        "B-033",
+        "B-034",
+        "B-035",
+        "B-036",
+        "B-037",
+        "B-038",
+        "B-039",
+        "B-040",
+        "B-041",
+        "B-042",
+        "B-043",
+        "B-044",
+        "B-045",
+        "B-046",
+        "B-047",
+        "B-048",
+        "B-049",
+        "B-050",
+        "B-051",
+        "B-055",
+        "B-056",
+        "B-057",
+        "B-058",
+        "B-059",
+        "B-060",
+        "B-061",
+        "B-062",
+        "B-063",
+        "B-065",
+        "B-066",
+        "B-067",
+        "B-068",
+        "B-069",
+        "B-071",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-080",
+        "B-081",
+        "B-082",
+        "B-083",
+        "B-084",
+        "B-086",
+        "B-088",
+        "B-089",
+        "B-090",
+        "B-091",
+        "B-092",
+        "B-093",
+        "B-094",
+        "B-095",
+        "B-096",
+        "B-098",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142",
+        "B-143"
+      ]
+    },
+    {
+      "artifact_count": 15,
+      "artifacts": [
+        "sha256:d1829078fe03f2ec5f692c7a217859409b6822240625c10282bb022888657148",
+        "tests/fixtures/greenfield-release-corpus/audit-evidence-v16.next",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27.next",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27/audit-evidence-v16.next",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27/audit-evidence-v16.next-invalid-paths",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27/audit-source-verifications-v9-2026-09-27",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27/audit-source-verifications-v9-2026-09-27.next",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27/audit-source-verifications-v9-2026-09-27.old",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27/greenfield-release-audit-requests.v8.json",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27/greenfield-release-audit-requests.v8.next.json",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27/greenfield-release-audit-requests.v8.old.json",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27/mv",
+        "tests/fixtures/greenfield-release-corpus/greenfield-release-audit-requests.v8.json",
+        "tests/fixtures/greenfield-release-corpus/greenfield-release-audit-requests.v8.next.json"
+      ],
+      "confidence": "high",
+      "event_index": 1373,
+      "explicit_components": [
+        "governance-intervention-engine",
+        "odylith-context-engine",
+        "execution-engine",
+        "odylith-memory-backend",
+        "tribunal"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 15 verifiable artifact references.",
+      "ts_iso": "2026-09-27T21:21:12Z",
+      "workstreams": [
+        "B-001",
+        "B-002",
+        "B-005",
+        "B-008",
+        "B-009",
+        "B-010",
+        "B-011",
+        "B-012",
+        "B-013",
+        "B-014",
+        "B-015",
+        "B-016",
+        "B-019",
+        "B-020",
+        "B-021",
+        "B-022",
+        "B-024",
+        "B-025",
+        "B-031",
+        "B-032",
+        "B-038",
+        "B-039",
+        "B-041",
+        "B-042",
+        "B-043",
+        "B-044",
+        "B-045",
+        "B-046",
+        "B-047",
+        "B-058",
+        "B-059",
+        "B-061",
+        "B-062",
+        "B-063",
+        "B-067",
+        "B-068",
+        "B-069",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-080",
+        "B-081",
+        "B-082",
+        "B-083",
+        "B-084",
+        "B-092",
+        "B-093",
+        "B-094",
+        "B-095",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 15,
+      "artifacts": [
+        "sha256:d1829078fe03f2ec5f692c7a217859409b6822240625c10282bb022888657148",
+        "tests/fixtures/greenfield-release-corpus/audit-evidence-v16.next",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27.next",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27/audit-evidence-v16.next",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27/audit-evidence-v16.next-invalid-paths",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27/audit-source-verifications-v9-2026-09-27",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27/audit-source-verifications-v9-2026-09-27.next",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27/audit-source-verifications-v9-2026-09-27.old",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27/greenfield-release-audit-requests.v8.json",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27/greenfield-release-audit-requests.v8.next.json",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27/greenfield-release-audit-requests.v8.old.json",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27/mv",
+        "tests/fixtures/greenfield-release-corpus/greenfield-release-audit-requests.v8.json",
+        "tests/fixtures/greenfield-release-corpus/greenfield-release-audit-requests.v8.next.json"
+      ],
+      "confidence": "high",
+      "event_index": 1372,
+      "explicit_components": [
+        "governance-intervention-engine",
+        "odylith-context-engine",
+        "execution-engine",
+        "odylith-memory-backend",
+        "tribunal"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 15 verifiable artifact references.",
+      "ts_iso": "2026-09-27T21:21:12Z",
+      "workstreams": [
+        "B-001",
+        "B-002",
+        "B-005",
+        "B-008",
+        "B-009",
+        "B-010",
+        "B-011",
+        "B-012",
+        "B-013",
+        "B-014",
+        "B-015",
+        "B-016",
+        "B-019",
+        "B-020",
+        "B-021",
+        "B-022",
+        "B-024",
+        "B-025",
+        "B-031",
+        "B-032",
+        "B-038",
+        "B-039",
+        "B-041",
+        "B-042",
+        "B-043",
+        "B-044",
+        "B-045",
+        "B-046",
+        "B-047",
+        "B-058",
+        "B-059",
+        "B-061",
+        "B-062",
+        "B-063",
+        "B-067",
+        "B-068",
+        "B-069",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-080",
+        "B-081",
+        "B-082",
+        "B-083",
+        "B-084",
+        "B-092",
+        "B-093",
+        "B-094",
+        "B-095",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1401,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-09-27T19:11:47-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "tests/integration/runtime/test_intervention_visibility_browser.py",
+        "tests/integration/runtime/test_surface_browser_smoke.py"
+      ],
+      "confidence": "high",
+      "event_index": 1397,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-09-27T15:18:22-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1356,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-09-27T07:41:44-07:00",
+      "workstreams": [
+        "B-001"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "bin/greenfield-matrix-campaign",
+        "bin/greenfield-preconfirm-matrix",
+        "tests/fixtures/greenfield-release-corpus/live-subsets/greenfield-release-public-live-subset.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 1355,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-09-27T07:33:00-07:00",
+      "workstreams": [
+        "B-001"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1353,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-09-27T07:05:19-07:00",
+      "workstreams": [
+        "B-001",
+        "B-062"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-07-release-smoke-omitted-greenfield-create-journey.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 1352,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-09-27T06:45:23-07:00",
+      "workstreams": [
+        "B-001"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_host_candidate_shape.py",
+        "tests/unit/runtime/test_greenfield_host_candidate.py"
+      ],
+      "confidence": "high",
+      "event_index": 1311,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-09-25T10:24:28-07:00",
+      "workstreams": [
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 1310,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-09-25T09:38:23-07:00",
+      "workstreams": [
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1299,
+      "explicit_components": [
+        "governance-intervention-engine",
+        "odylith-context-engine",
+        "execution-engine",
+        "odylith-memory-backend",
+        "tribunal"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-09-23T19:57:44Z",
+      "workstreams": [
+        "B-001",
+        "B-002",
+        "B-005",
+        "B-008",
+        "B-009",
+        "B-010",
+        "B-011",
+        "B-012",
+        "B-013",
+        "B-014",
+        "B-015",
+        "B-016",
+        "B-019",
+        "B-020",
+        "B-021",
+        "B-022",
+        "B-024",
+        "B-025",
+        "B-031",
+        "B-032",
+        "B-038",
+        "B-039",
+        "B-041",
+        "B-042",
+        "B-043",
+        "B-044",
+        "B-045",
+        "B-046",
+        "B-047",
+        "B-058",
+        "B-059",
+        "B-061",
+        "B-062",
+        "B-063",
+        "B-067",
+        "B-068",
+        "B-069",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-080",
+        "B-081",
+        "B-082",
+        "B-083",
+        "B-084",
+        "B-092",
+        "B-093",
+        "B-094",
+        "B-095",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1298,
+      "explicit_components": [
+        "governance-intervention-engine",
+        "odylith-context-engine",
+        "execution-engine",
+        "odylith-memory-backend",
+        "tribunal"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-09-23T19:57:44Z",
+      "workstreams": [
+        "B-001",
+        "B-002",
+        "B-005",
+        "B-008",
+        "B-009",
+        "B-010",
+        "B-011",
+        "B-012",
+        "B-013",
+        "B-014",
+        "B-015",
+        "B-016",
+        "B-019",
+        "B-020",
+        "B-021",
+        "B-022",
+        "B-024",
+        "B-025",
+        "B-031",
+        "B-032",
+        "B-038",
+        "B-039",
+        "B-041",
+        "B-042",
+        "B-043",
+        "B-044",
+        "B-045",
+        "B-046",
+        "B-047",
+        "B-058",
+        "B-059",
+        "B-061",
+        "B-062",
+        "B-063",
+        "B-067",
+        "B-068",
+        "B-069",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-080",
+        "B-081",
+        "B-082",
+        "B-083",
+        "B-084",
+        "B-092",
+        "B-093",
+        "B-094",
+        "B-095",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1297,
+      "explicit_components": [
+        "governance-intervention-engine",
+        "odylith-context-engine",
+        "execution-engine",
+        "odylith-memory-backend",
+        "tribunal"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-09-23T19:57:17Z",
+      "workstreams": [
+        "B-001",
+        "B-002",
+        "B-005",
+        "B-008",
+        "B-009",
+        "B-010",
+        "B-011",
+        "B-012",
+        "B-013",
+        "B-014",
+        "B-015",
+        "B-016",
+        "B-019",
+        "B-020",
+        "B-021",
+        "B-022",
+        "B-024",
+        "B-025",
+        "B-031",
+        "B-032",
+        "B-038",
+        "B-039",
+        "B-041",
+        "B-042",
+        "B-043",
+        "B-044",
+        "B-045",
+        "B-046",
+        "B-047",
+        "B-058",
+        "B-059",
+        "B-061",
+        "B-062",
+        "B-063",
+        "B-067",
+        "B-068",
+        "B-069",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-080",
+        "B-081",
+        "B-082",
+        "B-083",
+        "B-084",
+        "B-092",
+        "B-093",
+        "B-094",
+        "B-095",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1296,
+      "explicit_components": [
+        "governance-intervention-engine",
+        "odylith-context-engine",
+        "execution-engine",
+        "odylith-memory-backend",
+        "tribunal"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-09-23T19:57:17Z",
+      "workstreams": [
+        "B-001",
+        "B-002",
+        "B-005",
+        "B-008",
+        "B-009",
+        "B-010",
+        "B-011",
+        "B-012",
+        "B-013",
+        "B-014",
+        "B-015",
+        "B-016",
+        "B-019",
+        "B-020",
+        "B-021",
+        "B-022",
+        "B-024",
+        "B-025",
+        "B-031",
+        "B-032",
+        "B-038",
+        "B-039",
+        "B-041",
+        "B-042",
+        "B-043",
+        "B-044",
+        "B-045",
+        "B-046",
+        "B-047",
+        "B-058",
+        "B-059",
+        "B-061",
+        "B-062",
+        "B-063",
+        "B-067",
+        "B-068",
+        "B-069",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-080",
+        "B-081",
+        "B-082",
+        "B-083",
+        "B-084",
+        "B-092",
+        "B-093",
+        "B-094",
+        "B-095",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md"
+      ],
+      "confidence": "high",
+      "event_index": 1283,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-09-19T17:24:23-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1235,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-09-17T06:55:06-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-current-view-readers-could-remain-pinned-to-stale-onboarding-state.md",
+        "src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py",
+        "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
+        "src/odylith/runtime/surfaces/templates/tooling_dashboard/navigation.js"
+      ],
+      "confidence": "high",
+      "event_index": 1209,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
+      "ts_iso": "2026-09-15T17:58:31-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1195,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-09-09T06:07:53Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1192,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-09-09T06:07:31Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1188,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-09-09T05:43:04Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1184,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-09-09T05:40:24Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1165,
+      "explicit_components": [
+        "governance-intervention-engine",
+        "odylith-context-engine",
+        "execution-engine",
+        "odylith-memory-backend",
+        "tribunal"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-09-08T21:40:03Z",
+      "workstreams": [
+        "B-001",
+        "B-002",
+        "B-005",
+        "B-008",
+        "B-009",
+        "B-010",
+        "B-011",
+        "B-012",
+        "B-013",
+        "B-014",
+        "B-015",
+        "B-016",
+        "B-019",
+        "B-020",
+        "B-021",
+        "B-022",
+        "B-024",
+        "B-025",
+        "B-031",
+        "B-032",
+        "B-038",
+        "B-039",
+        "B-041",
+        "B-042",
+        "B-043",
+        "B-044",
+        "B-045",
+        "B-046",
+        "B-047",
+        "B-058",
+        "B-059",
+        "B-061",
+        "B-062",
+        "B-063",
+        "B-067",
+        "B-068",
+        "B-069",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-080",
+        "B-081",
+        "B-082",
+        "B-083",
+        "B-084",
+        "B-092",
+        "B-093",
+        "B-094",
+        "B-095",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1162,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-09-08T21:30:28Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1155,
+      "explicit_components": [
+        "governance-intervention-engine",
+        "odylith-context-engine",
+        "execution-engine",
+        "odylith-memory-backend",
+        "tribunal"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-09-08T18:06:10Z",
+      "workstreams": [
+        "B-001",
+        "B-002",
+        "B-005",
+        "B-008",
+        "B-009",
+        "B-010",
+        "B-011",
+        "B-012",
+        "B-013",
+        "B-014",
+        "B-015",
+        "B-016",
+        "B-019",
+        "B-020",
+        "B-021",
+        "B-022",
+        "B-024",
+        "B-025",
+        "B-031",
+        "B-032",
+        "B-038",
+        "B-039",
+        "B-041",
+        "B-042",
+        "B-043",
+        "B-044",
+        "B-045",
+        "B-046",
+        "B-047",
+        "B-058",
+        "B-059",
+        "B-061",
+        "B-062",
+        "B-063",
+        "B-067",
+        "B-068",
+        "B-069",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-080",
+        "B-081",
+        "B-082",
+        "B-083",
+        "B-084",
+        "B-092",
+        "B-093",
+        "B-094",
+        "B-095",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1029,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T23:39:22Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1015,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-07-12T03:03:25Z",
+      "workstreams": [
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-072",
+        "B-096",
+        "B-099",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1006,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-07-12T01:28:31Z",
+      "workstreams": [
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-072",
+        "B-096",
+        "B-099",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1004,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-07-12T01:28:20Z",
+      "workstreams": [
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-072",
+        "B-096",
+        "B-099",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1002,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-07-11T20:18:55Z",
+      "workstreams": [
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-072",
+        "B-096",
+        "B-099",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 998,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-07-11T20:18:39Z",
+      "workstreams": [
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-072",
+        "B-096",
+        "B-099",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 995,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-07-11T20:16:21Z",
+      "workstreams": [
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-072",
+        "B-096",
+        "B-099",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 987,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-11T02:56:45Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 931,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "radar",
+        "registry"
+      ],
+      "meaningful": false,
+      "summary": "Implementation evidence linked this component to governed work.",
+      "ts_iso": "2026-07-06T18:39:47-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 885,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-07-04T15:05:44-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/atlas/source/greenfield-matrix-tiered-campaign-progress.mmd",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 867,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-07-04T02:42:55-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-04-02-benchmark-live-path-resolution-crashes-on-impossible-lane-output.md",
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 837,
+      "explicit_components": [
+        "casebook",
+        "domain-intelligence",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "domain-intelligence",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 3 verifiable artifact references.",
+      "ts_iso": "2026-07-03T03:31:22-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 6,
+      "artifacts": [
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/casebook/bugs/2026-07-02-greenfield-registry-semantic-contracts-can-miss-canonical-blocked-input-proof-ro.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract_support.py"
+      ],
+      "confidence": "high",
+      "event_index": 813,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 verifiable artifact references.",
+      "ts_iso": "2026-07-02T11:30:23-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 810,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-07-02T10:20:14-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 5,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-04-02-benchmark-live-path-resolution-crashes-on-impossible-lane-output.md",
+        "odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
+        "src/odylith/runtime/project_intelligence/product_story_cards.py"
+      ],
+      "confidence": "high",
+      "event_index": 809,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
+      "ts_iso": "2026-07-02T00:23:46-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py"
+      ],
+      "confidence": "high",
+      "event_index": 778,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-07-01T02:44:54-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py"
+      ],
+      "confidence": "high",
+      "event_index": 777,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
+      "ts_iso": "2026-07-01T02:41:24-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 6,
+      "artifacts": [
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_repair.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py"
+      ],
+      "confidence": "high",
+      "event_index": 751,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 verifiable artifact references.",
+      "ts_iso": "2026-06-30T12:42:28-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "sha256:1e261b36b06653b633ebe5643158a388d5a5bb1fec5c6b50bb78ed5362d012a9",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_repair.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_quality_repairs.py"
+      ],
+      "confidence": "high",
+      "event_index": 722,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
+      "ts_iso": "2026-06-29T17:27:09-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py"
+      ],
+      "confidence": "high",
+      "event_index": 688,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-06-29T01:09:40-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 675,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "registry",
+        "release"
+      ],
+      "meaningful": false,
+      "summary": "Implementation evidence linked this component to governed work.",
+      "ts_iso": "2026-06-28T15:32:38-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 669,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-06-28T02:41:56-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 5,
+      "artifacts": [
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 628,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
+      "ts_iso": "2026-06-26T20:00:11-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-package-repair-repeats-risk-prose-across-surfaces.md",
+        "tests/unit/runtime/test_greenfield_proposals.py"
+      ],
+      "confidence": "high",
+      "event_index": 604,
+      "explicit_components": [
+        "casebook",
+        "domain-intelligence"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "domain-intelligence"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 2 verifiable artifact references.",
+      "ts_iso": "2026-06-25T21:24:52-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+        "odylith/casebook/bugs/2026-06-26-agent-guidance-did-not-require-failed-mechanism-capture-before-repeated-fixes.md",
+        "tests/unit/runtime/test_source_bundle_mirror.py"
+      ],
+      "confidence": "high",
+      "event_index": 603,
+      "explicit_components": [
+        "atlas",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "odylith-chatter",
+        "registry"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "odylith-chatter",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. 3 verifiable artifact references.",
+      "ts_iso": "2026-06-25T21:21:10-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/maintainer/AGENTS.md"
+      ],
+      "confidence": "high",
+      "event_index": 602,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "odylith",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "odylith",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. 1 verifiable artifact reference.",
+      "ts_iso": "2026-06-25T21:09:45-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 481,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-05-26T21:17:03Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 478,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-05-25T21:33:04Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 476,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-05-25T21:32:42Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 472,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-05-25T19:50:14Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 470,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-05-25T19:49:31Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 468,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-05-25T19:34:22Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 5,
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
         "src/odylith/cli.py",
@@ -90,13 +4565,14 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "CB-149 consumer start latency update: installed v0.1.13 measured 25.40s in dentoai-orion; source fix now returns expected fallback in 2.55s with fast start preflight and hot-path bootstrap.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
       "ts_iso": "2026-05-03T10:46:04-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "low",
       "event_index": 427,
@@ -107,11 +4583,12 @@
         "odylith"
       ],
       "meaningful": false,
-      "summary": "Odylith Observation: A local Casebook record is linked to this path: CB-122. Why it matters: Hidden host messages do not count as delivered to the user.",
+      "summary": "Component evidence linked this component to governed work.",
       "ts_iso": "2026-05-02T23:04:10Z",
       "workstreams": []
     },
     {
+      "artifact_count": 4,
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
         "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
@@ -152,13 +4629,14 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "B-141 activation pass keeps source-local memory on Lance/Tantivy, preserves visible Assist recovery, and leaves consumer pinned runtimes on the managed feature pack.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-05-02T16:21:02-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 3,
       "artifacts": [
         "odylith/AGENTS.md",
         "src/odylith/bundle/assets/odylith/AGENTS.md",
@@ -196,13 +4674,14 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Trimmed duplicated Odylith-tree consumer guidance while preserving startup, context, engine, intervention, governance, anti-slop, and host-separation contracts.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-05-02T15:58:17-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 419,
@@ -238,13 +4717,14 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Added automated Casebook release closeout for FixedPendingRelease records, gated by shipped release truth and validation evidence, and refreshed the v0.1.13 migration-observer markers.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-05-02T15:22:02-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 418,
@@ -280,13 +4760,14 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Captured CB-155 for missing Radar topology on B-141, linked B-141/B-140 to governing Atlas diagrams, added topology-sensitive backlog validation, and re-proved Casebook/Radar/migration-gate surfaces for v0.1.13.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-05-02T15:10:06-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 417,
@@ -312,13 +4793,14 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Slimmed consumer-lane guidance and Claude model-invocable skill surface while preserving Odylith engine activation and keeping maintainer release gates separate.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-05-02T14:36:12-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 416,
@@ -342,17 +4824,18 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Host-surface diet kept startup/context/intervention substrate intact while removing duplicate Claude guidance, no-op prompt marker hooks, generic low-signal receipts, and exact non-governed Claude Bash checkpoint cost; 0.1.13 migration-observer markers pass.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-05-02T14:04:48-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 4,
       "artifacts": [
-        "AGENTS.md",
-        "agents/skills/odylith-start/SKILL.md",
-        "claude/commands/odylith-start.md",
+        "sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9",
+        "sha256:2578ef93b5dac059562561a3d24005fb9dd0a8771590dff49d56bb173d616627",
+        "sha256:61a82c8db99693b7a2b3de56c6e2ff31e6679544c761fa414231280d0b8dfb8e",
         "src/odylith/install/casebook_metadata_migration.py"
       ],
       "confidence": "high",
@@ -379,13 +4862,14 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "B-141 now enforces serial Odylith startup before context/search across host guidance, skills, and installed bundle assets, with Casebook index-only migration guard proof.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-05-02T13:42:42-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 3,
       "artifacts": [
         "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
         "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
@@ -417,13 +4901,14 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Added end-to-end governed sync performance tests for B-141 covering full sync dry-run, all-surface dashboard refresh, Compass status, owned surface refresh commands, no-provider credit burn, and dashboard parallelism.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-05-02T13:16:47-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 4,
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-casebook-renders-prose-status-and-type-chips.md",
         "src/odylith/install/casebook_metadata_migration.py",
@@ -457,13 +4942,14 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Registered the v0.1.13 Casebook compact-metadata migration, proved 0.1.10/0.1.11/0.1.12 upgrade paths, refreshed Casebook and Radar surfaces, and tightened migration_required gating so no-op registered migrations cannot satisfy future release manifests.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-05-02T11:56:48-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 3,
       "artifacts": [
         "odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md",
         "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
@@ -481,13 +4967,14 @@
         "odylith"
       ],
       "meaningful": true,
-      "summary": "Tightened Casebook selected-bug detail gutters, restored media-block ownership, captured CB-153, and proved compact metadata plus browser layout for v0.1.13.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-05-02T11:10:14-07:00",
       "workstreams": [
         "B-140"
       ]
     },
     {
+      "artifact_count": 3,
       "artifacts": [
         "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
         "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
@@ -520,7 +5007,7 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "B-140/B-141 v0.1.13 dev-maintainer surfaces now keep source-local proof distinct from pinned 0.1.12 and default Release Targets to current/next aliases.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-05-02T10:44:13-07:00",
       "workstreams": [
         "B-140",
@@ -528,6 +5015,7 @@
       ]
     },
     {
+      "artifact_count": 3,
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
         "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
@@ -561,13 +5049,14 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "B-141 source-local QA tightened Compass Release Targets to current/next aliases, restored Codex live intervention checkpoint output, and reran browser/migration proof for v0.1.13.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-05-02T10:38:45-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 3,
       "artifacts": [
         "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
         "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
@@ -598,13 +5087,14 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Proved v0.1.13 historical upgrade matrix for 0.1.10, 0.1.11, and 0.1.12 starts; release migration gate remains green.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-05-02T09:54:04-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 407,
@@ -628,13 +5118,14 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Fresh-host proof for v0.1.13 B-141 passed in /private/tmp/odylith-fresh-host-final-aezgVP: current-source install against shipped 0.1.12 verified version, doctor, Codex prompt context, Claude prompt-bundle fallback, both intervention-status surfaces, visible-intervention smokes, stale-label scans, and expected start narrowing.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-05-02T09:37:35-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 406,
@@ -661,13 +5152,14 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Governance refresh for v0.1.13 B-141 cross-host latency and mixed-version fresh-host launcher compatibility: CB-147, CB-148, CB-149, CB-150, CB-151, and CB-152 remain FixedPendingRelease with single-word Casebook metadata.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-05-02T09:17:39-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 4,
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-bootstrap-doctor-repair-still-surfaces-trusted-root-warning-noise.md",
         "odylith/casebook/bugs/2026-05-01-casebook-renders-prose-status-and-type-chips.md",
@@ -699,13 +5191,14 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Executed governance refresh steps 1-6 for B-141: source truth verified, Casebook/Radar/Compass refreshed, and fresh-host proof queued for validation.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-05-02T08:24:18-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 4,
       "artifacts": [
         "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
         "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
@@ -738,13 +5231,14 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Aligned B-141, v0.1.13 release metadata, migration observer markers, and Casebook fixed-pending-release statuses across refreshed governance surfaces.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-05-02T08:12:09-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "low",
       "event_index": 402,
@@ -755,11 +5249,12 @@
         "odylith"
       ],
       "meaningful": false,
-      "summary": "Odylith Observation: A local Casebook record is linked to this path: CB-122. Why it matters: Hidden host messages do not count as delivered to the user.",
+      "summary": "Component evidence linked this component to governed work.",
       "ts_iso": "2026-05-02T01:29:59Z",
       "workstreams": []
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "low",
       "event_index": 400,
@@ -770,11 +5265,12 @@
         "odylith"
       ],
       "meaningful": false,
-      "summary": "Odylith Observation: A local Casebook record is linked to this path: CB-122. Why it matters: Hidden host messages do not count as delivered to the user.",
+      "summary": "Component evidence linked this component to governed work.",
       "ts_iso": "2026-05-02T01:29:52Z",
       "workstreams": []
     },
     {
+      "artifact_count": 2,
       "artifacts": [
         "src/odylith/runtime/governance/compass_dashboard_refresh_inputs.py",
         "src/odylith/runtime/surfaces/compass_standup_brief_runtime_patch.py"
@@ -804,15 +5300,16 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Deep resume completed v0.1.13 host-performance integrity hardening: extracted Compass runtime patching and dashboard preflight owners to keep hotfile gates green, confined the no-templatized-narration rule to dev-maintainer guidance, restored Compass deep-refresh settlement, and passed the v0.1.13 migration gate.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-05-01T17:58:50-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 7,
       "artifacts": [
-        "agents/bin/odylith-host-launcher.py",
+        "sha256:735e1037e13fed924b4417feebc9b632d2da582760a7bbcd48ea9be411aa74a8",
         "src/odylith/runtime/surfaces/claude_host_prompt_bundle.py",
         "src/odylith/runtime/surfaces/claude_host_prompt_context.py",
         "src/odylith/runtime/surfaces/claude_host_session_brief.py",
@@ -847,13 +5344,14 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Restored substrate-backed quiet prompt and SessionStart fast paths for B-141 while keeping conversation bundles off the low-signal path.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 7 verifiable artifact references.",
       "ts_iso": "2026-05-01T15:22:30-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 3,
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
         "odylith/radar/source/ideas/2026-05/2026-05-01-claude-hook-latency-budget-and-fast-path-startup.md",
@@ -882,13 +5380,14 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "B-141 moved into the v0.1.13 active pipeline with cross-host hook latency work preserving prompt context, interventions, Assists, and migration governance capture.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-05-01T12:49:51-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 4,
       "artifacts": [
         "src/odylith/runtime/governance/surface_refresh_fingerprint_dag.py",
         "src/odylith/runtime/surfaces/backlog_traceability_paths.py",
@@ -921,13 +5420,14 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "QA closure for the 0.1.12 Radar anti-slop slice: focused Radar traceability/render tests, surface refresh fingerprint tests, hygiene checks, intervention/subagent/execution/memory alignment tests, full browser smoke, component-registry validation, Casebook validation, Discipline validation, py_compile, and git diff --check passed.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-04-28T15:56:42-07:00",
       "workstreams": [
         "B-117"
       ]
     },
     {
+      "artifact_count": 3,
       "artifacts": [
         "odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md",
         "src/odylith/install/migration_runtime.py",
@@ -952,13 +5452,14 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "0.1.12 migration-runtime QA pass closed with full pytest, release migration gate, doctor, Casebook, and component-registry validation green.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-04-27T17:57:36-07:00",
       "workstreams": [
         "B-127"
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 369,
@@ -998,7 +5499,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-26T13:02:40Z",
       "workstreams": [
         "B-001",
@@ -1071,6 +5572,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 367,
@@ -1084,6 +5586,7 @@
         "casebook",
         "compass",
         "dashboard",
+        "delivery-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "odylith",
@@ -1091,6 +5594,9 @@
         "odylith-context-engine",
         "odylith-memory-backend",
         "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
         "proof-state",
         "radar",
         "registry",
@@ -1099,7 +5605,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Tribunal already has case-component-governance-intervention-engine on this path.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-26T12:46:32Z",
       "workstreams": [
         "B-096",
@@ -1112,6 +5618,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 361,
@@ -1151,7 +5658,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-25T19:24:29Z",
       "workstreams": [
         "B-001",
@@ -1224,6 +5731,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 357,
@@ -1263,7 +5771,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-25T19:24:07Z",
       "workstreams": [
         "B-001",
@@ -1336,6 +5844,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 354,
@@ -1375,7 +5884,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-25T18:44:44Z",
       "workstreams": [
         "B-001",
@@ -1448,6 +5957,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 353,
@@ -1487,7 +5997,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-25T18:29:09Z",
       "workstreams": [
         "B-001",
@@ -1560,6 +6070,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 348,
@@ -1599,7 +6110,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-25T18:28:40Z",
       "workstreams": [
         "B-001",
@@ -1672,6 +6183,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 341,
@@ -1711,7 +6223,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Odylith is tracking this signal: Radar already has B-001 for this slice. Extend that workstream instead of creating a duplicate backlog record.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-22T05:42:21Z",
       "workstreams": [
         "B-001",
@@ -1784,6 +6296,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 340,
@@ -1823,7 +6336,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Odylith is tracking this signal: Radar already has B-001 for this slice. Extend that workstream instead of creating a duplicate backlog record.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-22T05:42:15Z",
       "workstreams": [
         "B-001",
@@ -1896,6 +6409,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 337,
@@ -1935,7 +6449,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-21T20:46:17Z",
       "workstreams": [
         "B-001",
@@ -2008,6 +6522,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 335,
@@ -2047,7 +6562,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-20T22:56:05Z",
       "workstreams": [
         "B-001",
@@ -2120,6 +6635,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 330,
@@ -2159,7 +6675,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-20T22:55:16Z",
       "workstreams": [
         "B-001",
@@ -2232,6 +6748,7 @@
       ]
     },
     {
+      "artifact_count": 1,
       "artifacts": [
         "src/example.py"
       ],
@@ -2273,7 +6790,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Tribunal already has CB-122 in the decision path.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-20T20:17:50Z",
       "workstreams": [
         "B-001",
@@ -2346,6 +6863,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 317,
@@ -2385,7 +6903,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-20T20:14:40Z",
       "workstreams": [
         "B-001",
@@ -2458,6 +6976,7 @@
       ]
     },
     {
+      "artifact_count": 1,
       "artifacts": [
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
@@ -2482,6 +7001,9 @@
         "odylith-context-engine",
         "odylith-memory-backend",
         "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
         "proof-state",
         "radar",
         "registry",
@@ -2491,7 +7013,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-20T18:29:15Z",
       "workstreams": [
         "B-072",
@@ -2519,6 +7041,7 @@
       ]
     },
     {
+      "artifact_count": 1,
       "artifacts": [
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
@@ -2543,6 +7066,9 @@
         "odylith-context-engine",
         "odylith-memory-backend",
         "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
         "proof-state",
         "radar",
         "registry",
@@ -2552,7 +7078,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-20T18:29:15Z",
       "workstreams": [
         "B-072",
@@ -2580,6 +7106,7 @@
       ]
     },
     {
+      "artifact_count": 1,
       "artifacts": [
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
@@ -2604,6 +7131,9 @@
         "odylith-context-engine",
         "odylith-memory-backend",
         "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
         "proof-state",
         "radar",
         "registry",
@@ -2613,7 +7143,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-20T18:29:13Z",
       "workstreams": [
         "B-072",
@@ -2641,6 +7171,7 @@
       ]
     },
     {
+      "artifact_count": 1,
       "artifacts": [
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
@@ -2665,6 +7196,9 @@
         "odylith-context-engine",
         "odylith-memory-backend",
         "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
         "proof-state",
         "radar",
         "registry",
@@ -2674,7 +7208,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-20T18:29:13Z",
       "workstreams": [
         "B-072",
@@ -2702,6 +7236,7 @@
       ]
     },
     {
+      "artifact_count": 1,
       "artifacts": [
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
@@ -2726,6 +7261,9 @@
         "odylith-context-engine",
         "odylith-memory-backend",
         "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
         "proof-state",
         "radar",
         "registry",
@@ -2735,7 +7273,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-20T18:29:09Z",
       "workstreams": [
         "B-072",
@@ -2763,6 +7301,7 @@
       ]
     },
     {
+      "artifact_count": 1,
       "artifacts": [
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
@@ -2787,6 +7326,9 @@
         "odylith-context-engine",
         "odylith-memory-backend",
         "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
         "proof-state",
         "radar",
         "registry",
@@ -2796,7 +7338,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-20T18:29:09Z",
       "workstreams": [
         "B-072",
@@ -2824,6 +7366,7 @@
       ]
     },
     {
+      "artifact_count": 1,
       "artifacts": [
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
@@ -2848,6 +7391,9 @@
         "odylith-context-engine",
         "odylith-memory-backend",
         "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
         "proof-state",
         "radar",
         "registry",
@@ -2857,7 +7403,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-20T18:29:00Z",
       "workstreams": [
         "B-072",
@@ -2885,6 +7431,7 @@
       ]
     },
     {
+      "artifact_count": 1,
       "artifacts": [
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
@@ -2909,6 +7456,9 @@
         "odylith-context-engine",
         "odylith-memory-backend",
         "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
         "proof-state",
         "radar",
         "registry",
@@ -2918,7 +7468,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-20T18:29:00Z",
       "workstreams": [
         "B-072",
@@ -2946,6 +7496,7 @@
       ]
     },
     {
+      "artifact_count": 1,
       "artifacts": [
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
@@ -2970,6 +7521,9 @@
         "odylith-context-engine",
         "odylith-memory-backend",
         "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
         "proof-state",
         "radar",
         "registry",
@@ -2979,7 +7533,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-20T18:26:33Z",
       "workstreams": [
         "B-072",
@@ -3007,6 +7561,7 @@
       ]
     },
     {
+      "artifact_count": 1,
       "artifacts": [
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
@@ -3031,6 +7586,9 @@
         "odylith-context-engine",
         "odylith-memory-backend",
         "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
         "proof-state",
         "radar",
         "registry",
@@ -3040,7 +7598,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-20T18:26:33Z",
       "workstreams": [
         "B-072",
@@ -3068,6 +7626,7 @@
       ]
     },
     {
+      "artifact_count": 1,
       "artifacts": [
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
@@ -3092,6 +7651,9 @@
         "odylith-context-engine",
         "odylith-memory-backend",
         "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
         "proof-state",
         "radar",
         "registry",
@@ -3101,7 +7663,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-20T18:26:01Z",
       "workstreams": [
         "B-072",
@@ -3129,6 +7691,7 @@
       ]
     },
     {
+      "artifact_count": 1,
       "artifacts": [
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
@@ -3153,6 +7716,9 @@
         "odylith-context-engine",
         "odylith-memory-backend",
         "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
         "proof-state",
         "radar",
         "registry",
@@ -3162,7 +7728,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-20T18:26:01Z",
       "workstreams": [
         "B-072",
@@ -3190,6 +7756,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 285,
@@ -3229,7 +7796,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-20T14:13:41Z",
       "workstreams": [
         "B-001",
@@ -3302,6 +7869,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 283,
@@ -3341,7 +7909,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-20T14:12:53Z",
       "workstreams": [
         "B-001",
@@ -3414,6 +7982,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 279,
@@ -3453,7 +8022,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-20T03:27:29Z",
       "workstreams": [
         "B-001",
@@ -3526,8 +8095,9 @@
       ]
     },
     {
+      "artifact_count": 1,
       "artifacts": [
-        "AGENTS.md"
+        "sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9"
       ],
       "confidence": "high",
       "event_index": 275,
@@ -3571,7 +8141,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Tribunal already has CB-122 in the decision path.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-20T03:26:23Z",
       "workstreams": [
         "B-001",
@@ -3695,6 +8265,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 270,
@@ -3734,7 +8305,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Tribunal already has CB-122 in the decision path.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-20T03:26:09Z",
       "workstreams": [
         "B-001",
@@ -3807,6 +8378,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 268,
@@ -3846,7 +8418,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-20T03:26:03Z",
       "workstreams": [
         "B-001",
@@ -3919,6 +8491,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 265,
@@ -3958,7 +8531,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-20T03:24:52Z",
       "workstreams": [
         "B-001",
@@ -4031,6 +8604,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 263,
@@ -4070,7 +8644,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-20T01:56:52Z",
       "workstreams": [
         "B-001",
@@ -4143,6 +8717,7 @@
       ]
     },
     {
+      "artifact_count": 5,
       "artifacts": [
         "odylith/runtime/source/discipline-evaluation-corpus.v1.json",
         "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
@@ -4196,13 +8771,14 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "B-110 hardening pass made Character signal extraction negation-aware and proof-execution aware, prevented false blocks for technical-plan authoring, release-proof execution, credit-safety work, and negated delegation, added modern Codex/Claude model alias coverage, expanded deterministic corpus to 24 cases, and added benchmark summary rates for false allow/block, unknown-pressure handling, stance vectors, noise suppression, intervention precision, and unseen-pressure generalization. Proof: 48 focused Character tests passed, 225 benchmark/corpus/guidance tests passed, 2120 runtime tests passed, validate discipline and validate guidance-behavior passed, quick discipline report 1be88ce4ead87770 passed, quick guidance_behavior report 61d3b6a2b1cbe33e passed; hot-path host/provider call counts remained zero.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
       "ts_iso": "2026-04-17T20:20:18-07:00",
       "workstreams": [
         "B-110"
       ]
     },
     {
+      "artifact_count": 2,
       "artifacts": [
         "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
         "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md"
@@ -4251,13 +8827,14 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "B-110 Odylith Discipline hardening centralized signal/law policy, ranked open-world affordances, suppressed ephemeral practice refs, tagged Discipline benchmark scenarios to B-110, and proved zero-credit validators plus quick benchmark families with advisory widening at 0.0.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-04-17T20:06:43-07:00",
       "workstreams": [
         "B-110"
       ]
     },
     {
+      "artifact_count": 1,
       "artifacts": [
         "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md"
       ],
@@ -4305,13 +8882,14 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "B-110 final browser QA rerun exposed and fixed Compass fixture voice fragility: fake narrator now normalizes governed phrases into plain maintainer wording before standup validation. Exact failing test passed, then final browser matrix passed 158 with 1 skipped after the final governed surface refresh.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-17T19:25:34-07:00",
       "workstreams": [
         "B-110"
       ]
     },
     {
+      "artifact_count": 1,
       "artifacts": [
         "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md"
       ],
@@ -4359,13 +8937,14 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "B-110 aggressive QA closeout: discipline validator passed 19 cases with platform integration green and zero hot-path provider/model calls; guidance-behavior validator passed 6 cases and 11 checks; quick benchmarks passed hard gates for discipline report 70fd94f9eaa6b982 and guidance_behavior report 5ca4596788ef9804; browser regression matrix passed 158 with 1 skipped.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-17T19:10:12-07:00",
       "workstreams": [
         "B-110"
       ]
     },
     {
+      "artifact_count": 9,
       "artifacts": [
         "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
         "src/odylith/runtime/discipline/laws.py",
@@ -4421,13 +9000,14 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "B-110 aggressive QA hardened visible-proof command handling, transcript-safe practice memory, malformed counter validation, and structured refresh result coercion.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 9 verifiable artifact references.",
       "ts_iso": "2026-04-17T18:55:55-07:00",
       "workstreams": [
         "B-110"
       ]
     },
     {
+      "artifact_count": 1,
       "artifacts": [
         "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md"
       ],
@@ -4475,13 +9055,14 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "B-110 final QA recorded post-sync validators, quick benchmark family proof, and full browser surface regression for Odylith Discipline hardening.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-17T18:12:15-07:00",
       "workstreams": [
         "B-110"
       ]
     },
     {
+      "artifact_count": 4,
       "artifacts": [
         "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
         "src/odylith/runtime/discipline/proof.py",
@@ -4532,13 +9113,14 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "B-110 hardening connected Odylith Discipline proof obligations, live-voice evidence shaping, platform integration validation, and zero-credit benchmark metrics across Execution, Intervention, Memory, and Benchmark.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-04-17T18:05:11-07:00",
       "workstreams": [
         "B-110"
       ]
     },
     {
+      "artifact_count": 2,
       "artifacts": [
         "odylith/atlas/source/odylith-adaptive-discipline-loop.mmd",
         "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md"
@@ -4589,7 +9171,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "B-110 source-local closure proof passed after governed sync: character and guidance validators, quick benchmark families, focused unit/CLI tests, 78 browser regressions, and sync check-only are green; full release proof remains gated on pinned dogfood runtime repair and matched proof benchmark.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-04-17T16:27:58-07:00",
       "workstreams": [
         "B-110",
@@ -4603,6 +9185,7 @@
       ]
     },
     {
+      "artifact_count": 4,
       "artifacts": [
         "odylith/runtime/source/discipline-evaluation-corpus.v1.json",
         "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
@@ -4653,7 +9236,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "B-110 Odylith Discipline source-local proof landed: zero-credit validator, guidance-behavior validator, quick benchmark family selection, and Discipline quick benchmark are green; pinned dogfood runtime proof remains blocked by managed runtime drift.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-04-17T16:17:00-07:00",
       "workstreams": [
         "B-110",
@@ -4666,6 +9249,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 251,
@@ -4689,23 +9273,32 @@
         "benchmark",
         "casebook",
         "compass",
+        "delivery-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
+        "odylith-memory-backend",
         "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
         "radar",
         "registry",
+        "subagent-orchestrator",
+        "subagent-router",
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Updated v0.1.11 governance truth for B-096 so Guidance Behavior summaries, Context Engine, Execution Engine, Memory Contracts, Tribunal-ready evidence, the intervention value engine, benchmark validation, Atlas, Registry, Radar, Casebook, and Compass describe one low-latency visible-intervention contract.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-17T13:31:40-07:00",
       "workstreams": [
         "B-096"
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 249,
@@ -4745,7 +9338,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Radar already has a governed slice for B-001.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-17T03:48:35Z",
       "workstreams": [
         "B-001",
@@ -4812,6 +9405,7 @@
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 247,
@@ -4851,7 +9445,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-17T00:47:30Z",
       "workstreams": [
         "B-001",
@@ -4918,6 +9512,7 @@
       ]
     },
     {
+      "artifact_count": 3,
       "artifacts": [
         "odylith/casebook/bugs/2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md",
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py",
@@ -4937,21 +9532,30 @@
         "benchmark",
         "casebook",
         "compass",
+        "delivery-intelligence",
         "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
+        "odylith-memory-backend",
         "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "subagent-orchestrator",
+        "subagent-router",
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Fixed intervention chat visibility contract: assistant-render fallback, visible-intervention CLI, Codex Bash-only hook truth, Stop one-shot Assist recovery, and CB-121 casebook capture.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-04-15T21:20:30-07:00",
       "workstreams": [
         "B-096"
       ]
     },
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "medium",
       "event_index": 134,
@@ -4959,11 +9563,22 @@
       "kind": "subagent_stop",
       "mapped_components": [
         "atlas",
+        "benchmark",
         "casebook",
         "compass",
         "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
         "odylith",
+        "odylith-chatter",
         "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
         "radar",
         "registry",
         "remediator",
@@ -4972,13 +9587,14 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
       "ts_iso": "2026-04-13T23:57:57Z",
       "workstreams": [
         "B-001"
       ]
     },
     {
+      "artifact_count": 3,
       "artifacts": [
         "odylith/radar/source/INDEX.md",
         "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
@@ -4996,23 +9612,25 @@
         "radar"
       ],
       "meaningful": true,
-      "summary": "Successor created: B-266 reopens B-265 for active plan binding",
+      "summary": "Decision evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-03-20T18:10:05-07:00",
       "workstreams": []
     }
   ],
   "traceability": {
     "code_references": [
-      "src/odylith/cli.py",
-      "src/odylith/runtime/governance/component_registry_intelligence.py",
-      "src/odylith/runtime/governance/sync_workstream_artifacts.py"
+      "src/odylith/runtime/governance/bug_authoring.py",
+      "src/odylith/runtime/intervention_engine/apply.py",
+      "src/odylith/runtime/surfaces/claude_host_prompt_bundle.py",
+      "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+      "src/odylith/runtime/surfaces/codex_host_stop_summary.py"
     ],
     "developer_docs": [
-      "docs/specs/odylith-repo-integration-contract.md",
-      "odylith/PRODUCT_COMPONENTS.md",
-      "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
+      "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
+      "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md"
     ],
     "runbooks": [
+      "docs/runbooks/odylith-governance.md",
       "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"
     ]
   },

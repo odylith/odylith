@@ -1,0 +1,12 @@
+{
+  "archive_sha256": "e0741b852829216bcea9a02a9fa946e5bbf34188e65572271976103f0bd0d7c3",
+  "capture_owner": "frozen test_v8_compiler_seal_can_be_read_and_used_for_a_second_edit, bounded=False, stopped after first real v8 compiler staging",
+  "consumer_context": "temporary deterministic test repository; no live source or provider replay",
+  "files": {
+    "legacy-v8-pct.json": "39546111c3eda9f3e258894665c053408d8962f0da26f3ec765d7d50823cf6fa",
+    "legacy-v8-pct.json.compiler-receipt.v1.json": "0f06526a664b960b14fee4ebdc90423f4afbf3b29113728f69b5ffcfa56ceac6"
+  },
+  "revision": "16a470d1b0afc20fb6ca22c40b7888332364a209",
+  "source_context": "git archive frozen src and tests; isolated temporary compiler fixture",
+  "transaction_hash": "bf7f6b6186c30eb86e93a9194dd2eed43f330cdd89ff145d2268583f64db6b6a"
+}

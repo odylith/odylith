@@ -1,0 +1,52 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "agriculture",
+    "farm",
+    "crop",
+    "soil",
+    "food",
+    "irrigation"
+  ],
+  "matched_description_evidence_terms": [
+    "agriculture"
+  ],
+  "repository": {
+    "default_branch": "main",
+    "description": "[AAAI2022] igrow: A smart agriculture solution to autonomous greenhouse control",
+    "full_name": "holmescao/iGrow",
+    "id": 381272402,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "iGrow",
+    "node_id": "MDEwOlJlcG9zaXRvcnkzODEyNzI0MDI=",
+    "pushed_at": "2026-03-22T16:19:30Z",
+    "topics": [
+      "agriculture",
+      "ai",
+      "greenhouse-control-system",
+      "iot-application",
+      "smartagriculture",
+      "smartgreenhouse"
+    ]
+  },
+  "response_item_index": 21,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aagriculture&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:16:06 GMT",
+    "x-github-request-id": "D132:1199E1:1526D0C:1587FA2:6A5B6074"
+  },
+  "search_response_path": "responses/agriculture.json",
+  "search_response_sha256": "15dcc000ab6906d482b87429532f1d4d69c7243f78524e266095a976cf6f331a",
+  "selection_index": 11,
+  "source_family": "agriculture",
+  "source_id": "github-repository:381272402",
+  "source_uri": "https://github.com/holmescao/iGrow",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

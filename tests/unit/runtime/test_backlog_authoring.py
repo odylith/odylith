@@ -1,11 +1,29 @@
 from __future__ import annotations
 
+import datetime as dt
 import json
 from pathlib import Path
+
+import pytest
 
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.governance import release_planning_contract
+
+
+@pytest.mark.parametrize("override", [False, True])
+def test_missing_rationale_adds_only_known_ordering_metadata(tmp_path: Path, override: bool) -> None:
+    item = backlog_authoring.CreatedBacklogItem(
+        idea_id="B-001", title="A grounded workstream", idea_path=tmp_path / "idea.md",
+        ordering_score=80, founder_override=override,
+    )
+    lines = backlog_authoring._build_rationale_lines(
+        item=item, override_note="Explicit operator ordering.", override_review_date="2026-09-16",
+    )
+    assert lines == [
+        "- ranking basis: Explicit operator ordering. Review checkpoint: 2026-09-16."
+        if override else "- ranking basis: score-based rank; no manual priority override."
+    ]
 
 
 _SECTIONS = (
@@ -53,6 +71,10 @@ def _grounded_backlog_args() -> list[str]:
         "Backlog records should read like product truth, not a title template.",
         "--success-metrics",
         "- The workstream renders with real detail.\n- The backlog contract stays valid.",
+        "--domain-risk",
+        "Domain and compliance risk is scoped to Radar truth quality and low operational blast radius.",
+        "--security-posture",
+        "Security posture: no credentials or runtime access change; agent-assisted risk is ungrounded governance memory.",
     ]
 
 
@@ -157,6 +179,17 @@ def _seed_backlog_repo(root: Path) -> Path:
         encoding="utf-8",
     )
     return backlog_index
+
+
+def test_rewrite_empty_existing_rationale_reports_absence_without_product_defaults(tmp_path: Path) -> None:
+    index = _seed_backlog_repo(tmp_path)
+    text = backlog_authoring._rewrite_active_backlog_section(
+        backlog_index_path=index, active_rows=(),
+        reorder_sections=(("B-101", "B-101 (rank 1)", []),), today=dt.date(2026, 9, 16),
+    )
+    assert text.split("### B-101 (rank 1)\n", maxsplit=1)[1].strip() == (
+        "- ranking basis: Ordering rationale was not supplied."
+    )
 
 
 def _seed_release_registry(root: Path, *, terminal_next: bool = False) -> Path:
@@ -270,6 +303,43 @@ def test_backlog_create_can_create_umbrella_with_children_topology(tmp_path: Pat
     assert "workstream_parent: B-102" in child_two_text
 
 
+def test_backlog_create_parent_adopts_new_children_under_existing_umbrella(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    _seed_backlog_repo(tmp_path)
+    monkeypatch.setattr(backlog_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **kwargs: None)
+    seed_path = next((tmp_path / "odylith" / "radar" / "source" / "ideas").rglob("*seed-workstream*.md"))
+    seed_path.write_text(
+        seed_path.read_text(encoding="utf-8").replace(
+            "workstream_type: standalone",
+            "workstream_type: umbrella",
+        ),
+        encoding="utf-8",
+    )
+
+    rc = backlog_authoring.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--title",
+            "Existing umbrella child",
+            "--parent",
+            "B-101",
+            *_grounded_backlog_args(),
+        ]
+    )
+
+    assert rc == 0
+    ideas_root = tmp_path / "odylith" / "radar" / "source" / "ideas"
+    umbrella_text = seed_path.read_text(encoding="utf-8")
+    child_text = next(ideas_root.rglob("*existing-umbrella-child*.md")).read_text(encoding="utf-8")
+    assert "workstream_children: B-102" in umbrella_text
+    assert "idea_id: B-102" in child_text
+    assert "workstream_type: child" in child_text
+    assert "workstream_parent: B-101" in child_text
+
+
 def test_backlog_create_requires_override_review_date(tmp_path: Path, capsys) -> None:
     _seed_backlog_repo(tmp_path)
 
@@ -303,9 +373,9 @@ def test_backlog_create_writes_queued_item_and_updates_index(tmp_path: Path) -> 
             "--override-review-date",
             "2026-04-15",
                 "--override-note",
-                "Promote this above the seed workstream.",
+                "Set an explicit score below the seed workstream.",
                 "--ordering-score",
-                "101",
+                "99",
             ]
         )
 
@@ -315,13 +385,52 @@ def test_backlog_create_writes_queued_item_and_updates_index(tmp_path: Path) -> 
     created_text = created_paths[0].read_text(encoding="utf-8")
     assert "idea_id: B-102" in created_text
     assert "title: Portable guidance cleanup" in created_text
+    assert created_text.count("## ") == 6
+    assert all(f"## {section}\n" in created_text for section in backlog_authoring.backlog_contract._REQUIRED_SECTIONS)
+    assert "## Risks\n" in created_text
+    assert "## Non-Goals\n" not in created_text
+    assert "## Open Questions\n" not in created_text
+    assert "TBD." not in created_text
 
     index_text = backlog_index.read_text(encoding="utf-8")
-    assert "| 1 | B-102 | Portable guidance cleanup | P1 | 101 | 3 | 3 | 3 | M | Medium | queued |" in index_text
+    assert "| 2 | B-102 | Portable guidance cleanup | P1 | 99 | 3 | 3 | 3 | M | Medium | queued |" in index_text
     assert "[portable-guidance-cleanup](odylith/radar/source/ideas/" in index_text
-    assert "### B-102 (rank 1)" in index_text
+    assert "### B-102 (rank 2)" in index_text
     assert "Review checkpoint: 2026-04-15." in index_text
     assert "Last updated (UTC): " in index_text
+
+
+def test_backlog_create_accepts_five_core_fields_without_optional_risk_or_security(tmp_path: Path) -> None:
+    _seed_backlog_repo(tmp_path)
+    rc = backlog_authoring.main(
+        [
+            "--repo-root", str(tmp_path), "--title", "Five core authoring",
+            "--problem", "Mandatory posture flags block concise Radar intake for internal documentation work.",
+            "--customer", "Maintainers creating a workstream for an internal documentation improvement.",
+            "--opportunity", "Record the documentation change before any implementation begins.",
+            "--product-view", "The change is limited to local documentation; no credential access or privacy-sensitive data is introduced.",
+            "--success-metrics", "The workstream validates with five core fields and no optional headings; operational risk stays limited to review of the documentation text.",
+        ]
+    )
+    assert rc == 0
+    created_path = next((tmp_path / "odylith" / "radar" / "source" / "ideas").rglob("*five-core-authoring*.md"))
+    rendered = created_path.read_text(encoding="utf-8")
+    assert "## Risks\n" not in rendered
+    assert {line for line in rendered.splitlines() if line.startswith("## ")} == {
+        f"## {section}" for section in backlog_authoring.backlog_contract._REQUIRED_SECTIONS
+    }
+
+
+def test_backlog_renderer_omits_empty_optional_sections_and_refuses_missing_core() -> None:
+    sections = {**_CORE_SECTION_BODIES, "Non-Goals": "", "Open Questions": "  "}
+    rendered = backlog_authoring._render_idea_text(metadata={}, sections=sections)
+    assert {line for line in rendered.splitlines() if line.startswith("## ")} == {
+        f"## {section}" for section in backlog_authoring.backlog_contract._REQUIRED_SECTIONS
+    }
+    assert "TBD." not in rendered
+    del sections["Product View"]
+    with pytest.raises(ValueError, match="missing required Radar section: Product View"):
+        backlog_authoring._render_idea_text(metadata={}, sections=sections)
 
 
 def test_backlog_create_without_release_does_not_touch_release_assignments(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -681,9 +790,17 @@ def test_backlog_create_rejects_boilerplate_core_detail(tmp_path: Path, capsys) 
             "If the team is already acting as if this work exists, the backlog should say so explicitly.",
             "--success-metrics",
             "- The workstream is specific enough to guide implementation and validation without further backlog surgery.",
+            "--domain-risk",
+            "Domain and compliance risk is intentionally present so this test reaches boilerplate validation.",
+            "--security-posture",
+            "Security posture: no credentials change; this test isolates boilerplate governance truth.",
         ]
     )
     output = capsys.readouterr().out
 
     assert rc == 2
     assert "core detail section `## Problem` still uses backlog-create boilerplate" in output
+
+
+def test_workstream_slug_preserves_unicode_identity_without_ascii_fallback() -> None:
+    assert backlog_authoring._slugify("交付 港務台") == "交付-港務台"

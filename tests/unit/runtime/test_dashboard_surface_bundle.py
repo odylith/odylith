@@ -64,6 +64,19 @@ def test_standard_surface_bundle_spec_requires_complete_shell_embed_pair() -> No
         )
 
 
+@pytest.mark.parametrize("render_guard", (
+    dashboard_surface_bundle._render_shell_embed_guard,
+    dashboard_surface_bundle._render_shell_embed_inline_guard,
+))
+def test_shell_handoff_uses_navigation_without_preemptively_stopping_requests(render_guard) -> None:
+    guard = render_guard(dashboard_surface_bundle.ShellEmbedOnlySpec(
+        shell_tab="registry", shell_frame_id="frame-registry", shell_href="../index.html",
+    ))
+
+    assert "targetWindow.location.replace(shellUrl.toString());" in guard
+    assert "window.stop" not in guard
+
+
 def test_append_query_param_preserves_existing_query_and_overwrites_same_key() -> None:
     href = dashboard_surface_bundle.append_query_param(
         href="compass.html?v=old&workstream=B-027",

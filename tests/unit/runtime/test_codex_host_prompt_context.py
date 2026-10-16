@@ -114,7 +114,8 @@ def test_codex_prompt_system_message_hard_fails_visible_for_zero_signals(tmp_pat
     observation = dict(bundle["observation"])
 
     assert rendered.startswith(
-        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
+        "---\n\n**Odylith Observation:** You should see guidance when it matters. This is the visible "
+        "checkpoint; future notes will stay concise, useful, and tied to a decision or verified result."
     )
     assert observation["context_packet_summary"]["packet_state"] == "visibility_recovery"
     assert observation["execution_engine_summary"]["execution_engine_next_move"] == "recover.current_blocker"
@@ -122,7 +123,7 @@ def test_codex_prompt_system_message_hard_fails_visible_for_zero_signals(tmp_pat
     assert observation["tribunal_summary"]["source"] == "intervention_alignment_context"
 
 
-def test_codex_prompt_system_message_replays_pending_chat_block(tmp_path: Path) -> None:
+def test_codex_prompt_system_message_does_not_replay_prior_turn_block(tmp_path: Path) -> None:
     surface_runtime.stream_state.append_intervention_event(
         repo_root=tmp_path,
         kind="intervention_card",
@@ -142,9 +143,7 @@ def test_codex_prompt_system_message_replays_pending_chat_block(tmp_path: Path) 
         session_id="codex-prompt-replay",
     )
 
-    assert rendered == (
-        "---\n\n**Odylith Observation:** Prompt must carry this pending block.\n\n---"
-    )
+    assert rendered == ""
 
 
 def test_codex_prompt_system_message_suppresses_help_fast_path_replay(tmp_path: Path) -> None:
@@ -170,7 +169,7 @@ def test_codex_prompt_system_message_suppresses_help_fast_path_replay(tmp_path: 
     assert rendered == ""
 
 
-def test_codex_prompt_system_message_prefers_pending_ambient_risk_over_observation(tmp_path: Path) -> None:
+def test_codex_prompt_system_message_does_not_replay_prior_ambient_bundle(tmp_path: Path) -> None:
     surface_runtime.stream_state.append_intervention_event(
         repo_root=tmp_path,
         kind="intervention_card",
@@ -202,13 +201,7 @@ def test_codex_prompt_system_message_prefers_pending_ambient_risk_over_observati
         session_id="codex-prompt-ambient",
     )
 
-    assert rendered == (
-        "---\n\n"
-        "**Odylith Risks:** Prompt should surface this branded ambient beat first.\n"
-        "\n"
-        "**Odylith Observation:** Prompt should not hide the stronger ambient beat.\n"
-        "\n---"
-    )
+    assert rendered == ""
 
 
 def test_main_writes_user_prompt_hook_json(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -275,10 +268,14 @@ def test_main_emits_show_me_route_lock_without_running_prompt_observation(
     assert "module counts" in additional_context
     assert "tmp clone noise" in additional_context
     assert "spawn policy" in additional_context
+    assert "must not create, scaffold, edit, or test" in additional_context
+    assert "sample devices" in additional_context
     assert "`./.odylith/bin/odylith show --repo-root .`" in additional_context
     assert "`odylith show --repo-root .`" in additional_context
     assert "Return that stdout directly" in additional_context
-    assert "systemMessage" not in payload
+    assert "end the turn immediately" in additional_context
+    assert "Do not run any other Bash command before or after it" in additional_context
+    assert payload["systemMessage"] == additional_context
 
 
 def test_main_emits_help_route_lock_without_pending_replay(
@@ -313,7 +310,7 @@ def test_main_emits_help_route_lock_without_pending_replay(
     assert "`./.odylith/bin/odylith --help`" in additional_context
     assert "`odylith --help`" in additional_context
     assert "stale replay" not in additional_context
-    assert "systemMessage" not in payload
+    assert payload["systemMessage"] == additional_context
 
 
 def test_main_emits_prompt_first_receipt_for_low_signal_prompt_without_bundle(
@@ -405,7 +402,7 @@ def test_main_emits_capability_inventory_route_lock_without_host_taxonomy(
     assert "`./.odylith/bin/odylith capabilities --repo-root .`" in additional_context
     assert "`odylith capabilities --repo-root .`" in additional_context
     assert "Return that stdout directly" in additional_context
-    assert "systemMessage" not in payload
+    assert payload["systemMessage"] == additional_context
 
 
 def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, tmp_path: Path, capsys) -> None:

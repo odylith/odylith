@@ -1,0 +1,324 @@
+{
+  "cases": [
+    {
+      "name": "repair-library-borrow-path",
+      "prompt": "Create a neighborhood repair-library service for apartment residents who borrow a drill, return a drill, and reserve a workbench during staffed hours. A resident first searches the tool catalog, chooses a drill, accepts the late-fee rule, selects a pickup slot, and receives a locker code. The volunteer librarian verifies the return condition and records missing accessories before the next reservation opens.",
+      "required_terms": ["repair-library", "drill", "workbench", "locker code"],
+      "leakage_terms": ["tool catalog", "pickup slot", "return condition"],
+      "tags": ["consumer-utility", "shared-resources"],
+      "stressors": ["path-grant", "noun-verb-homonym", "long-first-path", "registry-contract-pressure"]
+    },
+    {
+      "name": "laundry-room-outage-queue",
+      "prompt": "Build a tenant utility for a shared laundry room where residents can see washer status, join a dryer queue, and report a water leak without calling the property desk. The first path starts when a tenant scans the machine label, claims an available washer, gets a cycle reminder, then either releases the dryer queue or flags an outage. A maintenance coordinator reviews leak photos and closes the repair after a test cycle.",
+      "required_terms": ["laundry room", "dryer queue", "water leak", "test cycle"],
+      "leakage_terms": ["machine label", "cycle reminder", "maintenance coordinator"],
+      "tags": ["consumer-utility", "housing"],
+      "stressors": ["modal-expert-lens", "path-grant", "long-first-path", "latency-pressure"]
+    },
+    {
+      "name": "camper-route-water-stops",
+      "prompt": "Plan a camper-van route tool for travelers crossing high desert roads with limited water. A driver enters the departure campground, vehicle range, and water tank capacity, then compares a route with verified refill stops and a route that avoids unpaved roads. Before leaving, the driver saves an offline map, shares the arrival window with a travel companion, and records whether each refill tap was working.",
+      "required_terms": ["camper-van", "water tank", "refill stops", "offline map"],
+      "leakage_terms": ["high desert", "unpaved roads", "arrival window"],
+      "tags": ["travel", "outdoor-recreation"],
+      "stressors": ["domain-depth-obligations", "final-memory-pressure", "atlas-label-pressure", "latency-pressure"]
+    },
+    {
+      "name": "rail-station-step-free-transfer",
+      "prompt": "Create a rail trip planner centered on step-free transfer choices for a wheelchair user traveling between two regional stations. The user enters departure time, mobility device dimensions, and transfer tolerance, receives platform elevator status and boarding assistance options, then requests a station escort. A caregiver can view the confirmed itinerary, while a station agent records an elevator closure and offers an accessible replacement connection.",
+      "required_terms": ["step-free", "wheelchair", "platform elevator", "station escort"],
+      "leakage_terms": ["boarding assistance", "transfer tolerance", "replacement connection"],
+      "tags": ["travel", "accessibility"],
+      "stressors": ["modal-expert-lens", "multi-role-tribunal", "path-grant", "domain-depth-obligations"]
+    },
+    {
+      "name": "inn-night-audit-handoff",
+      "prompt": "Design a small inn operations workspace for a night auditor handling late arrivals, room keys, and a disputed minibar charge. The audit path begins with a reservation lookup, verifies the guest identity, assigns a cleaned room, and records the key handoff. At morning shift change, the front-desk manager reviews unresolved charges, the housekeeper confirms the room status, and the guest receives a corrected folio before checkout.",
+      "required_terms": ["night auditor", "room keys", "minibar charge", "corrected folio"],
+      "leakage_terms": ["late arrivals", "key handoff", "morning shift"],
+      "tags": ["hospitality", "guest-operations"],
+      "stressors": ["multi-role-tribunal", "long-first-path", "final-memory-pressure", "registry-contract-pressure"]
+    },
+    {
+      "name": "restaurant-walkin-allergy-seat",
+      "prompt": "Make a host stand tool for a neighborhood restaurant that seats a walk-in party with a severe sesame allergy during a busy dinner rush. The host records party size, allergy note, and preferred seating, checks the table turn estimate, and asks the kitchen lead whether a safe menu path is available. The server sees the confirmed allergy alert, the manager handles a wait-time complaint, and the party receives its table assignment.",
+      "required_terms": ["walk-in", "sesame allergy", "table turn", "kitchen lead"],
+      "leakage_terms": ["allergy note", "safe menu", "table assignment"],
+      "tags": ["hospitality", "food-service"],
+      "stressors": ["modal-expert-lens", "multi-role-tribunal", "path-grant", "latency-pressure"]
+    },
+    {
+      "name": "board-game-library-campaign",
+      "prompt": "Create a board-game library for a recurring fantasy campaign where the organizer manages a game night, borrowed miniatures, and a waitlist for six seats. A member browses the campaign calendar, reserves a seat, selects a character sheet, and agrees to the table conduct rule. The game master confirms attendance, the librarian checks miniatures back in, and the organizer records the next-session recap for absent players.",
+      "required_terms": ["board-game", "campaign", "miniatures", "character sheet"],
+      "leakage_terms": ["game night", "table conduct", "next-session recap"],
+      "tags": ["games", "community"],
+      "stressors": ["noun-verb-homonym", "path-grant", "long-first-path", "final-memory-pressure"]
+    },
+    {
+      "name": "escape-room-reset-log",
+      "prompt": "Build an escape-room operations log for a venue running three themed rooms per evening. After a team exits, a game host starts a reset checklist, tests a magnetic lock, replaces a clue envelope, and marks the room ready for the next booking. The floor manager reviews repeated puzzle failures, while the technician receives a fault report for a prop that will not trigger under the room timer.",
+      "required_terms": ["escape-room", "reset checklist", "magnetic lock", "clue envelope"],
+      "leakage_terms": ["game host", "puzzle failures", "room timer"],
+      "tags": ["games", "venue-operations"],
+      "stressors": ["noun-verb-homonym", "atlas-label-pressure", "registry-contract-pressure", "latency-pressure"]
+    },
+    {
+      "name": "indie-film-community-screening",
+      "prompt": "Set up a workflow for an indie film collective that licenses a documentary, schedules a community screening, and pays local captioners. A programmer uploads the film rights window, chooses a theater date, requests an accessible caption file, and invites discussion guests. The venue manager confirms projector readiness, the producer approves the screening fee, and attendees can reserve sliding-scale tickets before the guest list closes.",
+      "required_terms": ["indie film", "film rights", "caption file", "sliding-scale tickets"],
+      "leakage_terms": ["community screening", "projector readiness", "screening fee"],
+      "tags": ["entertainment", "creator-workflow"],
+      "stressors": ["modal-expert-lens", "multi-role-tribunal", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "podcast-guest-release-tracker",
+      "prompt": "Create a podcast production tracker for a two-person show interviewing a local historian. The producer proposes a recording slot, sends the guest release, collects pronunciation notes, and reserves the quiet studio. After recording, the editor marks a sensitive anecdote for review, the host approves the episode title, and the guest receives the final clip request before publication on the scheduled release date.",
+      "required_terms": ["podcast", "guest release", "pronunciation notes", "final clip"],
+      "leakage_terms": ["recording slot", "quiet studio", "sensitive anecdote"],
+      "tags": ["creator-workflow", "audio"],
+      "stressors": ["noun-verb-homonym", "multi-role-tribunal", "final-memory-pressure", "registry-contract-pressure"]
+    },
+    {
+      "name": "makerspace-laser-cutter-orientation",
+      "prompt": "Develop a makerspace booking path for a member who wants to use a laser cutter for the first time. The member watches the safety orientation, uploads an SVG cut file, books a supervised slot, and accepts the material fee estimate. A shop steward verifies the file dimensions and ventilation setting, then grants machine access. The member records remaining plywood stock and reports a scorch mark after the job finishes.",
+      "required_terms": ["makerspace", "laser cutter", "SVG", "ventilation setting"],
+      "leakage_terms": ["safety orientation", "supervised slot", "material fee"],
+      "tags": ["creator-workflow", "shared-resources"],
+      "stressors": ["scientific-casing", "path-grant", "domain-depth-obligations", "registry-contract-pressure"]
+    },
+    {
+      "name": "thrift-consignment-payout",
+      "prompt": "Create a consignment intake tool for a thrift shop that accepts a vintage coat, prices it after inspection, and pays the owner when it sells. The consignor photographs the coat, chooses donation or return after sixty days, and receives an intake receipt. A buyer can hold the coat for two hours, while the floor associate records condition notes and the shop owner approves the payout amount after the sale clears.",
+      "required_terms": ["consignment", "vintage coat", "intake receipt", "payout amount"],
+      "leakage_terms": ["condition notes", "hold the coat", "sale clears"],
+      "tags": ["retail", "circular-economy"],
+      "stressors": ["noun-verb-homonym", "path-grant", "long-first-path", "final-memory-pressure"]
+    },
+    {
+      "name": "mutual-aid-diaper-delivery",
+      "prompt": "Build a mutual-aid coordination tool for neighbors delivering diaper bundles and formula to families who request discreet help. A requester selects a delivery window, lists diaper size, notes a building entry constraint, and chooses whether a volunteer may text on arrival. A dispatcher matches a driver, the donor sees what was funded, and the family can confirm delivery without exposing their address to the wider volunteer group.",
+      "required_terms": ["mutual-aid", "diaper bundles", "delivery window", "building entry"],
+      "leakage_terms": ["discreet help", "matches a driver", "confirm delivery"],
+      "tags": ["community-organization", "family-support"],
+      "stressors": ["path-grant", "multi-role-tribunal", "final-memory-pressure", "domain-depth-obligations"]
+    },
+    {
+      "name": "library-seed-swap-ledger",
+      "prompt": "Make a public-library seed swap where gardeners deposit labeled seed packets, reserve varieties, and learn local planting dates. A gardener scans a packet, records the cultivar and harvest year, then places it in the seed cabinet. A volunteer checks germination notes, the librarian approves a bulk donation, and a new gardener takes a packet after agreeing to return saved seed or a growing report next season.",
+      "required_terms": ["seed swap", "cultivar", "harvest year", "germination notes"],
+      "leakage_terms": ["seed cabinet", "bulk donation", "growing report"],
+      "tags": ["community-organization", "food-systems"],
+      "stressors": ["scientific-casing", "path-grant", "domain-depth-obligations", "atlas-label-pressure"]
+    },
+    {
+      "name": "youth-soccer-rain-reschedule",
+      "prompt": "Create a youth soccer operations board for a league that must reschedule a rain-canceled match without losing referee assignments or snack duty. A coach reports the field closure, proposes two make-up dates, and checks player conflicts. The referee coordinator accepts one date, the field manager grants a permit change, and parents receive the updated kickoff time with a clear response deadline for carpools.",
+      "required_terms": ["youth soccer", "field closure", "referee assignments", "permit change"],
+      "leakage_terms": ["make-up dates", "kickoff time", "response deadline"],
+      "tags": ["sports-operations", "youth-programs"],
+      "stressors": ["multi-role-tribunal", "path-grant", "long-first-path", "latency-pressure"]
+    },
+    {
+      "name": "climbing-gym-league-scorecard",
+      "prompt": "Design a climbing gym league scorecard for teams completing bouldering problems across six weeks. A climber checks in, chooses a route grade, submits a top attempt, and asks a judge to review a disputed hold touch. The route setter updates a closed problem, the league captain sees team standings, and the front desk verifies waiver status before a climber can join the finals session.",
+      "required_terms": ["climbing gym", "bouldering", "route grade", "waiver status"],
+      "leakage_terms": ["top attempt", "hold touch", "team standings"],
+      "tags": ["sports-operations", "recreation"],
+      "stressors": ["modal-expert-lens", "noun-verb-homonym", "multi-role-tribunal", "registry-contract-pressure"]
+    },
+    {
+      "name": "csa-harvest-substitution",
+      "prompt": "Create a CSA pickup tool for a farm that lets members choose a harvest box, decline a vegetable, and authorize a substitution before distribution day. A member sees the weekly crop list, selects a pickup site, flags a mushroom allergy, and chooses kale instead of Swiss chard. The farm manager records short supply, the site volunteer counts unclaimed boxes, and the member receives an end-of-day reminder.",
+      "required_terms": ["CSA", "harvest box", "substitution", "Swiss chard"],
+      "leakage_terms": ["weekly crop list", "pickup site", "short supply"],
+      "tags": ["food-systems", "consumer-subscription"],
+      "stressors": ["scientific-casing", "path-grant", "domain-depth-obligations", "latency-pressure"]
+    },
+    {
+      "name": "food-rescue-cold-chain-run",
+      "prompt": "Build a food-rescue dispatch path for volunteers collecting unsold prepared meals from cafes and delivering them to a community fridge. A café manager posts pickup time, meal count, and cold-chain temperature, then a driver accepts the run and photographs the sealed containers. The receiving steward checks the temperature log, marks shelves full or available, and sends a correction when allergen labels are incomplete.",
+      "required_terms": ["food-rescue", "prepared meals", "cold-chain", "community fridge"],
+      "leakage_terms": ["sealed containers", "temperature log", "allergen labels"],
+      "tags": ["food-systems", "community-organization"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "long-first-path", "domain-depth-obligations"]
+    },
+    {
+      "name": "focus-sprint-energy-planner",
+      "prompt": "Create a personal productivity planner for a freelance illustrator managing a focus sprint around school pickup and migraine recovery. The user adds a client deliverable, estimates energy level, blocks a ninety-minute focus session, and sets a gentle reminder to stop. After the sprint, the user records what was completed, moves unfinished tasks to tomorrow, and shares only the delivery date with the client.",
+      "required_terms": ["focus sprint", "energy level", "focus session", "delivery date"],
+      "leakage_terms": ["client deliverable", "school pickup", "unfinished tasks"],
+      "tags": ["personal-productivity", "creator-workflow"],
+      "stressors": ["final-memory-pressure", "long-first-path", "atlas-label-pressure", "latency-pressure"]
+    },
+    {
+      "name": "household-chore-fairness-review",
+      "prompt": "Make a household chore planner for three roommates who need to rotate trash, pet feeding, and kitchen cleanup without turning reminders into arguments. One roommate proposes a weekly rotation, another marks a chore done, and a third disputes an uneven swap. The group reviews the chore history on Sunday, approves a new schedule, and records a quiet-hours exception for the roommate who works night shifts.",
+      "required_terms": ["weekly rotation", "pet feeding", "chore history", "quiet-hours"],
+      "leakage_terms": ["uneven swap", "new schedule", "night shifts"],
+      "tags": ["personal-productivity", "household"],
+      "stressors": ["noun-verb-homonym", "multi-role-tribunal", "final-memory-pressure", "registry-contract-pressure"]
+    },
+    {
+      "name": "caption-timing-review-studio",
+      "prompt": "Create an accessibility tool for a community video editor preparing captions for a lecture with multiple speakers and technical vocabulary. The editor imports the transcript, aligns caption timing, marks an unclear name, and sends a review request to the speaker. A deaf reviewer checks reading speed and speaker labels, while the producer accepts the final VTT file and publishes the video with captions enabled.",
+      "required_terms": ["caption timing", "speaker labels", "deaf reviewer", "VTT"],
+      "leakage_terms": ["technical vocabulary", "reading speed", "captions enabled"],
+      "tags": ["accessibility", "creator-workflow"],
+      "stressors": ["scientific-casing", "modal-expert-lens", "multi-role-tribunal", "registry-contract-pressure"]
+    },
+    {
+      "name": "tactile-museum-route-builder",
+      "prompt": "Design a museum visit planner that creates a tactile route for a blind visitor attending a crowded exhibition. The visitor selects arrival time, requests an audio description device, and chooses three tactile objects to explore. A museum educator confirms handling permissions, a companion receives turn-by-turn meeting points, and gallery staff report a closed lift so the route offers an alternate floor sequence before entry.",
+      "required_terms": ["tactile route", "blind visitor", "audio description", "handling permissions"],
+      "leakage_terms": ["tactile objects", "meeting points", "alternate floor"],
+      "tags": ["accessibility", "arts-culture"],
+      "stressors": ["path-grant", "multi-role-tribunal", "long-first-path", "domain-depth-obligations"]
+    },
+    {
+      "name": "home-energy-heat-pump-diary",
+      "prompt": "Build a consumer home-energy diary for a renter comparing a portable heat pump, window insulation film, and daily electricity use. The renter logs indoor temperature, kWh from the utility meter, and a landlord maintenance request, then compares a cold-night baseline with a changed setting. A household member can annotate comfort, while the renter exports a month summary before discussing a rebate with the building manager.",
+      "required_terms": ["heat pump", "window insulation", "kWh", "utility meter"],
+      "leakage_terms": ["cold-night baseline", "maintenance request", "month summary"],
+      "tags": ["consumer-utility", "sustainability"],
+      "stressors": ["scientific-casing", "domain-depth-obligations", "final-memory-pressure", "latency-pressure"]
+    },
+    {
+      "name": "dog-walker-key-exchange",
+      "prompt": "Create a dog-walking coordination tool for a pet owner, backup walker, and apartment concierge. The owner posts a walk request with feeding instructions, key pickup rules, and a reactive-dog note. The walker accepts the route, checks in at the building, records the leash handoff, and uploads a walk summary. The concierge confirms the key return, while the owner can rate the handoff without sharing entry codes.",
+      "required_terms": ["dog-walking", "feeding instructions", "leash handoff", "key return"],
+      "leakage_terms": ["walk request", "reactive-dog", "walk summary"],
+      "tags": ["consumer-utility", "pet-care"],
+      "stressors": ["path-grant", "multi-role-tribunal", "final-memory-pressure", "registry-contract-pressure"]
+    },
+    {
+      "name": "wedding-weekend-guest-guide",
+      "prompt": "Make a wedding weekend guide for guests traveling to a small town with limited taxis, a rehearsal dinner, and an accessibility request. A guest RSVPs with a dietary choice, reserves a shuttle seat, notes a hearing loop need, and saves the ceremony location. The couple sees headcounts, the shuttle coordinator assigns departure groups, and the venue contact confirms that the hearing loop has been tested before guests arrive.",
+      "required_terms": ["rehearsal dinner", "shuttle seat", "hearing loop", "ceremony location"],
+      "leakage_terms": ["dietary choice", "departure groups", "headcounts"],
+      "tags": ["consumer-events", "accessibility"],
+      "stressors": ["modal-expert-lens", "path-grant", "multi-role-tribunal", "long-first-path"]
+    },
+    {
+      "name": "language-exchange-pairing",
+      "prompt": "Create a language-exchange circle for adults practicing Arabic and English at a neighborhood cafe. A learner selects speaking level, preferred meeting day, and a conversation topic, then receives a proposed partner match. Both partners accept a public meeting location and agree to the code of conduct. A volunteer facilitator records attendance, helps resolve a no-show, and offers a new match after the learner completes three meetings.",
+      "required_terms": ["language-exchange", "Arabic", "speaking level", "partner match"],
+      "leakage_terms": ["conversation topic", "code of conduct", "public meeting"],
+      "tags": ["community-organization", "adult-learning"],
+      "stressors": ["path-grant", "multi-role-tribunal", "long-first-path", "final-memory-pressure"]
+    },
+    {
+      "name": "music-venue-accessible-callboard",
+      "prompt": "Build a music venue callboard for an all-ages show with performers, door staff, a sign-language interpreter, and a delayed soundcheck. The promoter posts set times, the band confirms backline needs, and the interpreter reserves a sightline location. The stage manager marks soundcheck complete, the door lead grants guest-list entry, and attendees see an updated start time when a performer arrives late.",
+      "required_terms": ["music venue", "sign-language interpreter", "soundcheck", "guest-list"],
+      "leakage_terms": ["set times", "backline needs", "sightline location"],
+      "tags": ["entertainment", "accessibility"],
+      "stressors": ["multi-role-tribunal", "path-grant", "atlas-label-pressure", "registry-contract-pressure"]
+    },
+    {
+      "name": "bookshop-signed-preorder-window",
+      "prompt": "Create a neighborhood bookshop preorder path for a signed edition by a local author. A reader chooses pickup or shipping, adds a name for the inscription, and sees the preorder window and cancellation deadline. The bookseller records the delivery carton, the author approves inscription guidance, and a customer can switch to an unsigned copy if the signing limit is reached before the release day.",
+      "required_terms": ["bookshop", "signed edition", "preorder window", "inscription"],
+      "leakage_terms": ["cancellation deadline", "delivery carton", "unsigned copy"],
+      "tags": ["retail", "books"],
+      "stressors": ["noun-verb-homonym", "path-grant", "final-memory-pressure", "latency-pressure"]
+    },
+    {
+      "name": "community-theater-costume-checkout",
+      "prompt": "Develop a community theater costume checkout for a production with volunteer actors, a wardrobe lead, and a quick-change scene. An actor opens the cast list, reserves a costume piece, enters measurements, and acknowledges the cleaning rule. The wardrobe lead approves alterations, the stage manager records the quick-change order, and the actor checks the piece back in after closing night with a damage note.",
+      "required_terms": ["community theater", "costume piece", "measurements", "quick-change"],
+      "leakage_terms": ["cast list", "cleaning rule", "damage note"],
+      "tags": ["entertainment", "community-organization"],
+      "stressors": ["modal-expert-lens", "multi-role-tribunal", "long-first-path", "registry-contract-pressure"]
+    },
+    {
+      "name": "esports-bracket-dispute-desk",
+      "prompt": "Create an esports tournament desk for a local fighting-game bracket with player check-in, controller rules, and a match dispute. A player confirms their handle, checks in before the bracket lock, and reports a controller disconnect. The referee reviews the replay clip, the opponent submits their account, and the tournament director decides whether to replay the round before publishing the updated bracket and prize placement.",
+      "required_terms": ["esports", "bracket lock", "controller disconnect", "replay clip"],
+      "leakage_terms": ["fighting-game", "match dispute", "prize placement"],
+      "tags": ["games", "sports-operations"],
+      "stressors": ["modal-expert-lens", "multi-role-tribunal", "noun-verb-homonym", "latency-pressure"]
+    },
+    {
+      "name": "surf-school-tide-lesson",
+      "prompt": "Build a surf school booking tool for beginners whose lesson depends on tide height, instructor ratio, and a beach hazard warning. A learner selects a lesson level, confirms swimming ability, chooses a wetsuit size, and signs the waiver. The instructor checks the tide forecast, the beach marshal posts a hazard flag, and the learner receives either a confirmed check-in time or a rescheduled lesson with equipment credit.",
+      "required_terms": ["surf school", "tide height", "wetsuit size", "hazard flag"],
+      "leakage_terms": ["swimming ability", "tide forecast", "equipment credit"],
+      "tags": ["sports-operations", "travel"],
+      "stressors": ["scientific-casing", "path-grant", "multi-role-tribunal", "domain-depth-obligations"]
+    },
+    {
+      "name": "food-truck-commissary-slot",
+      "prompt": "Create a food truck commissary scheduler for operators sharing a prep kitchen, grease disposal station, and overnight parking. An operator requests a prep slot, enters the truck license plate, declares fryer oil volume, and uploads a food safety certificate. The commissary manager grants access, the sanitation lead records grease disposal, and the operator receives a gate code only for the approved overnight parking interval.",
+      "required_terms": ["food truck", "commissary", "grease disposal", "gate code"],
+      "leakage_terms": ["prep slot", "fryer oil", "food safety certificate"],
+      "tags": ["food-systems", "small-business"],
+      "stressors": ["path-grant", "scientific-casing", "long-first-path", "registry-contract-pressure"]
+    },
+    {
+      "name": "meal-prep-allergen-batch",
+      "prompt": "Make a meal-prep planning tool for a household cooking four dinners around a child with a peanut allergy and a vegetarian guest. The cook selects recipes, creates a grocery list, separates an allergen-free batch, and labels leftovers with a use-by date. A second household member reviews substitutions, the guest confirms ingredients, and the cook records which containers were frozen after the final meal.",
+      "required_terms": ["meal-prep", "peanut allergy", "allergen-free batch", "use-by date"],
+      "leakage_terms": ["grocery list", "substitutions", "labels leftovers"],
+      "tags": ["food-systems", "personal-productivity"],
+      "stressors": ["domain-depth-obligations", "multi-role-tribunal", "final-memory-pressure", "atlas-label-pressure"]
+    },
+    {
+      "name": "electronics-repair-dropoff",
+      "prompt": "Create a local electronics repair intake for a resident dropping off a broken e-reader with a swollen battery. The customer chooses a repair window, consents to diagnostic testing, states whether data backup is complete, and receives a claim ticket. A technician photographs the device condition, isolates the lithium-ion battery, and sends an estimate. The customer approves repair or recycling before the shop releases the device.",
+      "required_terms": ["e-reader", "swollen battery", "claim ticket", "lithium-ion"],
+      "leakage_terms": ["diagnostic testing", "device condition", "repair or recycling"],
+      "tags": ["consumer-utility", "circular-economy"],
+      "stressors": ["scientific-casing", "path-grant", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "community-radio-pledge-drive",
+      "prompt": "Build a community radio pledge-drive workspace where hosts, phone volunteers, and local sponsors coordinate an evening broadcast. A listener makes a pledge, selects a thank-you gift, and chooses whether the station may read their first name on air. A phone volunteer verifies payment, the host sees a live total, and the sponsor manager records an underwriting credit that must play before the final music set.",
+      "required_terms": ["community radio", "pledge-drive", "thank-you gift", "underwriting credit"],
+      "leakage_terms": ["phone volunteer", "live total", "music set"],
+      "tags": ["community-organization", "entertainment"],
+      "stressors": ["multi-role-tribunal", "path-grant", "noun-verb-homonym", "latency-pressure"]
+    },
+    {
+      "name": "adaptive-fitness-class-transfer",
+      "prompt": "Create an adaptive fitness class scheduler for a participant who uses a power chair and needs a transfer board at a recreation center. The participant selects a class, requests the transfer board, indicates a support person, and receives the accessible entrance route. The instructor confirms equipment setup, the facilities lead reports a lift outage, and the participant can choose a virtual session or a credit before the class begins.",
+      "required_terms": ["adaptive fitness", "power chair", "transfer board", "lift outage"],
+      "leakage_terms": ["support person", "accessible entrance", "virtual session"],
+      "tags": ["accessibility", "sports-operations"],
+      "stressors": ["modal-expert-lens", "path-grant", "multi-role-tribunal", "long-first-path"]
+    },
+    {
+      "name": "family-reunion-travel-rooms",
+      "prompt": "Make a family reunion travel planner for relatives coordinating hotel rooms, airport arrivals, and a grandparent who needs a refrigerator for medication. A relative submits arrival details, requests an adjoining room, and reserves an airport shuttle seat. The reunion organizer reviews room assignments, the hotel coordinator confirms the refrigerator, and each household receives a final itinerary with contact numbers and a plan for delayed flights.",
+      "required_terms": ["family reunion", "adjoining room", "airport shuttle", "refrigerator"],
+      "leakage_terms": ["arrival details", "room assignments", "delayed flights"],
+      "tags": ["travel", "hospitality"],
+      "stressors": ["multi-role-tribunal", "long-first-path", "final-memory-pressure", "registry-contract-pressure"]
+    },
+    {
+      "name": "hotel-lost-property-chain",
+      "prompt": "Design a hotel lost-property process for a guest who leaves a passport wallet in a conference room after checkout. A housekeeper logs the found wallet, photographs its exterior, and deposits it in a secure cabinet. The guest files a claim with travel dates, the security manager compares identifying details, and the concierge arranges tracked shipping after the guest approves the address and shipping charge.",
+      "required_terms": ["lost-property", "passport wallet", "secure cabinet", "tracked shipping"],
+      "leakage_terms": ["conference room", "identifying details", "shipping charge"],
+      "tags": ["hospitality", "travel"],
+      "stressors": ["modal-expert-lens", "path-grant", "final-memory-pressure", "registry-contract-pressure"]
+    },
+    {
+      "name": "puzzle-game-community-levels",
+      "prompt": "Create a community puzzle-game hub where players publish a level, request playtesting, and report an inaccessible color-only clue. A creator uploads the level, labels difficulty, chooses co-op or solo, and invites a playtester. The playtester records a failed path, the moderator reviews a spoiler report, and the creator publishes a revised level with a non-color cue before it enters the weekly challenge.",
+      "required_terms": ["puzzle-game", "playtesting", "color-only clue", "non-color cue"],
+      "leakage_terms": ["failed path", "spoiler report", "weekly challenge"],
+      "tags": ["games", "accessibility"],
+      "stressors": ["noun-verb-homonym", "modal-expert-lens", "multi-role-tribunal", "atlas-label-pressure"]
+    },
+    {
+      "name": "neighborhood-volunteer-shiftboard",
+      "prompt": "Build a neighborhood association shiftboard for a weekend street cleanup with volunteer check-in, supply pickup, and a rain contingency. A resident chooses a cleanup zone, signs the safety waiver, and requests litter grabbers. The block captain approves assignments, the supply steward records returned equipment, and the organizer sends a weather cancellation or a revised start time after checking the city permit conditions.",
+      "required_terms": ["street cleanup", "cleanup zone", "litter grabbers", "city permit"],
+      "leakage_terms": ["safety waiver", "block captain", "weather cancellation"],
+      "tags": ["community-organization", "civic-action"],
+      "stressors": ["path-grant", "multi-role-tribunal", "long-first-path", "latency-pressure"]
+    }
+  ]
+}

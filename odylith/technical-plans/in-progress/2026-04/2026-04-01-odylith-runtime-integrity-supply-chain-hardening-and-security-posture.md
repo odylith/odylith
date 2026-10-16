@@ -106,15 +106,13 @@ Related Bugs:
 - [ ] [odylith/registry/source/components/security/CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/security/CURRENT_SPEC.md)
 
 ## Risks & Mitigations
+
 - [ ] Risk: startup integrity checks add too much latency.
-  - [ ] Mitigation: keep the launcher on hot-file verification and reserve deep
-        tree checks for doctor, repair, and reuse decisions.
+  - [ ] Mitigation: keep the launcher on hot-file verification and reserve deep tree checks for doctor, repair, and reuse decisions.
 - [ ] Risk: compatibility fixes reopen the modern trust boundary.
-  - [ ] Mitigation: confine the compatibility exception to `0.1.0` and
-        `0.1.1` and document it explicitly.
+  - [ ] Mitigation: confine the compatibility exception to `0.1.0` and `0.1.1` and document it explicitly.
 - [ ] Risk: docs overclaim local tamper resistance.
-  - [ ] Mitigation: state same-user repo compromise as residual risk in
-        Security Posture, Registry, and release-note messaging.
+  - [ ] Mitigation: state same-user repo compromise as residual risk in Security Posture, Registry, and release-note messaging.
 
 ## Validation/Test Plan
 - [ ] `pytest tests/unit/install/test_runtime.py -q`
@@ -138,3 +136,20 @@ Related Bugs:
       security-posture wave.
 - [ ] Runtime hardening, workflow pinning, governance updates, and focused
       validation are still in progress.
+
+## Traceability
+
+Managed-runtime verification and recovery; product integrity and release-asset trust boundaries.
+
+### Runbooks
+
+- `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
+
+### Developer Docs
+
+- `odylith/SECURITY_POSTURE.md`
+
+### Code References
+
+- `src/odylith/install/runtime_integrity.py`
+- `src/odylith/install/release_assets.py`

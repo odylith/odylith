@@ -3,6 +3,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     const shellBrandName = shellTitle.replace(/\s+Dashboard$/, "") || "Odylith";
     const payloadScript = document.getElementById("toolingDashboardData");
     const tabTitles = {
+      project: "Project",
       radar: "Radar",
       atlas: "Atlas",
       compass: "Compass",
@@ -10,6 +11,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       casebook: "Casebook",
     };
     const tabs = {
+      project: document.getElementById("tab-project"),
       radar: document.getElementById("tab-radar"),
       atlas: document.getElementById("tab-atlas"),
       compass: document.getElementById("tab-compass"),
@@ -17,18 +19,12 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       casebook: document.getElementById("tab-casebook"),
     };
     const panes = {
+      project: document.getElementById("pane-project"),
       radar: document.getElementById("frame-radar"),
       atlas: document.getElementById("frame-atlas"),
       compass: document.getElementById("frame-compass"),
       registry: document.getElementById("frame-registry"),
       casebook: document.getElementById("frame-casebook"),
-    };
-    const paneVisitState = {
-      radar: false,
-      atlas: false,
-      compass: false,
-      registry: false,
-      casebook: false,
     };
     const briefToggle = document.getElementById("gridBriefToggle");
     const briefDrawer = document.getElementById("gridBriefDrawer");
@@ -47,6 +43,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     const runtimeStatusKicker = document.getElementById("shellRuntimeStatusKicker");
     const runtimeStatusTitle = document.getElementById("shellRuntimeStatusTitle");
     const runtimeStatusBody = document.getElementById("shellRuntimeStatusBody");
+    const runtimeStatusDetails = document.getElementById("shellRuntimeStatusDetails");
     const runtimeStatusMeta = document.getElementById("shellRuntimeStatusMeta");
     const runtimeStatusDismiss = document.getElementById("shellRuntimeStatusDismiss");
     const runtimeStatusReload = document.getElementById("shellRuntimeStatusReload");
@@ -71,7 +68,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     const upgradeSpotlightPayload = payload && payload.release_spotlight && typeof payload.release_spotlight === "object"
       ? payload.release_spotlight
       : null;
-    const UPGRADE_SPOTLIGHT_MAX_AGE_MS = 30 * 60 * 1000;
+    const UPGRADE_SPOTLIGHT_MAX_AGE_MS = 10 * 60 * 1000;
 
     function parseIsoUtcMs(value) {
       const token = String(value || "").trim();
@@ -112,7 +109,6 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     const upgradeSpotlightVersionLabel = upgradeSpotlightVersion && /^[0-9]/.test(upgradeSpotlightVersion)
       ? `v${upgradeSpotlightVersion}`
       : upgradeSpotlightVersion;
-    const shellStateStorageKey = `odylith.shell.state:${window.location.pathname}`;
     const runtimeStatusDismissStorageKey = `odylith.runtime.status.dismissed:${window.location.pathname}`;
     const upgradeSpotlightRecordedToken = hasUpgradeSpotlight()
       ? String(upgradeSpotlightPayload.recorded_utc || upgradeSpotlightPayload.expires_utc || upgradeSpotlightPayload.release_published_at || "").trim()
@@ -139,8 +135,6 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       && upgradeSpotlight
       && !upgradeSpotlightDismissed()
     );
-    const DIAGRAM_ID_RE = /^D-\d{3,}$/;
-    const DIAGRAM_COMPACT_RE = /^D(\d{3,})$/;
     const welcomeTaskStoragePrefix = `odylith.welcome.task:${window.location.pathname}:`;
     const shellPayloadGlobalName = "__ODYLITH_TOOLING_DATA__";
     const shellPayloadGeneratedUtc = String(payload.generated_utc || "").trim();
@@ -153,6 +147,12 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     const initialSurfaceRuntimeStatus = payload && payload.surface_runtime_status && typeof payload.surface_runtime_status === "object"
       ? payload.surface_runtime_status
       : {};
+    const versionStateHref = String(payload.version_state_href || "").trim();
+    const versionStateGlobalName = String(payload.version_state_global_name || "__ODYLITH_VERSION_STATE__").trim() || "__ODYLITH_VERSION_STATE__";
+    const statusSnapshot = payload.status_snapshot || null;
+    let latestVersionState = statusSnapshot ? statusSnapshot.version_state : window[versionStateGlobalName] || null;
+    let versionStateProbeTimer = 0;
+    let versionStateProbeInFlight = false;
     const runtimeProbeStateGlobalName = liveRefreshPayload
       ? String(liveRefreshPayload.state_global_name || "__ODYLITH_CONTEXT_ENGINE_STATE__").trim()
       : "__ODYLITH_CONTEXT_ENGINE_STATE__";
@@ -326,9 +326,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       setUpgradeSpotlightDismissed(true);
       setUpgradeSpotlightHidden(true);
       if (upgradeReopen && !upgradeReopen.hidden) {
-        window.requestAnimationFrame(() => {
-          upgradeReopen.focus();
-        });
+        upgradeReopen.focus();
       }
     }
 
@@ -337,9 +335,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       setUpgradeSpotlightDismissed(false);
       setUpgradeSpotlightHidden(false);
       if (upgradeSpotlightDismiss) {
-        window.requestAnimationFrame(() => {
-          upgradeSpotlightDismiss.focus();
-        });
+        upgradeSpotlightDismiss.focus();
       }
     }
 
@@ -415,6 +411,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     }
 
     function scheduleShellRefreshPoll(delayMs = 4000) {
+      if (statusSnapshot) return;
       if (!payloadScript || !payloadScript.src || (!shellPayloadGeneratedUtc && !shellPayloadRefreshFingerprint)) return;
       if (shellRefreshTimer) {
         window.clearTimeout(shellRefreshTimer);
@@ -429,6 +426,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     }
 
     function checkForShellRefresh() {
+      if (statusSnapshot) return;
       if (!payloadScript || !payloadScript.src || (!shellPayloadGeneratedUtc && !shellPayloadRefreshFingerprint)) return;
       if (shellRefreshInFlight) return;
       if (document.hidden) {
@@ -470,7 +468,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
 
     function liveRefreshEnabled() {
       return Boolean(
-        liveRefreshPayload
+        !statusSnapshot && liveRefreshPayload
         && liveRefreshPayload.enabled
         && String(liveRefreshPayload.state_href || "").trim()
       );
@@ -480,12 +478,6 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       if (!liveRefreshPayload) return 20000;
       const parsed = Number.parseInt(String(liveRefreshPayload.poll_interval_ms || ""), 10);
       return Number.isFinite(parsed) && parsed >= 5000 ? parsed : 20000;
-    }
-
-    function liveRefreshWorktree() {
-      return liveRefreshPayload && liveRefreshPayload.worktree && typeof liveRefreshPayload.worktree === "object"
-        ? liveRefreshPayload.worktree
-        : null;
     }
 
     function liveRefreshSurfacePolicies() {
@@ -512,10 +504,6 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       if (!liveRefreshPayload) return 45000;
       const parsed = Number.parseInt(String(liveRefreshPayload.auto_reload_min_interval_ms || ""), 10);
       return Number.isFinite(parsed) && parsed >= 1000 ? parsed : 45000;
-    }
-
-    function liveRefreshPolicyId() {
-      return liveRefreshPayload ? String(liveRefreshPayload.policy_id || "").trim() : "";
     }
 
     function runtimeSurfaceAutoReloadEnabled(tab) {
@@ -566,8 +554,82 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     }
 
     function runtimeReloadableForTab(tab) {
+      if (statusSnapshot) return Boolean(panes[String(tab || "").trim().toLowerCase()]);
       if (!liveRefreshPayload || !Array.isArray(liveRefreshPayload.reloadable_tabs)) return false;
       return liveRefreshPayload.reloadable_tabs.includes(String(tab || "").trim().toLowerCase());
+    }
+
+    function normalizeVersionToken(value) {
+      return String(value || "").trim().replace(/^v/i, "");
+    }
+
+    function formatVersionLabel(value) {
+      const token = normalizeVersionToken(value);
+      if (!token) return "";
+      return /^[0-9]/.test(token) ? `v${token}` : token;
+    }
+
+    function renderedShellVersionToken() {
+      const selfHost = payload && payload.self_host && typeof payload.self_host === "object"
+        ? payload.self_host
+        : {};
+      return normalizeVersionToken(
+        selfHost.active_version
+        || selfHost.pinned_version
+        || payload.shell_version_label
+        || ""
+      );
+    }
+
+    function buildShellVersionDriftPosture(versionState) {
+      if (!versionState || typeof versionState !== "object") return null;
+      const authoritativeToken = normalizeVersionToken(
+        versionState.authoritative_version
+        || versionState.active_version
+        || versionState.pinned_version
+        || ""
+      );
+      const renderedToken = renderedShellVersionToken();
+      if (!authoritativeToken || !renderedToken || authoritativeToken === renderedToken) {
+        return null;
+      }
+      const renderedLabel = formatVersionLabel(renderedToken);
+      const authoritativeLabel = String(versionState.authoritative_label || "").trim() || formatVersionLabel(authoritativeToken);
+      const generatedUtc = String(payload.generated_utc || "").trim() || "unknown";
+      const stateGeneratedUtc = String(versionState.generated_utc || "").trim();
+      const source = String(versionState.source || "odylith version").trim();
+      const metaParts = [
+        `Source: ${source}`,
+        `Shell generated: ${generatedUtc}`,
+        stateGeneratedUtc ? `Checked: ${stateGeneratedUtc}` : "",
+        "Next: odylith dashboard refresh --repo-root . --force",
+      ].filter(Boolean);
+      return {
+        visible: true,
+        tone: "warning",
+        kicker: "Dashboard stale",
+        title: `Shell shows ${renderedLabel}, runtime is ${authoritativeLabel}`,
+        body: "The generated dashboard shell is older than the authoritative Odylith runtime. Refresh only the dashboard shell before using this view as version evidence.",
+        meta: metaParts.join(" · "),
+        showReload: false,
+        reloadLabel: "",
+      };
+    }
+
+    function normalizeRuntimePosture(rawPosture, fallbackPosture) {
+      if (!rawPosture || typeof rawPosture !== "object") {
+        return fallbackPosture;
+      }
+      return {
+        visible: Boolean(rawPosture.visible),
+        tone: String(rawPosture.tone || "").trim(),
+        kicker: String(rawPosture.kicker || "").trim(),
+        title: String(rawPosture.title || "").trim(),
+        body: String(rawPosture.body || "").trim(),
+        meta: String(rawPosture.meta || "").trim(),
+        showReload: Boolean(rawPosture.showReload),
+        reloadLabel: String(rawPosture.reloadLabel || "").trim(),
+      };
     }
 
     function runtimeStateAffectsTab(tab, runtimeState) {
@@ -607,7 +669,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         showReload: false,
         reloadLabel: "",
       };
-      const current = readStateFromUrl();
+      const current = navigation.readState();
       const currentTab = current && typeof current === "object"
         ? String(current.tab || "").trim().toLowerCase()
         : "";
@@ -615,20 +677,12 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       const surfaceRuntimeStatus = runtimeState && runtimeState.surface_runtime_status && typeof runtimeState.surface_runtime_status === "object"
         ? runtimeState.surface_runtime_status
         : initialSurfaceRuntimeStatus;
-      const rawPosture = surfaceRuntimeStatus[currentTab];
-      if (!rawPosture || typeof rawPosture !== "object") {
-        return fallbackPosture;
+      const shellPosture = normalizeRuntimePosture(surfaceRuntimeStatus.shell, fallbackPosture);
+      if (shellPosture.visible) {
+        return shellPosture;
       }
-      return {
-        visible: Boolean(rawPosture.visible),
-        tone: String(rawPosture.tone || "").trim(),
-        kicker: String(rawPosture.kicker || "").trim(),
-        title: String(rawPosture.title || "").trim(),
-        body: String(rawPosture.body || "").trim(),
-        meta: String(rawPosture.meta || "").trim(),
-        showReload: Boolean(rawPosture.showReload),
-        reloadLabel: String(rawPosture.reloadLabel || "").trim(),
-      };
+      const rawPosture = surfaceRuntimeStatus[currentTab];
+      return normalizeRuntimePosture(rawPosture, fallbackPosture);
     }
 
     function mergeRuntimeStatusState(runtimeState) {
@@ -638,6 +692,11 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       if (!baseState.surface_runtime_status || typeof baseState.surface_runtime_status !== "object") {
         baseState.surface_runtime_status = initialSurfaceRuntimeStatus;
       }
+      baseState.surface_runtime_status = { ...baseState.surface_runtime_status };
+      const shellVersionDriftPosture = buildShellVersionDriftPosture(latestVersionState);
+      if (shellVersionDriftPosture) {
+        baseState.surface_runtime_status.shell = shellVersionDriftPosture;
+      }
       return baseState;
     }
 
@@ -646,7 +705,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         return;
       }
       latestRuntimeStatusState = mergeRuntimeStatusState(runtimeState);
-      const posture = buildRuntimeStatusPosture(runtimeState);
+      const posture = buildRuntimeStatusPosture(latestRuntimeStatusState);
       runtimeStatusFingerprint = posture.visible ? buildRuntimeStatusFingerprint(posture) : "";
       const dismissed = runtimeStatusDismissed();
       const visible = Boolean(posture.visible && !dismissed);
@@ -661,6 +720,9 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       runtimeStatusBody.textContent = visible ? String(posture.body || "").trim() : "";
       runtimeStatusMeta.textContent = visible ? String(posture.meta || "").trim() : "";
       runtimeStatusMeta.hidden = !(visible && String(posture.meta || "").trim());
+      if (runtimeStatusDetails) {
+        runtimeStatusDetails.hidden = !(visible && String(posture.meta || "").trim());
+      }
       runtimeStatusReload.hidden = !(visible && posture.showReload);
       runtimeStatusReload.setAttribute("aria-hidden", String(runtimeStatusReload.hidden));
       runtimeStatusReload.textContent = visible && posture.showReload
@@ -670,6 +732,47 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       runtimeStatusDismiss.setAttribute("aria-hidden", String(runtimeStatusDismiss.hidden));
       syncRecoveryDock();
       scheduleRuntimeStatusLayoutSync();
+    }
+
+    function versionStateProbeEnabled() {
+      return Boolean(!statusSnapshot && versionStateHref);
+    }
+
+    function scheduleVersionStateProbe(delayMs = 5000) {
+      if (!versionStateProbeEnabled()) return;
+      if (versionStateProbeTimer) {
+        window.clearTimeout(versionStateProbeTimer);
+      }
+      versionStateProbeTimer = window.setTimeout(checkForVersionState, delayMs);
+    }
+
+    function checkForVersionState() {
+      if (!versionStateProbeEnabled()) return;
+      if (versionStateProbeInFlight) return;
+      versionStateProbeInFlight = true;
+      const previousPayload = window[versionStateGlobalName];
+      const refreshProbe = document.createElement("script");
+      const separator = versionStateHref.includes("?") ? "&" : "?";
+      refreshProbe.async = true;
+      refreshProbe.src = `${versionStateHref}${separator}refresh=${Date.now()}`;
+      refreshProbe.onload = () => {
+        versionStateProbeInFlight = false;
+        const nextPayload = window[versionStateGlobalName];
+        refreshProbe.remove();
+        window[versionStateGlobalName] = previousPayload || {};
+        if (nextPayload && typeof nextPayload === "object") {
+          latestVersionState = nextPayload;
+          applyRuntimeStatus(latestRuntimeStatusState || {});
+        }
+        scheduleVersionStateProbe(15000);
+      };
+      refreshProbe.onerror = () => {
+        versionStateProbeInFlight = false;
+        refreshProbe.remove();
+        window[versionStateGlobalName] = previousPayload || {};
+        scheduleVersionStateProbe(30000);
+      };
+      document.head.appendChild(refreshProbe);
     }
 
     function scheduleRuntimeProbe(delayMs = liveRefreshPollIntervalMs()) {
@@ -707,10 +810,10 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         }
         applyRuntimeStatus(nextPayload);
         if (hadFingerprint && nextFingerprint && nextFingerprint !== priorFingerprint) {
-          const current = readStateFromUrl();
+          const current = navigation.readState();
           if (runtimeStateAffectsTab(current.tab, nextPayload) && runtimeAutoReloadReadyForTab(current.tab)) {
             runtimeAutoReloadAtByTab[String(current.tab || "").trim().toLowerCase()] = Date.now();
-            reloadActiveView();
+            if (runtimeReloadableForTab(current.tab)) navigation.reload();
           }
         }
         scheduleRuntimeProbe(liveRefreshPollIntervalMs());
@@ -754,415 +857,9 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       return copied;
     }
 
-    function canonicalizeDiagramToken(value) {
-      let token = String(value || "").trim().toUpperCase();
-      if (!token) return "";
-      if (token.startsWith("DIAGRAM:")) {
-        token = token.slice("DIAGRAM:".length).trim();
-      }
-      if (DIAGRAM_ID_RE.test(token)) {
-        return token;
-      }
-      const compact = token.match(DIAGRAM_COMPACT_RE);
-      if (compact) {
-        return `D-${compact[1]}`;
-      }
-      return "";
-    }
-
-    const CASEBOOK_SORT_DEFAULT = "newest";
-    const CASEBOOK_SORT_TOKENS = new Set(["newest", "oldest", "bug-id", "priority", "status"]);
-
-    function canonicalizeCasebookSortToken(value) {
-      const token = String(value || "").trim().toLowerCase();
-      return CASEBOOK_SORT_TOKENS.has(token) ? token : CASEBOOK_SORT_DEFAULT;
-    }
-
-    const tabStateMemory = {
-      radar: { workstream: "", view: "" },
-      atlas: { workstream: "", diagram: "" },
-      compass: { workstream: "", window: "", date: "", audit_day: "" },
-      registry: { component: "" },
-      casebook: { bug: "", severity: "", status: "", sort: CASEBOOK_SORT_DEFAULT },
-    };
-
-    function sanitizeShellState(rawState) {
-      const tabToken = String(rawState && rawState.tab ? rawState.tab : "").trim().toLowerCase();
-      const tab = tabToken === "atlas"
-        ? "atlas"
-        : (tabToken === "compass" ? "compass" : (tabToken === "registry" ? "registry" : (tabToken === "casebook" ? "casebook" : "radar")));
-      const workstream = /^B-\d{3,}$/.test(String(rawState && rawState.workstream ? rawState.workstream : "").trim())
-        ? String(rawState.workstream).trim()
-        : "";
-      const state = {
-        tab,
-        workstream: "",
-        component: "",
-        bug: "",
-        severity: "",
-        status: "",
-        sort: CASEBOOK_SORT_DEFAULT,
-        diagram: "",
-        view: "",
-        window: "",
-        date: "",
-        audit_day: "",
-      };
-      if (tab === "radar") {
-        state.workstream = workstream;
-        const viewToken = String(rawState && rawState.view ? rawState.view : "").trim().toLowerCase();
-        state.view = (viewToken === "spec" || viewToken === "plan") ? viewToken : "";
-        return state;
-      }
-      if (tab === "atlas") {
-        state.workstream = workstream;
-        state.diagram = canonicalizeDiagramToken(rawState && rawState.diagram ? rawState.diagram : "");
-        return state;
-      }
-      if (tab === "compass") {
-        state.workstream = workstream;
-        const windowToken = String(rawState && rawState.window ? rawState.window : "").trim().toLowerCase();
-        state.window = (windowToken === "24h" || windowToken === "48h") ? windowToken : "";
-        const dateToken = String(rawState && rawState.date ? rawState.date : "").trim();
-        state.date = (dateToken === "live" || /^\d{4}-\d{2}-\d{2}$/.test(dateToken)) ? dateToken : "";
-        const auditDayToken = String(rawState && rawState.audit_day ? rawState.audit_day : "").trim();
-        state.audit_day = /^\d{4}-\d{2}-\d{2}$/.test(auditDayToken) ? auditDayToken : "";
-        return state;
-      }
-      if (tab === "registry") {
-        state.component = String(rawState && rawState.component ? rawState.component : "").trim().toLowerCase();
-        return state;
-      }
-      state.bug = String(rawState && rawState.bug ? rawState.bug : "").trim();
-      state.severity = String(rawState && rawState.severity ? rawState.severity : "").trim().toLowerCase();
-      state.status = String(rawState && rawState.status ? rawState.status : "").trim().toLowerCase();
-      state.sort = canonicalizeCasebookSortToken(rawState && rawState.sort ? rawState.sort : "");
-      return state;
-    }
-
-    function rememberTabState(rawState) {
-      const state = sanitizeShellState(rawState || {});
-      try {
-        localStorageWrite(shellStateStorageKey, JSON.stringify(state));
-      } catch (_error) {
-        // Ignore storage serialization failures and keep the in-memory state only.
-      }
-      if (state.tab === "radar") {
-        tabStateMemory.radar = { workstream: state.workstream, view: state.view };
-        return state;
-      }
-      if (state.tab === "atlas") {
-        tabStateMemory.atlas = { workstream: state.workstream, diagram: state.diagram };
-        return state;
-      }
-      if (state.tab === "compass") {
-        tabStateMemory.compass = {
-          workstream: state.workstream,
-          window: state.window,
-          date: state.date,
-          audit_day: state.audit_day,
-        };
-        return state;
-      }
-      if (state.tab === "registry") {
-        tabStateMemory.registry = { component: state.component };
-        return state;
-      }
-      tabStateMemory.casebook = {
-        bug: state.bug,
-        severity: state.severity,
-        status: state.status,
-        sort: state.sort,
-      };
-      return state;
-    }
-
-    function rememberedTabState(tab) {
-      return sanitizeShellState({ tab, ...(tabStateMemory[tab] || {}) });
-    }
-
-    function readStateFromUrl() {
-      const params = new URLSearchParams(window.location.search);
-      if (!params.toString()) {
-        const rememberedState = localStorageRead(shellStateStorageKey);
-        if (rememberedState) {
-          try {
-            const parsedState = JSON.parse(rememberedState);
-            if (parsedState && typeof parsedState === "object") {
-              return sanitizeShellState(parsedState);
-            }
-          } catch (_error) {
-            // Ignore corrupt stored state and fall back to the default shell route.
-          }
-        }
-      }
-      const tabToken = (params.get("tab") || "").trim().toLowerCase();
-      const tab = tabToken === "atlas"
-        ? "atlas"
-        : (tabToken === "compass" ? "compass" : (tabToken === "registry" ? "registry" : (tabToken === "casebook" ? "casebook" : "radar")));
-      const scopeToken = (params.get("scope") || "").trim();
-      const workstreamToken = (params.get("workstream") || "").trim();
-      const normalizedScopeToken = /^B-\d{3,}$/.test(scopeToken) ? scopeToken : "";
-      const normalizedWorkstreamToken = /^B-\d{3,}$/.test(workstreamToken) ? workstreamToken : "";
-      const componentToken = (params.get("component") || "").trim().toLowerCase();
-      const bugToken = (params.get("bug") || "").trim();
-      const severityToken = (params.get("severity") || "").trim().toLowerCase();
-      const statusToken = (params.get("status") || "").trim().toLowerCase();
-      const sortToken = (params.get("sort") || "").trim().toLowerCase();
-      // Compass prefers `scope`, but still accepts legacy `workstream` query links.
-      const activeWorkstreamToken = tab === "compass"
-        ? (normalizedScopeToken || normalizedWorkstreamToken)
-        : (normalizedWorkstreamToken || normalizedScopeToken);
-      return sanitizeShellState({
-        tab,
-        workstream: activeWorkstreamToken,
-        component: componentToken,
-        bug: bugToken,
-        severity: severityToken,
-        status: statusToken,
-        sort: sortToken,
-        diagram: canonicalizeDiagramToken(params.get("diagram") || ""),
-        view: (params.get("view") || "").trim(),
-        window: (params.get("window") || "").trim().toLowerCase(),
-        date: (params.get("date") || "").trim(),
-        audit_day: (params.get("audit_day") || "").trim(),
-      });
-    }
-
-    function readCompassStateFromFrame() {
-      try {
-        const frameWindow = panes.compass && panes.compass.contentWindow ? panes.compass.contentWindow : null;
-        if (!frameWindow) return null;
-        const params = new URLSearchParams(frameWindow.location.search || "");
-        return {
-          workstream: (() => {
-            const scopeToken = (params.get("scope") || "").trim();
-            return /^B-\d{3,}$/.test(scopeToken) ? scopeToken : "";
-          })(),
-          window: (params.get("window") || "").trim().toLowerCase(),
-          date: (params.get("date") || "").trim(),
-          audit_day: (params.get("audit_day") || "").trim(),
-        };
-      } catch (_error) {
-        return null;
-      }
-    }
-
-    function readRadarStateFromFrame() {
-      try {
-        const frameWindow = panes.radar && panes.radar.contentWindow ? panes.radar.contentWindow : null;
-        if (!frameWindow) return null;
-        const params = new URLSearchParams(frameWindow.location.search || "");
-        const workstream = String(params.get("workstream") || "").trim();
-        const view = String(params.get("view") || "").trim().toLowerCase();
-        return {
-          workstream: /^B-\d{3,}$/.test(workstream) ? workstream : "",
-          view: (view === "spec" || view === "plan") ? view : "",
-        };
-      } catch (_error) {
-        return null;
-      }
-    }
-
-    function readAtlasStateFromFrame() {
-      try {
-        const frameWindow = panes.atlas && panes.atlas.contentWindow ? panes.atlas.contentWindow : null;
-        if (!frameWindow) return null;
-        const params = new URLSearchParams(frameWindow.location.search || "");
-        const workstream = String(params.get("workstream") || "").trim();
-        const diagram = canonicalizeDiagramToken(params.get("diagram") || "");
-        return {
-          workstream: /^B-\d{3,}$/.test(workstream) ? workstream : "",
-          diagram,
-        };
-      } catch (_error) {
-        return null;
-      }
-    }
-
-    function readRegistryStateFromFrame() {
-      try {
-        const frameWindow = panes.registry && panes.registry.contentWindow ? panes.registry.contentWindow : null;
-        if (!frameWindow) return null;
-        const params = new URLSearchParams(frameWindow.location.search || "");
-        const component = String(params.get("component") || "").trim().toLowerCase();
-        return { component };
-      } catch (_error) {
-        return null;
-      }
-    }
-
-    function readCasebookStateFromFrame() {
-      try {
-        const frameWindow = panes.casebook && panes.casebook.contentWindow ? panes.casebook.contentWindow : null;
-        if (!frameWindow) return null;
-        const params = new URLSearchParams(frameWindow.location.search || "");
-        return {
-          bug: String(params.get("bug") || "").trim(),
-          severity: String(params.get("severity") || "").trim().toLowerCase(),
-          status: String(params.get("status") || "").trim().toLowerCase(),
-          sort: canonicalizeCasebookSortToken(params.get("sort") || ""),
-        };
-      } catch (_error) {
-        return null;
-      }
-    }
-
-    function buildFrameHref(baseHref, query) {
-      const rawHref = String(baseHref || "").trim();
-      if (!rawHref) return "";
-      const hashIndex = rawHref.indexOf("#");
-      const hash = hashIndex >= 0 ? rawHref.slice(hashIndex) : "";
-      const withoutHash = hashIndex >= 0 ? rawHref.slice(0, hashIndex) : rawHref;
-      const queryIndex = withoutHash.indexOf("?");
-      const path = queryIndex >= 0 ? withoutHash.slice(0, queryIndex) : withoutHash;
-      const merged = new URLSearchParams(queryIndex >= 0 ? withoutHash.slice(queryIndex + 1) : "");
-      if (query && typeof query.forEach === "function") {
-        query.forEach((value, key) => {
-          merged.set(key, value);
-        });
-      }
-      const qs = merged.toString();
-      return `${path}${qs ? `?${qs}` : ""}${hash}`;
-    }
-
-    function frameAlreadyAtHref(frameEl, expectedHref) {
-      if (!frameEl) return false;
-      const attrHref = String(frameEl.getAttribute("src") || "").trim();
-      if (attrHref === expectedHref) return true;
-      try {
-        const frameWindow = frameEl.contentWindow;
-        if (!frameWindow || !frameWindow.location) return false;
-        const expected = new URL(expectedHref, window.location.href);
-        return frameWindow.location.pathname === expected.pathname
-          && frameWindow.location.search === expected.search;
-      } catch (_error) {
-        return false;
-      }
-    }
-
-    function syncFrameHref(frameEl, expectedHref) {
-      if (frameAlreadyAtHref(frameEl, expectedHref)) return;
-      frameEl.setAttribute("src", expectedHref);
-    }
-
-    function syncFrameForTab(tabKey, expectedHref, options = {}) {
-      if (!tabKey || !expectedHref) return;
-      const frameEl = panes[tabKey];
-      if (!frameEl) return;
-      const shouldLoad = options.forceLoad === true || paneVisitState[tabKey] === true;
-      if (!shouldLoad) return;
-      paneVisitState[tabKey] = true;
-      syncFrameHref(frameEl, expectedHref);
-    }
-
-    function buildRadarQuery(state) {
-      const query = new URLSearchParams();
-      if (state.workstream) query.set("workstream", state.workstream);
-      if (state.view) query.set("view", state.view);
-      return query;
-    }
-
-    function buildAtlasQuery(state) {
-      const query = new URLSearchParams();
-      if (state.workstream) query.set("workstream", state.workstream);
-      const diagram = canonicalizeDiagramToken(state.diagram || "");
-      if (diagram) query.set("diagram", diagram);
-      return query;
-    }
-
-    function buildCompassQuery(state) {
-      const query = new URLSearchParams();
-      if (state.workstream) query.set("scope", state.workstream);
-      if (state.window) query.set("window", state.window);
-      if (state.date) query.set("date", state.date);
-      if (state.audit_day) query.set("audit_day", state.audit_day);
-      return query;
-    }
-
-    function buildRegistryQuery(state) {
-      const query = new URLSearchParams();
-      if (state.component) query.set("component", state.component);
-      return query;
-    }
-
-    function buildCasebookQuery(state) {
-      const query = new URLSearchParams();
-      if (state.bug) query.set("bug", state.bug);
-      if (state.severity) query.set("severity", state.severity);
-      if (state.status) query.set("status", state.status);
-      const sort = canonicalizeCasebookSortToken(state.sort || "");
-      if (sort !== CASEBOOK_SORT_DEFAULT) query.set("sort", sort);
-      return query;
-    }
-
-    function frameHrefsForState(state) {
-      return {
-        radar: buildFrameHref(payload.radar_href, buildRadarQuery(state)),
-        atlas: buildFrameHref(payload.atlas_href, buildAtlasQuery(state)),
-        compass: buildFrameHref(payload.compass_href, buildCompassQuery(state)),
-        registry: buildFrameHref(payload.registry_href, buildRegistryQuery(state)),
-        casebook: buildFrameHref(payload.casebook_href, buildCasebookQuery(state)),
-      };
-    }
-
-    function dashboardQueryString(state) {
-      const query = new URLSearchParams();
-      query.set("tab", state.tab);
-      if (state.tab === "compass") {
-        if (state.workstream) query.set("scope", state.workstream);
-      } else if (state.tab === "registry") {
-        if (state.component) query.set("component", state.component);
-      } else if (state.tab === "casebook") {
-        if (state.bug) query.set("bug", state.bug);
-        if (state.severity) query.set("severity", state.severity);
-        if (state.status) query.set("status", state.status);
-        const sort = canonicalizeCasebookSortToken(state.sort || "");
-        if (sort !== CASEBOOK_SORT_DEFAULT) query.set("sort", sort);
-      } else if (state.workstream) {
-        query.set("workstream", state.workstream);
-      }
-      const diagram = canonicalizeDiagramToken(state.diagram || "");
-      if (diagram) query.set("diagram", diagram);
-      if (state.view) query.set("view", state.view);
-      if (state.window) query.set("window", state.window);
-      if (state.date) query.set("date", state.date);
-      if (state.audit_day) query.set("audit_day", state.audit_day);
-      const token = query.toString();
-      return token ? `?${token}` : "";
-    }
-
-    function buildTabActivationState(tab) {
-      const current = readStateFromUrl();
-      if (current.tab === tab) {
-        return current;
-      }
-      return rememberedTabState(tab);
-    }
-
-    function syncFrames(state) {
-      const frameHrefs = frameHrefsForState(state);
-      syncFrameForTab(state.tab, frameHrefs[state.tab], { forceLoad: true });
-    }
-
-    function reloadActiveView() {
-      const current = readStateFromUrl();
-      if (!runtimeReloadableForTab(current.tab)) return;
-      const frameEl = panes[current.tab];
-      if (!frameEl) return;
-      const frameHrefs = frameHrefsForState(current);
-      paneVisitState[current.tab] = true;
-      try {
-        if (frameEl.contentWindow && frameEl.contentWindow.location) {
-          frameEl.contentWindow.location.reload();
-          return;
-        }
-      } catch (_error) {
-        // Fall through to reassigning the frame source.
-      }
-      frameEl.removeAttribute("src");
-      frameEl.setAttribute("src", frameHrefs[current.tab]);
-    }
+    const navigation = createToolingShellNavigation({
+      panes, payload, onState: renderSelectedTab, localStorageRead, localStorageWrite,
+    });
 
     function setDrawerState(drawer, panel, toggle, open) {
       if (!drawer || !panel || !toggle) return;
@@ -1190,47 +887,42 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       setDrawerState(odylithDrawer, odylithDrawerPanel, odylithToggle, open);
     }
 
-    function applyTab(state, options = {}) {
-      const next = rememberTabState(state);
+    function renderSelectedTab(next) {
       const tab = next.tab;
+      tabs.project.setAttribute("aria-selected", String(tab === "project"));
       tabs.radar.setAttribute("aria-selected", String(tab === "radar"));
       tabs.atlas.setAttribute("aria-selected", String(tab === "atlas"));
       tabs.compass.setAttribute("aria-selected", String(tab === "compass"));
       tabs.registry.setAttribute("aria-selected", String(tab === "registry"));
       tabs.casebook.setAttribute("aria-selected", String(tab === "casebook"));
+      panes.project.hidden = tab !== "project";
       panes.radar.hidden = tab !== "radar";
       panes.atlas.hidden = tab !== "atlas";
       panes.compass.hidden = tab !== "compass";
       panes.registry.hidden = tab !== "registry";
       panes.casebook.hidden = tab !== "casebook";
-      if (options.syncFrames !== false) {
-        syncFrames(next);
-      }
       document.title = `${tabTitles[tab] || shellTitle} | ${shellBrandName}`;
 
-      const nextSearch = dashboardQueryString(next);
-      if (options.pushHistory) {
-        window.history.pushState(null, "", `${window.location.pathname}${nextSearch}`);
-      } else if (window.location.search !== nextSearch) {
-        window.history.replaceState(null, "", `${window.location.pathname}${nextSearch}`);
-      }
       applyRuntimeStatus(latestRuntimeStatusState || {});
     }
 
+    tabs.project.addEventListener("click", () => {
+      navigation.selectTab("project");
+    });
     tabs.radar.addEventListener("click", () => {
-      applyTab(buildTabActivationState("radar"), { pushHistory: true });
+      navigation.selectTab("radar");
     });
     tabs.atlas.addEventListener("click", () => {
-      applyTab(buildTabActivationState("atlas"), { pushHistory: true });
+      navigation.selectTab("atlas");
     });
     tabs.compass.addEventListener("click", () => {
-      applyTab(buildTabActivationState("compass"), { pushHistory: true });
+      navigation.selectTab("compass");
     });
     tabs.registry.addEventListener("click", () => {
-      applyTab(buildTabActivationState("registry"), { pushHistory: true });
+      navigation.selectTab("registry");
     });
     tabs.casebook.addEventListener("click", () => {
-      applyTab(buildTabActivationState("casebook"), { pushHistory: true });
+      navigation.selectTab("casebook");
     });
     welcomeCopyButtons.forEach((button) => {
       button.addEventListener("click", async () => {
@@ -1249,9 +941,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         }
         setWelcomeHidden(true);
         if (welcomeReopen && !welcomeReopen.hidden) {
-          window.requestAnimationFrame(() => {
-            welcomeReopen.focus();
-          });
+          welcomeReopen.focus();
         }
       });
     }
@@ -1268,8 +958,8 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       button.addEventListener("click", () => {
         const tab = String(button.dataset.welcomeTab || "").trim().toLowerCase();
         if (!tab || !tabs[tab] || !panes[tab]) return;
-        const current = readStateFromUrl();
-        applyTab({ ...current, tab }, { pushHistory: true });
+        const current = navigation.readState();
+        navigation.activate({ ...current, tab }, { historyMode: "push" });
         if (welcomeLaunchpadActive) {
           setWelcomeDismissed(true);
         }
@@ -1302,7 +992,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     upgradeSpotlightLinks.forEach((link) => {
       link.addEventListener("click", openUpgradeSpotlightLink);
     });
-    if (upgradeSpotlightDismissed()) {
+    if (upgradeSpotlightDismissed() || !hasUpgradeSpotlight()) {
       setUpgradeSpotlightHidden(true);
     } else if (upgradeSpotlight) {
       setUpgradeSpotlightHidden(false);
@@ -1314,10 +1004,12 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     scheduleUpgradeSpotlightExpiry();
     initializeWelcomeTaskState();
     applyRuntimeStatus(mergeRuntimeStatusState(payload));
+    scheduleVersionStateProbe(15000);
     scheduleShellRefreshPoll(4000);
     scheduleRuntimeProbe(1200);
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) {
+        scheduleVersionStateProbe(300);
         scheduleShellRefreshPoll(1200);
         scheduleRuntimeProbe(1200);
       }
@@ -1331,6 +1023,9 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       }
       if (runtimeProbeTimer) {
         window.clearTimeout(runtimeProbeTimer);
+      }
+      if (versionStateProbeTimer) {
+        window.clearTimeout(versionStateProbeTimer);
       }
     });
     if (hasBriefDrawer) {
@@ -1353,7 +1048,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     }
     if (runtimeStatusReload) {
       runtimeStatusReload.addEventListener("click", () => {
-        reloadActiveView();
+        if (runtimeReloadableForTab(navigation.readState().tab)) navigation.reload();
       });
     }
     if (runtimeStatusDismiss) {
@@ -1379,214 +1074,10 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       }
     });
 
-    panes.radar.addEventListener("load", () => {
-      const current = readStateFromUrl();
-      if (current.tab !== "radar") return;
-      const frameState = readRadarStateFromFrame();
-      if (!frameState) return;
-      const next = {
-        ...current,
-        tab: "radar",
-        workstream: frameState.workstream,
-        view: frameState.view,
-      };
-      if (
-        next.tab === current.tab
-        && next.workstream === current.workstream
-        && next.view === current.view
-      ) {
-        return;
-      }
-      applyTab(next, { pushHistory: false, syncFrames: false });
-    });
-
-    panes.compass.addEventListener("load", () => {
-      const current = readStateFromUrl();
-      if (current.tab !== "compass") return;
-      const frameState = readCompassStateFromFrame();
-      if (!frameState) return;
-      const next = {
-        ...current,
-        tab: "compass",
-        workstream: frameState.workstream,
-        window: frameState.window || current.window,
-        date: frameState.date || current.date,
-        audit_day: frameState.audit_day || current.audit_day,
-      };
-      if (
-        next.tab === current.tab
-        && next.workstream === current.workstream
-        && next.window === current.window
-        && next.date === current.date
-        && next.audit_day === current.audit_day
-      ) {
-        return;
-      }
-      applyTab(next, { pushHistory: false, syncFrames: false });
-    });
-
-    panes.atlas.addEventListener("load", () => {
-      const current = readStateFromUrl();
-      if (current.tab !== "atlas") return;
-      const frameState = readAtlasStateFromFrame();
-      if (!frameState) return;
-      const next = {
-        ...current,
-        tab: "atlas",
-        workstream: frameState.workstream,
-        diagram: frameState.diagram || current.diagram,
-      };
-      if (
-        next.tab === current.tab
-        && next.workstream === current.workstream
-        && next.diagram === current.diagram
-      ) {
-        return;
-      }
-      applyTab(next, { pushHistory: false, syncFrames: false });
-    });
-
-    panes.registry.addEventListener("load", () => {
-      const current = readStateFromUrl();
-      if (current.tab !== "registry") return;
-      const frameState = readRegistryStateFromFrame();
-      if (!frameState) return;
-      const next = {
-        ...current,
-        tab: "registry",
-        component: frameState.component || current.component,
-      };
-      if (
-        next.tab === current.tab
-        && next.component === current.component
-      ) {
-        return;
-      }
-      applyTab(next, { pushHistory: false, syncFrames: false });
-    });
-
-    panes.casebook.addEventListener("load", () => {
-      const current = readStateFromUrl();
-      if (current.tab !== "casebook") return;
-      const frameState = readCasebookStateFromFrame();
-      if (!frameState) return;
-      const next = {
-        ...current,
-        tab: "casebook",
-        bug: frameState.bug || current.bug,
-        severity: frameState.severity || current.severity,
-        status: frameState.status || current.status,
-        sort: frameState.sort || current.sort,
-      };
-      if (
-        next.tab === current.tab
-        && next.bug === current.bug
-        && next.severity === current.severity
-        && next.status === current.status
-        && next.sort === current.sort
-      ) {
-        return;
-      }
-      applyTab(next, { pushHistory: false, syncFrames: false });
-    });
-
-    window.addEventListener("message", (event) => {
-      const data = event.data && typeof event.data === "object" ? event.data : null;
-      if (!data) return;
-      const raw = data.state && typeof data.state === "object" ? data.state : {};
-      const current = readStateFromUrl();
-
-      if (data.type === "odylith-radar-navigate") {
-        if (!event || event.source !== panes.radar.contentWindow) return;
-        if (current.tab !== "radar") return;
-        const workstreamToken = String(raw.workstream || "").trim();
-        const viewToken = String(raw.view || "").trim().toLowerCase();
-        const next = {
-          ...current,
-          tab: "radar",
-          workstream: /^B-\d{3,}$/.test(workstreamToken) ? workstreamToken : "",
-          view: (viewToken === "spec" || viewToken === "plan") ? viewToken : "",
-        };
-        applyTab(next, { pushHistory: false, syncFrames: false });
-        return;
-      }
-
-      if (data.type === "odylith-compass-navigate") {
-        if (!event || event.source !== panes.compass.contentWindow) return;
-        if (current.tab !== "compass") return;
-        const scopeToken = String(raw.scope || raw.workstream || "").trim();
-        const windowToken = String(raw.window || "").trim().toLowerCase();
-        const dateToken = String(raw.date || "").trim();
-        const auditDayToken = String(raw.audit_day || "").trim();
-        const next = {
-          ...current,
-          tab: "compass",
-          workstream: /^B-\d{3,}$/.test(scopeToken) ? scopeToken : "",
-          window: (windowToken === "24h" || windowToken === "48h") ? windowToken : (current.window || ""),
-          date: (dateToken === "live" || /^\d{4}-\d{2}-\d{2}$/.test(dateToken)) ? dateToken : (current.date || ""),
-          audit_day: /^\d{4}-\d{2}-\d{2}$/.test(auditDayToken) ? auditDayToken : "",
-        };
-        applyTab(next, { pushHistory: false, syncFrames: false });
-        return;
-      }
-
-      if (data.type === "odylith-atlas-navigate") {
-        if (!event || event.source !== panes.atlas.contentWindow) return;
-        if (current.tab !== "atlas") return;
-        const workstreamToken = String(raw.workstream || "").trim();
-        const diagramToken = canonicalizeDiagramToken(raw.diagram || "");
-        const next = {
-          ...current,
-          tab: "atlas",
-          workstream: /^B-\d{3,}$/.test(workstreamToken) ? workstreamToken : "",
-          diagram: diagramToken,
-        };
-        applyTab(next, { pushHistory: false, syncFrames: false });
-        return;
-      }
-
-      if (data.type === "odylith-registry-navigate") {
-        if (!event || event.source !== panes.registry.contentWindow) return;
-        if (current.tab !== "registry") return;
-        const componentToken = String(raw.component || "").trim().toLowerCase();
-        const next = {
-          ...current,
-          tab: "registry",
-          component: componentToken,
-        };
-        applyTab(next, { pushHistory: false, syncFrames: false });
-        return;
-      }
-
-      if (data.type === "odylith-casebook-navigate") {
-        if (!event || event.source !== panes.casebook.contentWindow) return;
-        if (current.tab !== "casebook") return;
-        const bugToken = String(raw.bug || "").trim();
-        const severityToken = String(raw.severity || "").trim().toLowerCase();
-        const statusToken = String(raw.status || "").trim().toLowerCase();
-        const sortToken = canonicalizeCasebookSortToken(raw.sort || "");
-        const next = {
-          ...current,
-          tab: "casebook",
-          bug: bugToken,
-          severity: severityToken,
-          status: statusToken,
-          sort: sortToken,
-        };
-        applyTab(next, { pushHistory: false, syncFrames: false });
-        return;
-      }
-
-    });
-
-    window.addEventListener("popstate", () => {
-      applyTab(readStateFromUrl(), { pushHistory: false });
-    });
-
     window.addEventListener("resize", () => {
       scheduleRuntimeStatusLayoutSync();
     });
 
-    applyTab(readStateFromUrl(), { pushHistory: false });
+    navigation.start();
     setBriefDrawer(false);
     setOdylithDrawer(false);

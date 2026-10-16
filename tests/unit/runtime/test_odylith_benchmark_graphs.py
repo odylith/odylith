@@ -102,9 +102,9 @@ def test_render_graph_assets_writes_codex_benchmark_svgs(tmp_path: Path) -> None
     assert "Median tradeoff" in quality_frontier
     assert "Scenario spotlight" in quality_frontier
     assert "Static chart: full recall range" in quality_frontier
-    assert "published scenarios in frame" in quality_frontier
+    assert "published scenarios: 1" in quality_frontier
     assert "Visual pair:" in quality_frontier
-    assert "all 60 points stay naturally visible" in quality_frontier
+    assert "60 points" not in quality_frontier
     assert graphs._FRONTIER_BASELINE in frontier
     assert graphs._FRONTIER_ODYLITH in frontier
     assert "Focus window" in frontier
@@ -306,7 +306,7 @@ def test_render_graph_assets_prefers_published_conservative_view(tmp_path: Path)
     assert "Odylith on improves recall and" in quality_frontier
     assert "time to valid outcome" in quality_frontier
     assert "Visual pair: odylith_on vs raw_agent_baseline" in quality_frontier
-    assert "Static chart: full recall range | all 1 published scenarios in frame" in quality_frontier
+    assert "Static chart: full recall range | published scenarios: 1" in quality_frontier
     assert "One connecting line = one" in quality_frontier
     assert "scenario across both modes" in quality_frontier
     assert "Scenario spotlight" in quality_frontier

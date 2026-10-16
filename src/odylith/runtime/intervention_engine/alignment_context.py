@@ -56,11 +56,14 @@ def _merge_strings(*values: Any, limit: int = 12) -> list[str]:
 
 def _runtime_surface_compact(repo_root: Path) -> dict[str, Any]:
     try:
-        summary = odylith_runtime_surface_summary.load_runtime_surface_summary(repo_root=repo_root)
+        summary = odylith_runtime_surface_summary.load_recorded_runtime_surface_summary(repo_root=repo_root)
     except Exception:
         return {"status": "unavailable"}
     wanted = (
         "status",
+        "recorded_status",
+        "source",
+        "freshness",
         "enabled",
         "memory_status",
         "memory_backend_label",

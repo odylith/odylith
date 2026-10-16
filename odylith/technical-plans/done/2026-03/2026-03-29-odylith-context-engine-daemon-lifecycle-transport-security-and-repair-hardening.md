@@ -91,14 +91,11 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [x] Risk: stricter daemon validation could reject a previously tolerated
-  - [ ] Mitigation: TODO (add explicit mitigation).
-  daemon state and surprise operators.
+  - [ ] Mitigation: TODO (add explicit mitigation). daemon state and surprise operators.
 - [ ] Risk: Unspecified risk (legacy backfill).
-  - [x] Mitigation: fail closed only on clearly unhealthy transport hints and
-    preserve standalone fallback behavior.
+  - [x] Mitigation: fail closed only on clearly unhealthy transport hints and preserve standalone fallback behavior.
 - [x] Risk: repair cleanup could regress if daemon shutdown becomes brittle.
-  - [x] Mitigation: terminate, wait, escalate to kill, and keep direct unit
-    coverage on the stubborn-process path.
+  - [x] Mitigation: terminate, wait, escalate to kill, and keep direct unit coverage on the stubborn-process path.
 
 ## Validation/Test Plan
 - [x] `python -m py_compile src/odylith/runtime/context_engine/odylith_context_engine.py src/odylith/runtime/context_engine/odylith_context_engine_store.py src/odylith/install/repair.py tests/unit/runtime/test_odylith_context_engine_daemon_hardening.py tests/unit/install/test_repair.py`

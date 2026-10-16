@@ -6,12 +6,16 @@ import contextlib
 from collections.abc import Iterable
 import hashlib
 import json
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
+import stat
 import subprocess
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_store as store
+
+_CONTENT_OVERLAY_VERSION = "content-v1"
+_LEGACY_OVERLAY_VERSION = "legacy-metadata"
 
 
 def stable_snapshot_overlay_path(token: object) -> str:
@@ -87,6 +91,7 @@ def benchmark_tree_identity(
     repo_root: Path,
     selection: Mapping[str, Any],
     snapshot_paths: Sequence[str] = (),
+    overlay_fingerprint_version: str = _CONTENT_OVERLAY_VERSION,
 ) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     dirty_paths = dirty_repo_paths(root)
@@ -99,7 +104,9 @@ def benchmark_tree_identity(
         "corpus_fingerprint": odylith_context_cache.fingerprint_paths(
             [store.optimization_evaluation_corpus_path(repo_root=root)]
         ),
-        "snapshot_overlay_fingerprint": _snapshot_overlay_fingerprint(repo_root=root, snapshot_paths=snapshot_paths),
+        "snapshot_overlay_fingerprint": _snapshot_overlay_fingerprint(
+            repo_root=root, snapshot_paths=snapshot_paths, version=overlay_fingerprint_version,
+        ),
         "source_posture": _benchmark_source_posture(repo_root=root),
     }
 
@@ -107,13 +114,35 @@ def benchmark_tree_identity(
 def benchmark_report_matches_current_tree(*, repo_root: Path, report: Mapping[str, Any]) -> bool:
     if not isinstance(report, Mapping):
         return False
+    fingerprint = report.get("snapshot_overlay_fingerprint")
+    if not isinstance(fingerprint, str):
+        return False
+    prefix = f"{_CONTENT_OVERLAY_VERSION}:"
+    if fingerprint.startswith(prefix):
+        version = _CONTENT_OVERLAY_VERSION
+        digest = fingerprint[len(prefix):]
+        if len(digest) != 64 or any(token not in "0123456789abcdef" for token in digest):
+            return False
+        if not isinstance(report.get("snapshot_overlay_paths"), list):
+            return False
+        snapshot_paths = report["snapshot_overlay_paths"]
+    elif not fingerprint or (len(fingerprint) == 64 and all(token in "0123456789abcdef" for token in fingerprint)):
+        version = _LEGACY_OVERLAY_VERSION
+        snapshot_paths = (
+            [str(token).strip() for token in report.get("snapshot_overlay_paths", []) if str(token).strip()]
+            if isinstance(report.get("snapshot_overlay_paths"), list)
+            else []
+        )
+    else:
+        return False
     selection = dict(report.get("selection", {})) if isinstance(report.get("selection"), Mapping) else {}
-    snapshot_paths = (
-        [str(token).strip() for token in report.get("snapshot_overlay_paths", []) if str(token).strip()]
-        if isinstance(report.get("snapshot_overlay_paths"), list)
-        else []
-    )
-    current = benchmark_tree_identity(repo_root=repo_root, selection=selection, snapshot_paths=snapshot_paths)
+    try:
+        current = benchmark_tree_identity(
+            repo_root=repo_root, selection=selection, snapshot_paths=snapshot_paths,
+            overlay_fingerprint_version=version,
+        )
+    except (OSError, RuntimeError, ValueError):
+        return False
     for key in (
         "git_branch",
         "git_commit",
@@ -140,7 +169,72 @@ def _safe_resolve_path(path: Path) -> Path | None:
     return None
 
 
-def _snapshot_overlay_fingerprint(*, repo_root: Path, snapshot_paths: Sequence[str]) -> str:
+def _canonical_overlay_paths(snapshot_paths: Sequence[str]) -> list[str]:
+    paths: set[str] = set()
+    for raw in snapshot_paths:
+        if not isinstance(raw, str):
+            raise ValueError("benchmark overlay paths must be relative strings")
+        token = raw.strip().replace("\\", "/")
+        while token.startswith("./"):
+            token = token[2:]
+        path = Path(token)
+        if not token or path.is_absolute() or PureWindowsPath(token).drive or ".." in path.parts or path == Path("."):
+            raise ValueError(f"unsafe benchmark overlay path: {raw!r}")
+        if token == ".odylith" or token.startswith(".odylith/"):
+            continue
+        paths.add(path.as_posix())
+    return sorted(paths)
+
+
+def _content_overlay_fingerprint(*, repo_root: Path, snapshot_paths: Sequence[str]) -> str:
+    root = Path(repo_root).resolve()
+    inputs = _canonical_overlay_paths(snapshot_paths)
+    entries: dict[str, dict[str, Any]] = {}
+
+    def visit(path: Path, relative: str, ancestors: frozenset[Path]) -> None:
+        resolved = path.resolve()
+        if not resolved.is_relative_to(root):
+            raise ValueError(f"benchmark overlay path escapes the repo: {relative}")
+        try:
+            source_stat = path.lstat()
+        except FileNotFoundError:
+            entries[relative] = {"path": relative, "kind": "absent"}
+            return
+        metadata = resolved.stat() if stat.S_ISLNK(source_stat.st_mode) else source_stat
+        mode = stat.S_IMODE(metadata.st_mode)
+        if stat.S_ISDIR(metadata.st_mode):
+            if resolved in ancestors:
+                raise ValueError(f"cyclic benchmark overlay directory: {relative}")
+            entries[relative] = {"path": relative, "kind": "directory", "mode": mode}
+            for child in sorted(path.iterdir(), key=lambda item: item.name):
+                visit(child, f"{relative}/{child.name}", ancestors | {resolved})
+        elif stat.S_ISREG(metadata.st_mode):
+            digest = hashlib.sha256()
+            with path.open("rb") as source:
+                for chunk in iter(lambda: source.read(131072), b""):
+                    digest.update(chunk)
+            entries[relative] = {"path": relative, "kind": "file", "mode": mode, "sha256": digest.hexdigest()}
+        else:
+            raise ValueError(f"unsupported benchmark overlay source: {relative}")
+
+    for token in inputs:
+        visit(root / token, token, frozenset())
+    encoded = json.dumps(
+        {"inputs": inputs, "entries": [entries[path] for path in sorted(entries)]},
+        sort_keys=True, ensure_ascii=False, separators=(",", ":"),
+    ).encode("utf-8")
+    return f"{_CONTENT_OVERLAY_VERSION}:{hashlib.sha256(encoded).hexdigest()}"
+
+
+def _snapshot_overlay_fingerprint(*, repo_root: Path, snapshot_paths: Sequence[str], version: str = _CONTENT_OVERLAY_VERSION) -> str:
+    if version == _CONTENT_OVERLAY_VERSION:
+        return _content_overlay_fingerprint(repo_root=repo_root, snapshot_paths=snapshot_paths)
+    if version != _LEGACY_OVERLAY_VERSION:
+        raise ValueError(f"unknown benchmark overlay fingerprint version: {version}")
+    root = Path(repo_root).resolve()
+    for token in _canonical_overlay_paths(snapshot_paths):
+        if not (root / token).resolve().is_relative_to(root):
+            raise ValueError(f"benchmark overlay path escapes the repo: {token}")
     normalized_paths = dedupe_path_strings(stable_snapshot_overlay_paths(snapshot_paths))
     if not normalized_paths:
         return ""

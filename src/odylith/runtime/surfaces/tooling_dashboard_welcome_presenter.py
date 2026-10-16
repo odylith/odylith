@@ -112,23 +112,7 @@ def render_welcome_state_html(payload: Mapping[str, Any]) -> str:
         return release_spotlight_html
 
     if not show:
-        notices_html = "".join(_render_welcome_notice(notice) for notice in notices)
-        return release_spotlight_html + (
-            '<section id="shellWelcomeState" class="welcome-state welcome-state-compact" aria-label="Odylith runtime notices">'
-            '<div class="welcome-state-head">'
-            '<p class="welcome-kicker">Odylith Notice</p>'
-            '<h2 class="welcome-title">Odylith needs attention in this repository</h2>'
-            '<p class="welcome-subhead">The shell found a repo-local condition that changes how Odylith behaves here.</p>'
-            '<p id="welcomeCopyStatus" class="welcome-copy-status" aria-live="polite"></p>'
-            "</div>"
-            '<div class="welcome-grid">'
-            f"{notices_html}"
-            "</div>"
-            '<div class="welcome-action-row">'
-            '<button id="welcomeDismiss" type="button" class="welcome-button welcome-button-secondary">Dismiss</button>'
-            "</div>"
-            "</section>"
-        )
+        return release_spotlight_html
 
     quick_steps = _welcome_lines(welcome_state.get("quick_steps"))
     starter_prompt = str(welcome_state.get("starter_prompt", "")).strip()

@@ -26,9 +26,7 @@
   host model calls", must admit allowed authored governance work without
   CLI-writer evidence, and must still defer/block the corresponding unsafe
   moves when they are actually requested.
-Last updated: 2026-04-18
-
-Last updated (UTC): 2026-04-18
+Last updated: 2026-09-15
 
 ## Registry Identity
 
@@ -544,6 +542,15 @@ resolve the same semantic profile to different concrete model and reasoning
 tuples without redefining the execution contract. A validated host must never
 return an empty model for a supported profile.
 
+As of 2026-09-15, Codex analysis profiles resolve to Luna, the fast worker to
+Spark, write profiles to Terra, and frontier profiles to Sol, retaining each
+role's existing effort. The distinct model/effort tuples preserve role inference
+for context packets; historical tuples remain readable, with explicit semantic
+profiles taking precedence. Claude mappings and execution admissibility are
+unchanged. Live and bundled Codex project-agent assets must match the resolver's
+roles. Compatibility proof does not replace fresh native quality, latency or
+automatic chat-delivery evidence.
+
 ## Consumer And Maintainer Lane Fencing
 
 The Execution Engine consumes `TargetResolution` from the Context Engine so it
@@ -778,12 +785,12 @@ relevant Context Engine packet tests and host-runtime contract tests.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-04-16 · Implementation:** Hardened Context Engine to Execution Engine alignment with canonical identity propagation, identity-first guard blocking, benchmark identity gates, and refreshed release-proof surfaces.
+- **2026-04-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-099
-  - Evidence: src/odylith/runtime/context_engine/execution_engine_handshake.py, src/odylith/runtime/execution_engine/runtime_lane_policy.py
-- **2026-04-16 · Implementation:** Hard-cut Context Engine and Execution Engine alignment Wave 1 to canonical execution-engine identity; focused execution tests, broader runtime benchmark tests, registry/backlog validators, sync check, Atlas freshness, and diff check pass.
+  - Evidence: `src/odylith/runtime/context_engine/execution_engine_handshake.py`, `src/odylith/runtime/execution_engine/runtime_lane_policy.py`
+- **2026-04-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-099, B-100
-  - Evidence: odylith/radar/source/programs/B-099.execution-waves.v1.json, odylith/registry/source/components/execution-engine/CURRENT_SPEC.md +2 more
+  - Evidence: `odylith/radar/source/programs/B-099.execution-waves.v1.json`, `odylith/registry/source/components/execution-engine/CURRENT_SPEC.md`, `odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md`
 <!-- registry-requirements:end -->
 
 ## Feature History

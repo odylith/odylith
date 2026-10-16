@@ -1,60 +1,21 @@
-"""Traceability planning for confirmed greenfield governance proposals."""
+"""Exact typed traceability for sealed Greenfield authored projections."""
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-import re
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+)
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
+    PROVISIONAL_DESIGN_AUTHORITY_KIND,
+    provisional_design_from_intent,
+)
 from odylith.runtime.governance import backlog_authoring
-
-_REF_FIELDS = (
-    "workstreams",
-    "workstream_ids",
-    "workstream_titles",
-    "related_workstreams",
-    "related_workstream_ids",
-    "related_workstream_titles",
-    "backlog",
-    "backlog_titles",
-)
-_COMPONENT_FIELDS = (
-    "component_focus",
-    "component_ids",
-    "components",
-    "related_components",
-    "related_component_ids",
-)
-_DIAGRAM_FIELDS = (
-    "diagram_slugs",
-    "related_diagram_slugs",
-    "related_diagrams",
-    "diagrams",
-)
-_STOPWORDS = {
-    "adapter",
-    "application",
-    "boundary",
-    "candidate",
-    "component",
-    "core",
-    "engine",
-    "framework",
-    "govern",
-    "greenfield",
-    "harness",
-    "library",
-    "memory",
-    "module",
-    "project",
-    "research",
-    "runner",
-    "service",
-    "store",
-    "system",
-}
 
 
 @dataclass(frozen=True)
@@ -82,8 +43,21 @@ class GreenfieldTraceabilityPlan:
     backlog_diagrams: dict[str, tuple[str, ...]]
 
 
+def traceability_plan_from_payload(value: Any) -> GreenfieldTraceabilityPlan:
+    """Rehydrate a serialized prewrite traceability plan."""
+
+    payload = value if isinstance(value, Mapping) else {}
+    return GreenfieldTraceabilityPlan(
+        workstreams=tuple(_created_workstream_from_payload(row) for row in _rows(payload.get("workstreams"))),
+        component_workstreams=_tuple_map(payload.get("component_workstreams")),
+        component_diagrams=_tuple_map(payload.get("component_diagrams")),
+        diagram_links=tuple(_diagram_link_from_payload(row) for row in _rows(payload.get("diagram_links"))),
+        backlog_diagrams=_tuple_map(payload.get("backlog_diagrams")),
+    )
+
+
 def component_key(row: Mapping[str, Any]) -> str:
-    """Return the stable proposal-local key for a component row."""
+    """Return the stable proposal-local key for an authored component row."""
 
     return slugify(str(row.get("component_id", "")).strip() or str(row.get("label", "")).strip())
 
@@ -94,40 +68,82 @@ def build_traceability_plan(
     created_backlog: Sequence[Mapping[str, Any]],
     diagram_ids: Sequence[str],
 ) -> GreenfieldTraceabilityPlan:
-    """Map host-authored proposal topology onto newly created governance IDs."""
+    """Bind authored artifacts through exact typed references only."""
+
+    if proposal.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN:
+        raise ValueError("Greenfield traceability requires a sealed authored projection")
 
     workstreams = _created_workstreams(proposal=proposal, created_backlog=created_backlog)
+    workstreams_by_title = {workstream.title: workstream for workstream in workstreams}
     components = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
-    diagrams = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
-    component_workstreams = {
-        component_key(row): _component_workstream_ids(row=row, workstreams=workstreams)
-        for row in components
-    }
-    diagram_links = tuple(
-        _diagram_link(
-            row=row,
-            diagram_id=str(diagram_id).strip(),
-            workstreams=workstreams,
-            components=components,
-            component_workstreams=component_workstreams,
+    components_by_id: dict[str, Mapping[str, Any]] = {}
+    for component in components:
+        component_id = str(component.get("component_id") or "").strip()
+        if not component_id:
+            raise ValueError("model-authored component is missing its typed component id")
+        components_by_id[component_id] = component
+
+    component_workstreams: dict[str, tuple[str, ...]] = {}
+    for component_id, component in components_by_id.items():
+        related = tuple(
+            workstream.idea_id
+            for workstream in workstreams
+            if component_id in _authored_reference_list(workstream.row, "component_focus")
         )
-        for row, diagram_id in zip(diagrams, diagram_ids, strict=False)
-        if str(diagram_id).strip()
-    )
-    component_diagrams = {
-        component_key(row): _component_diagram_ids(row=row, diagram_links=diagram_links)
-        for row in components
+        if not related:
+            raise ValueError(f"model-authored component `{component_id}` has no exact workstream binding")
+        component_workstreams[component_key(component)] = related
+
+    diagrams = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
+    if len(diagrams) != len(diagram_ids):
+        raise ValueError("model-authored diagrams must have one allocated id per typed diagram")
+
+    paths_by_id = {workstream.idea_id: str(workstream.path) for workstream in workstreams}
+    component_diagrams: dict[str, list[str]] = {
+        component_key(component): [] for component in components
     }
     backlog_diagrams: dict[str, list[str]] = {}
-    for link in diagram_links:
-        for idea_id in link.related_workstream_ids:
-            backlog_diagrams.setdefault(idea_id, []).append(link.diagram_id)
+    diagram_links: list[DiagramLink] = []
+    for row, raw_diagram_id in zip(diagrams, diagram_ids, strict=True):
+        diagram_id = str(raw_diagram_id).strip()
+        if not diagram_id:
+            raise ValueError("model-authored diagram allocation produced an empty id")
+        related_titles = _authored_reference_list(row, "related_workstream_titles")
+        if not related_titles:
+            raise ValueError(f"model-authored diagram `{diagram_id}` is missing workstream bindings")
+        unknown_titles = [title for title in related_titles if title not in workstreams_by_title]
+        if unknown_titles:
+            raise ValueError(
+                f"model-authored diagram `{diagram_id}` references unknown workstream `{unknown_titles[0]}`"
+            )
+        related_ids = tuple(workstreams_by_title[title].idea_id for title in related_titles)
+        related_component_ids = _authored_reference_list(row, "related_components")
+        unknown_components = [
+            component_id for component_id in related_component_ids if component_id not in components_by_id
+        ]
+        if unknown_components:
+            raise ValueError(
+                f"model-authored diagram `{diagram_id}` references unknown component `{unknown_components[0]}`"
+            )
+        diagram_links.append(
+            DiagramLink(
+                row=row,
+                diagram_id=diagram_id,
+                related_workstream_ids=related_ids,
+                related_backlog_paths=tuple(paths_by_id[idea_id] for idea_id in related_ids),
+            )
+        )
+        for component_id in related_component_ids:
+            component_diagrams[component_key(components_by_id[component_id])].append(diagram_id)
+        for idea_id in related_ids:
+            backlog_diagrams.setdefault(idea_id, []).append(diagram_id)
+
     return GreenfieldTraceabilityPlan(
         workstreams=workstreams,
-        component_workstreams={key: tuple(values) for key, values in component_workstreams.items()},
-        component_diagrams={key: tuple(values) for key, values in component_diagrams.items()},
-        diagram_links=diagram_links,
-        backlog_diagrams={key: tuple(_unique(values)) for key, values in backlog_diagrams.items()},
+        component_workstreams=component_workstreams,
+        component_diagrams={key: _unique(values) for key, values in component_diagrams.items()},
+        diagram_links=tuple(diagram_links),
+        backlog_diagrams={key: _unique(values) for key, values in backlog_diagrams.items()},
     )
 
 
@@ -137,30 +153,107 @@ def apply_backlog_traceability(
     proposal: Mapping[str, Any],
     plan: GreenfieldTraceabilityPlan,
 ) -> list[str]:
-    """Write proposal-derived topology and richer detail sections into new backlog specs."""
+    """Publish exact diagram and allocated design prerequisites before sealing."""
 
+    if proposal.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN:
+        raise ValueError("Greenfield traceability publication requires a sealed authored projection")
+    dependencies = _allocated_workstream_dependencies(proposal=proposal, workstreams=plan.workstreams)
+    records = [
+        (workstream, *backlog_authoring._parse_metadata_and_sections(workstream.path))
+        for workstream in plan.workstreams
+    ]
+    for workstream, metadata, _ in records:
+        if metadata.get("idea_id") != workstream.idea_id or metadata.get("title") != workstream.title:
+            raise ValueError("Greenfield workstream allocation does not match its compiled Radar record")
     touched: list[str] = []
-    risks = _text_items(proposal.get("risks", []))
-    validation_strategy = _text_items(proposal.get("validation_strategy", []))
-    open_questions = _text_items(proposal.get("open_questions", []))
-    for workstream in plan.workstreams:
-        metadata, sections = backlog_authoring._parse_metadata_and_sections(workstream.path)
+    for workstream, metadata, sections in records:
+        metadata["workstream_depends_on"] = _join_ids(dependencies[workstream.idea_id])
         diagrams = plan.backlog_diagrams.get(workstream.idea_id, ())
         if diagrams:
-            metadata["related_diagram_ids"] = _join_ids(_merge_ids(metadata.get("related_diagram_ids", ""), diagrams))
-        _patch_sections(
-            metadata=metadata,
-            sections=sections,
-            row=workstream.row,
-            proposal=proposal,
-            component_lines=_component_lines_for_workstream(workstream.idea_id, proposal=proposal, plan=plan),
-            risks=risks,
-            validation_strategy=validation_strategy,
-            open_questions=open_questions,
+            metadata["related_diagram_ids"] = _join_ids(
+                _merge_ids(metadata.get("related_diagram_ids", ""), diagrams)
+            )
+        workstream.path.write_text(
+            backlog_authoring._render_idea_text(metadata=metadata, sections=sections),
+            encoding="utf-8",
         )
-        workstream.path.write_text(backlog_authoring._render_idea_text(metadata=metadata, sections=sections), encoding="utf-8")
         touched.append(_repo_relative(repo_root=repo_root, path=workstream.path))
     return touched
+
+
+def _allocated_workstream_dependencies(
+    *, proposal: Mapping[str, Any], workstreams: Sequence[CreatedWorkstream],
+) -> dict[str, tuple[str, ...]]:
+    design = provisional_design_from_intent(_mapping(proposal.get("intent")))
+    canonical_rows = {row["key"]: row for row in design["workstreams"]}
+    ids_by_key: dict[str, str] = {}
+    allocated_ids: set[str] = set()
+    allocated_paths: set[Path] = set()
+    for workstream in workstreams:
+        contract = _mapping(workstream.row.get("provisional_workstream_contract"))
+        projected = _mapping(contract.get("provisional_workstream"))
+        key = projected.get("key")
+        canonical = canonical_rows.get(key) if isinstance(key, str) else None
+        if (
+            canonical is None
+            or projected != canonical
+            or contract.get("authority_kind") != PROVISIONAL_DESIGN_AUTHORITY_KIND
+            or workstream.row.get("authority_kind") != PROVISIONAL_DESIGN_AUTHORITY_KIND
+            or workstream.title != canonical["title"]
+            or workstream.row.get("title") != canonical["title"]
+            or key in ids_by_key
+            or not workstream.idea_id
+            or workstream.idea_id in allocated_ids
+            or workstream.path.resolve() in allocated_paths
+        ):
+            raise ValueError("Greenfield workstream allocation must bind each canonical design key exactly once")
+        ids_by_key[key] = workstream.idea_id
+        allocated_ids.add(workstream.idea_id)
+        allocated_paths.add(workstream.path.resolve())
+    if ids_by_key.keys() != canonical_rows.keys():
+        raise ValueError("Greenfield workstream allocation is missing canonical design workstreams")
+    return {
+        ids_by_key[key]: tuple(ids_by_key[dependency] for dependency in row["depends_on"])
+        for key, row in canonical_rows.items()
+    }
+
+
+def allocated_workstreams(
+    *, proposal: Mapping[str, Any], created_backlog: Sequence[Mapping[str, Any]],
+) -> tuple[CreatedWorkstream, ...]:
+    """Validate exact design-key allocations and preserve canonical design order."""
+
+    workstreams = _created_workstreams(proposal=proposal, created_backlog=created_backlog)
+    dependencies = _allocated_workstream_dependencies(proposal=proposal, workstreams=workstreams)
+    by_id = {workstream.idea_id: workstream for workstream in workstreams}
+    return tuple(by_id[idea_id] for idea_id in dependencies)
+
+
+def first_executable_workstream(
+    *, proposal: Mapping[str, Any], created_backlog: Sequence[Mapping[str, Any]],
+    first_release_workstreams: Sequence[str],
+) -> CreatedWorkstream:
+    """Select a dependency-free workstream from a closed, allocated release.
+
+    Independent roots retain canonical design order as a deterministic tie-break;
+    neither allocation numbers nor source-event order imply delivery priority.
+    """
+
+    workstreams = _created_workstreams(proposal=proposal, created_backlog=created_backlog)
+    dependencies = _allocated_workstream_dependencies(proposal=proposal, workstreams=workstreams)
+    release_ids = tuple(str(item).strip().upper() for item in first_release_workstreams)
+    if not release_ids or len(set(release_ids)) != len(release_ids) or any(
+        idea_id not in dependencies for idea_id in release_ids
+    ):
+        raise ValueError("Greenfield first release must contain unique allocated workstreams")
+    release_set = set(release_ids)
+    if any(not set(dependencies[idea_id]) <= release_set for idea_id in release_ids):
+        raise ValueError("Greenfield first release has a prerequisite outside its release scope")
+    by_id = {workstream.idea_id: workstream for workstream in workstreams}
+    return next(
+        by_id[idea_id] for idea_id, prerequisites in dependencies.items()
+        if idea_id in release_set and not prerequisites
+    )
 
 
 def _created_workstreams(
@@ -170,13 +263,16 @@ def _created_workstreams(
 ) -> tuple[CreatedWorkstream, ...]:
     rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
     workstreams: list[CreatedWorkstream] = []
-    for index, created in enumerate(created_backlog):
-        row = rows[index] if index < len(rows) else {}
+    rows_by_title = {str(row.get("title", "")): row for row in rows}
+    if len(rows_by_title) != len(rows):
+        raise ValueError("Greenfield workstream allocation has duplicate proposal titles")
+    for created in created_backlog:
+        row = rows_by_title.get(str(created.get("title", "")), {})
         idea_id = str(created.get("idea_id", "")).strip().upper()
         title = str(created.get("title", "")).strip() or str(row.get("title", "")).strip()
         raw_path = str(created.get("idea_path", "")).strip()
-        if not idea_id or not raw_path:
-            continue
+        if not idea_id or not raw_path or not row:
+            raise ValueError("Greenfield workstream allocation is missing its exact record binding")
         workstreams.append(
             CreatedWorkstream(
                 idea_id=idea_id,
@@ -188,346 +284,88 @@ def _created_workstreams(
     return tuple(workstreams)
 
 
-def _component_workstream_ids(
-    *,
-    row: Mapping[str, Any],
-    workstreams: Sequence[CreatedWorkstream],
-) -> tuple[str, ...]:
-    explicit = _workstream_refs_to_ids(_collect_values(row, _REF_FIELDS), workstreams)
-    parent = workstreams[:1]
-    if explicit:
-        return tuple(_unique([*(item.idea_id for item in parent), *explicit]))
-    primary = _semantic_tokens(" ".join([str(row.get("component_id", "")), str(row.get("label", ""))]))
-    detail = _semantic_tokens(
-        " ".join(
-            [
-                str(row.get("responsibility", "")),
-                str(row.get("boundary", "")),
-                str(row.get("intended_path", "")),
-            ]
-        )
-    )
-    scored: list[tuple[int, str]] = []
-    for workstream in workstreams[1:]:
-        tokens = _semantic_tokens(_workstream_haystack(workstream.row, fallback_title=workstream.title))
-        score = (3 * len(primary & tokens)) + len(detail & tokens)
-        if score >= 2:
-            scored.append((score, workstream.idea_id))
-    return tuple(_unique([*(item.idea_id for item in parent), *(idea_id for _score, idea_id in sorted(scored, reverse=True))]))
+def _authored_reference_list(row: Mapping[str, Any], key: str) -> tuple[str, ...]:
+    value = row.get(key)
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        return ()
+    references = tuple(str(item).strip() for item in value)
+    if any(not item for item in references):
+        raise ValueError(f"model-authored `{key}` contains an empty typed reference")
+    return references
 
 
-def _diagram_link(
-    *,
-    row: Mapping[str, Any],
-    diagram_id: str,
-    workstreams: Sequence[CreatedWorkstream],
-    components: Sequence[Mapping[str, Any]],
-    component_workstreams: Mapping[str, Sequence[str]],
-) -> DiagramLink:
-    related_ids: list[str] = [workstreams[0].idea_id] if workstreams else []
-    explicit = _workstream_refs_to_ids(_collect_values(row, _REF_FIELDS), workstreams)
-    related_ids.extend(explicit)
-    diagram_component_aliases = _diagram_component_aliases(row)
-    for component in components:
-        key = component_key(component)
-        aliases = _component_aliases(component)
-        if diagram_component_aliases & aliases:
-            related_ids.extend(component_workstreams.get(key, ()))
-    diagram_tokens = _semantic_tokens(
-        " ".join(
-            [
-                str(row.get("title", "")),
-                str(row.get("summary", "")),
-                str(row.get("kind", "")),
-                str(row.get("mermaid_source", "") or row.get("source", "")),
-            ]
-        )
+def _created_workstream_from_payload(value: Mapping[str, Any]) -> CreatedWorkstream:
+    return CreatedWorkstream(
+        idea_id=str(value.get("idea_id", "")).strip().upper(),
+        title=str(value.get("title", "")).strip(),
+        path=Path(str(value.get("path", ""))).expanduser(),
+        row=_mapping(value.get("row")),
     )
-    for workstream in workstreams[1:]:
-        tokens = _semantic_tokens(_workstream_haystack(workstream.row, fallback_title=workstream.title))
-        if len(diagram_tokens & tokens) >= 2:
-            related_ids.append(workstream.idea_id)
-    deduped_ids = tuple(_unique(related_ids))
-    paths_by_id = {workstream.idea_id: str(workstream.path) for workstream in workstreams}
+
+
+def _diagram_link_from_payload(value: Mapping[str, Any]) -> DiagramLink:
     return DiagramLink(
-        row=row,
-        diagram_id=diagram_id,
-        related_workstream_ids=deduped_ids,
-        related_backlog_paths=tuple(paths_by_id[idea_id] for idea_id in deduped_ids if idea_id in paths_by_id),
-    )
-
-
-def _component_diagram_ids(
-    *,
-    row: Mapping[str, Any],
-    diagram_links: Sequence[DiagramLink],
-) -> tuple[str, ...]:
-    explicit_slugs = {slugify(item) for item in _collect_values(row, _DIAGRAM_FIELDS)}
-    aliases = _component_aliases(row)
-    primary = _semantic_tokens(" ".join([str(row.get("component_id", "")), str(row.get("label", ""))]))
-    matches: list[str] = []
-    for link in diagram_links:
-        slug = slugify(str(link.row.get("slug", "")))
-        if slug and slug in explicit_slugs:
-            matches.append(link.diagram_id)
-            continue
-        if aliases & _diagram_component_aliases(link.row):
-            matches.append(link.diagram_id)
-            continue
-        diagram_tokens = _semantic_tokens(str(link.row.get("mermaid_source", "") or link.row.get("source", "")))
-        if primary and primary & diagram_tokens:
-            matches.append(link.diagram_id)
-    return tuple(_unique(matches))
-
-
-def _patch_sections(
-    *,
-    metadata: Mapping[str, str],
-    sections: dict[str, str],
-    row: Mapping[str, Any],
-    proposal: Mapping[str, Any],
-    component_lines: Sequence[str],
-    risks: Sequence[str],
-    validation_strategy: Sequence[str],
-    open_questions: Sequence[str],
-) -> None:
-    first_slice = str(row.get("recommended_first_slice", "")).strip()
-    product_view = str(row.get("product_view", "")).strip()
-    if product_view or first_slice:
-        sections["Proposed Solution"] = _paragraph(
-            [
-                product_view,
-                f"First slice: {first_slice}" if first_slice else "",
-            ]
-        )
-    sections["Scope"] = _bullets(
-        [
-            first_slice or str(row.get("scope", "")).strip(),
-            *_text_items(row.get("scope_items", [])),
-            *component_lines[:6],
-        ]
-    )
-    sections["Non-Goals"] = _bullets(
-        _text_items(row.get("non_goals", []))
-        or [
-            "Do not claim source-backed implementation ownership until code exists.",
-            "Do not promote research or product claims without the listed validation gates.",
-        ]
-    )
-    sections["Risks"] = _bullets(_text_items(row.get("risks", [])) or risks[:3])
-    sections["Dependencies"] = _bullets(
-        _text_items(row.get("dependencies", []))
-        or _text_items(row.get("depends_on", []))
-        or _topology_dependency_lines(metadata)
-    )
-    validation_items = (
-        _text_items(row.get("validation", []))
-        or _text_items(row.get("validation_gate", []))
-        or _text_items(row.get("success_metrics", []))
-        or validation_strategy[:3]
-    )
-    sections["Validation"] = _bullets(validation_items)
-    sections["Test Strategy"] = _bullets(
-        _text_items(row.get("test_strategy", []))
-        or [
-            "Turn each success metric into a focused reproducibility, contract, or smoke proof before source implementation starts.",
-        ]
-    )
-    sections["Impacted Components"] = _bullets(
-        component_lines
-        or [
-            "No candidate component was inferred for this workstream; the first technical plan must resolve ownership before implementation.",
-        ]
-    )
-    sections["Interface Changes"] = _bullets(
-        _text_items(row.get("interfaces", []))
-        or _text_items(row.get("interface_changes", []))
-        or [
-            "Candidate interfaces are proposal-level only until the first source-backed plan defines runtime contracts.",
-        ]
-    )
-    sections["Rollout"] = _bullets(
-        _text_items(row.get("rollout", []))
-        or _text_items((proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}).get("milestones", []))[:3]
-        or [
-            "Keep the workstream queued until the first implementation plan binds scope, proof, and release gates.",
-        ]
-    )
-    sections["Why Now"] = str(row.get("opportunity", "")).strip() or sections.get("Why Now", "")
-    sections["Open Questions"] = _bullets(_text_items(row.get("open_questions", [])) or open_questions[:3])
-
-
-def _component_lines_for_workstream(
-    idea_id: str,
-    *,
-    proposal: Mapping[str, Any],
-    plan: GreenfieldTraceabilityPlan,
-) -> list[str]:
-    lines: list[str] = []
-    for row in proposal.get("components", []):
-        if not isinstance(row, Mapping):
-            continue
-        key = component_key(row)
-        workstreams = set(plan.component_workstreams.get(key, ()))
-        if idea_id not in workstreams:
-            continue
-        label = str(row.get("label", "")).strip() or key
-        component_id = str(row.get("component_id", "")).strip() or key
-        responsibility = str(row.get("responsibility", "")).strip()
-        diagrams = ", ".join(plan.component_diagrams.get(key, ()))
-        suffix = f" Related diagrams: {diagrams}." if diagrams else ""
-        lines.append(f"`{component_id}` ({label}): {responsibility}{suffix}".strip())
-    return lines
-
-
-def _workstream_refs_to_ids(values: Sequence[str], workstreams: Sequence[CreatedWorkstream]) -> list[str]:
-    by_id = {workstream.idea_id: workstream.idea_id for workstream in workstreams}
-    by_slug = {slugify(workstream.title): workstream.idea_id for workstream in workstreams}
-    result: list[str] = []
-    for value in values:
-        token = str(value).strip()
-        normalized_id = token.upper()
-        if normalized_id in by_id:
-            result.append(by_id[normalized_id])
-            continue
-        slug = slugify(token)
-        if slug in by_slug:
-            result.append(by_slug[slug])
-    return _unique(result)
-
-
-def _diagram_component_aliases(row: Mapping[str, Any]) -> set[str]:
-    aliases: set[str] = set()
-    for component in row.get("components", []):
-        if isinstance(component, Mapping):
-            aliases.update(_slug_aliases(str(component.get("component_id", ""))))
-            aliases.update(_slug_aliases(str(component.get("name", ""))))
-            aliases.update(_slug_aliases(str(component.get("label", ""))))
-        else:
-            aliases.update(_slug_aliases(str(component)))
-    aliases.update(_slug_aliases(" ".join(_collect_values(row, _COMPONENT_FIELDS))))
-    return aliases
-
-
-def _component_aliases(row: Mapping[str, Any]) -> set[str]:
-    aliases: set[str] = set()
-    aliases.update(_slug_aliases(str(row.get("component_id", ""))))
-    aliases.update(_slug_aliases(str(row.get("label", ""))))
-    aliases.update(_slug_aliases(str(row.get("name", ""))))
-    return aliases
-
-
-def _slug_aliases(value: str) -> set[str]:
-    token = slugify(str(value).strip())
-    aliases = {token} if token else set()
-    if token:
-        aliases.add(token.replace("-", ""))
-    return {item for item in aliases if item}
-
-
-def _workstream_haystack(row: Mapping[str, Any], *, fallback_title: str) -> str:
-    values = [
-        str(row.get("title", "") or fallback_title),
-        str(row.get("problem", "")),
-        str(row.get("opportunity", "")),
-        str(row.get("product_view", "")),
-        str(row.get("recommended_first_slice", "")),
-        " ".join(_text_items(row.get("success_metrics", []))),
-        " ".join(_collect_values(row, _COMPONENT_FIELDS)),
-    ]
-    return " ".join(values)
-
-
-def _semantic_tokens(value: str) -> set[str]:
-    tokens = {
-        token
-        for token in re.findall(r"[a-z0-9][a-z0-9_-]{2,}", str(value).casefold())
-        if token not in _STOPWORDS
-    }
-    expanded: set[str] = set(tokens)
-    for token in tokens:
-        expanded.update(part for part in token.replace("_", "-").split("-") if len(part) > 2 and part not in _STOPWORDS)
-    return expanded
-
-
-def _collect_values(row: Mapping[str, Any], fields: Sequence[str]) -> list[str]:
-    values: list[str] = []
-    for field in fields:
-        values.extend(_text_items(row.get(field)))
-    return values
-
-
-def _text_items(value: Any) -> list[str]:
-    if value is None:
-        return []
-    if isinstance(value, Mapping):
-        return [
-            ": ".join(str(part).strip() for part in (item.get("name", ""), item.get("exit_criteria", "")) if str(part).strip())
-            if isinstance(item, Mapping)
-            else str(item).strip()
-            for item in value.values()
+        row=_mapping(value.get("row")),
+        diagram_id=str(value.get("diagram_id", "")).strip(),
+        related_workstream_ids=tuple(
+            str(item).strip().upper()
+            for item in _sequence(value.get("related_workstream_ids"))
             if str(item).strip()
-        ]
-    if isinstance(value, (list, tuple, set)):
-        result: list[str] = []
-        for item in value:
-            if isinstance(item, Mapping):
-                text = " ".join(str(part).strip() for part in item.values() if str(part).strip())
-            else:
-                text = str(item).strip()
-            if text:
-                result.append(text)
-        return result
-    raw = str(value).strip()
-    if not raw:
-        return []
-    return [item.strip() for item in re.split(r"[,;\n]+", raw) if item.strip()]
+        ),
+        related_backlog_paths=tuple(
+            str(item).strip()
+            for item in _sequence(value.get("related_backlog_paths"))
+            if str(item).strip()
+        ),
+    )
 
 
-def _merge_ids(existing: str, additions: Sequence[str]) -> list[str]:
-    return _unique([*re.split(r"[,;\s]+", str(existing or "")), *additions])
+def _tuple_map(value: Any) -> dict[str, tuple[str, ...]]:
+    source = value if isinstance(value, Mapping) else {}
+    return {
+        str(key): tuple(str(item).strip() for item in _sequence(items) if str(item).strip())
+        for key, items in source.items()
+    }
+
+
+def _mapping(value: Any) -> Mapping[str, Any]:
+    return value if isinstance(value, Mapping) else {}
+
+
+def _rows(value: Any) -> tuple[Mapping[str, Any], ...]:
+    return tuple(row for row in _sequence(value) if isinstance(row, Mapping))
+
+
+def _sequence(value: Any) -> Sequence[Any]:
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        return value
+    return ()
+
+
+def _merge_ids(current: str, values: Sequence[str]) -> tuple[str, ...]:
+    return _unique((*current.split(","), *values), uppercase=True)
 
 
 def _join_ids(values: Sequence[str]) -> str:
-    return ",".join(_unique(str(value).strip().upper() for value in values if str(value).strip()))
+    return ",".join(_unique(values, uppercase=True))
 
 
-def _unique(values: Sequence[str]) -> list[str]:
-    seen: set[str] = set()
+def _unique(values: Sequence[str], *, uppercase: bool = False) -> tuple[str, ...]:
     result: list[str] = []
+    seen: set[str] = set()
     for value in values:
-        token = str(value).strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        result.append(token)
-    return result
-
-
-def _paragraph(values: Sequence[str]) -> str:
-    return "\n\n".join(str(value).strip() for value in values if str(value).strip())
-
-
-def _bullets(values: Sequence[str]) -> str:
-    items = [str(value).strip().rstrip(".") for value in values if str(value).strip()]
-    return "\n".join(f"- {item}." for item in items) if items else "TBD."
-
-
-def _topology_dependency_lines(metadata: Mapping[str, str]) -> list[str]:
-    lines: list[str] = []
-    parent = str(metadata.get("workstream_parent", "")).strip()
-    children = str(metadata.get("workstream_children", "")).strip()
-    if parent:
-        lines.append(f"Parent topology anchor: `{parent}`")
-    if children:
-        lines.append(f"Child topology anchors: `{children}`")
-    if not lines:
-        lines.append("No source-level dependency is claimed yet; implementation planning must confirm runtime ordering.")
-    return lines
+        text = str(value).strip()
+        if uppercase:
+            text = text.upper()
+        key = text.casefold()
+        if text and key not in seen:
+            seen.add(key)
+            result.append(text)
+    return tuple(result)
 
 
 def _repo_relative(*, repo_root: Path, path: Path) -> str:
     try:
-        return path.resolve().relative_to(repo_root.resolve()).as_posix()
+        return str(path.resolve().relative_to(repo_root.resolve()))
     except ValueError:
         return str(path.resolve())

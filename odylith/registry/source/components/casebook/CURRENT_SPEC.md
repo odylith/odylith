@@ -5,10 +5,8 @@
   Recurring false allows, false blocks, proofless claims, visible-UX misses,
   or governance-bypass patterns should become Casebook bugs only when evidence
   is concrete enough to prevent rediscovery.
-Last updated: 2026-05-03
+Last updated: 2026-09-15
 
-
-Last updated (UTC): 2026-04-16
 
 ## Purpose
 Casebook is Odylith's bug and operational-learning surface. It preserves product
@@ -17,11 +15,32 @@ queryable bug knowledge base linked back to workstreams, components, diagrams,
 and source evidence.
 
 ## Scope And Non-Goals
+### Human failure narrative
+
+Casebook primary views lead with the failure purpose, current state, risk, and
+next step. Evidence, history, and machine detail stay available in closed detail;
+sidebar clutter and duplicate Intel prose do not displace the current record.
+The selected record keeps its complete Summary and list search retains the
+source summary; only the redundant sidebar excerpt is omitted. Default Intel
+chips are not primary metadata. Captured-detail and coverage data remain in
+their existing closed disclosures.
+
+### Honest list presentation
+`casebook_list_presentation_runtime.py` owns list cards and empty-list copy from
+explicit source and visible row counts. An empty Casebook explains how to capture
+a case; filtered results explain how to recover existing cases. It does not own
+URL selection, detail loading or cancellation, which stay in the controller.
+CB-330 proof covers desktop/mobile empty and invalid routes, filter recovery,
+escaped titles and late detail responses. Cache inputs include the presenter.
+
 ### Casebook owns
 - The canonical bug markdown tree.
 - Bug-index regeneration from source markdown.
 - The read-only rendered Casebook dashboard.
 - Bug-centric linkage to workstreams, components, and diagrams.
+- Durable failure learning, including failed mechanisms, prior failed fix
+  attempts, rejected approaches, guardrails, and validation history that must
+  be read before another fix path is attempted.
 
 ### Casebook does not own
 - The live timeline stream. Compass owns that.
@@ -131,6 +150,13 @@ one-off operator step.
 This ensures the index remains a projection of the bug archive instead of a
 separate editable ledger that could drift.
 
+When a selective sync includes changed Casebook truth, index normalization and
+validation must finish before any selected surface reads bug projections,
+including Compass. Invalid Casebook source must stop that refresh before a
+surface publishes a new readout. Runtime reuse must not combine an older status
+with newly parsed detail. CB-019 tracks the observed violation and its bounded
+regression proof; a forced refresh is recovery, not recurrence prevention.
+
 ## Render Pipeline
 `render_casebook_dashboard.py` consumes the bug snapshot from Context Engine and
 builds:
@@ -163,6 +189,9 @@ Casebook detail should keep two distinct read bands:
 
 The renderer should not echo the same field content in both bands unless the
 copy is materially transformed for a different audience.
+- The agent-learning band should remain structurally present for every selected
+  bug and render an explicit empty state when the bug has no captured
+  implementation-adjacent guidance yet.
 - It should also dedupe overlapping proof and evidence links across those
   bands so the same path is not rendered twice under adjacent headings.
 - The selected bug id should appear in the detail-header summary-facts band,
@@ -213,11 +242,14 @@ It is the product learning archive, not just a list of open bugs.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-05-02 · Implementation:** Tightened Casebook selected-bug detail gutters, restored media-block ownership, captured CB-153, and proved compact metadata plus browser layout for v0.1.13.
+- **2026-09-15 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-current-view-readers-could-remain-pinned-to-stale-onboarding-state.md`, `src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py`, `src/odylith/runtime/surfaces/render_casebook_dashboard.py`, `src/odylith/runtime/surfaces/templates/tooling_dashboard/navigation.js`
+- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-140
-  - Evidence: odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md, src/odylith/runtime/surfaces/render_casebook_dashboard.py +1 more
-- **2026-03-20 · Decision:** Successor created: B-266 reopens B-265 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/casebook/CURRENT_SPEC.md +1 more
+  - Evidence: `odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md`, `src/odylith/runtime/surfaces/render_casebook_dashboard.py`, `tests/integration/runtime/test_casebook_list_layout_browser.py`
+- **2026-03-20 · Decision:** Decision evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/radar/source/INDEX.md`, `odylith/registry/source/components/casebook/CURRENT_SPEC.md`, `odylith/technical-plans/INDEX.md`
 <!-- registry-requirements:end -->
 
 ## Feature History

@@ -1,0 +1,324 @@
+{
+  "cases": [
+    {
+      "name": "container berth turnaround control",
+      "prompt": "A port operations director needs a product for the morning vessel call at Pier 7. The berth planner, terminal superintendent, harbor pilot, and crane dispatcher must reconcile container discharge, quay crane availability, tug window, and berth occupancy before the vessel can sail. Keep carrier manifests as evidence, record weather holds separately, and do not infer customs clearance from terminal events.",
+      "required_terms": ["Pier 7", "berth planner", "quay crane", "carrier manifests"],
+      "leakage_terms": ["harbor pilot", "tug window", "weather holds"],
+      "tags": ["ports", "container-terminal"],
+      "stressors": ["modal-expert-lens", "multi-role-tribunal", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "channel dredging permit ledger",
+      "prompt": "The harbor authority wants a workspace to coordinate channel dredging before the spring shipping season. A dredging contractor submits bathymetric survey files, the environmental monitor records turbidity samples, and the port engineer compares the approved dredge prism with removal quantities. The system must distinguish a permit condition from a completed disposal load and preserve the USACE review boundary.",
+      "required_terms": ["bathymetric survey", "turbidity samples", "dredge prism", "USACE review"],
+      "leakage_terms": ["dredging contractor", "disposal load", "permit condition"],
+      "tags": ["ports", "environmental-compliance"],
+      "stressors": ["scientific-casing", "path-grant", "noun-verb-homonym", "registry-contract-pressure"]
+    },
+    {
+      "name": "reefer customs release chain",
+      "prompt": "A cold-chain logistics provider needs a release workflow for imported reefer containers carrying fresh berries. The import broker uploads the phytosanitary certificate, the customs broker confirms the entry status, and the cold-store manager checks the pulp temperature before assigning a delivery slot. The product must retain the inspection hold reason and never treat an appointment as proof of customs release.",
+      "required_terms": ["reefer containers", "phytosanitary certificate", "pulp temperature", "inspection hold"],
+      "leakage_terms": ["import broker", "cold-store manager", "delivery slot"],
+      "tags": ["logistics", "cold-chain"],
+      "stressors": ["path-grant", "multi-role-tribunal", "final-memory-pressure", "latency-pressure"]
+    },
+    {
+      "name": "inland port intermodal appointment",
+      "prompt": "An inland port operator wants to reduce missed handoffs between drayage trucks and the intermodal rail ramp. Dispatchers need to match a chassis number, gate appointment, rail cut-off, and interchange receipt for each export load. Railroad staff own train acceptance, while the port owns gate operations; a driver check-in cannot establish that a container made the scheduled train.",
+      "required_terms": ["chassis number", "gate appointment", "rail cut-off", "interchange receipt"],
+      "leakage_terms": ["drayage trucks", "train acceptance", "driver check-in"],
+      "tags": ["logistics", "intermodal"],
+      "stressors": ["long-first-path", "multi-role-tribunal", "registry-contract-pressure", "atlas-label-pressure"]
+    },
+    {
+      "name": "airport deicing material readiness",
+      "prompt": "A snow operations manager at a regional airport needs to decide whether the deicing program is ready before an overnight storm. Ramp supervisors report glycol inventory, mechanics report truck calibration, and the airport operations center receives runway friction readings. The product should show FAA inspection evidence, distinguish a forecast from a closure decision, and retain the Type IV fluid concentration used on each truck.",
+      "required_terms": ["glycol inventory", "truck calibration", "runway friction", "Type IV fluid"],
+      "leakage_terms": ["FAA inspection", "snow operations manager", "closure decision"],
+      "tags": ["aviation", "winter-operations"],
+      "stressors": ["scientific-casing", "modal-expert-lens", "domain-depth-obligations", "latency-pressure"]
+    },
+    {
+      "name": "regional air cargo acceptance",
+      "prompt": "A regional cargo airline needs a first-use flow for accepting a time-critical medical shipment. The freight forwarder presents an air waybill, the warehouse agent verifies dangerous goods declaration status, and the loadmaster assigns a ULD position after weighing the shipment. Do not claim flight departure from warehouse acceptance; retain the shipper temperature range and the airline acceptance timestamp as separate evidence.",
+      "required_terms": ["air waybill", "dangerous goods declaration", "ULD position", "airline acceptance"],
+      "leakage_terms": ["freight forwarder", "loadmaster", "temperature range"],
+      "tags": ["aviation", "air-cargo"],
+      "stressors": ["path-grant", "noun-verb-homonym", "final-memory-pressure", "domain-depth-obligations"]
+    },
+    {
+      "name": "airfield wildlife strike evidence",
+      "prompt": "An airport wildlife biologist needs a case-management product after a bird strike near Runway 18. The air traffic controller supplies the occurrence time, the maintenance crew logs aircraft damage, and the biologist records species identification with a DNA sample reference. Preserve the FAA wildlife hazard assessment boundary, and do not convert a pilot report into a confirmed species record without laboratory evidence.",
+      "required_terms": ["Runway 18", "species identification", "DNA sample", "wildlife hazard assessment"],
+      "leakage_terms": ["bird strike", "pilot report", "laboratory evidence"],
+      "tags": ["aviation", "safety"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "final-memory-pressure", "atlas-label-pressure"]
+    },
+    {
+      "name": "airline rotable parts quarantine",
+      "prompt": "An airline maintenance control center needs to manage a suspect rotable part removed from an A320 during a line check. The technician creates the removal record, quality assurance evaluates the service bulletin, and stores quarantine the actuator pending engineering disposition. The system must keep the serialized actuator, airworthiness release, and non-routine card linked while preventing a stock transfer from being treated as a return-to-service approval.",
+      "required_terms": ["rotable part", "A320", "service bulletin", "airworthiness release"],
+      "leakage_terms": ["serialized actuator", "engineering disposition", "return-to-service"],
+      "tags": ["aviation", "maintenance"],
+      "stressors": ["noun-verb-homonym", "modal-expert-lens", "registry-contract-pressure", "long-first-path"]
+    },
+    {
+      "name": "freight rail geometry exception",
+      "prompt": "A Class I railroad track supervisor needs a focused workflow for a geometry car exception on a heavy-haul subdivision. The inspection analyst uploads the track geometry run, the signal maintainer notes a crossing condition, and the dispatcher applies a slow order only after engineering review. Keep FRA defect criteria, milepost location, and tamping completion as separate facts; a work order closeout is not proof that the speed restriction was lifted.",
+      "required_terms": ["geometry car", "track geometry run", "slow order", "FRA defect criteria"],
+      "leakage_terms": ["milepost location", "tamping completion", "speed restriction"],
+      "tags": ["rail", "track-maintenance"],
+      "stressors": ["path-grant", "domain-depth-obligations", "multi-role-tribunal", "final-memory-pressure"]
+    },
+    {
+      "name": "rail crew qualification handoff",
+      "prompt": "A short-line railroad needs to assign a relief crew after a delayed grain train reaches a remote terminal. The crew caller checks hours of service, the locomotive engineer confirms route qualification, and the conductor records the brake test before departure. The product must respect union roster evidence, distinguish a crew call from a crew acceptance, and retain the train symbol, terminal bulletin, and positive train control status.",
+      "required_terms": ["hours of service", "route qualification", "brake test", "positive train control"],
+      "leakage_terms": ["crew caller", "union roster", "train symbol"],
+      "tags": ["rail", "crew-management"],
+      "stressors": ["multi-role-tribunal", "noun-verb-homonym", "long-first-path", "latency-pressure"]
+    },
+    {
+      "name": "commuter rail traction outage",
+      "prompt": "A commuter rail agency needs a coordinated response when a traction power substation trips during the evening peak. The power controller reports the SCADA alarm, the field electrician verifies breaker position, and the rail operations manager authorizes a bus bridge. Preserve the relay event log, feeder isolation, and passenger advisory as distinct records, because a restored voltage reading does not alone certify safe train movement.",
+      "required_terms": ["traction power", "SCADA alarm", "breaker position", "bus bridge"],
+      "leakage_terms": ["power controller", "feeder isolation", "restored voltage"],
+      "tags": ["rail", "transit-operations"],
+      "stressors": ["scientific-casing", "path-grant", "modal-expert-lens", "atlas-label-pressure"]
+    },
+    {
+      "name": "hazmat trucking route release",
+      "prompt": "A bulk chemical carrier needs a dispatch product for a sodium hypochlorite delivery crossing two state lines. The planner selects an approved hazmat route, the driver completes a pre-trip inspection, and the safety officer reviews the emergency response guide. Retain the bill of lading, placard class, tank wash certificate, and route restriction; do not treat GPS arrival as evidence that the consignee accepted the load.",
+      "required_terms": ["sodium hypochlorite", "hazmat route", "pre-trip inspection", "emergency response guide"],
+      "leakage_terms": ["bill of lading", "placard class", "tank wash certificate"],
+      "tags": ["fleets", "hazmat"],
+      "stressors": ["domain-depth-obligations", "path-grant", "final-memory-pressure", "registry-contract-pressure"]
+    },
+    {
+      "name": "electric delivery fleet charge dispatch",
+      "prompt": "A city delivery fleet manager needs to plan morning routes for electric vans after several chargers reported faults. The dispatcher sees state of charge, the facilities electrician confirms charger availability, and drivers report refrigerated cargo needs. The system must preserve kWh readings, route reserve threshold, charger fault code, and vehicle assignment while keeping charger repair ownership separate from fleet dispatch approval.",
+      "required_terms": ["state of charge", "kWh readings", "route reserve threshold", "charger fault code"],
+      "leakage_terms": ["electric vans", "facilities electrician", "refrigerated cargo"],
+      "tags": ["fleets", "electrification"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "latency-pressure", "registry-contract-pressure"]
+    },
+    {
+      "name": "tanker fleet vapor recovery audit",
+      "prompt": "A fuel distributor needs an audit-ready workflow for gasoline tanker loading at a terminal rack. The terminal operator records vapor recovery pressure, the driver signs the loading ticket, and the environmental compliance lead reviews the vapor tightness test. Keep compartment seal numbers, API gravity, loading rack authorization, and test date visible; a signed ticket cannot replace the compliance lead's determination.",
+      "required_terms": ["vapor recovery pressure", "vapor tightness test", "API gravity", "loading rack authorization"],
+      "leakage_terms": ["terminal operator", "compartment seal", "loading ticket"],
+      "tags": ["fleets", "fuel-distribution"],
+      "stressors": ["scientific-casing", "modal-expert-lens", "path-grant", "domain-depth-obligations"]
+    },
+    {
+      "name": "offshore wind service transfer",
+      "prompt": "An offshore wind operator needs a service-transfer decision for technicians scheduled to inspect a turbine gearbox. The marine coordinator reviews wave height, the vessel master confirms transfer limits, and the wind technician records lockout-tagout status before climbing. Preserve the turbine identifier, sea-state forecast, gearbox oil sample, and permit-to-work; a vessel departure is not evidence that personnel transferred safely.",
+      "required_terms": ["wave height", "transfer limits", "lockout-tagout", "gearbox oil sample"],
+      "leakage_terms": ["vessel master", "turbine identifier", "permit-to-work"],
+      "tags": ["energy", "offshore-wind"],
+      "stressors": ["path-grant", "multi-role-tribunal", "scientific-casing", "long-first-path"]
+    },
+    {
+      "name": "transmission vegetation clearance",
+      "prompt": "A transmission utility needs to schedule vegetation work below a 230 kV line before wildfire season. The arborist documents conductor clearance, the grid operator sets an outage window, and the landowner liaison confirms access consent. The product must retain LiDAR survey evidence, minimum approach distance, easement boundary, and work completion photos without claiming that a trimming request granted electrical clearance.",
+      "required_terms": ["230 kV", "conductor clearance", "LiDAR survey", "minimum approach distance"],
+      "leakage_terms": ["outage window", "access consent", "easement boundary"],
+      "tags": ["energy", "grid-maintenance"],
+      "stressors": ["scientific-casing", "path-grant", "final-memory-pressure", "atlas-label-pressure"]
+    },
+    {
+      "name": "solar inverter curtailment review",
+      "prompt": "A utility-scale solar operator needs an incident workflow after inverter strings underperform at noon. The control room records SCADA telemetry, the field technician captures IV curve measurements, and the market operator issues a curtailment instruction. Keep DC combiner status, irradiance sensor reading, curtailment interval, and inverter serial number distinct, because reduced output can result from either a grid limit or equipment fault.",
+      "required_terms": ["SCADA telemetry", "IV curve", "DC combiner", "irradiance sensor"],
+      "leakage_terms": ["curtailment instruction", "inverter serial number", "grid limit"],
+      "tags": ["energy", "solar-operations"],
+      "stressors": ["scientific-casing", "noun-verb-homonym", "domain-depth-obligations", "latency-pressure"]
+    },
+    {
+      "name": "gas pipeline integrity dig",
+      "prompt": "A pipeline integrity manager needs a controlled plan for an anomaly excavation on a high-pressure transmission line. The inline inspection analyst provides the metal-loss feature, the excavation contractor confirms safe digging, and the corrosion engineer assesses remaining strength. Preserve the MFL signal, coating holiday, MAOP, and hydrostatic test history; do not let a completed excavation stand in for engineering acceptance of the repair.",
+      "required_terms": ["metal-loss feature", "MFL signal", "coating holiday", "MAOP"],
+      "leakage_terms": ["excavation contractor", "remaining strength", "hydrostatic test"],
+      "tags": ["energy", "pipeline-integrity"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "path-grant", "registry-contract-pressure"]
+    },
+    {
+      "name": "concrete pour quality release",
+      "prompt": "A bridge contractor needs a first-path workflow for approving a nighttime concrete pour on a pier cap. The batch plant sends the mix ticket, the field inspector records slump and air content, and the structural engineer reviews cylinder break results. Keep the pour sequence, curing blanket, compressive strength, and engineer release traceable; a truck arrival must not be treated as acceptance of the concrete placement.",
+      "required_terms": ["mix ticket", "slump", "air content", "compressive strength"],
+      "leakage_terms": ["pier cap", "cylinder break", "curing blanket"],
+      "tags": ["construction", "quality-control"],
+      "stressors": ["scientific-casing", "path-grant", "modal-expert-lens", "final-memory-pressure"]
+    },
+    {
+      "name": "bridge bearing replacement closure",
+      "prompt": "A state transportation agency needs to coordinate a weekend bridge bearing replacement over an active freight corridor. The bridge engineer approves the jack plan, the rail dispatcher grants a track window, and the contractor measures bearing elevation before reopening lanes. Preserve the detour notice, load rating, track protection, and survey reading as separate evidence, because lane reopening does not prove the rail window was properly released.",
+      "required_terms": ["bridge bearing", "jack plan", "track window", "load rating"],
+      "leakage_terms": ["rail dispatcher", "bearing elevation", "track protection"],
+      "tags": ["infrastructure", "bridge-maintenance"],
+      "stressors": ["multi-role-tribunal", "path-grant", "long-first-path", "atlas-label-pressure"]
+    },
+    {
+      "name": "tunnel ventilation smoke test",
+      "prompt": "A tunnel operator needs to conduct a ventilation smoke test before commissioning a new emergency fan. The fire marshal observes the drill, the mechanical contractor logs fan RPM, and the control center records airflow direction. Keep the smoke test duration, CO sensor level, damper position, and emergency response observation grounded in the record; a fan start command is not proof that smoke control met the design scenario.",
+      "required_terms": ["ventilation smoke test", "fan RPM", "CO sensor", "damper position"],
+      "leakage_terms": ["fire marshal", "airflow direction", "design scenario"],
+      "tags": ["infrastructure", "tunnel-safety"],
+      "stressors": ["scientific-casing", "modal-expert-lens", "domain-depth-obligations", "registry-contract-pressure"]
+    },
+    {
+      "name": "water utility main break isolation",
+      "prompt": "A municipal water utility needs an incident product for a trunk main break affecting a hospital district. The dispatcher receives pressure alarms, the field crew closes isolation valves, and the water quality lead collects chlorine residual samples before a boil-water advisory is lifted. Preserve the valve turn record, pressure zone, bacteriological sample, and public notice approval; service restoration alone cannot prove water quality clearance.",
+      "required_terms": ["pressure alarms", "isolation valves", "chlorine residual", "bacteriological sample"],
+      "leakage_terms": ["pressure zone", "boil-water advisory", "public notice"],
+      "tags": ["utilities", "water-operations"],
+      "stressors": ["path-grant", "multi-role-tribunal", "scientific-casing", "final-memory-pressure"]
+    },
+    {
+      "name": "wastewater nutrient permit response",
+      "prompt": "A wastewater treatment plant needs to manage a nutrient excursion during a wet-weather event. The operator records influent flow, the laboratory reports total phosphorus, and the compliance manager reviews the NPDES permit limit before submitting a notice. Keep the composite sample, aeration basin condition, permit exceedance, and corrective action distinct; a rainfall forecast is context, not evidence of a discharge violation.",
+      "required_terms": ["influent flow", "total phosphorus", "NPDES permit", "composite sample"],
+      "leakage_terms": ["aeration basin", "permit exceedance", "corrective action"],
+      "tags": ["utilities", "wastewater"],
+      "stressors": ["scientific-casing", "domain-depth-obligations", "modal-expert-lens", "latency-pressure"]
+    },
+    {
+      "name": "hospital chiller redundancy drill",
+      "prompt": "A hospital facilities director needs to run a chiller redundancy drill without disrupting surgical suites. The building engineer reports chilled-water supply temperature, the infection prevention lead defines occupied-area constraints, and the vendor technician tests the backup chiller. Preserve the BMS trend, differential pressure, generator contingency, and clinical sign-off; a successful equipment start is not approval to expose patient areas to a temperature excursion.",
+      "required_terms": ["chilled-water supply", "BMS trend", "differential pressure", "backup chiller"],
+      "leakage_terms": ["surgical suites", "infection prevention", "clinical sign-off"],
+      "tags": ["facilities", "healthcare"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "path-grant", "registry-contract-pressure"]
+    },
+    {
+      "name": "university laboratory exhaust certification",
+      "prompt": "A university facilities team needs to certify laboratory exhaust after renovating a chemistry teaching lab. The commissioning agent measures face velocity, the environmental health officer checks fume hood performance, and the department chair accepts the room schedule. Keep the tracer gas result, sash position, airflow balance, and certification date grounded in the record; a room reservation must not imply that the hood passed certification.",
+      "required_terms": ["face velocity", "fume hood", "tracer gas", "airflow balance"],
+      "leakage_terms": ["commissioning agent", "sash position", "certification date"],
+      "tags": ["facilities", "laboratory-safety"],
+      "stressors": ["scientific-casing", "modal-expert-lens", "noun-verb-homonym", "atlas-label-pressure"]
+    },
+    {
+      "name": "data center generator fuel transfer",
+      "prompt": "A data center operations lead needs to coordinate a planned generator fuel transfer before hurricane season. The critical facilities engineer verifies generator load, the fuel vendor provides the delivery certificate, and the security manager grants dock access. Preserve the ATS test, fuel-water sample, tank level, and change window, while ensuring a vendor arrival does not substitute for the operations lead's completed transfer approval.",
+      "required_terms": ["generator load", "ATS test", "fuel-water sample", "change window"],
+      "leakage_terms": ["delivery certificate", "tank level", "dock access"],
+      "tags": ["facilities", "data-center"],
+      "stressors": ["path-grant", "multi-role-tribunal", "scientific-casing", "final-memory-pressure"]
+    },
+    {
+      "name": "semiconductor fab tool qualification",
+      "prompt": "A semiconductor fab needs to qualify a replacement etch chamber after maintenance. The process engineer reviews wafer map results, the equipment technician records chamber seasoning, and quality assurance checks particle counts before production release. Retain the RF power setting, endpoint recipe, particle monitor, and lot disposition; a completed maintenance ticket cannot demonstrate that the process window is stable.",
+      "required_terms": ["etch chamber", "wafer map", "RF power", "particle counts"],
+      "leakage_terms": ["chamber seasoning", "endpoint recipe", "lot disposition"],
+      "tags": ["manufacturing", "semiconductor"],
+      "stressors": ["scientific-casing", "domain-depth-obligations", "path-grant", "registry-contract-pressure"]
+    },
+    {
+      "name": "chemical plant batch deviation",
+      "prompt": "A specialty chemical plant needs to review a batch deviation after reactor temperature exceeded the operating range. The board operator supplies the batch record, the process chemist analyzes the GC result, and the quality manager decides whether to release the material. Keep the reaction temperature, agitator speed, GC chromatogram, and deviation number distinct, because a finished batch does not itself prove product conformance.",
+      "required_terms": ["batch record", "reaction temperature", "agitator speed", "GC chromatogram"],
+      "leakage_terms": ["process chemist", "deviation number", "product conformance"],
+      "tags": ["manufacturing", "chemical-operations"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "modal-expert-lens", "final-memory-pressure"]
+    },
+    {
+      "name": "food plant allergen changeover",
+      "prompt": "A ready-meal manufacturer needs a verifiable allergen changeover between a sesame recipe and a sesame-free production run. The sanitation lead records ATP swabs, the line supervisor confirms label reconciliation, and quality assurance reviews the allergen test strip. Preserve the CIP cycle, production code, allergen matrix, and release decision; a cleaned line status must not replace the quality review.",
+      "required_terms": ["ATP swabs", "label reconciliation", "allergen test strip", "CIP cycle"],
+      "leakage_terms": ["sesame-free", "production code", "allergen matrix"],
+      "tags": ["manufacturing", "food-safety"],
+      "stressors": ["scientific-casing", "path-grant", "multi-role-tribunal", "domain-depth-obligations"]
+    },
+    {
+      "name": "textile mill dye bath release",
+      "prompt": "A textile mill needs to approve a dye bath before running a customer color standard. The colorist measures spectrophotometer values, the production manager confirms fabric lot availability, and the wastewater operator reviews discharge capacity. Keep the dye recipe, pH reading, Delta E value, and lot card evidence connected, because a color match sample cannot alone authorize the full production run.",
+      "required_terms": ["spectrophotometer", "dye recipe", "pH reading", "Delta E"],
+      "leakage_terms": ["fabric lot", "wastewater operator", "lot card"],
+      "tags": ["manufacturing", "textiles"],
+      "stressors": ["scientific-casing", "noun-verb-homonym", "modal-expert-lens", "latency-pressure"]
+    },
+    {
+      "name": "vineyard frost irrigation allocation",
+      "prompt": "A vineyard operations manager needs to allocate frost-protection irrigation across blocks before dawn. The viticulturist reports bud stage, the irrigation technician confirms pump capacity, and the water district liaison provides allocation limits. Preserve the wet-bulb temperature, block moisture probe, water right, and pump runtime; a weather alert is not proof that irrigation may exceed the allocation.",
+      "required_terms": ["bud stage", "wet-bulb temperature", "moisture probe", "water right"],
+      "leakage_terms": ["pump capacity", "allocation limits", "pump runtime"],
+      "tags": ["agriculture", "viticulture"],
+      "stressors": ["scientific-casing", "path-grant", "multi-role-tribunal", "final-memory-pressure"]
+    },
+    {
+      "name": "grain elevator fumigation clearance",
+      "prompt": "A grain elevator manager needs to release a bin after phosphine fumigation before loading export wheat. The licensed applicator logs gas concentration, the safety coordinator verifies confined-space entry controls, and the merchandiser schedules the railcar. Keep the fumigant exposure period, grain lot, clearance reading, and applicator license visible; a railcar reservation cannot establish that the bin is safe for entry.",
+      "required_terms": ["phosphine fumigation", "gas concentration", "confined-space entry", "clearance reading"],
+      "leakage_terms": ["licensed applicator", "grain lot", "applicator license"],
+      "tags": ["agriculture", "grain-handling"],
+      "stressors": ["scientific-casing", "path-grant", "domain-depth-obligations", "registry-contract-pressure"]
+    },
+    {
+      "name": "dairy herd cooling outage",
+      "prompt": "A dairy cooperative needs a response plan after a bulk tank cooling alarm at a member farm. The farmer reports milk temperature, the field technician evaluates compressor current, and the quality manager decides whether to hold the pickup. Preserve the somatic cell count, bulk tank volume, temperature trend, and pickup hold decision, because a repaired compressor does not prove the milk remains within quality limits.",
+      "required_terms": ["milk temperature", "compressor current", "somatic cell count", "bulk tank volume"],
+      "leakage_terms": ["member farm", "temperature trend", "pickup hold"],
+      "tags": ["agriculture", "dairy"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "modal-expert-lens", "final-memory-pressure"]
+    },
+    {
+      "name": "produce packing traceability hold",
+      "prompt": "A produce packing house needs to place a traceability hold after a retailer reports a possible foreign-material finding. The food safety manager links the harvest crew record, the packing supervisor identifies the line run, and the logistics coordinator stops pallet dispatch. Keep the field block, wash-water sanitizer level, carton code, and hold notice grounded; a shipment scan must not be treated as proof that every affected pallet was located.",
+      "required_terms": ["harvest crew", "field block", "wash-water sanitizer", "carton code"],
+      "leakage_terms": ["foreign-material", "line run", "hold notice"],
+      "tags": ["agriculture", "produce-safety"],
+      "stressors": ["noun-verb-homonym", "path-grant", "long-first-path", "registry-contract-pressure"]
+    },
+    {
+      "name": "pharmaceutical cold-chain excursion",
+      "prompt": "A pharmaceutical distributor needs to investigate a refrigerated shipment that exceeded its validated lane temperature during an airport delay. The quality unit reviews the data logger, the carrier provides the chain-of-custody record, and the manufacturer assesses stability data. Preserve the excursion duration, Mean Kinetic Temperature, shipment seal, and disposition decision; a delivery signature cannot establish product suitability for release.",
+      "required_terms": ["data logger", "chain-of-custody", "Mean Kinetic Temperature", "excursion duration"],
+      "leakage_terms": ["validated lane", "shipment seal", "stability data"],
+      "tags": ["supply-chain", "pharmaceutical"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "critical spare parts allocation",
+      "prompt": "A mining company needs to allocate one critical haul-truck hydraulic pump between two sites after both report failures. The maintenance planner verifies the part number, the reliability engineer compares failure analysis, and the site superintendent approves the transport priority. Keep the serialized pump, equipment downtime, warranty status, and transfer authorization distinct; an inventory count cannot prove that either repair is technically ready.",
+      "required_terms": ["hydraulic pump", "part number", "failure analysis", "transfer authorization"],
+      "leakage_terms": ["serialized pump", "equipment downtime", "warranty status"],
+      "tags": ["supply-chain", "asset-maintenance"],
+      "stressors": ["multi-role-tribunal", "path-grant", "registry-contract-pressure", "latency-pressure"]
+    },
+    {
+      "name": "urban pavement emergency repair",
+      "prompt": "A city public works department needs to prioritize an emergency pavement repair after a bus route reports a deep pothole. The inspector documents the distress rating, the traffic engineer approves the lane closure, and the contractor records asphalt temperature during placement. Preserve the work zone permit, compaction test, pavement section, and reopening inspection; a citizen complaint does not establish that the repair meets specification.",
+      "required_terms": ["distress rating", "lane closure", "asphalt temperature", "compaction test"],
+      "leakage_terms": ["bus route", "work zone permit", "reopening inspection"],
+      "tags": ["infrastructure", "road-maintenance"],
+      "stressors": ["scientific-casing", "path-grant", "modal-expert-lens", "atlas-label-pressure"]
+    },
+    {
+      "name": "floodgate actuator maintenance",
+      "prompt": "A flood control district needs to schedule actuator maintenance before forecast river levels rise. The hydraulic technician records cylinder pressure, the operations chief confirms gate position, and the environmental coordinator checks fish-passage restrictions. Keep the SCADA command history, seal inspection, river stage, and maintenance release traceable; a forecast crest cannot authorize work inside the restricted operating window.",
+      "required_terms": ["cylinder pressure", "gate position", "SCADA command", "river stage"],
+      "leakage_terms": ["fish-passage", "seal inspection", "restricted operating window"],
+      "tags": ["infrastructure", "flood-control"],
+      "stressors": ["scientific-casing", "path-grant", "multi-role-tribunal", "final-memory-pressure"]
+    },
+    {
+      "name": "telecom tower generator inspection",
+      "prompt": "A telecom infrastructure operator needs to inspect a remote tower generator after a wildfire-related utility outage. The field technician captures battery voltage, the network operations center checks backhaul availability, and the land manager grants road access. Preserve the generator runtime, RF alarm, fuel level, and access authorization, because a restored carrier signal does not prove the site has enough fuel for the next outage period.",
+      "required_terms": ["battery voltage", "backhaul availability", "generator runtime", "RF alarm"],
+      "leakage_terms": ["road access", "fuel level", "carrier signal"],
+      "tags": ["infrastructure", "telecom-operations"],
+      "stressors": ["scientific-casing", "path-grant", "domain-depth-obligations", "latency-pressure"]
+    },
+    {
+      "name": "aggregate quarry haul road control",
+      "prompt": "A quarry manager needs to reopen a haul road after heavy rain created a slope failure near the crusher. The geotechnical engineer reviews inclinometer readings, the fleet supervisor checks truck braking condition, and the safety manager approves the traffic plan. Keep the berm height, slope inspection, haul route, and blasting exclusion boundary explicit; a grader pass is not evidence that loaded trucks may return safely.",
+      "required_terms": ["inclinometer readings", "truck braking", "berm height", "blasting exclusion"],
+      "leakage_terms": ["slope failure", "haul route", "grader pass"],
+      "tags": ["construction", "materials-operations"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "path-grant", "long-first-path"]
+    }
+  ]
+}

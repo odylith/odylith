@@ -4,11 +4,28 @@
         : {};
     }
 
+    const COMPASS_RELEASE_TARGET_VERSION_RE = /\bv?(\d+(?:\.\d+){1,3})\b/i;
+    const MAX_COMPASS_RELEASE_TARGET_LABEL_CHARS = 18;
+
+    function compactCompassReleaseTargetLabel(value) {
+      const text = String(value || "").trim().replace(/\s+/g, " ");
+      const match = COMPASS_RELEASE_TARGET_VERSION_RE.exec(text);
+      if (match && match[1]) return match[1];
+      if (text.length <= MAX_COMPASS_RELEASE_TARGET_LABEL_CHARS) return text;
+      return `${text.slice(0, MAX_COMPASS_RELEASE_TARGET_LABEL_CHARS - 3).trimEnd()}...`;
+    }
+
     function compassReleaseDisplayName(release) {
       const row = release && typeof release === "object" ? release : {};
-      const nameLabel = String(row.name || row.version || row.tag || row.display_label || row.effective_name || "").trim();
+      const nameLabel = (
+        compactCompassReleaseTargetLabel(row.version) ||
+        compactCompassReleaseTargetLabel(row.tag) ||
+        compactCompassReleaseTargetLabel(row.display_label) ||
+        compactCompassReleaseTargetLabel(row.effective_name) ||
+        compactCompassReleaseTargetLabel(row.name)
+      );
       if (nameLabel) return nameLabel;
-      return String(row.release_id || "").trim();
+      return compactCompassReleaseTargetLabel(row.release_id);
     }
 
     function compassReleaseStatusChipClass(status) {
@@ -75,6 +92,7 @@
 
     function compassReleaseGroupVisibleByDefault(group, hasAliasedRelease) {
       if (!group || typeof group !== "object") return false;
+      if (Number(group.members && group.members.length || 0) > 0) return true;
       if (hasAliasedRelease) {
         return Boolean(group.is_current) || Boolean(group.is_next);
       }
@@ -85,7 +103,6 @@
         || status === "active"
         || status === "planned"
         || status === "draft"
-        || Number(group.members && group.members.length || 0) > 0
       );
     }
 
@@ -219,7 +236,7 @@
         if (options && options.link === false) {
           return `<span class="chip execution-wave-chip-link${tone}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(`${token}: ${tooltip}`)}">${escapeHtml(token)}</span>`;
         }
-        return `<a class="chip chip-link execution-wave-chip-link${tone}" href="${escapeHtml(radarWorkstreamHref(token))}" target="_top" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(`${token}: ${tooltip}`)}">${escapeHtml(token)}</a>`;
+        return `<a class="chip chip-link execution-wave-chip-link${tone}" href="${escapeHtml(radarWorkstreamHref(token))}" target="_top" data-ws-id="${escapeHtml(token)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(`${token}: ${tooltip}`)}">${escapeHtml(token)}</a>`;
       };
       const formatMemberProgress = (member) => {
         const explicitLabel = String(member && member.progress_label ? member.progress_label : "").trim();
@@ -235,8 +252,6 @@
         const status = String(member && member.status ? member.status : "").trim().toLowerCase();
         const statusLabel = compassReleaseStatusLabel(status);
         const progressLabel = formatMemberProgress(member);
-        const workstreamHref = radarWorkstreamHref(ideaId);
-        const cardLabel = `Open radar for ${ideaId}: ${title}`;
         const cardClassNames = ["execution-wave-card", compassReleaseMemberStatusClass(status)];
         if (ideaId === scopedWorkstream) cardClassNames.push("is-member");
         const titleChips = [
@@ -256,7 +271,7 @@
                       ${renderMemberChip(ideaId, { selected: ideaId === scopedWorkstream })}
                       ${titleChips.join("")}
                     </div>
-                    <a class="execution-wave-title execution-wave-card-link" href="${escapeHtml(workstreamHref)}" target="_top" data-workstream-id="${escapeHtml(ideaId)}" aria-label="${escapeHtml(cardLabel)}">${escapeHtml(title)}</a>
+                    <div class="execution-wave-title">${escapeHtml(title)}</div>
                   </div>
                 </div>
                 ${metaChips.length ? `<div class="execution-wave-card-meta"><div class="execution-wave-card-stat-rail">${metaChips.join("")}</div></div>` : ""}
@@ -272,6 +287,7 @@
         return label ? `release:${label}` : "release:unknown";
       };
       const renderReleaseSection = (group) => {
+        const displayLabel = compassReleaseDisplayName(group);
         const disclosureKey = disclosureKeyForRelease(group);
         const memberCount = Number(group.members.length || 0);
         const completedCount = Number(group.completed_members.length || 0);
@@ -346,7 +362,7 @@
             <summary class="execution-wave-section-summary execution-wave-section-summary-compass">
               <span class="execution-wave-section-copy">
                 <span class="execution-wave-section-title-row">
-                  <span class="execution-wave-section-title">${escapeHtml(group.display_label)}</span>
+                  <span class="execution-wave-section-title">${escapeHtml(displayLabel)}</span>
                   ${titleChips.length ? `<span class="execution-wave-section-title-meta">${titleChips.join("")}</span>` : ""}
                 </span>
                 <span class="execution-wave-section-line">${escapeHtml(contextLine)}</span>

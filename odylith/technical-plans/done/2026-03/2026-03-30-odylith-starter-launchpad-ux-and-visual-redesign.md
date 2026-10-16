@@ -78,28 +78,19 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [x] Risk: the new hero styling becomes louder but less legible.
-  - [x] Mitigation: keep typography and spacing crisp, and make the prompt
-    card serve the action instead of ornament.
+  - [x] Mitigation: keep typography and spacing crisp, and make the prompt card serve the action instead of ornament.
 - [x] Risk: responsive layout breaks at the exact narrow desktop widths users
-  - [ ] Mitigation: TODO (add explicit mitigation).
-    actually hit.
+  - [ ] Mitigation: TODO (add explicit mitigation). actually hit.
 - [ ] Risk: Unspecified risk (legacy backfill).
-  - [x] Mitigation: prove the rendered shell in a headless browser at realistic
-    viewport sizes.
+  - [x] Mitigation: prove the rendered shell in a headless browser at realistic viewport sizes.
 - [x] Risk: layout changes accidentally regress copy-to-agent affordances.
-  - [x] Mitigation: preserve the existing copy button semantics and status
-    feedback.
+  - [x] Mitigation: preserve the existing copy button semantics and status feedback.
 - [x] Risk: persisted dismissal makes the welcome state feel stuck or lost.
-  - [x] Mitigation: use a keyed dismissal token that changes when the
-    onboarding shape changes, and keep a visible `Resume setup` recovery
-    affordance in the shell header.
+  - [x] Mitigation: use a keyed dismissal token that changes when the onboarding shape changes, and keep a visible `Resume setup` recovery affordance in the shell header.
 - [x] Risk: stricter browser storage rules make dismissal persistence feel
-  - [ ] Mitigation: TODO (add explicit mitigation).
-    flaky.
+  - [ ] Mitigation: TODO (add explicit mitigation). flaky.
 - [ ] Risk: Unspecified risk (legacy backfill).
-  - [x] Mitigation: fall back from `localStorage` to `sessionStorage`, and
-    still hide the welcome state immediately even if browser storage is
-    unavailable.
+  - [x] Mitigation: fall back from `localStorage` to `sessionStorage`, and still hide the welcome state immediately even if browser storage is unavailable.
 
 ## Validation/Test Plan
 - [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_shell_onboarding.py tests/unit/runtime/test_render_tooling_dashboard.py`

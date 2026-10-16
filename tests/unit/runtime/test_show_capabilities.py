@@ -260,7 +260,7 @@ def test_show_minimal_source_copy_does_not_emit_this_codebase_grammar_glitch(tmp
 
     assert "the this codebase" not in text
     assert "2 app source files found, but not enough stable structure" in text
-    assert "Draft a greenfield Odylith proposal for <project, architecture, or research goal>" in text
+    assert "Draft a product-first greenfield proposal for <project, architecture, or research goal>" in text
     assert "add source files" not in text
 
 
@@ -281,7 +281,7 @@ def test_show_empty_consumer_repo_does_not_suggest_odylith_managed_tree(tmp_path
     assert result.workstreams == []
     assert result.diagrams == []
     assert "only Odylith-managed install/governance files were found" in text
-    assert "Draft a greenfield Odylith proposal for <project, architecture, or research goal>" in text
+    assert "Draft a product-first greenfield proposal for <project, architecture, or research goal>" in text
     assert "Run `odylith show` again after adding source files." not in text
     assert "Core Engine" not in text
     assert "Document the mockrepo" not in text
@@ -343,7 +343,7 @@ def test_show_empty_readme_manifest_tests_infra_and_thin_app_scenarios_are_quiet
         assert teaching[name] in text
         if name != "empty":
             assert "For more examples, open `odylith/index.html` and use the Cheatsheet." in text
-        assert "Draft a greenfield Odylith proposal for <project, architecture, or research goal>" in text
+        assert "Draft a product-first greenfield proposal for <project, architecture, or research goal>" in text
         assert "No files changed." in text
         assert result.components == []
         assert result.workstreams == []
@@ -583,7 +583,11 @@ def test_show_me_skill_blocks_host_status_detours() -> None:
             assert "module-count scan" in normalized_text
             assert "tmp-clone warning" in normalized_text
             assert "spawn-policy note" in normalized_text
+            assert "Never create, scaffold, edit, or test example application files" in normalized_text
+            assert "Odylith is not installed in this folder" in normalized_text
             assert "Do not add bullets before or after it" in normalized_text
+            assert "Do not run `pwd`, `ls`, `rg`, `git status`, `echo`" in normalized_text
+            assert "End the turn immediately after the stdout is visible" in normalized_text
 
 
 def test_claude_show_me_guard_is_shipped_in_project_assets() -> None:
@@ -615,6 +619,8 @@ def test_claude_show_me_guard_is_shipped_in_project_assets() -> None:
         assert "`./.odylith/bin/odylith show --repo-root .`" in text
         assert "`odylith show --repo-root .`" in text
         assert "`intervention-status`, `visible-intervention`" in text
+        assert "end the turn immediately" in text
+        assert "Do not run any other Bash command before or after it" in text
 
 
 def test_managed_guidance_exempts_show_me_from_intervention_proof() -> None:
@@ -623,10 +629,10 @@ def test_managed_guidance_exempts_show_me_from_intervention_proof() -> None:
     assert "Odylith, help" in block
     assert "CLI help fast path" in block
     assert "Odylith, show me what you can do" in block
-    assert "advisory `odylith show` repo-capability demo" in block
-    assert "not a request to prove intervention UX" in block
-    assert "run `doctor`" in block
-    assert "explain missing launcher state" in block
+    assert "print only stdout from the first available `odylith show` command" in block
+    assert "It is advisory; do not substitute intervention or install diagnostics" in block
+    assert "a launcher report, or a sample app" in block
+    assert "If Odylith is absent, say so" in block
     assert "print stdout only" in block
 
 

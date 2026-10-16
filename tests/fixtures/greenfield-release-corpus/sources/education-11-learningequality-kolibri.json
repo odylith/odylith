@@ -1,0 +1,53 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "education",
+    "learning",
+    "student",
+    "teaching",
+    "school",
+    "course"
+  ],
+  "matched_description_evidence_terms": [
+    "education",
+    "learning"
+  ],
+  "repository": {
+    "default_branch": "develop",
+    "description": "Kolibri Learning Platform: the offline app for universal education",
+    "full_name": "learningequality/kolibri",
+    "id": 49976939,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "kolibri",
+    "node_id": "MDEwOlJlcG9zaXRvcnk0OTk3NjkzOQ==",
+    "pushed_at": "2026-07-18T03:28:00Z",
+    "topics": [
+      "edtech",
+      "education",
+      "hacktoberfest",
+      "oer",
+      "offline-first",
+      "sdg-4"
+    ]
+  },
+  "response_item_index": 30,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aeducation&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:15:57 GMT",
+    "x-github-request-id": "D127:37400:14E2036:154650B:6A5B606A"
+  },
+  "search_response_path": "responses/education.json",
+  "search_response_sha256": "d51afeba9684308dd78e53e1ecc6ffcf33d5093aa6f1d2e4bc3690c31b6b2504",
+  "selection_index": 11,
+  "source_family": "education",
+  "source_id": "github-repository:49976939",
+  "source_uri": "https://github.com/learningequality/kolibri",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

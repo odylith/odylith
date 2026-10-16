@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+from odylith.runtime.context_engine import memory_record_policy
+
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.context_engine import odylith_context_engine_intent_anchor_runtime as intent_anchor_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
 from typing import Any
 
@@ -25,7 +28,6 @@ _PATH_CATEGORY_PRIORITY = {
     "unknown": 11,
 }
 
-
 def _intent_anchor_paths(*, repo_root: Path, intent: str, repo_dirty_paths: Sequence[str]) -> list[str]:
     try:
         candidates = _extract_path_refs(text=str(intent or "").strip(), repo_root=repo_root)
@@ -39,7 +41,7 @@ def _intent_anchor_paths(*, repo_root: Path, intent: str, repo_dirty_paths: Sequ
         token = context_engine_store._normalize_repo_token(str(raw), repo_root=repo_root)
         if not token:
             continue
-        if token in repo_dirty or (repo_root / token).exists():
+        if intent_anchor_runtime.path_ref_exists_or_is_planned(repo_root=repo_root, path_ref=token, repo_dirty_paths=repo_dirty):
             normalized.append(token)
     return _prioritize_scope_paths(context_engine_store._dedupe_strings(normalized), max_paths=4)
 
@@ -608,10 +610,14 @@ def _workstream_selection(
     hinted_workstream = context_engine_store._workstream_token(str(judgment.get("workstream_id", "")).strip())
     top_workstream = context_engine_store._workstream_token(str(top.get("entity_id", "")).strip())
     top_matches_judgment = bool(
-        hinted_workstream
+        judgment.get("memory_admission") == "current_source_confirmed"
+        and memory_record_policy.assess(judgment.get("memory_record"))["current_authority"]
+        and hinted_workstream
         and top_workstream
         and hinted_workstream == top_workstream
+        and str(top.get("path", "")).removeprefix("./") == str(dict(judgment.get("memory_record", {})).get("source_ref", "")).removeprefix("./")
         and context_engine_store._workstream_has_path_signal(top)
+        and (not broad_only or strong_signals > 0)
     )
     judgment_reason = str(judgment.get("reason", "")).strip()
     if top_score < context_engine_store._WORKSTREAM_SELECTION_CONFIDENT_SCORE:
@@ -657,7 +663,7 @@ def _workstream_selection(
         )
         if int(top_evidence.get("strong_signal_count", 0) or 0) > 0 and strong_candidate_count > 1:
             ambiguity_class = "historical_fanout"
-        if top_matches_judgment:
+        if top_matches_judgment and ambiguity_class != "historical_fanout":
             return _selection_payload(
                 state="inferred_confident",
                 reason=(
@@ -947,6 +953,8 @@ def list_session_states(
                 "claimed_surfaces": claim_sets["claimed_surfaces"],
                 "working_tree_scope": str(payload.get("working_tree_scope", "")).strip(),
                 "selection_state": str(payload.get("selection_state", "")).strip(),
+                "selection_ambiguity_class": str(payload.get("selection_ambiguity_class", "")).strip(),
+                "evidence_confirmed_utc": str(payload.get("evidence_confirmed_utc", "")).strip(),
                 "selection_reason": str(payload.get("selection_reason", "")).strip(),
                 "branch_name": str(payload.get("branch_name", "")).strip(),
                 "head_oid": str(payload.get("head_oid", "")).strip(),
@@ -970,6 +978,7 @@ def register_session_state(
     turn_context: Mapping[str, Any] | None = None,
     claim_mode: str = "shared",
     selection_state: str = "",
+    selection_ambiguity_class: str = "",
     selection_reason: str = "",
     working_tree_scope: str = "",
     auto_claim_paths: Sequence[str] = (),
@@ -982,6 +991,13 @@ def register_session_state(
         generated_surfaces=generated_surfaces,
         auto_claim_paths=auto_claim_paths,
         claimed_paths=claimed_paths,
+    )
+    previous = _load_session_state(repo_root=repo_root, session_id=session_id, include_stale=True) or {}
+    confirmed = (
+        context_engine_store._utc_now()
+        if memory_record_policy.independent_selection(selection_state, selection_ambiguity_class)
+        else str(previous.get("evidence_confirmed_utc", ""))
+        if previous.get("workstream") == str(workstream or "").strip().upper() else ""
     )
     record = {
         "session_id": agent_runtime_contract.fallback_session_token(session_id),
@@ -1003,6 +1019,8 @@ def register_session_state(
         "claim_mode": _normalize_claim_mode(claim_mode),
         "lease_expires_utc": _lease_expires_utc(lease_seconds=int(lease_seconds)),
         "selection_state": str(selection_state or "").strip(),
+        "selection_ambiguity_class": str(selection_ambiguity_class or "").strip(),
+        "evidence_confirmed_utc": confirmed,
         "selection_reason": str(selection_reason or "").strip(),
         "working_tree_scope": str(working_tree_scope or "").strip().lower(),
         "claimed_workstreams": claims["claimed_workstreams"],
@@ -1194,6 +1212,12 @@ def _collect_impacted_workstreams(
         candidate_direct_rows = [dict(row) for row in direct_match_rows]
     if not candidate_traceability_rows and normalized_changed_paths:
         candidate_traceability_rows = [dict(row) for row in traceability_match_rows]
+    support_owners: dict[str, set[str]] = {}
+    for row in candidate_traceability_rows:
+        if row["source_kind"] in {"trace_doc", "trace_runbook"} and row["source_id"] in workstream_entities:
+            for path_ref in normalized_changed_paths:
+                if context_engine_store._normalized_path_match_type(changed_path=path_ref, target_path=row["target_path"]):
+                    support_owners.setdefault(path_ref, set()).add(row["source_id"])
     diagnostics["fast_selector_used"] = bool(normalized_changed_paths)
     diagnostics["selector_cache_hit"] = bool(direct_cache_hit and trace_cache_hit)
     diagnostics["selector_candidate_row_count"] = len(candidate_direct_rows) + len(candidate_traceability_rows)
@@ -1210,26 +1234,10 @@ def _collect_impacted_workstreams(
             candidate_map[token] = context_engine_store._base_workstream_candidate(entity)
         return candidate_map[token]
 
-    for row in candidate_direct_rows:
-        workstream_id = str(row.get("source_id", "")).strip().upper()
-        target_path = str(row.get("target_path", "")).strip()
-        if not workstream_id or not target_path:
-            continue
-        for path_ref in normalized_changed_paths:
-            match_type = context_engine_store._normalized_path_match_type(changed_path=path_ref, target_path=target_path)
-            if not match_type:
-                continue
-            candidate = _candidate(workstream_id)
-            if candidate is None:
-                continue
-            context_engine_store._add_workstream_path_evidence(
-                candidate,
-                changed_path=path_ref,
-                target_path=target_path,
-                source_kind="direct",
-                match_type=match_type,
-            )
-    for row in candidate_traceability_rows:
+    path_match_rows = [
+        {**row, "source_kind": "direct"} for row in candidate_direct_rows
+    ] + candidate_traceability_rows
+    for row in path_match_rows:
         target_path = str(row.get("target_path", "")).strip()
         source_kind = str(row.get("source_kind", "")).strip() or "trace_doc"
         if not target_path:
@@ -1247,6 +1255,10 @@ def _collect_impacted_workstreams(
                 target_path=target_path,
                 source_kind=source_kind,
                 match_type=match_type,
+                shared_support=(
+                    source_kind in {"trace_doc", "trace_runbook"}
+                    and len(support_owners.get(path_ref, ())) > 1
+                ),
             )
     if component_ids:
         component_rows = context_engine_store._cached_projection_rows(

@@ -1,0 +1,66 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "agriculture",
+    "farm",
+    "crop",
+    "soil",
+    "food",
+    "irrigation"
+  ],
+  "matched_description_evidence_terms": [
+    "crop",
+    "irrigation"
+  ],
+  "repository": {
+    "default_branch": "master",
+    "description": "Implements weather station class in Python that calculates ETo (reference crop's evapotranspiration) based on UN-FAO Irrigation and Drainage Paper 56",
+    "full_name": "sherzodr/penmon",
+    "id": 299601637,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "penmon",
+    "node_id": "MDEwOlJlcG9zaXRvcnkyOTk2MDE2Mzc=",
+    "pushed_at": "2024-01-10T14:54:33Z",
+    "topics": [
+      "agriculture",
+      "agriculture-research",
+      "atmospheric-science",
+      "climate-data",
+      "crop",
+      "eto",
+      "fao",
+      "hydrology",
+      "irrigation",
+      "irrigation-data",
+      "irrigation-design",
+      "irrigation-forecast",
+      "penman-monteith",
+      "reference-crop",
+      "saturation-vapour-pressure",
+      "science-research",
+      "water-demand",
+      "water-resources",
+      "weather-station"
+    ]
+  },
+  "response_item_index": 16,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aagriculture&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:16:06 GMT",
+    "x-github-request-id": "D132:1199E1:1526D0C:1587FA2:6A5B6074"
+  },
+  "search_response_path": "responses/agriculture.json",
+  "search_response_sha256": "15dcc000ab6906d482b87429532f1d4d69c7243f78524e266095a976cf6f331a",
+  "selection_index": 9,
+  "source_family": "agriculture",
+  "source_id": "github-repository:299601637",
+  "source_uri": "https://github.com/sherzodr/penmon",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

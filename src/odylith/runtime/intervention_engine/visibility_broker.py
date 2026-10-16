@@ -28,11 +28,9 @@ ASSISTANT_RENDER_REQUIRED_STATUS = visibility_contract.ASSISTANT_RENDER_REQUIRED
 ASSISTANT_RENDER_REQUIRED_CHANNEL = visibility_contract.ASSISTANT_RENDER_REQUIRED_CHANNEL
 LIVE_BOUNDARY_REQUIRED_KINDS = visibility_contract.LIVE_BOUNDARY_REQUIRED_KINDS
 _ASSIST_COMMON_MISSPELLING = "as" "sit"
-_VISIBILITY_FAILURE_FALLBACK_MARKER = "no Odylith note has reached this chat yet"
-_HOST_LABELS = {
-    "claude": "Claude",
-    "codex": "Codex",
-}
+_VISIBILITY_FAILURE_FALLBACK_MARKER = (
+    "You should see guidance when it matters. This is the visible checkpoint"
+)
 _VISIBLE_COPY_BLOCKERS: tuple[tuple[str, re.Pattern[str]], ...] = (
     (
         "recursive display instruction",
@@ -66,6 +64,14 @@ _VISIBLE_COPY_BLOCKERS: tuple[tuple[str, re.Pattern[str]], ...] = (
     (
         "product-theater visibility copy",
         re.compile(r"\b(?:brand promise|ready to speak|visible lane)\b", re.IGNORECASE),
+    ),
+    (
+        "generic activity receipt",
+        re.compile(
+            r"\b(?:has Odylith activity, but no Odylith note|"
+            r"Odylith is active, but no Odylith note)\b",
+            re.IGNORECASE,
+        ),
     ),
     (
         "repo-memory claim without local proof",
@@ -250,11 +256,10 @@ def _wrap_live_text(value: str) -> str:
     return visibility_contract.wrap_live_boundary(value)
 
 
-def _visibility_failure_observation(*, host_family: str) -> str:
-    host_label = _HOST_LABELS.get(_normalize_token(host_family), "This assistant")
+def _visibility_failure_observation() -> str:
     return _wrap_live_text(
-        f"**Odylith Observation:** {host_label} has Odylith activity, but "
-        f"{_VISIBILITY_FAILURE_FALLBACK_MARKER}."
+        "**Odylith Observation:** You should see guidance when it matters. This is the visible "
+        "checkpoint; future notes will stay concise, useful, and tied to a decision or verified result."
     )
 
 
@@ -416,6 +421,7 @@ def build_visible_intervention_decision(
     if (
         visibility_failure
         and "**Odylith Observation:**" not in visible
+        and not (normalized_phase == "stop_summary" and "**Odylith Assist:**" in visible)
     ):
         closeout = (
             conversation_surface.render_closeout_text(bundle, markdown=True)
@@ -423,7 +429,7 @@ def build_visible_intervention_decision(
             else ""
         )
         visible = visibility_contract.compose_visible_markdown(
-            _visibility_failure_observation(host_family=normalized_host),
+            _visibility_failure_observation(),
             closeout,
         )
         forced_visible = True
@@ -653,6 +659,7 @@ def confirm_assistant_chat_delivery(
     last_assistant_message: str,
     render_surface: str,
     limit: int = 120,
+    defer: bool = False,
 ) -> list[dict[str, Any]]:
     message = _normalize_block_string(last_assistant_message)
     normalized_session = _normalize_string(session_id)
@@ -715,6 +722,7 @@ def confirm_assistant_chat_delivery(
                 delivery_channel="assistant_chat_transcript",
                 delivery_status="assistant_chat_confirmed",
                 render_surface=render_surface,
+                defer=defer,
                 metadata={
                     **(dict(row.get("metadata")) if isinstance(row.get("metadata"), Mapping) else {}),
                     "chat_confirmation_key": confirmation_key,

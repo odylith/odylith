@@ -1,4 +1,4 @@
-"""Authoritative migration planning, ledgers, and release gates for installs."""
+"""Authoritative migration planning, execution, and ledgers for installs."""
 
 from __future__ import annotations
 
@@ -7,9 +7,15 @@ import json
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Mapping, Sequence
 
 from odylith.install.fs import atomic_write_text, display_path
+from odylith.install.atlas_box_explanation_migration import (
+    MIGRATION_ID as ATLAS_BOX_EXPLANATION_MIGRATION_ID,
+    atlas_box_explanation_decision_state,
+    inspect_atlas_box_explanation_migration,
+    migrate_atlas_box_explanation_contract,
+)
 from odylith.install.atlas_surface_migration import (
     MIGRATION_ID as ATLAS_SURFACE_MIGRATION_ID,
     atlas_surface_decision_state,
@@ -23,11 +29,6 @@ from odylith.install.legacy_install_migration import (
     legacy_migration_conflicts,
     migrate_legacy_install,
 )
-from odylith.install.destructive_write_scenarios import (
-    destructive_write_fixture_matrix,
-    destructive_write_scenarios,
-    missing_destructive_write_proofs,
-)
 from odylith.install.lock_hygiene import LOCK_NOTE_THRESHOLD, lock_hygiene_summary
 from odylith.install.casebook_metadata_migration import (
     MIGRATION_ID as CASEBOOK_METADATA_MIGRATION_ID,
@@ -40,10 +41,6 @@ from odylith.install.casebook_metadata_migration import (
     migrate_casebook_status_fsm,
 )
 from odylith.install.migration_definitions import MigrationDefinition, registered_migration_specs
-from odylith.install.migration_observer import (
-    SurfaceMigrationObserverReport,
-    observe_surface_migration_needs,
-)
 from odylith.install.runtime import current_runtime_root, current_runtime_version, runtime_verification_evidence
 from odylith.install.state import (
     DEFAULT_REPO_SCHEMA_VERSION,
@@ -60,7 +57,7 @@ from odylith.install.value_engine_migration import (
     migrate_visible_intervention_value_engine,
     record_visible_intervention_value_engine_migration_satisfied,
 )
-from odylith.install.versioning import is_at_least, is_before, normalize_version
+from odylith.install.versioning import is_before, normalize_version
 
 MIGRATION_LEDGER_SCHEMA_VERSION = "odylith.migration-ledger.v1"
 SCENARIO_FIRST_INSTALL = "first_install"
@@ -169,7 +166,15 @@ class MigrationPlan:
     @property
     def blocked_reason(self) -> str:
         """Return the first blocking reason, if any."""
-        return "; ".join(decision.reason for decision in self.blocked if decision.reason)
+        reasons: list[str] = []
+        seen: set[str] = set()
+        for decision in self.blocked:
+            reason = str(decision.reason or "").strip()
+            if not reason or reason in seen:
+                continue
+            seen.add(reason)
+            reasons.append(reason)
+        return "; ".join(reasons)
 
     @property
     def ledger_state(self) -> dict[str, str]:
@@ -247,37 +252,6 @@ class MigrationResult:
         }
 
 
-@dataclass(frozen=True)
-class ReleaseMigrationGateReport:
-    """Release gate report for migration registry coverage."""
-
-    ok: bool
-    registered_migrations: tuple[MigrationDefinition, ...]
-    covered_version_ranges: tuple[str, ...]
-    fixture_matrix: dict[str, dict[str, bool]]
-    destructive_write_matrix: dict[str, dict[str, bool]]
-    surface_migration_observer: SurfaceMigrationObserverReport
-    blocked_manual_migrations: tuple[str, ...]
-    ungated_lifecycle_paths: tuple[str, ...]
-    notes: tuple[str, ...]
-
-    def as_dict(self) -> dict[str, object]:
-        """Return the report as a JSON-ready payload."""
-        return {
-            "schema_version": "odylith.release-migration-gate.v1",
-            "ok": self.ok,
-            "registered_migrations": [definition.as_dict() for definition in self.registered_migrations],
-            "covered_version_ranges": list(self.covered_version_ranges),
-            "fixture_matrix": dict(self.fixture_matrix),
-            "destructive_write_scenarios": [scenario.as_dict() for scenario in destructive_write_scenarios()],
-            "destructive_write_matrix": dict(self.destructive_write_matrix),
-            "surface_migration_observer": self.surface_migration_observer.as_dict(),
-            "blocked_manual_migrations": list(self.blocked_manual_migrations),
-            "ungated_lifecycle_paths": list(self.ungated_lifecycle_paths),
-            "notes": list(self.notes),
-        }
-
-
 def _is_source_local(value: object) -> bool:
     return str(value or "").strip().lower() == _SOURCE_LOCAL
 
@@ -294,7 +268,7 @@ def _decision_satisfies_manifest_requirement(
         definition = _definition_for(decision.migration_id)
     except KeyError:
         return False
-    if not is_at_least(target_version, definition.introduced_version):
+    if not definition.covers_manifest_target(target_version):
         return False
     if decision.state in {STATE_SELECTED, STATE_SATISFIED_UNRECORDED}:
         return True
@@ -318,6 +292,7 @@ def classify_repo_migration_scenario(
     repo_role: str = "",
     active_version: str = "",
     pinned_version: str = "",
+    previous_version: str = "",
     target_version: str = "",
     source_repo: bool = False,
     state: Mapping[str, object] | None = None,
@@ -333,6 +308,7 @@ def classify_repo_migration_scenario(
     pin_exists = version_pin_path(repo_root=root).is_file()
     pin = load_version_pin(repo_root=root, fallback_version=None)
     observed_pin = normalize_version(pinned_version or (pin.odylith_version if pin is not None and pin_exists else ""))
+    previous = normalize_version(previous_version)
     target = normalize_version(target_version)
     manifest = dict(release_manifest or {})
     launcher_exists = (root / ".odylith" / "bin" / "odylith").is_file()
@@ -352,7 +328,15 @@ def classify_repo_migration_scenario(
     if legacy_layout_present(repo_root=root):
         scenario = SCENARIO_LEGACY_ODYSSEY
         reasons.append("legacy odyssey/.odyssey root is present")
-    elif source_repo or _is_source_local(observed_active) or _is_source_local(observed_pin):
+    elif (
+        source_repo
+        or _is_source_local(target)
+        or _is_source_local(observed_pin)
+        or (
+            _is_source_local(observed_active)
+            and str(repo_role or "").strip() != PRODUCT_REPO_ROLE
+        )
+    ):
         scenario = SCENARIO_DETACHED_SOURCE_LOCAL
         reasons.append("source-local maintainer runtime is active or requested")
     elif not (root / "odylith").exists() and not state_exists:
@@ -376,18 +360,23 @@ def classify_repo_migration_scenario(
     elif int(manifest.get("repo_schema_version") or DEFAULT_REPO_SCHEMA_VERSION) != DEFAULT_REPO_SCHEMA_VERSION:
         scenario = SCENARIO_REPO_SCHEMA_MISMATCH
         reasons.append("target release repo_schema_version differs from this runtime contract")
-    elif bool(manifest.get("migration_required")):
-        scenario = SCENARIO_RELEASE_MIGRATION_REQUIRED
-        reasons.append("target release manifest declares migration_required=true")
     elif str(repo_role or "").strip() == PRODUCT_REPO_ROLE:
         scenario = SCENARIO_PRODUCT_REPO_PINNED_DOGFOOD
-        reasons.append("Odylith product repo is using pinned dogfood posture")
+        if _is_source_local(observed_active) and target and not _is_source_local(target):
+            reasons.append("Odylith product repo is realigning detached source-local runtime to the pinned release target")
+        else:
+            reasons.append("Odylith product repo is using pinned dogfood posture")
     elif runtime is not None and not verification and observed_active:
         scenario = SCENARIO_RUNTIME_VERIFICATION_MISSING
         reasons.append("runtime artifact exists but verification evidence is missing")
-    elif target and observed_active == target and observed_pin == target:
+    elif target and observed_active == target and observed_pin == target and (
+        not bool(manifest.get("migration_required")) or previous == target
+    ):
         scenario = SCENARIO_ALREADY_CURRENT_CONSUMER
         reasons.append("active runtime and tracked pin already match the resolved target")
+    elif bool(manifest.get("migration_required")):
+        scenario = SCENARIO_RELEASE_MIGRATION_REQUIRED
+        reasons.append("target release manifest declares migration_required=true")
     elif observed_active and not rollback_target and target and observed_active != target and current_runtime_root(repo_root=root) is None:
         scenario = SCENARIO_ROLLBACK_TARGET_MISSING
         reasons.append("upgrade would replace the active runtime but no rollback target is retained")
@@ -797,6 +786,32 @@ def _atlas_surface_decision(
     )
 
 
+def _atlas_box_explanation_decision(
+    *,
+    repo_root: Path,
+    previous_version: str,
+    target_version: str,
+    scenario: RepoMigrationScenario,
+) -> MigrationDecision:
+    inspection = inspect_atlas_box_explanation_migration(
+        repo_root=repo_root,
+        previous_version=previous_version,
+        target_version=target_version,
+    )
+    state, reason = atlas_box_explanation_decision_state(
+        repo_scenario=scenario.scenario,
+        inspection=inspection,
+    )
+    return _decision(
+        migration_id=ATLAS_BOX_EXPLANATION_MIGRATION_ID,
+        state=state,
+        reason=reason,
+        ledger_path=inspection.ledger_path,
+        planned_paths=inspection.planned_paths,
+        evidence=inspection.as_dict(),
+    )
+
+
 def _repo_schema_from_manifest(manifest: Mapping[str, object]) -> int:
     try:
         return int(manifest.get("repo_schema_version") or DEFAULT_REPO_SCHEMA_VERSION)
@@ -829,6 +844,7 @@ def plan_release_migrations(
         repo_role=repo_role,
         active_version=active_version,
         pinned_version=pinned_version,
+        previous_version=previous,
         target_version=target,
         source_repo=source_repo,
         state=state,
@@ -843,6 +859,7 @@ def plan_release_migrations(
         _casebook_metadata_decision(repo_root=root, previous_version=previous, target_version=target, scenario=scenario),
         _casebook_status_fsm_decision(repo_root=root, previous_version=previous, target_version=target, scenario=scenario),
         _atlas_surface_decision(repo_root=root, previous_version=previous, target_version=target, scenario=scenario),
+        _atlas_box_explanation_decision(repo_root=root, previous_version=previous, target_version=target, scenario=scenario),
     ]
     selected = tuple(decision for decision in decisions if decision.needs_apply())
     blocked = [decision for decision in decisions if decision.blocks_upgrade()]
@@ -853,13 +870,17 @@ def plan_release_migrations(
             reasons=("one or more migration ledgers exist but no longer verify",),
             state=scenario.state,
         )
-    if bool(manifest.get("migration_required")) and not any(
-        _decision_satisfies_manifest_requirement(
-            decision,
-            previous_version=previous,
-            target_version=target,
+    if (
+        scenario.scenario not in {SCENARIO_PRODUCT_REPO_PINNED_DOGFOOD, SCENARIO_ALREADY_CURRENT_CONSUMER}
+        and bool(manifest.get("migration_required"))
+        and not any(
+            _decision_satisfies_manifest_requirement(
+                decision,
+                previous_version=previous,
+                target_version=target,
+            )
+            for decision in decisions
         )
-        for decision in decisions
     ):
         blocked.append(
             _repo_state_decision(
@@ -956,7 +977,33 @@ def apply_release_migrations(*, plan: MigrationPlan, runtime_root: str | Path | 
             )
             continue
         if decision.migration_id == ATLAS_SURFACE_MIGRATION_ID:
+            if runtime is not None and not Path(__file__).resolve().is_relative_to(runtime):
+                results.append(MigrationResult(
+                    migration_id=decision.migration_id, state=STATE_SELECTED,
+                    reason="Atlas rendering awaits the activated target runtime's dashboard completion",
+                    written_paths=(), removed_paths=(), ledger_path=decision.ledger_path,
+                    verification_result={"status": "pending", "mode": "target_runtime_completion"},
+                ))
+                continue
             atlas_result = migrate_atlas_surface_polish(
+                repo_root=plan.repo_root,
+                previous_version=plan.previous_version,
+                target_version=plan.target_version,
+            )
+            results.append(
+                MigrationResult(
+                    migration_id=atlas_result.migration_id,
+                    state=STATE_APPLIED if atlas_result.applied else STATE_SKIPPED,
+                    reason=atlas_result.skipped_reason,
+                    written_paths=atlas_result.written_paths,
+                    removed_paths=atlas_result.removed_paths,
+                    ledger_path=atlas_result.ledger_path,
+                    verification_result=dict(atlas_result.verification_result or {"status": "skipped"}),
+                )
+            )
+            continue
+        if decision.migration_id == ATLAS_BOX_EXPLANATION_MIGRATION_ID:
+            atlas_result = migrate_atlas_box_explanation_contract(
                 repo_root=plan.repo_root,
                 previous_version=plan.previous_version,
                 target_version=plan.target_version,
@@ -1132,130 +1179,6 @@ def doctor_migration_observability_lines(*, repo_root: str | Path, status: objec
     elif plan.selected:
         lines.append("Migration pending: " + ", ".join(decision.migration_id for decision in plan.selected))
     return tuple(lines)
-
-
-def _release_manifest_paths(repo_root: Path) -> tuple[Path, ...]:
-    return (
-        repo_root / "dist" / "release-manifest.json",
-        repo_root / ".odylith" / "cache" / "release-manifest.json",
-    )
-
-
-def _load_manifest_for_gate(repo_root: Path) -> dict[str, object]:
-    for path in _release_manifest_paths(repo_root):
-        if not path.is_file():
-            continue
-        try:
-            payload = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            continue
-        if isinstance(payload, Mapping):
-            return dict(payload)
-    return {}
-
-
-def _fixture_matrix(repo_root: Path, definitions: Sequence[MigrationDefinition]) -> dict[str, dict[str, bool]]:
-    fixture_files = (
-        repo_root / "tests" / "unit" / "install" / "test_migration_runtime.py",
-        repo_root / "tests" / "unit" / "install" / "test_value_engine_migration.py",
-        repo_root / "tests" / "integration" / "install" / "test_manager.py",
-        repo_root / "tests" / "integration" / "install" / "test_lifecycle_simulator.py",
-    )
-    combined = "\n".join(path.read_text(encoding="utf-8") for path in fixture_files if path.is_file())
-    matrix: dict[str, dict[str, bool]] = {}
-    for definition in definitions:
-        matrix[definition.migration_id] = {
-            fixture: f"{definition.migration_id}:{fixture}" in combined
-            for fixture in definition.coverage_fixtures
-        }
-    return matrix
-
-
-def _ungated_lifecycle_paths(repo_root: Path) -> tuple[str, ...]:
-    banned = (
-        "migrate_visible_intervention_value_engine",
-        "migrate_legacy_install_if_needed",
-        "visible_intervention_value_engine_migration_pending",
-        "visible_intervention_value_engine_migration_ledger_path",
-        "value_engine_migration_payload",
-    )
-    allowed = {
-        Path("src/odylith/install/migration_runtime.py"),
-        Path("src/odylith/install/value_engine_migration.py"),
-        Path("src/odylith/install/legacy_install_migration.py"),
-    }
-    findings: list[str] = []
-    for relative in (
-        Path("src/odylith/install/manager.py"),
-        Path("src/odylith/install/bootstrap_assets.py"),
-        Path("src/odylith/cli.py"),
-    ):
-        path = repo_root / relative
-        if relative in allowed or not path.is_file():
-            continue
-        text = path.read_text(encoding="utf-8")
-        for token in banned:
-            if token in text:
-                findings.append(f"{relative.as_posix()} references {token}")
-    return tuple(findings)
-
-
-def validate_release_migration_gate(
-    *,
-    repo_root: str | Path,
-    target_version: str = "",
-    release_manifest: Mapping[str, object] | None = None,
-    changed_paths: Sequence[str] | None = None,
-) -> ReleaseMigrationGateReport:
-    """Validate that release migration requirements are registered and fixture-proven."""
-    root = Path(repo_root).expanduser().resolve()
-    definitions = registered_migrations()
-    manifest = dict(release_manifest if release_manifest is not None else _load_manifest_for_gate(root))
-    observer_target = str(target_version or manifest.get("version") or manifest.get("tag") or "")
-    surface_observer = observe_surface_migration_needs(
-        repo_root=root,
-        target_version=observer_target,
-        changed_paths=changed_paths,
-    )
-    blocked_manual: list[str] = []
-    if bool(manifest.get("migration_required")):
-        target = normalize_version(target_version or manifest.get("version") or manifest.get("tag"))
-        if not any(is_at_least(target, definition.introduced_version) for definition in definitions):
-            blocked_manual.append(
-                f"migration_required manifest for {target or 'unknown target'} has no registered migration definition"
-            )
-    matrix = _fixture_matrix(root, definitions)
-    for migration_id, coverage in matrix.items():
-        missing = [fixture for fixture, present in coverage.items() if not present]
-        if missing:
-            blocked_manual.append(f"{migration_id} fixture coverage missing: {', '.join(missing)}")
-    destructive_matrix = destructive_write_fixture_matrix(repo_root=root)
-    blocked_manual.extend(missing_destructive_write_proofs(repo_root=root))
-    for need in surface_observer.needs:
-        if need.need_id in surface_observer.blocked_need_ids:
-            blocked_manual.append(f"{need.need_id} surface migration assessment incomplete: {need.governance_prompt}")
-    ungated = _ungated_lifecycle_paths(root)
-    covered_ranges = tuple(
-        f"{definition.migration_id}: {definition.from_version_range} -> {definition.to_version_range}"
-        for definition in definitions
-    )
-    notes = (
-        "Release migration gate checks registry definitions, fixture coverage, and lifecycle bypasses.",
-        "Destructive-write guardrails are tracked as first-class adoption-risk fixtures.",
-        "Consumer-visible surface changes are observed and must have completed migration assessment records.",
-        "Generated dashboard refresh is intentionally outside migration scope.",
-    )
-    return ReleaseMigrationGateReport(
-        ok=not blocked_manual and not ungated and surface_observer.ok,
-        registered_migrations=definitions,
-        covered_version_ranges=covered_ranges,
-        fixture_matrix=matrix,
-        destructive_write_matrix=destructive_matrix,
-        surface_migration_observer=surface_observer,
-        blocked_manual_migrations=tuple(blocked_manual),
-        ungated_lifecycle_paths=ungated,
-        notes=notes,
-    )
 
 
 def append_migration_ledger_snapshot(*, repo_root: str | Path, plan: MigrationPlan, results: Sequence[MigrationResult]) -> str:

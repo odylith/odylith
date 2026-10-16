@@ -1,0 +1,249 @@
+{
+  "version": "odylith.independent-source-annotation-a.validation.v1",
+  "status": "pass",
+  "sources": {
+    "/private/tmp/odylith-new-high4-source-design-20261010/sourcecases-draft.json": "5da8ec8a344d3097ad5a65a14e4f0af0756943a03d6a22e4ff8557e67694e485",
+    "/private/tmp/odylith-new-high4-source-design-20261010/canonical-source-frames.json": "3020f24efae67a669b72574a24ed4f4146b235449180e91854faae32633a7c4a"
+  },
+  "source_predeclaration_sha256": "a69b5d154077b8a56c45198c1af3dcde4839287542aff2bfb8dac2dd463d9a0b",
+  "census_capacity_sha256": "3ee499907f56a15de24dfd1f51287d0e2e8742d77d2c210fbb95717ead98b05b",
+  "case_count": 4,
+  "atom_count": 405,
+  "validated_span_occurrences": 1591,
+  "cases": [
+    {
+      "case_id": "prospective-edit-climate-heat-response-window-20261010",
+      "qualification": "ACCEPT",
+      "atom_count": 101,
+      "H0_band": "moderate",
+      "H0_score": 6,
+      "H1_band": "high",
+      "H1_score": 7,
+      "H0_capacity": {
+        "declared": 9,
+        "supporting_human": 1,
+        "system": 11,
+        "aggregate": 21,
+        "caps": {
+          "declared": 24,
+          "supporting_human": 24,
+          "system": 32,
+          "aggregate": 32
+        },
+        "passes": true
+      },
+      "H1_capacity": {
+        "declared": 11,
+        "supporting_human": 1,
+        "system": 13,
+        "aggregate": 25,
+        "caps": {
+          "declared": 24,
+          "supporting_human": 24,
+          "system": 32,
+          "aggregate": 32
+        },
+        "passes": true
+      },
+      "section_counts": {
+        "H0": {
+          "first_path_actions": 9,
+          "supporting_human_actions": 1,
+          "system_duties": 11,
+          "conditional_guards": 7,
+          "boundaries": 19,
+          "proof_duties": 8,
+          "off_path_changes": 1
+        },
+        "H1": {
+          "first_path_actions": 11,
+          "supporting_human_actions": 1,
+          "system_duties": 13,
+          "conditional_guards": 9,
+          "boundaries": 19,
+          "proof_duties": 10,
+          "off_path_changes": 1
+        }
+      }
+    },
+    {
+      "case_id": "prospective-edit-healthcare-trial-site-activation-20261010",
+      "qualification": "ACCEPT",
+      "atom_count": 104,
+      "H0_band": "moderate",
+      "H0_score": 6,
+      "H1_band": "high",
+      "H1_score": 7,
+      "H0_capacity": {
+        "declared": 17,
+        "supporting_human": 1,
+        "system": 10,
+        "aggregate": 28,
+        "caps": {
+          "declared": 24,
+          "supporting_human": 24,
+          "system": 32,
+          "aggregate": 32
+        },
+        "passes": true
+      },
+      "H1_capacity": {
+        "declared": 18,
+        "supporting_human": 1,
+        "system": 13,
+        "aggregate": 32,
+        "caps": {
+          "declared": 24,
+          "supporting_human": 24,
+          "system": 32,
+          "aggregate": 32
+        },
+        "passes": true
+      },
+      "section_counts": {
+        "H0": {
+          "first_path_actions": 17,
+          "supporting_human_actions": 1,
+          "system_duties": 10,
+          "conditional_guards": 4,
+          "boundaries": 21,
+          "proof_duties": 8,
+          "off_path_changes": 1
+        },
+        "H1": {
+          "first_path_actions": 18,
+          "supporting_human_actions": 1,
+          "system_duties": 13,
+          "conditional_guards": 6,
+          "boundaries": 21,
+          "proof_duties": 10,
+          "off_path_changes": 1
+        }
+      }
+    },
+    {
+      "case_id": "prospective-edit-open-data-river-federation-transfer-20261010",
+      "qualification": "ACCEPT",
+      "atom_count": 96,
+      "H0_band": "moderate",
+      "H0_score": 6,
+      "H1_band": "high",
+      "H1_score": 7,
+      "H0_capacity": {
+        "declared": 9,
+        "supporting_human": 2,
+        "system": 8,
+        "aggregate": 19,
+        "caps": {
+          "declared": 24,
+          "supporting_human": 24,
+          "system": 32,
+          "aggregate": 32
+        },
+        "passes": true
+      },
+      "H1_capacity": {
+        "declared": 11,
+        "supporting_human": 2,
+        "system": 12,
+        "aggregate": 25,
+        "caps": {
+          "declared": 24,
+          "supporting_human": 24,
+          "system": 32,
+          "aggregate": 32
+        },
+        "passes": true
+      },
+      "section_counts": {
+        "H0": {
+          "first_path_actions": 9,
+          "supporting_human_actions": 2,
+          "system_duties": 8,
+          "conditional_guards": 4,
+          "boundaries": 21,
+          "proof_duties": 9,
+          "off_path_changes": 1
+        },
+        "H1": {
+          "first_path_actions": 11,
+          "supporting_human_actions": 2,
+          "system_duties": 12,
+          "conditional_guards": 6,
+          "boundaries": 21,
+          "proof_duties": 12,
+          "off_path_changes": 1
+        }
+      }
+    },
+    {
+      "case_id": "prospective-edit-security-isolated-recovery-rehearsal-20261010",
+      "qualification": "ACCEPT",
+      "atom_count": 104,
+      "H0_band": "moderate",
+      "H0_score": 6,
+      "H1_band": "high",
+      "H1_score": 7,
+      "H0_capacity": {
+        "declared": 17,
+        "supporting_human": 2,
+        "system": 5,
+        "aggregate": 24,
+        "caps": {
+          "declared": 24,
+          "supporting_human": 24,
+          "system": 32,
+          "aggregate": 32
+        },
+        "passes": true
+      },
+      "H1_capacity": {
+        "declared": 18,
+        "supporting_human": 2,
+        "system": 7,
+        "aggregate": 27,
+        "caps": {
+          "declared": 24,
+          "supporting_human": 24,
+          "system": 32,
+          "aggregate": 32
+        },
+        "passes": true
+      },
+      "section_counts": {
+        "H0": {
+          "first_path_actions": 17,
+          "supporting_human_actions": 2,
+          "system_duties": 5,
+          "conditional_guards": 4,
+          "boundaries": 21,
+          "proof_duties": 9,
+          "off_path_changes": 1
+        },
+        "H1": {
+          "first_path_actions": 18,
+          "supporting_human_actions": 2,
+          "system_duties": 7,
+          "conditional_guards": 6,
+          "boundaries": 22,
+          "proof_duties": 11,
+          "off_path_changes": 1
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "validation_scope": "Structural/UTF8/digest/source membership/role separation/event census/section caps/formula checks. Independent semantic adjudication remains with root; no native or provider call was made.",
+  "report_sha256": "9c1bd2c9755c8920b8498184efc73244bb0a9b54580506e208ebb4b518bbd67b",
+  "independence_attestation": {
+    "only_semantic_evidence": [
+      "/private/tmp/odylith-new-high4-source-design-20261010/sourcecases-draft.json",
+      "/private/tmp/odylith-new-high4-source-design-20261010/canonical-source-frames.json"
+    ],
+    "permitted_schema_reads_only": true,
+    "unrelated_historical_fixture_rows_overprinted_during_schema_lookup": true,
+    "no_author_predictions_or_other_annotator_or_native_outputs_used": true,
+    "no_provider_build_holdout_calls": true,
+    "no_repository_edits": true
+  }
+}

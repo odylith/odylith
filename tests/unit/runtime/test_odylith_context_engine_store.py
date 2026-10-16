@@ -986,7 +986,7 @@ def test_connect_reuses_projection_connection_for_stable_snapshot(tmp_path: Path
     assert first is second
 
 
-def test_path_signal_profile_uses_custom_consumer_truth_roots(monkeypatch, tmp_path: Path) -> None:
+def test_path_signal_profile_uses_custom_consumer_truth_roots(tmp_path: Path, monkeypatch) -> None:
     repo_root = tmp_path / "repo"
     (repo_root / "consumer-registry" / "source" / "components" / "compass").mkdir(parents=True)
     (repo_root / "consumer-runbooks" / "platform").mkdir(parents=True)

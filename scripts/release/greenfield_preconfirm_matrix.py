@@ -1,0 +1,3791 @@
+"""Run installed Greenfield pre-confirm and commit-only simulations."""
+
+from __future__ import annotations
+
+import argparse
+from collections import Counter
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass, replace
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import sys
+import tempfile
+import uuid
+from types import SimpleNamespace
+from typing import Any
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from local_release_smoke import _cleanup_smoke_temp_root, _local_release_env, _serve_directory  # noqa: E402
+from greenfield_browser_proof_summary import browser_proof_summary  # noqa: E402
+from greenfield_browser_surface_proof import (  # noqa: E402
+    BROWSER_SURFACE_PROOF_SCOPE,
+    browser_runtime_preflight_issues,
+    browser_surface_proof_issues,
+)
+from greenfield_surface_health import REQUIRED_RENDERED_SURFACES  # noqa: E402
+from greenfield_surface_health import atlas_rendered_asset_count  # noqa: E402
+from greenfield_surface_health import rendered_surface_health_issues  # noqa: E402
+from greenfield_surface_health import rendered_surface_payload_count  # noqa: E402
+from greenfield_matrix_leakage import case_generated_leakage_terms as _case_generated_leakage_terms  # noqa: E402
+from greenfield_matrix_leakage import platform_baseline_required_terms as _platform_baseline_required_terms  # noqa: E402
+from greenfield_matrix_leakage import source_evidence_custody_issues as _source_evidence_custody_issues  # noqa: E402
+from greenfield_matrix_leakage import term_present as _term_present  # noqa: E402
+from greenfield_matrix_leakage import with_platform_leakage_issues as _with_platform_leakage_issues  # noqa: E402
+from greenfield_matrix_case_file import load_case_file  # noqa: E402
+from greenfield_matrix_case_file import ungrounded_required_terms  # noqa: E402
+from greenfield_matrix_clarification import clarification_contract_issues, clarification_quality_verdict, run_expected_clarification  # noqa: E402
+from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
+from greenfield_matrix_write_audit import begin_installed_write_audit  # noqa: E402
+from greenfield_matrix_corpus_provenance import GreenfieldReleaseAudit  # noqa: E402
+from greenfield_matrix_corpus_provenance import discovery_corpus_summary  # noqa: E402
+from greenfield_matrix_corpus_provenance import evaluate_release_corpus  # noqa: E402
+from greenfield_matrix_corpus_provenance import load_release_audit_file  # noqa: E402
+from greenfield_matrix_corpus_provenance import release_subset_membership_issues  # noqa: E402
+from greenfield_evaluation_contract import evaluate_frozen_evaluation_contract  # noqa: E402
+from greenfield_evaluation_contract import validate_atomic_annotations  # noqa: E402
+from greenfield_final_holdout_guard import bind_final_holdout_inputs  # noqa: E402
+from greenfield_final_holdout_guard import claim_final_holdout_run  # noqa: E402
+from greenfield_final_holdout_guard import complete_final_holdout_run  # noqa: E402
+from greenfield_distribution_provenance import verify_distribution_provenance  # noqa: E402
+from greenfield_matrix_campaign import MatrixCampaignConfig  # noqa: E402
+from greenfield_matrix_campaign import MatrixTelemetryWriter  # noqa: E402
+from greenfield_matrix_campaign import campaign_phase_from_value  # noqa: E402
+from greenfield_matrix_campaign import campaign_summary  # noqa: E402
+from greenfield_matrix_campaign import case_completed_event  # noqa: E402
+from greenfield_matrix_campaign import case_started_event  # noqa: E402
+from greenfield_matrix_campaign import positive_int  # noqa: E402
+from greenfield_matrix_campaign import proof_tier_from_value  # noqa: E402
+from greenfield_matrix_campaign import required_stressors_from_values  # noqa: E402
+from greenfield_matrix_campaign import stop_reason  # noqa: E402
+from greenfield_matrix_attempt_ledger import MatrixAttemptLedger  # noqa: E402
+from greenfield_matrix_metamorphic import evaluate_metamorphic_outputs  # noqa: E402
+from greenfield_model_profiles import assign_model_profiles  # noqa: E402
+from greenfield_model_profiles import case_model_profile  # noqa: E402
+from greenfield_model_profiles import model_profile_environment  # noqa: E402
+from greenfield_model_profiles import model_profile_evidence  # noqa: E402
+from greenfield_model_profiles import profile_counts  # noqa: E402
+from greenfield_model_profiles import LOWER_CAPABILITY_CONTROL_PROFILES  # noqa: E402
+from greenfield_model_profiles import UNAVAILABLE_PROVIDER_PROFILE  # noqa: E402
+from greenfield_model_profile_proof import model_profile_release_proof  # noqa: E402
+from greenfield_release_qualification import authenticate_terminal_release_inputs, terminal_composed_evidence, terminal_public_evidence_reference  # noqa: E402
+from greenfield_model_profile_proof import authored_model_result_binding_issues  # noqa: E402
+from greenfield_model_profile_proof import sealed_model_profile_observation  # noqa: E402
+from greenfield_model_profile_proof import unavailable_provider_proof_issues  # noqa: E402
+from greenfield_onboarding_quality_scorecard import build_onboarding_quality_scorecard  # noqa: E402
+from greenfield_matrix_preflight import matrix_preflight_failures  # noqa: E402
+from greenfield_matrix_package_evidence import package_evidence_findings, project_brief_readback_findings  # noqa: E402
+from greenfield_matrix_proof_scope import commit_manifest_summary  # noqa: E402
+from greenfield_matrix_proof_scope import temp_cleanup_proof  # noqa: E402
+from greenfield_matrix_release_artifacts import RetainedEvidenceCase  # noqa: E402
+from greenfield_matrix_release_artifacts import begin_retained_case_evidence  # noqa: E402
+from greenfield_matrix_release_artifacts import finalize_retained_case_evidence  # noqa: E402
+from greenfield_matrix_release_artifacts import prepare_retained_evidence_output_dir  # noqa: E402
+from greenfield_matrix_release_artifacts import record_retained_case_json  # noqa: E402
+from greenfield_matrix_release_artifacts import record_retained_case_bytes  # noqa: E402
+from greenfield_matrix_release_artifacts import retained_evidence_result  # noqa: E402
+from greenfield_matrix_release_artifacts import retained_evidence_manifest_path  # noqa: E402
+from greenfield_matrix_release_artifacts import retained_evidence_manifest_issues  # noqa: E402
+from greenfield_matrix_release_artifacts import seal_interrupted_retained_evidence  # noqa: E402
+from greenfield_matrix_release_artifacts import validate_retained_evidence_output_dir  # noqa: E402
+from greenfield_matrix_release_artifacts import write_retained_evidence_manifest  # noqa: E402
+from greenfield_matrix_run_lease import acquire_matrix_run_lease  # noqa: E402
+from greenfield_matrix_run_lease import write_matrix_payload  # noqa: E402
+from greenfield_semantic_release_score import evaluate_semantic_release  # noqa: E402
+from greenfield_commit_recovery_proof import GreenfieldInstalledCommitRecoveryProof  # noqa: E402,F401
+from greenfield_commit_recovery_proof import PROOF_SCOPE as COMMIT_RECOVERY_PROOF_SCOPE  # noqa: E402
+from greenfield_commit_recovery_proof import run_installed_commit_recovery_proof  # noqa: E402
+from greenfield_commit_recovery_cases import select_recovery_case  # noqa: E402
+from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase  # noqa: E402
+from greenfield_preconfirm_matrix_cases import CLARIFICATION_REQUIRED_EXPECTATION  # noqa: E402
+from greenfield_preconfirm_matrix_cases import VALID_CASE_EXPECTATIONS  # noqa: E402
+from greenfield_preconfirm_matrix_cases import case_evidence  # noqa: E402
+from greenfield_preconfirm_matrix_cases import case_expectation  # noqa: E402
+from greenfield_preconfirm_matrix_cases import default_cases  # noqa: E402
+from odylith.runtime.domain_intelligence.greenfield_process import CommandLifecycleObserverError  # noqa: E402
+from odylith.runtime.domain_intelligence.greenfield_process import command_lifecycle_observer  # noqa: E402
+from odylith.runtime.domain_intelligence.greenfield_host_flow import (HostCandidateFlow, HostCandidateFlowError, run_host_candidate_flow)
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (post_receipt_runtime_env, qualify_host_candidate_argv, resolve_trusted_codex_executable)
+
+from odylith.runtime.domain_intelligence.greenfield_process import run_command_with_group_timeout as _run  # noqa: E402
+from greenfield_matrix_types import GreenfieldArtifactCounts  # noqa: E402
+from greenfield_matrix_types import GreenfieldMatrixResult  # noqa: E402
+from greenfield_matrix_types import GreenfieldQualityVerdict  # noqa: E402
+from greenfield_matrix_journey import record_retained_execution, run_compiled_greenfield_journey  # noqa: E402
+from greenfield_matrix_transaction_evidence import confirmation_preview_issues  # noqa: E402
+from greenfield_matrix_transaction_evidence import dry_run_commit_issues  # noqa: E402
+from greenfield_matrix_transaction_evidence import terminal_handoff_issues  # noqa: E402
+from greenfield_matrix_governed_readback import collect_governed_readback  # noqa: E402
+from greenfield_matrix_governed_readback import compass_record_count  # noqa: E402
+from greenfield_matrix_governed_readback import program_record_count  # noqa: E402
+from greenfield_matrix_governed_readback import release_record_count  # noqa: E402
+from greenfield_matrix_quality_scoring import QUALITY_SCORE_DIMENSIONS  # noqa: E402
+from greenfield_matrix_quality_scoring import build_quality_verdict  # noqa: E402
+from greenfield_matrix_quality_scoring import command_excerpt  # noqa: E402
+from greenfield_tooling_payload_reader import read_tooling_payload_js  # noqa: E402
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (  # noqa: E402
+    get_greenfield_model_profile,
+    STANDARD_PROFILE_ID,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (  # noqa: E402
+    model_profile_id_for_repair_tier,
+)
+from odylith.runtime.domain_intelligence.greenfield_text import text_values  # noqa: E402
+
+
+COMMAND_TIMEOUT_SECONDS = 300
+QUALITY_MATRIX_VERSION = "greenfield-preconfirm-installed-matrix-v2"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+NON_ARTIFACT_MARKDOWN_FILES = {"AGENTS.md", "CLAUDE.md", "INDEX.md", "README.md"}
+EVIDENCE_EXCERPT_CHARS = 280
+EVIDENCE_ARTIFACT_LIMIT = 80
+SCORED_REQUIRED_TERM_SURFACES = frozenset(
+    {
+        "Radar workstream",
+        "Registry component spec",
+        "Atlas Mermaid",
+        "Project brief",
+        "Accepted source launch",
+        "Project implementation prompt",
+    }
+)
+INSTALL_MODES = ("full", "seeded")
+
+
+@dataclass
+class _FinalHoldoutRun:
+    ledger_path: Path
+    holdout_path: Path
+    evaluation_manifest_path: Path
+    case_paths: tuple[Path, ...]
+    implementation_revision: str
+    distribution_provenance_sha256: str
+    lower_capability_control_path: Path | None = None
+    claimed: bool = False
+    run_id: str = ""
+
+    def claim(self) -> None:
+        claimed = claim_final_holdout_run(
+            ledger_path=self.ledger_path,
+            implementation_revision=self.implementation_revision,
+            distribution_provenance_sha256=self.distribution_provenance_sha256,
+        )
+        self.run_id = str(claimed["run_id"])
+        self.claimed = True
+        bind_final_holdout_inputs(
+            ledger_path=self.ledger_path,
+            protected_inputs={
+                "final_holdout": self.holdout_path,
+                "evaluation_manifest": self.evaluation_manifest_path,
+                **{
+                    f"case_file_{index:03d}": path
+                    for index, path in enumerate(self.case_paths, start=1)
+                },
+                **(
+                    {"lower_capability_control": self.lower_capability_control_path}
+                    if self.lower_capability_control_path is not None
+                    else {}
+                ),
+            },
+        )
+
+    def complete(
+        self,
+        *,
+        result_path: Path,
+        outcome: str,
+        retained_evidence_manifest: Path | None = None,
+    ) -> None:
+        if self.claimed:
+            complete_final_holdout_run(
+                ledger_path=self.ledger_path,
+                result_path=result_path,
+                outcome=outcome,
+                retained_evidence_manifest=retained_evidence_manifest,
+            )
+            self.claimed = False
+
+
+def _terminalize_interrupted_final_holdout(
+    *,
+    run: _FinalHoldoutRun,
+    error: BaseException,
+    output_path: Path | None,
+    evidence_output_dir: Path,
+    temp_parent: Path,
+) -> Path:
+    """Seal partial evidence and terminalize one claimed direct-runner holdout."""
+
+    interrupted = run.ledger_path.with_name(
+        f"{run.ledger_path.name}.interrupted-{run.run_id}.json"
+    )
+    partial_result = (
+        {
+            "path": str(output_path),
+            "sha256": _sha256_file(output_path),
+        }
+        if output_path is not None and output_path.is_file()
+        else {}
+    )
+    write_matrix_payload(
+        output_path=interrupted,
+        payload={
+            "version": "odylith.greenfield.final-holdout-direct-interruption.v1",
+            "status": "interrupted",
+            "error_type": type(error).__name__,
+            "partial_result": partial_result,
+        },
+    )
+    manifest = seal_interrupted_retained_evidence(
+        output_dir=evidence_output_dir,
+        temp_parent=temp_parent,
+        result_path=interrupted,
+        run_id=run.run_id,
+    )
+    run.complete(
+        result_path=interrupted,
+        outcome="interrupted",
+        retained_evidence_manifest=manifest,
+    )
+    return interrupted
+
+
+def _release_matrix_lease_without_masking(
+    *,
+    lease: Any,
+    active_error: BaseException | None,
+) -> None:
+    """Release the lease while preserving the exception that caused cleanup."""
+
+    try:
+        lease.release()
+    except BaseException as cleanup_error:
+        if active_error is None:
+            raise
+        active_error.add_note(f"matrix lease cleanup also failed: {cleanup_error}")
+
+
+def _terminalize_interrupted_final_holdout_without_masking(
+    *,
+    run: _FinalHoldoutRun,
+    error: BaseException,
+    output_path: Path | None,
+    evidence_output_dir: Path,
+    temp_parent: Path,
+) -> None:
+    """Attempt interruption custody while preserving the active exception."""
+
+    try:
+        _terminalize_interrupted_final_holdout(
+            run=run,
+            error=error,
+            output_path=output_path,
+            evidence_output_dir=evidence_output_dir,
+            temp_parent=temp_parent,
+        )
+    except BaseException as terminalization_error:
+        error.add_note(
+            "final holdout interruption evidence could not be terminalized; "
+            f"the ledger remains claimed: {terminalization_error}"
+        )
+
+
+def run_matrix(
+    *,
+    dist_dir: Path,
+    version: str,
+    temp_parent: Path,
+    cases: Sequence[GreenfieldMatrixCase] = (),
+    include_browser_proof: bool = False,
+    install_mode: str = "full",
+    telemetry_jsonl: Path | None = None,
+    campaign_phase: str = "single-matrix",
+    proof_tier: str = "discovery",
+    stop_after_failures: int = 0,
+    stop_after_cluster_failures: int = 0,
+    required_stressors: Sequence[str] = (),
+    incremental_output_json: Path | None = None,
+    attempt_ledger_jsonl: Path | None = None,
+    allow_partial_stressor_coverage: bool = False,
+    release_audits: Sequence[GreenfieldReleaseAudit] = (),
+    release_corpus_cases: Sequence[GreenfieldMatrixCase] = (),
+    release_audit_repo_root: Path | None = None,
+    semantic_annotations_file: str = "",
+    evaluation_split_manifest: str = "",
+    evidence_output_dir: Path | None = None,
+    retained_evidence_run_id: str = "",
+    host_candidate_argv: Sequence[str] = (),
+    before_product_execution: Callable[[], None] | None = None,
+) -> tuple[GreenfieldMatrixResult, ...]:
+    """Run the real installed greenfield create path for each matrix case."""
+
+    selected_cases = assign_model_profiles(tuple(cases) or default_cases())
+    semantic_release_requested = bool(
+        str(semantic_annotations_file or "").strip()
+        or str(evaluation_split_manifest or "").strip()
+    )
+    _raise_for_unsupported_case_expectations(selected_cases)
+    install_mode = _validated_install_mode(install_mode)
+    host_candidate_argv = tuple(str(argument) for argument in host_candidate_argv)
+    if any(not argument for argument in host_candidate_argv):
+        raise RuntimeError("host-native candidate argv entries must be non-empty")
+    campaign_config = MatrixCampaignConfig(
+        phase=campaign_phase_from_value(campaign_phase),
+        proof_tier=proof_tier_from_value(proof_tier),
+        telemetry_jsonl=Path(telemetry_jsonl).expanduser().resolve() if telemetry_jsonl else None,
+        stop_after_failures=positive_int(stop_after_failures),
+        stop_after_cluster_failures=positive_int(stop_after_cluster_failures),
+        required_stressors=tuple(required_stressors),
+    )
+    if campaign_config.proof_tier == "release" and install_mode != "full":
+        # Invalid install posture should retain the complete operator-facing policy
+        # diagnosis.  A valid full install instead reaches exact host custody before
+        # corpus or audit work below.
+        _raise_for_invalid_campaign_policy(
+            config=campaign_config,
+            install_mode=install_mode,
+            include_browser_proof=include_browser_proof,
+            include_commit_recovery_proof=True,
+            allow_skipped_browser_proof=False,
+            allow_partial_stressor_coverage=allow_partial_stressor_coverage,
+            release_corpus_issues=(
+                evaluate_release_corpus(
+                    tuple(release_corpus_cases) or selected_cases,
+                    release_audits,
+                    repo_root=release_audit_repo_root,
+                ).issues
+                if not semantic_annotations_file
+                else ()
+            ),
+            release_audit_present=bool(release_audits),
+            semantic_annotations_file=semantic_annotations_file,
+            evaluation_split_manifest=evaluation_split_manifest,
+        )
+    if not host_candidate_argv:
+        raise RuntimeError(
+            "matrix execution requires an explicit exact host-candidate argv"
+        )
+    host_candidate_argv = _require_profile_argv_template(host_candidate_argv)
+    _raise_for_invalid_campaign_policy(
+        config=campaign_config,
+        install_mode=install_mode,
+        include_browser_proof=include_browser_proof,
+        # run_matrix is the per-case inner loop; main owns the one-per-run installed recovery proof.
+        include_commit_recovery_proof=True,
+        allow_skipped_browser_proof=False,
+        allow_partial_stressor_coverage=allow_partial_stressor_coverage,
+        release_corpus_issues=(
+            evaluate_release_corpus(
+                tuple(release_corpus_cases) or selected_cases,
+                release_audits,
+                repo_root=release_audit_repo_root,
+            ).issues
+            if campaign_config.proof_tier == "release" and not semantic_annotations_file
+            else ()
+        ),
+        release_audit_present=bool(release_audits),
+        semantic_annotations_file=semantic_annotations_file,
+        evaluation_split_manifest=evaluation_split_manifest,
+    )
+    if campaign_config.proof_tier == "release" and evidence_output_dir is None:
+        raise RuntimeError("release proof requires --evidence-output-dir")
+    retained_evidence_root = (
+        prepare_retained_evidence_output_dir(
+            output_dir=Path(evidence_output_dir),
+            temp_parent=Path(temp_parent),
+        )
+        if evidence_output_dir is not None
+        else None
+    )
+    telemetry = MatrixTelemetryWriter(campaign_config.telemetry_jsonl)
+    attempt_ledger = MatrixAttemptLedger(attempt_ledger_jsonl)
+    attempt_ledger.ensure_planned(selected_cases)
+    release_dir = Path(dist_dir).expanduser().resolve()
+    install_script = release_dir / "install.sh"
+    if not install_script.is_file():
+        raise FileNotFoundError(f"missing local release install script: {install_script}")
+    results: list[GreenfieldMatrixResult] = []
+    run_started_payload = {
+        "phase": campaign_config.phase,
+        "proof_tier": campaign_config.proof_tier,
+        "case_count": len(selected_cases),
+        "install_mode": install_mode,
+        "include_browser_proof": bool(include_browser_proof),
+        "stop_after_failures": campaign_config.stop_after_failures,
+        "stop_after_cluster_failures": campaign_config.stop_after_cluster_failures,
+        "required_stressors": list(campaign_config.required_stressors),
+        "model_profile_counts": profile_counts(selected_cases),
+        "host_native_candidate": True,
+    }
+    telemetry.emit("run_started", run_started_payload)
+    _flush_incremental_matrix_payload(
+        output_json=incremental_output_json,
+        cases=selected_cases,
+        results=results,
+        config=campaign_config,
+        status="running",
+        stopped_reason="",
+    )
+    preflight_results = _matrix_preflight_results(
+        release_dir=release_dir,
+        cases=selected_cases,
+        required_stressors=campaign_config.required_stressors,
+        temp_parent=Path(temp_parent),
+        include_browser_proof=include_browser_proof,
+        enforce_required_stressors=not allow_partial_stressor_coverage,
+        enforce_lexical_controls=not semantic_release_requested,
+    )
+    if preflight_results:
+        if telemetry_jsonl is None and incremental_output_json is None:
+            raise RuntimeError(_preflight_failure_error(preflight_results))
+        reason = "matrix-preflight-failed"
+        results.extend(preflight_results)
+        telemetry.emit(
+            "preflight_failed",
+            {
+                "reason": reason,
+                "failure_count": len(results),
+                "cases": [
+                    _case_evidence_manifest_case(result)
+                    for result in results
+                    if isinstance(result.evidence, Mapping)
+                ],
+            },
+        )
+        for index, result in enumerate(results, start=1):
+            telemetry.emit("case_completed", case_completed_event(result=result, index=index, total=len(selected_cases)))
+        telemetry.emit("run_stopped", {"reason": reason, "completed_case_count": len(results)})
+        telemetry.emit(
+            "run_finished",
+            {
+                "summary": campaign_summary(
+                    cases=selected_cases,
+                    results=results,
+                    config=campaign_config,
+                    stopped_reason=reason,
+                )
+            },
+        )
+        _flush_incremental_matrix_payload(
+            output_json=incremental_output_json,
+            cases=selected_cases,
+            results=results,
+            config=campaign_config,
+            status="failed",
+            stopped_reason=reason,
+        )
+        _retain_unexecuted_results(
+            evidence_root=retained_evidence_root,
+            cases=selected_cases,
+            results=results,
+            repo_root=Path(temp_parent),
+            run_id=retained_evidence_run_id,
+        )
+        return tuple(results)
+    if before_product_execution is not None:
+        before_product_execution()
+    platform_baseline_terms = (
+        ()
+        if semantic_release_requested
+        else _platform_baseline_required_terms(
+            repo_root=REPO_ROOT,
+            release_dir=release_dir,
+            cases=selected_cases,
+        )
+    )
+    run_root = Path(temp_parent).expanduser().resolve() / f"odylith-greenfield-matrix-{uuid.uuid4().hex[:8]}"
+    run_root.mkdir(parents=True, exist_ok=False)
+    case_evidence_root = retained_evidence_root or (run_root / "private-proof")
+    if retained_evidence_root is None:
+        case_evidence_root.mkdir(mode=0o700)
+    server, base_url = _serve_directory(release_dir)
+    stopped_reason = ""
+    try:
+        seed_repo = None
+        if install_mode == "seeded":
+            seed_repo = run_root / f"odylith-seed-install-{uuid.uuid4().hex[:8]}"
+            with command_lifecycle_observer(_matrix_command_observer(telemetry)):
+                seed_install = _prepare_seed_repo(
+                    seed_repo=seed_repo,
+                    install_script=install_script,
+                    base_url=base_url,
+                    version=version,
+                )
+            if seed_install.returncode != 0:
+                results = [
+                    _failed_case(
+                        case,
+                        seed_repo,
+                        "seed_install_failed",
+                        seed_install.returncode,
+                        seed_install.stderr or seed_install.stdout,
+                    )
+                    for case in selected_cases
+                ]
+                for result in results:
+                    attempt_ledger.record_completed(result)
+                telemetry.emit(
+                    "run_stopped",
+                    {"reason": "seed-install-failed", "completed_case_count": len(results)},
+                )
+                telemetry.emit(
+                    "run_finished",
+                    {
+                        "summary": campaign_summary(
+                            cases=selected_cases,
+                            results=results,
+                            config=campaign_config,
+                            stopped_reason="seed-install-failed",
+                        )
+                    },
+                )
+                _flush_incremental_matrix_payload(
+                    output_json=incremental_output_json,
+                    cases=selected_cases,
+                    results=results,
+                    config=campaign_config,
+                    status="failed",
+                    stopped_reason="seed-install-failed",
+                )
+                _retain_unexecuted_results(
+                    evidence_root=retained_evidence_root,
+                    cases=selected_cases,
+                    results=results,
+                    repo_root=seed_repo,
+                    run_id=retained_evidence_run_id,
+                )
+                return tuple(results)
+        for index, case in enumerate(selected_cases, start=1):
+            telemetry.emit("case_started", case_started_event(case=case, index=index, total=len(selected_cases)))
+            attempt_ledger.record_started(case=case, index=index, total=len(selected_cases))
+            repo_root = run_root / f"odylith-sim-{case.slug}-{uuid.uuid4().hex[:8]}"
+            retained_case = (
+                begin_retained_case_evidence(
+                    evidence_root=case_evidence_root,
+                    case_id=_retained_case_id(case),
+                )
+            )
+            try:
+                if seed_repo is not None:
+                    with command_lifecycle_observer(_matrix_command_observer(telemetry)):
+                        _clone_seed_repo(seed_repo=seed_repo, repo_root=repo_root, version=version)
+                with command_lifecycle_observer(_matrix_command_observer(telemetry)):
+                    result = _run_case(
+                        case=case,
+                        repo_root=repo_root,
+                        install_script=install_script,
+                        base_url=base_url,
+                        version=version,
+                        include_browser_proof=include_browser_proof,
+                        platform_baseline_terms=platform_baseline_terms,
+                        skip_install=seed_repo is not None,
+                        install_mode=install_mode,
+                        require_write_audit=True,
+                        include_lexical_custody_proof=not semantic_release_requested,
+                        retained_case=retained_case,
+                        host_candidate_argv=_host_candidate_argv_for_profile(
+                            host_candidate_argv,
+                            profile_id=case_model_profile(case),
+                        ),
+                    )
+                if not semantic_release_requested:
+                    result = _with_case_platform_leakage_issues(result=result, release_dir=release_dir)
+                reason = stop_reason((*results, result), campaign_config)
+            except CommandLifecycleObserverError as exc:
+                result = _failed_case(
+                    case,
+                    repo_root,
+                    "command-lifecycle-telemetry-failed",
+                    exc.returncode,
+                    f"{exc}; command_kind={exc.command_kind}; terminal_state={exc.state}",
+                )
+                reason = "command-lifecycle-telemetry-failed"
+            except Exception as exc:
+                result = _failed_case(
+                    case,
+                    repo_root,
+                    "case-execution-exception",
+                    1,
+                    str(exc),
+                )
+                reason = "case-execution-exception"
+            results.append(result)
+            _flush_incremental_matrix_payload(
+                output_json=incremental_output_json,
+                cases=selected_cases,
+                results=results,
+                config=campaign_config,
+                status="failed" if reason else "running",
+                stopped_reason=reason,
+            )
+            if retained_evidence_root is not None:
+                try:
+                    finalize_retained_case_evidence(
+                        case=retained_case,
+                        repo_root=repo_root,
+                        result_payload=result.to_dict(),
+                    )
+                except RuntimeError as exc:
+                    result = _result_with_retained_evidence_issue(result, str(exc))
+                    results[-1] = result
+                    reason = "retained-evidence-failed"
+                    _flush_incremental_matrix_payload(
+                        output_json=incremental_output_json,
+                        cases=selected_cases,
+                        results=results,
+                        config=campaign_config,
+                        status="failed",
+                        stopped_reason=reason,
+                    )
+            try:
+                _cleanup_repo_before_next(repo_root)
+            except RuntimeError as exc:
+                result = _result_with_cleanup_issue(result, str(exc))
+                results[-1] = result
+                reason = "temp-cleanup-failed"
+                _flush_incremental_matrix_payload(
+                    output_json=incremental_output_json,
+                    cases=selected_cases,
+                    results=results,
+                    config=campaign_config,
+                    status="failed",
+                    stopped_reason=reason,
+                )
+            attempt_ledger.record_completed(result)
+            telemetry.emit("case_completed", case_completed_event(result=result, index=index, total=len(selected_cases)))
+            if reason:
+                stopped_reason = reason
+                telemetry.emit("run_stopped", {"reason": reason, "completed_case_count": len(results)})
+                break
+        final_stop_reason = stopped_reason or stop_reason(results, campaign_config)
+        telemetry.emit(
+            "run_finished",
+            {
+                "summary": campaign_summary(
+                    cases=selected_cases,
+                    results=results,
+                    config=campaign_config,
+                    stopped_reason=final_stop_reason,
+                )
+            },
+        )
+        _flush_incremental_matrix_payload(
+            output_json=incremental_output_json,
+            cases=selected_cases,
+            results=results,
+            config=campaign_config,
+            status=_incremental_matrix_status(results, selected_cases, campaign_config),
+            stopped_reason=final_stop_reason,
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+        _cleanup_run_root(run_root)
+    if retained_evidence_root is not None:
+        write_retained_evidence_manifest(
+            root=retained_evidence_root,
+            expected_case_ids=tuple(_retained_case_id(case) for case in selected_cases[: len(results)]),
+            run_id=retained_evidence_run_id,
+        )
+    return tuple(results)
+
+
+def _matrix_command_observer(telemetry: MatrixTelemetryWriter):
+    if not telemetry.enabled:
+        return None
+
+    def observe(event: Mapping[str, object]) -> None:
+        state = str(event.get("state") or "unknown")
+        telemetry.emit(f"command_{state}", event)
+
+    return observe
+
+
+def _matrix_preflight_results(
+    *,
+    release_dir: Path,
+    cases: Sequence[GreenfieldMatrixCase],
+    required_stressors: Sequence[str],
+    temp_parent: Path,
+    include_browser_proof: bool = False,
+    enforce_required_stressors: bool = True,
+    enforce_lexical_controls: bool = True,
+) -> tuple[GreenfieldMatrixResult, ...]:
+    failures = matrix_preflight_failures(
+        repo_root=REPO_ROOT,
+        release_dir=release_dir,
+        cases=cases,
+        required_stressors=required_stressors,
+        enforce_required_stressors=enforce_required_stressors,
+        enforce_lexical_controls=enforce_lexical_controls,
+    )
+    browser_issues = browser_runtime_preflight_issues() if include_browser_proof else ()
+    if not failures and not browser_issues:
+        return ()
+    preflight_root = Path(temp_parent).expanduser().resolve() / f"odylith-greenfield-preflight-{uuid.uuid4().hex[:8]}"
+    results = [
+        _failed_case(
+            failure.case,
+            preflight_root,
+            "preflight_failed",
+            1,
+            failure.detail,
+        )
+        for failure in failures
+    ]
+    if browser_issues:
+        results.append(
+            _failed_case(
+                cases[0],
+                preflight_root,
+                "preflight_failed",
+                1,
+                "; ".join(browser_issues),
+            )
+        )
+    return tuple(results)
+
+
+def _preflight_failure_error(results: Sequence[GreenfieldMatrixResult]) -> str:
+    details = tuple(str(result.failure_detail or "").strip() for result in results if str(result.failure_detail or "").strip())
+    joined = "; ".join(details)
+    if "platform custody leaked selected case vocabulary" in joined:
+        return "selected greenfield matrix case vocabulary leaked into platform custody: " + joined
+    if "no platform-distinctive sentinel" in joined:
+        return "selected greenfield matrix case vocabulary lacks platform-distinctive sentinels: " + joined
+    if "leakage_terms are required" in joined:
+        return "custom greenfield matrix cases must declare leakage_terms before platform leakage proof: " + joined
+    if "required terms are not grounded" in joined:
+        return "required_terms must be grounded in the case prompt or edit evidence: " + joined
+    return "greenfield matrix preflight failed: " + joined
+
+
+def _raise_for_ungrounded_required_terms(cases: Sequence[GreenfieldMatrixCase]) -> None:
+    failures: list[str] = []
+    for case in cases:
+        missing = ungrounded_required_terms(
+            prompt=case.prompt,
+            confirmed_intent_markdown=str(getattr(case, "confirmed_intent_markdown", "") or ""),
+            required_terms=tuple(getattr(case, "required_terms", ()) or ()),
+        )
+        if missing:
+            failures.append(f"{case.name}: {', '.join(missing)}")
+    if failures:
+        raise RuntimeError("required terms are not grounded in the case prompt or edit evidence: " + "; ".join(failures))
+
+
+def _raise_for_unsupported_case_expectations(cases: Sequence[GreenfieldMatrixCase]) -> None:
+    unsupported = [
+        f"{case.name}: {case_expectation(case)}"
+        for case in cases
+        if case_expectation(case) not in VALID_CASE_EXPECTATIONS
+    ]
+    if unsupported:
+        supported = ", ".join(sorted(VALID_CASE_EXPECTATIONS))
+        raise RuntimeError("unsupported greenfield matrix case expectation; expected one of: " + supported + "; " + "; ".join(unsupported))
+
+
+def _case_evidence_manifest_case(result: GreenfieldMatrixResult) -> Mapping[str, Any]:
+    evidence = result.evidence if isinstance(result.evidence, Mapping) else {}
+    case = evidence.get("case") if isinstance(evidence.get("case"), Mapping) else {}
+    return case
+
+
+def _with_case_platform_leakage_issues(
+    *,
+    result: GreenfieldMatrixResult,
+    release_dir: Path,
+) -> GreenfieldMatrixResult:
+    checked = _with_platform_leakage_issues(
+        repo_root=REPO_ROOT,
+        results=(result,),
+        release_dir=release_dir,
+    )
+    return checked[0] if checked else result
+
+
+def _result_with_cleanup_issue(result: GreenfieldMatrixResult, detail: str) -> GreenfieldMatrixResult:
+    issue = f"temp cleanup failed before next greenfield simulation: {command_excerpt(detail, limit=800)}"
+    quality = replace(
+        result.quality,
+        passed=False,
+        issues=tuple(dict.fromkeys((*result.quality.issues, issue))),
+        score=0,
+        score_explanation=tuple(
+            dict.fromkeys(
+                (
+                    "temporary simulation cleanup failed; release proof cannot pass with leaked temp roots",
+                    *result.quality.score_explanation,
+                )
+            )
+        ),
+    )
+    return replace(
+        result,
+        status="failed",
+        quality=quality,
+        failure_detail=command_excerpt(detail, limit=1200),
+    )
+
+
+def _result_with_retained_evidence_issue(result: GreenfieldMatrixResult, detail: str) -> GreenfieldMatrixResult:
+    issue = f"retained evidence failed before temp cleanup: {command_excerpt(detail, limit=800)}"
+    quality = replace(
+        result.quality,
+        passed=False,
+        issues=tuple(dict.fromkeys((*result.quality.issues, issue))),
+        score=0,
+        score_explanation=("release evidence was not durably retained",),
+    )
+    return replace(
+        result,
+        status="failed",
+        quality=quality,
+        failure_detail=command_excerpt(detail, limit=1200),
+    )
+
+
+def _retained_case_id(case: GreenfieldMatrixCase) -> str:
+    return str(case.case_id or case.slug).strip()
+
+
+def _retain_unexecuted_results(
+    *,
+    evidence_root: Path | None,
+    cases: Sequence[GreenfieldMatrixCase],
+    results: Sequence[GreenfieldMatrixResult],
+    repo_root: Path,
+    run_id: str = "",
+) -> None:
+    if evidence_root is None:
+        return
+    case_ids: list[str] = []
+    seen: dict[str, int] = {}
+    for index, result in enumerate(results):
+        case = cases[min(index, len(cases) - 1)]
+        base = _retained_case_id(case)
+        seen[base] = seen.get(base, 0) + 1
+        case_id = base if seen[base] == 1 else f"{base}-{seen[base]}"
+        retained_case = begin_retained_case_evidence(evidence_root=evidence_root, case_id=case_id)
+        finalize_retained_case_evidence(
+            case=retained_case,
+            repo_root=repo_root,
+            result_payload=result.to_dict(),
+        )
+        case_ids.append(case_id)
+    write_retained_evidence_manifest(
+        root=evidence_root,
+        expected_case_ids=case_ids,
+        run_id=run_id,
+    )
+
+
+def _flush_incremental_matrix_payload(
+    *,
+    output_json: Path | None,
+    cases: Sequence[GreenfieldMatrixCase],
+    results: Sequence[GreenfieldMatrixResult],
+    config: MatrixCampaignConfig,
+    status: str,
+    stopped_reason: str,
+) -> None:
+    if output_json is None:
+        return
+    path = Path(output_json).expanduser().resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "version": QUALITY_MATRIX_VERSION,
+        "status": str(status),
+        "incremental": True,
+        "results": [result.to_dict() for result in results],
+        "campaign": campaign_summary(
+            cases=cases,
+            results=results,
+            config=config,
+            stopped_reason=stopped_reason,
+        ),
+        "release_readiness_boundary": (
+            "incremental matrix payloads are live discovery/release telemetry; final proof is available only after main exits"
+        ),
+    }
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _incremental_matrix_status(
+    results: Sequence[GreenfieldMatrixResult],
+    cases: Sequence[GreenfieldMatrixCase],
+    config: MatrixCampaignConfig,
+) -> str:
+    reason = stop_reason(results, config)
+    if reason:
+        return "failed"
+    if len(results) < len(cases):
+        return "running"
+    metamorphic_output = evaluate_metamorphic_outputs(cases=cases, results=results)
+    return "passed" if all(result.quality.passed for result in results) and metamorphic_output["passed"] else "failed"
+
+
+def _raise_for_invalid_campaign_policy(
+    *,
+    config: MatrixCampaignConfig,
+    install_mode: str,
+    include_browser_proof: bool,
+    include_commit_recovery_proof: bool = False,
+    allow_skipped_browser_proof: bool,
+    allow_partial_stressor_coverage: bool = False,
+    release_corpus_issues: Sequence[str] = (),
+    release_audit_present: bool = False,
+    semantic_annotations_file: str = "",
+    evaluation_split_manifest: str = "",
+) -> None:
+    if config.proof_tier != "release":
+        return
+    violations: list[str] = []
+    if install_mode != "full":
+        violations.append("release proof must use full install mode")
+    if not include_browser_proof:
+        violations.append("release proof must include browser proof")
+    if not include_commit_recovery_proof:
+        violations.append("release proof must include installed commit recovery proof")
+    if allow_skipped_browser_proof:
+        violations.append("release proof cannot allow skipped browser proof")
+    if allow_partial_stressor_coverage:
+        violations.append("release proof cannot allow partial stressor coverage")
+    if config.stop_after_failures:
+        violations.append("release proof cannot stop after a failure threshold")
+    if config.stop_after_cluster_failures:
+        violations.append("release proof cannot stop after a cluster threshold")
+    annotations_present = bool(str(semantic_annotations_file or "").strip())
+    split_manifest_present = bool(str(evaluation_split_manifest or "").strip())
+    semantic_release_requested = annotations_present or split_manifest_present
+    if semantic_release_requested:
+        if not annotations_present:
+            violations.append("protected final-holdout proof requires blinded semantic annotations")
+        if not split_manifest_present:
+            violations.append("protected final-holdout proof requires a frozen evaluation split manifest")
+    elif not release_audit_present:
+        violations.append(
+            "release proof requires audited disclosed inputs or protected final-holdout inputs"
+        )
+    violations.extend(str(issue) for issue in release_corpus_issues if str(issue).strip())
+    if violations:
+        raise RuntimeError("invalid greenfield release proof policy: " + "; ".join(violations))
+
+
+def _raise_for_release_full_install_mode(
+    config: MatrixCampaignConfig,
+    install_mode: str,
+) -> None:
+    """Keep the actionable full-install diagnostic ahead of release corpus work."""
+
+    if config.proof_tier == "release" and install_mode != "full":
+        raise RuntimeError(
+            "invalid greenfield release proof policy: release proof must use full install mode"
+        )
+
+
+def _validated_install_mode(value: str) -> str:
+    mode = str(value or "full").strip().casefold()
+    if mode not in INSTALL_MODES:
+        allowed = ", ".join(INSTALL_MODES)
+        raise RuntimeError(f"greenfield matrix install mode must be one of: {allowed}")
+    return mode
+
+
+def _prepare_seed_repo(
+    *,
+    seed_repo: Path,
+    install_script: Path,
+    base_url: str,
+    version: str,
+) -> Any:
+    seed_repo.mkdir(parents=True, exist_ok=False)
+    env = _local_release_env(base_url=base_url, version=version)
+    _run(cwd=seed_repo, env=env, command=["git", "init"], timeout=60)
+    return _run(cwd=seed_repo, env=env, command=["bash", str(install_script)], timeout=COMMAND_TIMEOUT_SECONDS)
+
+
+def _clone_seed_repo(*, seed_repo: Path, repo_root: Path, version: str) -> None:
+    if repo_root.exists():
+        raise RuntimeError(f"seeded greenfield matrix repo already exists: {repo_root}")
+    shutil.copytree(seed_repo, repo_root, symlinks=True, ignore=_seed_clone_ignore)
+    runtime_root = repo_root / ".odylith/runtime"
+    versions_root = runtime_root / "versions"
+    versions_root.mkdir(parents=True, exist_ok=True)
+    seed_runtime = (seed_repo / f".odylith/runtime/versions/{version}").resolve()
+    linked_runtime = versions_root / version
+    if linked_runtime.exists() or linked_runtime.is_symlink():
+        linked_runtime.unlink()
+    linked_runtime.symlink_to(seed_runtime, target_is_directory=True)
+    current = runtime_root / "current"
+    if current.exists() or current.is_symlink():
+        if current.is_dir() and not current.is_symlink():
+            shutil.rmtree(current)
+        else:
+            current.unlink()
+    current.symlink_to(Path("versions") / version, target_is_directory=True)
+    _run(cwd=repo_root, env=dict(os.environ), command=["git", "init"], timeout=60)
+
+
+def _seed_clone_ignore(directory: str, names: Sequence[str]) -> set[str]:
+    path = Path(directory)
+    blocked: set[str] = set()
+    if path.name == ".git":
+        return set(names)
+    if ".git" in names:
+        blocked.add(".git")
+    if path.parts[-3:] == (".odylith", "runtime", "versions"):
+        blocked.update(names)
+    if path.parts[-2:] == (".odylith", "runtime"):
+        blocked.add("current")
+    return blocked
+
+
+def run_unavailable_provider_proof(
+    *,
+    dist_dir: Path,
+    version: str,
+    temp_parent: Path,
+    case: GreenfieldMatrixCase,
+    host_candidate_argv: Sequence[str],
+) -> dict[str, Any]:
+    """Prove deterministic admission succeeds with runtime providers disabled."""
+
+    release_dir = Path(dist_dir).expanduser().resolve()
+    install_script = release_dir / "install.sh"
+    if not install_script.is_file():
+        raise FileNotFoundError(f"missing local release install script: {install_script}")
+    run_root = Path(temp_parent).expanduser().resolve() / f"odylith-greenfield-unavailable-{uuid.uuid4().hex[:8]}"
+    run_root.mkdir(parents=True, exist_ok=False)
+    server, base_url = _serve_directory(release_dir)
+    try:
+        repo_root = run_root / "consumer-repo"
+        repo_root.mkdir()
+        base_env = _local_release_env(base_url=base_url, version=version)
+        host_env = model_profile_environment(STANDARD_PROFILE_ID, base_env)
+        env = model_profile_environment(
+            UNAVAILABLE_PROVIDER_PROFILE,
+            base_env,
+            unavailable_provider_bin=str(run_root / "missing-codex-provider"),
+        )
+        _run(cwd=repo_root, env=env, command=["git", "init"], timeout=60)
+        install = _run(
+            cwd=repo_root,
+            env=env,
+            command=["bash", str(install_script)],
+            timeout=COMMAND_TIMEOUT_SECONDS,
+        )
+        if install.returncode != 0:
+            return {
+                "version": "odylith.greenfield.post-receipt-provider-isolation-proof.v2",
+                "status": "failed",
+                "profile_id": UNAVAILABLE_PROVIDER_PROFILE,
+                "proposal_seconds": 0.0,
+                "returncode": install.returncode,
+                "no_write": {},
+                "issues": [f"install_failed: {command_excerpt(install.stderr or install.stdout, limit=800)}"],
+            }
+        audit = begin_installed_write_audit(repo_root=repo_root)
+        attempt: dict[str, Any] = {}
+        observed_stage: dict[str, Any] = {}
+
+        def invoke() -> Any:
+            audit_env = audit.environment()
+            completed = _run_host_candidate_propose(
+                repo_root=repo_root,
+                env={**host_env, **audit_env},
+                proposal_env={**env, **audit_env},
+                prompt=case.initial_prompt,
+                edit_evidence="",
+                timeout=get_greenfield_model_profile(
+                    STANDARD_PROFILE_ID
+                ).operational_timeout_seconds,
+                repair_tier=get_greenfield_model_profile(STANDARD_PROFILE_ID).repair_tier,
+                host_candidate_argv=host_candidate_argv,
+                installed_command=audit.command(
+                    runtime_python=repo_root / ".odylith/runtime/current/bin/python",
+                    arguments=(),
+                ),
+                pass_fds=audit.pass_fds,
+                return_failed_proposal=True,
+                stage_observation=observed_stage,
+            )
+            attempt["completed"] = completed
+            return completed
+
+        try:
+            execution = run_expected_clarification(
+                repo_root=repo_root,
+                invoke=invoke,
+                parse_payload=_parse_json_object,
+            )
+        finally:
+            audit_evidence = audit.finish()
+        completed = attempt.get("completed")
+        detail = str(getattr(completed, "stderr", "") or getattr(completed, "stdout", "") or "")
+        issues = unavailable_provider_proof_issues(
+            returncode=execution.returncode,
+            proposal_seconds=float(observed_stage.get("elapsed_seconds") or 0.0),
+            detail=detail,
+            before_record_count=execution.before_record_count,
+            after_record_count=execution.after_record_count,
+            write_audit_active=audit_evidence.active,
+            write_audit_error=audit_evidence.error,
+            write_attempts=audit_evidence.write_attempts,
+            subprocess_attempts=audit_evidence.subprocess_attempts,
+            changed_records=execution.changed_records,
+            staged_transaction_present=execution.staged_transaction_present,
+        )
+        return {
+            "version": "odylith.greenfield.post-receipt-provider-isolation-proof.v2",
+            "status": "passed" if not issues else "failed",
+            "profile_id": UNAVAILABLE_PROVIDER_PROFILE,
+            "semantic_authority": "active_host_single_authority",
+            "runtime_provider_mode": "disabled",
+            "post_receipt_provider_invocations": 0,
+            "proposal_seconds": float(observed_stage.get("elapsed_seconds") or 0.0),
+            "whole_journey_seconds": execution.seconds,
+            "returncode": execution.returncode,
+            "failure_detail": command_excerpt(detail, limit=800),
+            "no_write": {
+                "before_record_count": execution.before_record_count,
+                "after_record_count": execution.after_record_count,
+                "changed_records": list(execution.changed_records),
+                "staged_transaction_present": execution.staged_transaction_present,
+                "write_audit_active": audit_evidence.active,
+                "write_attempts": list(audit_evidence.write_attempts),
+                "subprocess_attempts": list(audit_evidence.subprocess_attempts),
+                "write_audit_error": audit_evidence.error,
+            },
+            "issues": list(issues),
+        }
+    finally:
+        server.shutdown()
+        server.server_close()
+        _cleanup_run_root(run_root)
+
+
+def _run_case(
+    *,
+    case: GreenfieldMatrixCase,
+    repo_root: Path,
+    install_script: Path,
+    base_url: str,
+    version: str,
+    include_browser_proof: bool = False,
+    platform_baseline_terms: Sequence[str] = (),
+    skip_install: bool = False,
+    install_mode: str = "full",
+    require_write_audit: bool = True,
+    include_lexical_custody_proof: bool = True,
+    retained_case: RetainedEvidenceCase | None = None,
+    host_candidate_argv: Sequence[str] = (),
+) -> GreenfieldMatrixResult:
+    case = assign_model_profiles((case,))[0]
+    profile = case_model_profile(case)
+    profile_contract = get_greenfield_model_profile(profile)
+    env = model_profile_environment(
+        profile,
+        _local_release_env(base_url=base_url, version=version),
+    )
+    if not skip_install:
+        repo_root.mkdir(parents=True)
+        _run(cwd=repo_root, env=env, command=["git", "init"], timeout=60)
+        install = _run(cwd=repo_root, env=env, command=["bash", str(install_script)], timeout=COMMAND_TIMEOUT_SECONDS)
+        if install.returncode != 0:
+            return _failed_case(case, repo_root, "install_failed", install.returncode, install.stderr or install.stdout)
+    elif not (repo_root / ".odylith/bin/odylith").is_file():
+        return _failed_case(case, repo_root, "seed_clone_failed", 1, "seeded repo clone is missing .odylith/bin/odylith")
+    if case_expectation(case) == CLARIFICATION_REQUIRED_EXPECTATION:
+        if not require_write_audit:
+            raise ValueError("clarification matrix cases require the installed write audit")
+        proposal_repair_tier = (
+            get_greenfield_model_profile(STANDARD_PROFILE_ID).repair_tier
+            if profile in LOWER_CAPABILITY_CONTROL_PROFILES
+            else profile_contract.repair_tier
+        )
+        result = _run_expected_clarification_case(
+            case=case,
+            repo_root=repo_root,
+            env=env,
+            timeout=int(profile_contract.operational_timeout_seconds),
+            repair_tier=proposal_repair_tier,
+            install_script=install_script,
+            version=version,
+            install_mode=install_mode,
+            retained_case=retained_case,
+            host_candidate_argv=host_candidate_argv,
+        )
+        return replace(
+            result,
+            evidence=dict(result.evidence),
+        )
+    raw_streams = case.initial_input_streams
+    lifecycle_evidence: dict[str, Any] = {}
+    observed_stage: dict[str, Any] = {}
+    invoke_propose = lambda timeout: _run_host_candidate_propose(
+        repo_root=repo_root,
+        env=env,
+        prompt=case.initial_prompt,
+        edit_evidence="",
+        repair_tier=profile_contract.repair_tier,
+        timeout=timeout,
+        host_candidate_argv=host_candidate_argv,
+        retained_case=retained_case,
+        stage_observation=observed_stage,
+    )
+    execution = run_compiled_greenfield_journey(
+        repo_root=repo_root,
+        env=env,
+        repair_tier=profile_contract.repair_tier,
+        raw_streams=raw_streams,
+        invoke_cli=lambda command, timeout: _run(
+            cwd=repo_root, env=env, command=list(command), timeout=timeout,
+        ),
+        invoke_propose=invoke_propose,
+        read_proposal_stage_seconds=lambda: observed_stage.get("elapsed_seconds"),
+        initial_prompt=case.initial_prompt, lifecycle_correction=case.lifecycle_correction,
+        retained_case=retained_case, lifecycle_evidence=lifecycle_evidence,
+    )
+    create = execution.failure or execution.decision
+    proposal_seconds = execution.proposal_seconds
+    create_seconds = execution.confirmation_seconds
+    payload = execution.commit_payload
+    manifest = _as_mapping(payload.get("commit_manifest"))
+    package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
+    stage_observation = _retained_model_stage_observation(retained_case)
+    expected_model_source = case.model_evidence.evidence_source
+    raw_candidate = _retained_raw_host_candidate(retained_case)
+    source_duty_receipt = _retained_source_duty_receipt(retained_case)
+    profile_evidence = model_profile_evidence(
+        profile,
+        env,
+        observed=sealed_model_profile_observation(
+            proposal=_as_mapping(getattr(package, "proposal", None)),
+            create_payload=payload,
+        ),
+        stage_observation=stage_observation,
+        raw_candidate=raw_candidate,
+        source_duty_receipt=source_duty_receipt,
+        expected_source=expected_model_source,
+    )
+    model_result_issues = authored_model_result_binding_issues(
+        stage_observation=stage_observation, create_payload=payload,
+        raw_candidate=raw_candidate,
+        source_duty_receipt=source_duty_receipt,
+        expected_source=expected_model_source,
+    )
+    counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
+    surface_issues = rendered_surface_health_issues(repo_root=repo_root)
+    generated_text = _generated_text(repo_root=repo_root, package=package)
+    leakage_terms = (
+        _case_generated_leakage_terms(
+            case=case,
+            generated_text=generated_text,
+            platform_baseline_terms=platform_baseline_terms,
+        )
+        if include_lexical_custody_proof
+        else ()
+    )
+    source_custody_issues = (
+        _source_evidence_custody_issues(case=case, package=package)
+        if include_lexical_custody_proof
+        else ()
+    )
+    browser_surface_proof_attempted = bool(include_browser_proof and create.returncode == 0)
+    browser_surface_issues = (
+        browser_surface_proof_issues(
+            repo_root=repo_root,
+            screenshot_output_dir=(retained_case.staging_root / "browser" if retained_case else None),
+        )
+        if browser_surface_proof_attempted
+        else ()
+    )
+    receipt_issues = dry_run_commit_issues(
+        receipt=execution.dry_run_receipt,
+        create_payload=payload,
+        repo_root=repo_root,
+    )
+    decision_rail_issues = confirmation_preview_issues(
+        proposal_payload=execution.proposal_payload, repo_root=repo_root, execution=execution,
+    )
+    handoff_issues = tuple(dict.fromkeys(
+        issue
+        for terminal_decision in (execution.decision, execution.retry_decision)
+        if terminal_decision is not None
+        for issue in terminal_handoff_issues(
+            terminal_decision=terminal_decision,
+            repo_root=repo_root,
+            transaction_hash=str(execution.dry_run_receipt.get("transaction_hash") or ""),
+            browser_open_suppressed=env.get("ODYLITH_NO_BROWSER") == "1",
+        )
+    ))
+    quality = build_quality_verdict(
+        create_payload=payload,
+        package=package,
+        counts=counts,
+        surface_issues=surface_issues,
+        browser_surface_issues=browser_surface_issues,
+        browser_surface_proof_attempted=browser_surface_proof_attempted,
+        browser_surface_proof_required=include_browser_proof,
+        confirmation_ux_issues=(*decision_rail_issues, *handoff_issues),
+        create_returncode=create.returncode,
+        proposal_seconds=proposal_seconds,
+        create_seconds=create_seconds,
+        create_detail=create.stderr or create.stdout,
+        external_issues=(
+            *execution.output_contract_issues,
+            *receipt_issues,
+            *decision_rail_issues,
+            *handoff_issues,
+            *source_custody_issues,
+            *model_result_issues,
+            *(str(issue) for issue in profile_evidence.get("issues", ())),
+        ),
+    )
+    evidence = dict(
+        _case_evidence_manifest(
+            case=case,
+            repo_root=repo_root,
+            package=package,
+            create_payload=payload,
+            quality=quality,
+            install_script=install_script,
+            version=version,
+            install_mode=install_mode,
+            browser_surface_proof_attempted=browser_surface_proof_attempted,
+            browser_surface_proof_required=include_browser_proof,
+            browser_surface_issues=browser_surface_issues,
+        )
+    )
+    evidence["preconfirm_dry_run"] = dict(execution.dry_run_receipt)
+    evidence["confirmation_contract"] = {
+        "status": "passed" if not decision_rail_issues and not handoff_issues else "failed",
+        "scope": "explicit_terminal_decision",
+        "decision_rail_issues": list(decision_rail_issues),
+        "terminal_handoff_issues": list(handoff_issues),
+        "native_chat": "unqualified",
+        "commit_payload_source": "closed_journal",
+        "terminal_journal": dict(execution.terminal_journal),
+        "terminal_journal_sha256": execution.terminal_journal_sha256,
+        "terminal_pre_retry_snapshot": dict(execution.terminal_pre_retry_snapshot),
+        "terminal_proof_issues": list(execution.terminal_proof_issues),
+        "terminal_retry_seconds": execution.retry_seconds,
+        "terminal_commands": [
+            {"attempt": label, "returncode": result.returncode,
+             "stdout_excerpt": command_excerpt(result.stdout),
+             "stderr_excerpt": command_excerpt(result.stderr)}
+            for label, result in (("confirm", execution.decision), ("same_hash_retry", execution.retry_decision))
+            if result is not None
+        ],
+    }
+    evidence["model_profile"] = profile_evidence
+    if case.lifecycle_correction:
+        evidence["lifecycle_edit"] = lifecycle_evidence
+    if retained_case is not None:
+        record_retained_execution(
+            retained_case=retained_case,
+            proposal_payload=execution.proposal_payload,
+            dry_run_receipt=execution.dry_run_receipt,
+            create_payload=payload,
+            raw_streams=raw_streams,
+        )
+    return GreenfieldMatrixResult(
+        name=case.name,
+        status="passed" if quality.passed else "failed",
+        create_seconds=create_seconds,
+        proposal_seconds=proposal_seconds,
+        counts=counts,
+        quality=quality,
+        browser_surface_issues=browser_surface_issues,
+        browser_surface_proof_attempted=browser_surface_proof_attempted,
+        create_returncode=create.returncode,
+        failure_detail=command_excerpt(create.stderr or create.stdout) if create.returncode else "",
+        create_stdout_excerpt=command_excerpt((execution.decision or create).stdout) if create.returncode else "",
+        create_stderr_excerpt=command_excerpt((execution.decision or create).stderr) if create.returncode else "",
+        platform_leakage_terms=leakage_terms,
+        commit_manifest_summary=commit_manifest_summary(manifest),
+        evidence=evidence,
+    )
+
+
+def _run_host_candidate_propose(
+    *,
+    repo_root: Path,
+    env: Mapping[str, str],
+    prompt: str,
+    edit_evidence: str,
+    repair_tier: str,
+    timeout: float,
+    host_candidate_argv: Sequence[str],
+    retained_case: RetainedEvidenceCase | None = None,
+    installed_command: Sequence[str] | None = None,
+    pass_fds: tuple[int, ...] = (),
+    proposal_env: Mapping[str, str] | None = None,
+    return_failed_proposal: bool = False,
+    observe_stage: Callable[[Mapping[str, Any]], None] | None = None,
+    stage_observation: dict[str, Any] | None = None,
+    retain_diagnostic_bytes: Callable[[str, bytes], None] | None = None,
+) -> Any:
+    base_command = tuple(
+        str(value)
+        for value in (installed_command or ("./.odylith/bin/odylith",))
+    )
+
+    def invoke_installed(command: Sequence[str], remaining: float) -> Any:
+        kwargs: dict[str, Any] = {
+            "cwd": repo_root,
+            "env": env,
+            "command": list(command),
+            "timeout": remaining,
+        }
+        if pass_fds:
+            kwargs["pass_fds"] = pass_fds
+        return _run(**kwargs)
+
+    proposal_attempt: dict[str, Any] = {}
+
+    def invoke_propose(
+        candidate_path: Path, gate_path: Path, ledger_path: Path, remaining: float
+    ) -> Any:
+        completed = _run_greenfield_propose(
+            repo_root=repo_root,
+            env=post_receipt_runtime_env(
+                proposal_env if proposal_env is not None else env
+            ),
+            prompt=prompt,
+            edit_evidence=edit_evidence,
+            repair_tier=repair_tier,
+            timeout=remaining,
+            command=base_command,
+            pass_fds=pass_fds,
+            candidate_file=str(candidate_path),
+            gate_file=str(gate_path),
+            ledger_file=str(ledger_path),
+        )
+        proposal_attempt["completed"] = completed
+        return completed
+
+    final_observation: dict[str, Any] = {}
+    retain_authority_gate_bytes = None
+    retain_source_ledger_bytes = None
+    retain_source_ledger_preflight_bytes = None
+    retain_source_duty_decision_bytes = None
+    retain_source_ledger_check_bytes = None
+    retain_candidate_bytes = None
+    retain_proposal_bytes = None
+    if retained_case is not None:
+        retain_authority_gate_bytes = lambda value: record_retained_case_bytes(
+            retained_case,
+            "semantic/host-authority-gate.raw.v1.json",
+            value,
+        )
+        retain_source_ledger_bytes = lambda value: record_retained_case_bytes(
+            retained_case,
+            "semantic/host-source-ledger.raw.v1.json",
+            value,
+        )
+        retain_source_ledger_preflight_bytes = lambda value: record_retained_case_bytes(
+            retained_case,
+            "semantic/host-source-ledger-preflight.raw.v1.json",
+            value,
+        )
+        retain_source_duty_decision_bytes = lambda value: record_retained_case_bytes(
+            retained_case,
+            "semantic/host-source-duty-decisions.raw.v1.json",
+            value,
+        )
+        retain_source_ledger_check_bytes = lambda value: record_retained_case_bytes(
+            retained_case,
+            "semantic/host-source-ledger-check.raw.v1.json",
+            value,
+        )
+        retain_candidate_bytes = lambda value: record_retained_case_bytes(
+            retained_case,
+            "semantic/host-candidate.raw.v1.json",
+            value,
+        )
+        retain_proposal_bytes = lambda stream, value: record_retained_case_bytes(
+            retained_case,
+            f"semantic/host-proposal.{stream}.raw.v1",
+            value,
+        )
+    if retain_diagnostic_bytes is not None:
+        def _with_diagnostic(label: str, existing: Callable[[bytes], None] | None):
+            def capture(value: bytes) -> None:
+                if existing is not None:
+                    existing(value)
+                retain_diagnostic_bytes(label, value)
+            return capture
+        retain_authority_gate_bytes = _with_diagnostic(
+            "authority-gate", retain_authority_gate_bytes
+        )
+        retain_source_ledger_bytes = _with_diagnostic(
+            "source-ledger", retain_source_ledger_bytes
+        )
+        retain_source_ledger_preflight_bytes = _with_diagnostic(
+            "source-ledger-preflight", retain_source_ledger_preflight_bytes
+        )
+        retain_source_duty_decision_bytes = _with_diagnostic(
+            "source-duty-decisions", retain_source_duty_decision_bytes
+        )
+        retain_source_ledger_check_bytes = _with_diagnostic(
+            "source-ledger-check", retain_source_ledger_check_bytes
+        )
+        retain_candidate_bytes = _with_diagnostic("candidate", retain_candidate_bytes)
+    def retain_host_stderr(stage: str, value: bytes) -> None:
+        if retained_case is not None:
+            record_retained_case_bytes(retained_case, f"semantic/host-{stage}.stderr.raw.v1", value)
+        if retain_diagnostic_bytes is not None:
+            retain_diagnostic_bytes(f"{stage}-stderr", value)
+
+    profile_id = str(env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or "").strip()
+    profile = get_greenfield_model_profile(profile_id)
+    try:
+        completed = run_host_candidate_flow(
+            HostCandidateFlow(
+                repo_root=repo_root,
+                temp_parent=repo_root.parent,
+                host_argv=tuple(host_candidate_argv),
+                prompt=prompt,
+                edit_evidence=edit_evidence,
+                timeout=timeout,
+                env=env,
+                trusted_codex_executable=resolve_trusted_codex_executable(environ=env),
+                expected_model=profile.model,
+                expected_reasoning_effort=profile.reasoning_effort,
+                invoke_installed=invoke_installed,
+                invoke_propose=invoke_propose,
+                installed_command=base_command,
+                observation_sink=final_observation,
+                observe=observe_stage,
+                retain_authority_gate_bytes=retain_authority_gate_bytes,
+                retain_source_ledger_bytes=retain_source_ledger_bytes,
+                retain_source_ledger_preflight_bytes=retain_source_ledger_preflight_bytes,
+                retain_source_duty_decision_bytes=retain_source_duty_decision_bytes,
+                retain_source_ledger_check_bytes=retain_source_ledger_check_bytes,
+                retain_candidate_bytes=retain_candidate_bytes,
+                retain_proposal_bytes=retain_proposal_bytes,
+                retain_host_stderr_bytes=(retain_host_stderr
+                    if retained_case is not None or retain_diagnostic_bytes is not None else None),
+            )
+        )
+        if getattr(completed, "completion_receipt", None):
+            from odylith.runtime.domain_intelligence.greenfield_pending_transaction_store import write_completion_receipt_delivery
+            completed.completion_receipt_path = str(write_completion_receipt_delivery(
+                repo_root=repo_root, receipt=completed.completion_receipt))
+        return completed
+    except HostCandidateFlowError:
+        completed = proposal_attempt.get("completed")
+        if (
+            return_failed_proposal
+            and completed is not None
+            and int(getattr(completed, "returncode", 0)) != 0
+        ):
+            return completed
+        raise
+    finally:
+        # Final telemetry and completion-receipt delivery follow the measured
+        # guardian completion I/O and final clock check.
+        if final_observation:
+            if stage_observation is not None:
+                dict.update(stage_observation, final_observation)
+            primary_error = sys.exc_info()[1]
+            try:
+                if retained_case is not None:
+                    record_retained_case_json(
+                        retained_case,
+                        "semantic/host-authoring-observation.v1.json",
+                        final_observation,
+                    )
+            except Exception as exc:
+                if primary_error is None:
+                    raise
+                primary_error.add_note(f"final observation retention failed: {type(exc).__name__}")
+
+
+def _host_candidate_argv_for_profile(
+    argv: Sequence[str],
+    *,
+    profile_id: str,
+) -> tuple[str, ...]:
+    """Resolve exact model tokens for one preselected profile without inference."""
+
+    contract = get_greenfield_model_profile(profile_id)
+    replacements = {
+        "{model}": contract.model,
+        "model_reasoning_effort={reasoning_effort}": (
+            f"model_reasoning_effort={contract.reasoning_effort}"
+        ),
+    }
+    return tuple(replacements.get(str(token), str(token)) for token in argv)
+
+
+def _require_profile_argv_template(argv: Sequence[str]) -> tuple[str, ...]:
+    tokens = tuple(str(token) for token in argv)
+    for placeholder in (
+        "{model}",
+        "model_reasoning_effort={reasoning_effort}",
+    ):
+        if tokens.count(placeholder) != 1:
+            raise RuntimeError(
+                "matrix host candidate argv requires exactly one " + placeholder + " token"
+            )
+    trusted = resolve_trusted_codex_executable()
+    try:
+        qualified, _receipt = qualify_host_candidate_argv(
+            tokens,
+            trusted_codex_executable=trusted,
+            expected_model="{model}",
+            expected_reasoning_effort="{reasoning_effort}",
+            expected_output_schema="{candidate_schema}",
+        )
+    except ValueError as exc:
+        raise RuntimeError(str(exc)) from exc
+    return qualified
+
+
+def _run_expected_clarification_case(
+    *,
+    case: GreenfieldMatrixCase,
+    repo_root: Path,
+    env: Mapping[str, str],
+    timeout: int,
+    repair_tier: str,
+    install_script: Path,
+    version: str,
+    install_mode: str,
+    retained_case: RetainedEvidenceCase | None = None,
+    host_candidate_argv: Sequence[str] = (),
+) -> GreenfieldMatrixResult:
+    audit = begin_installed_write_audit(repo_root=repo_root)
+    raw_streams = case.initial_input_streams
+
+    def invoke_proposal() -> Any:
+        audit_env = {**env, **audit.environment()}
+        installed_command = audit.command(
+            runtime_python=repo_root / ".odylith/runtime/current/bin/python",
+            arguments=(),
+        )
+        proposed = _run_host_candidate_propose(
+            repo_root=repo_root,
+            env=audit_env,
+            prompt=case.initial_prompt,
+            edit_evidence="",
+            repair_tier=repair_tier,
+            timeout=timeout,
+            host_candidate_argv=host_candidate_argv,
+            retained_case=retained_case,
+            installed_command=installed_command,
+            pass_fds=audit.pass_fds,
+        )
+        raw_streams["propose.stdout"] = str(getattr(proposed, "stdout", "") or "")
+        raw_streams["propose.stderr"] = str(getattr(proposed, "stderr", "") or "")
+        return proposed
+
+    try:
+        execution = run_expected_clarification(
+            repo_root=repo_root,
+            invoke=invoke_proposal,
+            parse_payload=_parse_json_object,
+        )
+    finally:
+        audit_evidence = audit.finish()
+    execution = replace(
+        execution,
+        write_audit_active=audit_evidence.active,
+        write_attempts=audit_evidence.write_attempts,
+        subprocess_attempts=audit_evidence.subprocess_attempts,
+        write_audit_error=audit_evidence.error,
+    )
+    payload = execution.payload
+    stage_observation = _retained_model_stage_observation(retained_case)
+    expected_source = prepare_model_authoring_evidence(
+        prompt=case.initial_prompt,
+        edit_evidence="",
+    ).evidence_source
+    profile_id = str(env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or "").strip()
+    if not profile_id:
+        profile_id = model_profile_id_for_repair_tier(repair_tier)
+    raw_candidate = _retained_raw_host_candidate(retained_case)
+    source_duty_receipt = _retained_source_duty_receipt(retained_case)
+    issues = list(clarification_contract_issues(
+        execution,
+        expected_fields=(
+            (str(getattr(case, "expected_clarification_field", "") or "").strip(),)
+            if str(getattr(case, "expected_clarification_field", "") or "").strip()
+            else ()
+        ),
+        expected_question=str(
+            getattr(case, "expected_clarification_question", "") or ""
+        ).strip(),
+        expected_model_profile_id=profile_id,
+        stage_observation=stage_observation,
+        expected_source=expected_source,
+    ))
+    package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
+    counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
+    profile_evidence = model_profile_evidence(
+        profile_id,
+        env,
+        observed=sealed_model_profile_observation(create_payload=payload),
+        stage_observation=stage_observation,
+        raw_candidate=raw_candidate,
+        source_duty_receipt=source_duty_receipt,
+        expected_source=expected_source,
+    )
+    issues.extend(str(issue) for issue in profile_evidence.get("issues", ()))
+    quality = clarification_quality_verdict(issues)
+    evidence = dict(
+        _case_evidence_manifest(
+            case=case,
+            repo_root=repo_root,
+            package=package,
+            create_payload=payload,
+            quality=quality,
+            install_script=install_script,
+            version=version,
+            install_mode=install_mode,
+            browser_surface_proof_attempted=False,
+            browser_surface_proof_required=False,
+            browser_surface_issues=(),
+        )
+    )
+    clarification = _as_mapping(payload.get("clarification"))
+    evidence["clarification"] = {
+        "mode": str(payload.get("mode") or "").strip(),
+        "question": str(clarification.get("question") or "").strip(),
+        "required_fields": list(clarification.get("required_fields") or ()),
+        "returncode": execution.returncode,
+    }
+    evidence["no_write"] = {
+        "before_record_count": execution.before_record_count,
+        "after_record_count": execution.after_record_count,
+        "changed_records": list(execution.changed_records),
+        "staged_transaction_present": execution.staged_transaction_present,
+        "write_audit_active": execution.write_audit_active,
+        "write_attempts": list(execution.write_attempts),
+        "subprocess_attempts": list(execution.subprocess_attempts),
+        "write_audit_error": execution.write_audit_error,
+    }
+    evidence["model_profile"] = profile_evidence
+    if retained_case is not None:
+        record_retained_execution(
+            retained_case=retained_case,
+            proposal_payload=payload,
+            dry_run_receipt={},
+            create_payload={},
+            raw_streams=raw_streams,
+        )
+    return GreenfieldMatrixResult(
+        name=case.name,
+        status="passed" if quality.passed else "failed",
+        create_seconds=execution.seconds,
+        proposal_seconds=float(stage_observation.get("elapsed_seconds") or 0.0),
+        counts=counts,
+        quality=quality,
+        create_returncode=execution.returncode,
+        failure_detail="clarification-required no-write contract failed" if not quality.passed else "",
+        create_stdout_excerpt="",
+        create_stderr_excerpt="",
+        commit_manifest_summary={},
+        evidence=evidence,
+    )
+
+
+def _run_greenfield_propose(
+    *,
+    repo_root: Path,
+    env: Mapping[str, str],
+    prompt: str,
+    timeout: int,
+    edit_evidence: str = "",
+    repair_tier: str = "",
+    command: Sequence[str] | None = None,
+    pass_fds: tuple[int, ...] = (),
+    candidate_file: str,
+    gate_file: str,
+    ledger_file: str,
+) -> Any:
+    if not str(candidate_file or "").strip():
+        raise RuntimeError(
+            "greenfield propose requires a candidate file from the host-candidate flow"
+        )
+    if not str(gate_file or "").strip():
+        raise RuntimeError(
+            "greenfield propose requires a source-authority gate from the host-candidate flow"
+        )
+    if not str(ledger_file or "").strip():
+        raise RuntimeError(
+            "greenfield propose requires a source ledger from the host-candidate flow"
+        )
+    propose_command = list(command) if command is not None else ["./.odylith/bin/odylith"]
+    propose_command.extend(
+        _greenfield_propose_arguments(
+            prompt=prompt,
+            edit_evidence=edit_evidence,
+            repair_tier=repair_tier,
+            candidate_file=candidate_file,
+            gate_file=gate_file,
+            ledger_file=ledger_file,
+        )
+    )
+    run_kwargs: dict[str, Any] = {
+        "cwd": repo_root,
+        "env": dict(env),
+        "command": propose_command,
+        "timeout": timeout,
+    }
+    if pass_fds:
+        run_kwargs["pass_fds"] = pass_fds
+    return _run(**run_kwargs)
+
+
+def _greenfield_propose_arguments(
+    *,
+    prompt: str,
+    edit_evidence: str = "",
+    repair_tier: str = "",
+    candidate_file: str = "",
+    gate_file: str = "",
+    ledger_file: str = "",
+) -> list[str]:
+    arguments = [
+        "greenfield",
+        "propose",
+        "--repo-root",
+        ".",
+        "--prompt",
+        prompt,
+        "--format",
+        "json",
+    ]
+    if edit_evidence.strip():
+        arguments.extend(["--edit", edit_evidence])
+    if repair_tier:
+        arguments.extend(["--repair-tier", repair_tier])
+    if candidate_file:
+        arguments.extend(["--candidate-file", candidate_file])
+    if gate_file:
+        arguments.extend(["--gate-file", gate_file])
+    if ledger_file:
+        arguments.extend(["--ledger-file", ledger_file])
+    return arguments
+
+
+def _case_evidence_manifest(
+    *,
+    case: GreenfieldMatrixCase,
+    repo_root: Path,
+    package: Any,
+    create_payload: Mapping[str, Any],
+    quality: GreenfieldQualityVerdict,
+    install_script: Path,
+    version: str,
+    install_mode: str,
+    browser_surface_proof_attempted: bool,
+    browser_surface_proof_required: bool,
+    browser_surface_issues: Sequence[str],
+) -> Mapping[str, Any]:
+    manifest = _as_mapping(create_payload.get("commit_manifest"))
+    artifact_texts = _artifact_text_inventory(package)
+    artifacts = _artifact_inventory(artifact_texts)
+    all_grounding = _required_term_grounding(case=case, artifacts=artifact_texts)
+    scored_grounding = _required_term_grounding(
+        case=case,
+        artifacts=[
+            artifact
+            for artifact in artifact_texts
+            if str(artifact.get("surface", "")) in SCORED_REQUIRED_TERM_SURFACES
+        ],
+    )
+    return {
+        "version": "odylith.greenfield.matrix.case_evidence.v1",
+        "case": _case_evidence(case),
+        "release": {
+            "version": str(version),
+            "install_mode": str(install_mode),
+            "install_script_sha256": _sha256_file(install_script),
+        },
+        "artifacts": artifacts,
+        "required_term_grounding": all_grounding,
+        "required_term_scored_grounding": scored_grounding,
+        "required_term_distribution_findings": _required_term_distribution_findings(
+            all_grounding=all_grounding,
+            scored_grounding=scored_grounding,
+        ),
+        "quality_findings": _quality_finding_evidence(
+            package=package,
+            quality=quality,
+            browser_surface_issues=browser_surface_issues,
+        ),
+        "browser_surface_proof": {
+            "required": bool(browser_surface_proof_required),
+            "attempted": bool(browser_surface_proof_attempted),
+            "issues": list(browser_surface_issues),
+        },
+        "commit_manifest_summary": commit_manifest_summary(manifest),
+    }
+
+
+def _failed_case_evidence_manifest(
+    case: GreenfieldMatrixCase,
+    status: str,
+    returncode: int,
+    detail: str,
+) -> Mapping[str, Any]:
+    return {
+        "version": "odylith.greenfield.matrix.case_evidence.v1",
+        "case": _case_evidence(case),
+        "failure": {
+            "status": str(status),
+            "returncode": int(returncode),
+            "detail_excerpt": command_excerpt(detail, limit=1200),
+        },
+    }
+
+
+def _case_evidence(case: GreenfieldMatrixCase) -> Mapping[str, Any]:
+    return case_evidence(case)
+
+
+def _artifact_text_inventory(package: Any) -> list[Mapping[str, str]]:
+    records: list[Mapping[str, str]] = []
+    records.extend(
+        _artifact_text_records(
+            "Radar workstream",
+            _as_mapping(package.backlog_result.get("idea_files")),
+        )
+    )
+    records.extend(_artifact_text_records("Registry component spec", _as_mapping(package.rendered_component_specs)))
+    records.extend(_artifact_text_records("Atlas Mermaid", _as_mapping(package.rendered_atlas_sources)))
+    project_brief = str(getattr(package, "project_brief_record_text", "") or "").strip()
+    if project_brief:
+        records.append(
+            _artifact_text_record(
+                "Project brief",
+                "odylith/runtime/source/project-brief.v1.md",
+                project_brief,
+            )
+        )
+    next_steps = _json_evidence_text(getattr(package, "next_steps_preview", None))
+    if next_steps:
+        records.append(_artifact_text_record("Operator next steps", "create_payload.next_steps", next_steps))
+    accepted_project = _json_evidence_text(getattr(package, "accepted_project_preview", None))
+    if accepted_project:
+        records.append(
+            _artifact_text_record(
+                "Accepted project",
+                "odylith/runtime/source/accepted-project.v1.json",
+                accepted_project,
+            )
+        )
+    source_launch = _json_evidence_text(getattr(package, "source_launch_readback", None))
+    if source_launch:
+        records.append(
+            _artifact_text_record(
+                "Accepted source launch",
+                "odylith/runtime/source/accepted-project.v1.json#source_launch",
+                source_launch,
+            )
+        )
+    for index, row in enumerate(
+        _mapping_rows(_as_mapping(getattr(package, "project_dashboard_preview", None)).get("host_handoff_prompts")),
+        start=1,
+    ):
+        text = _json_evidence_text(row)
+        if text:
+            records.append(
+                _artifact_text_record(
+                    "Project implementation prompt",
+                    f"odylith/tooling-payload.v1.js#host_handoff_prompts[{index}]",
+                    text,
+                )
+            )
+    return records[:EVIDENCE_ARTIFACT_LIMIT]
+
+
+def _artifact_inventory(records: Sequence[Mapping[str, str]]) -> list[Mapping[str, Any]]:
+    return [
+        _artifact_record(str(row.get("surface", "")), str(row.get("path", "")), str(row.get("text", "")))
+        for row in records[:EVIDENCE_ARTIFACT_LIMIT]
+    ]
+
+
+def _artifact_text_records(surface: str, records: Mapping[Any, Any]) -> list[Mapping[str, str]]:
+    return [
+        _artifact_text_record(surface, str(path), str(text or ""))
+        for path, text in sorted(records.items(), key=lambda item: str(item[0]))
+        if str(text or "").strip()
+    ]
+
+
+def _artifact_text_record(surface: str, path: str, text: str) -> Mapping[str, str]:
+    return {"surface": surface, "path": path, "text": text}
+
+
+def _artifact_record(surface: str, path: str, text: str) -> Mapping[str, Any]:
+    return {
+        "surface": surface,
+        "path": path,
+        "sha256": _sha256_text(text),
+        "byte_count": len(text.encode("utf-8")),
+        "excerpt": _excerpt(text),
+    }
+
+
+def _required_term_grounding(
+    *,
+    case: GreenfieldMatrixCase,
+    artifacts: Sequence[Mapping[str, Any]],
+) -> list[Mapping[str, Any]]:
+    grounding: list[Mapping[str, Any]] = []
+    for term in tuple(dict.fromkeys(str(item).strip() for item in case.required_terms if str(item).strip())):
+        hits = [
+            {
+                "surface": str(artifact.get("surface", "")),
+                "path": str(artifact.get("path", "")),
+                "excerpt": _excerpt(str(artifact.get("text", "") or artifact.get("excerpt", ""))),
+            }
+            for artifact in artifacts
+            if _term_present(str(artifact.get("text", "") or artifact.get("excerpt", "")), term)
+        ]
+        grounding.append(
+            {
+                "term": term,
+                "present": bool(hits),
+                "surfaces": list(dict.fromkeys(hit["surface"] for hit in hits if hit["surface"])),
+                "hits": hits[:8],
+            }
+        )
+    return grounding
+
+
+def _required_term_distribution_findings(
+    *,
+    all_grounding: Sequence[Mapping[str, Any]],
+    scored_grounding: Sequence[Mapping[str, Any]],
+) -> list[str]:
+    all_by_term = {str(row.get("term", "")).strip(): row for row in all_grounding if str(row.get("term", "")).strip()}
+    scored_by_term = {str(row.get("term", "")).strip(): row for row in scored_grounding if str(row.get("term", "")).strip()}
+    findings: list[str] = []
+    for term, row in all_by_term.items():
+        scored = scored_by_term.get(term, {})
+        if row.get("present") and not scored.get("present"):
+            surfaces = ", ".join(str(surface) for surface in row.get("surfaces", []) if str(surface).strip())
+            findings.append(
+                f"required term `{term}` appears only outside scored generated artifacts"
+                + (f" ({surfaces})" if surfaces else "")
+            )
+    return findings
+
+
+def _quality_finding_evidence(
+    *,
+    package: Any,
+    quality: GreenfieldQualityVerdict,
+    browser_surface_issues: Sequence[str],
+) -> list[Mapping[str, str]]:
+    findings: list[Mapping[str, str]] = [
+        {"dimension": finding.dimension, "message": finding.message}
+        for finding in package_evidence_findings(package)
+    ]
+    findings.extend({"dimension": "quality", "message": str(issue)} for issue in quality.issues[:50])
+    findings.extend({"dimension": "browser_surface_proof", "message": str(issue)} for issue in browser_surface_issues)
+    return list({(row["dimension"], row["message"]): row for row in findings if row["message"].strip()}.values())
+
+
+def _json_evidence_text(value: Any) -> str:
+    if not value:
+        return ""
+    try:
+        return json.dumps(value, sort_keys=True, ensure_ascii=False)
+    except TypeError:
+        return str(value)
+
+
+def _sha256_file(path: Path) -> str:
+    try:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError:
+        return ""
+
+
+def _sha256_text(value: str) -> str:
+    return hashlib.sha256(str(value or "").encode("utf-8")).hexdigest()
+
+
+def _excerpt(value: str, limit: int = EVIDENCE_EXCERPT_CHARS) -> str:
+    text = " ".join(str(value or "").split())
+    if len(text) <= limit:
+        return text
+    return f"{text[:limit].rstrip()}..."
+
+
+def collect_artifact_package(*, repo_root: Path, create_payload: Mapping[str, Any]) -> Any:
+    """Collect generated records in the shape understood by artifact quality gates."""
+
+    accepted_project = _read_json_mapping(repo_root / "odylith/runtime/source/accepted-project.v1.json")
+    proposal = _as_mapping(accepted_project.get("proposal")) or _as_mapping(create_payload.get("proposal"))
+    source_launch_readback = _as_mapping(accepted_project.get("source_launch"))
+    governed_readback = collect_governed_readback(repo_root)
+    backlog_result = {
+        "idea_files": _read_radar_workstreams(repo_root),
+        "backlog_index_text": _read_text(repo_root / "odylith/radar/source/INDEX.md"),
+        "validation_gate": _as_mapping(create_payload.get("validation_gate")),
+    }
+    return SimpleNamespace(
+        proposal=proposal,
+        release_selector="0.0.1",
+        rendered_component_specs=_read_component_specs(repo_root),
+        rendered_atlas_sources=_read_atlas_sources(repo_root),
+        component_registry_preview=tuple(_mapping_rows(create_payload.get("components"))),
+        project_brief_preview=_as_mapping(proposal.get("project_brief")) if isinstance(proposal, Mapping) else {},
+        project_brief_record_text=_read_text(repo_root / "odylith/runtime/source/project-brief.v1.md"),
+        accepted_project_preview=accepted_project,
+        source_launch_readback=source_launch_readback,
+        project_dashboard_preview=_read_project_dashboard_payload(repo_root),
+        compass_memory_preview=_as_mapping(_as_mapping(create_payload.get("memory")).get("event")),
+        governed_readback=governed_readback,
+        next_steps_preview=_as_mapping(create_payload.get("next_steps")),
+        backlog_result=backlog_result,
+        program_result=_as_mapping(create_payload.get("program")),
+        prewrite_safety_preview=_as_mapping(create_payload.get("prewrite_safety")),
+        release_target_result=_as_mapping(create_payload.get("release_bootstrap")),
+        release_assignment_result=_as_mapping(create_payload.get("release_target")),
+        release_workstream_ids=tuple(
+            _release_workstream_ids(create_payload)
+            or _workstream_ids_from_idea_files(_as_mapping(backlog_result.get("idea_files")))
+        ),
+    )
+def collect_artifact_counts(
+    *,
+    repo_root: Path,
+    package: Any,
+    required_terms: Sequence[str],
+) -> GreenfieldArtifactCounts:
+    trace = _read_json_mapping(repo_root / "odylith/radar/traceability-graph.v1.json")
+    rendered_text = _generated_text(repo_root=repo_root, package=package)
+    proposal = _as_mapping(getattr(package, "proposal", None))
+    expected_registry_components = len(
+        [
+            row
+            for row in _mapping_rows(proposal.get("components"))
+            if str(row.get("status") or "active").strip().casefold() not in {"disabled", "removed"}
+        ]
+    )
+    return GreenfieldArtifactCounts(
+        radar_workstreams=len(_as_mapping(package.backlog_result.get("idea_files"))),
+        registry_component_specs=len(_as_mapping(package.rendered_component_specs)),
+        expected_registry_components=expected_registry_components,
+        atlas_mermaid_sources=len(_as_mapping(package.rendered_atlas_sources)),
+        compass_records=compass_record_count(package.governed_readback),
+        release_records=release_record_count(package.governed_readback),
+        program_records=program_record_count(package.governed_readback),
+        project_brief_records=int(not project_brief_readback_findings(
+            record_text=(
+                _read_text(repo_root / "odylith/runtime/source/project-brief.v1.md")
+                or str(getattr(package, "project_brief_record_text", "") or "")
+            ),
+            project_brief=_as_mapping(_as_mapping(getattr(package, "proposal", None)).get("project_brief")),
+            intent=_as_mapping(_as_mapping(getattr(package, "proposal", None)).get("intent")),
+        )),
+        trace_nodes=len(trace.get("nodes") or []) if isinstance(trace.get("nodes"), list) else 0,
+        trace_workstreams=len(trace.get("workstreams") or []) if isinstance(trace.get("workstreams"), list) else 0,
+        rendered_surfaces=sum(1 for path in REQUIRED_RENDERED_SURFACES if _nonempty(repo_root / path)),
+        rendered_surface_payloads=rendered_surface_payload_count(repo_root),
+        atlas_rendered_assets=atlas_rendered_asset_count(repo_root),
+        domain_term_hits=sum(1 for term in required_terms if _term_present(rendered_text, term)),
+        required_domain_terms=len(tuple(dict.fromkeys(term.casefold() for term in required_terms if str(term).strip()))),
+        project_implementation_prompts=len(
+            _mapping_rows(_as_mapping(getattr(package, "project_dashboard_preview", None)).get("host_handoff_prompts"))
+        ),
+    )
+
+def _failed_case(
+    case: GreenfieldMatrixCase,
+    repo_root: Path,
+    status: str,
+    returncode: int,
+    detail: str,
+) -> GreenfieldMatrixResult:
+    package = collect_artifact_package(repo_root=repo_root, create_payload={})
+    counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
+    quality = GreenfieldQualityVerdict(
+        passed=False,
+        issues=(f"{status}: {detail.strip()[:800]}",),
+        lenses={lens: False for lens in ("product_manager", "architect", "engineer", "domain_expert")},
+        scores={dimension: 0 for dimension in QUALITY_SCORE_DIMENSIONS},
+        score=0,
+        score_explanation=("commit-only create did not complete a governed write transaction",),
+    )
+    return GreenfieldMatrixResult(
+        name=case.name,
+        status=status,
+        create_seconds=0.0,
+        counts=counts,
+        quality=quality,
+        create_returncode=returncode,
+        failure_detail=command_excerpt(detail),
+        commit_manifest_summary={},
+        evidence=_failed_case_evidence_manifest(case, status, returncode, detail),
+    )
+
+
+def _cleanup_repo_before_next(repo_root: Path) -> None:
+    _cleanup_smoke_temp_root(repo_root)
+    if repo_root.exists():
+        shutil.rmtree(repo_root, ignore_errors=True)
+    if repo_root.exists():
+        raise RuntimeError(f"temporary greenfield simulation repo was not removed: {repo_root}")
+
+
+def _cleanup_run_root(run_root: Path) -> None:
+    _cleanup_smoke_temp_root(run_root)
+    if run_root.exists():
+        shutil.rmtree(run_root, ignore_errors=True)
+    if run_root.exists():
+        raise RuntimeError(f"temporary greenfield matrix root was not removed: {run_root}")
+
+
+def _read_radar_workstreams(repo_root: Path) -> dict[str, str]:
+    source = repo_root / "odylith/radar/source"
+    if not source.is_dir():
+        return {}
+    records: dict[str, str] = {}
+    for path in sorted(source.rglob("*.md")):
+        if path.name in NON_ARTIFACT_MARKDOWN_FILES:
+            continue
+        records[str(path.relative_to(repo_root))] = _read_text(path)
+    return records
+
+
+def _read_component_specs(repo_root: Path) -> dict[str, str]:
+    source = repo_root / "odylith/registry/source/components"
+    if not source.is_dir():
+        return {}
+    specs: dict[str, str] = {}
+    for path in sorted(source.rglob("CURRENT_SPEC.md")):
+        specs[str(path.relative_to(repo_root))] = _read_text(path)
+    return specs
+
+
+def _read_atlas_sources(repo_root: Path) -> dict[str, str]:
+    source = repo_root / "odylith/atlas/source"
+    if not source.is_dir():
+        return {}
+    return {
+        str(path.relative_to(repo_root)): _read_text(path)
+        for path in sorted(source.glob("*.mmd"))
+    }
+
+
+def _generated_text(*, repo_root: Path, package: Any) -> str:
+    del repo_root
+    chunks: list[str] = []
+    chunks.extend(_as_mapping(package.backlog_result.get("idea_files")).values())
+    chunks.append(str(package.backlog_result.get("backlog_index_text") or ""))
+    chunks.extend(_as_mapping(package.rendered_component_specs).values())
+    chunks.extend(_as_mapping(package.rendered_atlas_sources).values())
+    chunks.append(str(getattr(package, "project_brief_record_text", "") or ""))
+    chunks.extend(text_values(getattr(package, "source_launch_readback", None)))
+    for row in _mapping_rows(_as_mapping(getattr(package, "project_dashboard_preview", None)).get("host_handoff_prompts")):
+        chunks.extend(text_values(row))
+    return "\n".join(str(item) for item in chunks).casefold()
+
+
+def _read_project_dashboard_payload(repo_root: Path) -> Mapping[str, Any]:
+    shell_payload = _read_tooling_payload(repo_root)
+    project = shell_payload.get("project_intelligence")
+    return project if isinstance(project, Mapping) else {}
+
+
+def _read_tooling_payload(repo_root: Path) -> Mapping[str, Any]:
+    payload_path = repo_root / "odylith/tooling-payload.v1.js"
+    text = _read_text(payload_path).strip()
+    if not text or "__ODYLITH_TOOLING_DATA__" not in text:
+        return {}
+    payload = read_tooling_payload_js(text)
+    return payload if isinstance(payload, Mapping) else {}
+
+
+def _release_workstream_ids(payload: Mapping[str, Any]) -> tuple[str, ...]:
+    release_target = _as_mapping(payload.get("release_target"))
+    workstreams: list[str] = []
+    for event in _mapping_rows(release_target.get("events")):
+        token = str(event.get("workstream_id", "")).strip()
+        if token:
+            workstreams.append(token)
+    return tuple(dict.fromkeys(workstreams))
+
+
+def _workstream_ids_from_idea_files(files: Mapping[Any, Any]) -> tuple[str, ...]:
+    ids: list[str] = []
+    for token in files:
+        stem = Path(str(token)).stem.strip().upper()
+        if stem.startswith("B-") and len(stem) > 2:
+            ids.append(stem)
+    return tuple(dict.fromkeys(ids))
+
+
+def _nonempty(path: Path) -> bool:
+    return path.is_file() and path.stat().st_size > 0
+
+
+def _read_text(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        return path.read_text(errors="replace")
+    except FileNotFoundError:
+        return ""
+
+
+def _read_json_mapping(path: Path) -> Mapping[str, Any]:
+    if not path.is_file():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    return payload if isinstance(payload, Mapping) else {}
+
+
+def _retained_model_stage_observation(
+    retained_case: RetainedEvidenceCase | None,
+) -> Mapping[str, Any]:
+    if retained_case is None:
+        return {}
+    semantic_root = retained_case.staging_root / "semantic"
+    return _read_json_mapping(
+        semantic_root / "host-authoring-observation.v1.json"
+    )
+
+
+def _retained_raw_host_candidate(
+    retained_case: RetainedEvidenceCase | None,
+) -> Mapping[str, Any]:
+    """Read the exact retained host candidate for independent hash projection."""
+
+    if retained_case is None:
+        return {}
+    candidate_path = retained_case.staging_root / "semantic" / "host-candidate.raw.v1.json"
+    try:
+        raw = candidate_path.read_bytes()
+        candidate = json.loads(raw.decode("utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return {}
+    if not isinstance(candidate, Mapping):
+        return {}
+    return dict(candidate)
+
+
+def _retained_source_duty_receipt(
+    retained_case: RetainedEvidenceCase | None,
+) -> Mapping[str, Any]:
+    if retained_case is None:
+        return {}
+    payload = _read_json_mapping(
+        retained_case.staging_root / "semantic" / "host-source-ledger-check.raw.v1.json"
+    )
+    receipt = payload.get("receipt")
+    return dict(receipt) if isinstance(receipt, Mapping) else {}
+
+
+def _parse_json_object(value: str) -> Mapping[str, Any]:
+    try:
+        payload = json.loads(value)
+    except json.JSONDecodeError:
+        return {}
+    return payload if isinstance(payload, Mapping) else {}
+
+
+def _as_mapping(value: Any) -> Mapping[str, Any]:
+    return value if isinstance(value, Mapping) else {}
+
+
+def _mapping_rows(value: Any) -> tuple[Mapping[str, Any], ...]:
+    return tuple(row for row in value if isinstance(row, Mapping)) if isinstance(value, Sequence) and not isinstance(value, (str, bytes)) else ()
+
+
+def _version_from_pyproject() -> str:
+    text = (REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    for line in text.splitlines():
+        if line.startswith("version = "):
+            return line.split("=", 1)[1].strip().strip('"')
+    return "0.1.15"
+
+
+def _default_temp_parent() -> Path:
+    return Path(tempfile.gettempdir())
+
+
+def _print_human_summary(results: Sequence[GreenfieldMatrixResult]) -> None:
+    print(f"greenfield installed pre-confirm and commit-only matrix: {QUALITY_MATRIX_VERSION}")
+    for result in results:
+        print(
+            " - {name}: {status}, score={score}/10, {seconds:.3f}s, issues={issues}, "
+            "radar={radar}, registry={registry}, atlas={atlas}, trace_nodes={trace_nodes}".format(
+                name=result.name,
+                status=result.status,
+                score=result.quality.score,
+                seconds=result.create_seconds,
+                issues=len(result.quality.issues),
+                radar=result.counts.radar_workstreams,
+                registry=result.counts.registry_component_specs,
+                atlas=result.counts.atlas_mermaid_sources,
+                trace_nodes=result.counts.trace_nodes,
+            )
+        )
+        if result.quality.issues:
+            for issue in result.quality.issues:
+                print(f"   issue: {issue}")
+        for explanation in result.quality.score_explanation:
+            print(f"   score: {explanation}")
+
+
+def _platform_leakage_proof_summary(results: Sequence[GreenfieldMatrixResult]) -> dict[str, Any]:
+    terms = sorted(
+        {
+            str(term).strip()
+            for result in results
+            for term in result.platform_leakage_terms
+            if str(term).strip()
+        }
+    )
+    issues = tuple(
+        dict.fromkeys(
+            issue
+            for result in results
+            for issue in result.platform_leakage_issues
+            if str(issue).strip()
+        )
+    )
+    return {
+        "status": "passed" if not issues else "failed",
+        "scope": "generated_artifact_readback_terms_against_platform_source_and_dist",
+        "term_count": len(terms),
+        "terms": terms,
+        "issues": list(issues),
+    }
+
+
+def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Run installed greenfield pre-confirm and commit-only release simulations.")
+    parser.add_argument("--composed-public-evidence", default="",
+        help="Exact qualified public families bound to the prepared terminal release package.")
+    parser.add_argument("--dist-dir", required=True, help="Local release asset directory containing install.sh.")
+    parser.add_argument("--version", default=_version_from_pyproject())
+    parser.add_argument("--temp-parent", default=str(_default_temp_parent()))
+    parser.add_argument(
+        "--case-file",
+        action="append",
+        default=None,
+        help=(
+            "JSON file containing fresh high-variance GreenfieldMatrixCase records. "
+            "Repeatable; when present, these cases replace the maintained default catalog."
+        ),
+    )
+    parser.add_argument(
+        "--release-parent-case-file",
+        action="append",
+        default=None,
+        help=(
+            "Audited disclosed parent corpus used for static release qualification. "
+            "Every executed --case-file row must be an exact member."
+        ),
+    )
+    parser.add_argument(
+        "--include-default-cases",
+        action="store_true",
+        help=(
+            "Append strictly loaded, explicit-profile supplemental case files after the independently assigned "
+            "default catalog. Discovery only; release and holdout inputs are rejected."
+        ),
+    )
+    parser.add_argument(
+        "--include-commit-recovery-proof",
+        action="store_true",
+        help="Prove installed SIGKILL recovery, exact same-hash retry, and fsync rollback.",
+    )
+    parser.add_argument(
+        "--skip-commit-recovery-proof",
+        action="store_false",
+        dest="include_commit_recovery_proof",
+        help="Skip installed commit recovery proof for local debugging only; this is not release proof.",
+    )
+    parser.add_argument(
+        "--include-browser-proof",
+        action="store_true",
+        help="Run headless generated browser state proof against every generated matrix repo.",
+    )
+    parser.add_argument(
+        "--install-mode",
+        choices=INSTALL_MODES,
+        default="full",
+        help="Use full clean installs for release proof or a seeded install for high-volume discovery.",
+    )
+    parser.add_argument(
+        "--telemetry-jsonl",
+        default="",
+        help="Append per-run and per-case campaign telemetry to this JSONL file.",
+    )
+    parser.add_argument(
+        "--attempt-ledger-jsonl",
+        default="",
+        help="Persist redacted per-case attempt identities for exact interrupted-case replay.",
+    )
+    parser.add_argument(
+        "--campaign-phase",
+        default="single-matrix",
+        help="Operator-facing campaign phase label such as failed-subset, 60-case-regression, volume-discovery, or 240-case-discovery.",
+    )
+    parser.add_argument(
+        "--proof-tier",
+        choices=("discovery", "release"),
+        default="discovery",
+        help="Separate high-volume discovery proof from release-grade proof in the persisted matrix payload.",
+    )
+    parser.add_argument(
+        "--include-public-diagnostics",
+        action="store_true",
+        help="Collect the existing operational controls on explicit discovery inputs; no release qualification is awarded.",
+    )
+    parser.add_argument(
+        "--release-audit-file",
+        default="",
+        help="Hash-bound audit JSON required with --proof-tier release; ignored for discovery.",
+    )
+    parser.add_argument(
+        "--release-audit-repo-root",
+        default="",
+        help="Repository root used to resolve the sealed release audit trail.",
+    )
+    parser.add_argument(
+        "--sealed-release-input-root",
+        default="",
+        help="Campaign-created input root required for release-tier proof.",
+    )
+    parser.add_argument(
+        "--stop-after-failures",
+        type=int,
+        default=0,
+        help="Stop the run after this many failed cases; 0 disables the global failure threshold.",
+    )
+    parser.add_argument(
+        "--stop-after-cluster-failures",
+        type=int,
+        default=0,
+        help="Stop the run after this many failures in the same diagnostic cluster; 0 disables cluster stopping.",
+    )
+    parser.add_argument(
+        "--required-stressor",
+        action="append",
+        default=None,
+        help="Require the selected case set to cover this stressor class. Repeatable.",
+    )
+    parser.add_argument(
+        "--require-high-variance-stressors",
+        action="store_true",
+        help="Require the selected case set to cover the maintained high-variance stressor taxonomy.",
+    )
+    parser.add_argument(
+        "--allow-skipped-browser-proof",
+        action="store_true",
+        help="Allow omitted browser proof for high-volume discovery only; this is not release proof.",
+    )
+    parser.add_argument(
+        "--allow-partial-stressor-coverage",
+        action="store_true",
+        help=(
+            "Allow a discovery shard to report tier-required stressors without failing preflight when this shard "
+            "does not contain every required class. Release proof must not use this."
+        ),
+    )
+    parser.add_argument(
+        "--host-candidate-arg",
+        action="append",
+        default=None,
+        help=(
+            "Explicitly enable host-native Greenfield authoring. Repeat once per exact argv entry; "
+            "release proof requires exactly: codex exec --ephemeral --ignore-user-config "
+            "--skip-git-repo-check --sandbox read-only --model {model} --config "
+            "model_reasoning_effort={reasoning_effort} --output-schema {candidate_schema} -. "
+            "The configured command receives the complete candidate contract on stdin."
+        ),
+    )
+    parser.add_argument(
+        "--lower-capability-control-file",
+        default="",
+        help=(
+            "One sealed supplemental clarification case for the explicit Luna no-write control. "
+            "Required for release proof and excluded from corpus acceptance statistics."
+        ),
+    )
+    parser.add_argument("--json", action="store_true", dest="json_output")
+    parser.add_argument(
+        "--output-json",
+        default="",
+        help="Optional path where the full matrix proof payload should be persisted.",
+    )
+    parser.add_argument(
+        "--evidence-output-dir",
+        default="",
+        help="External immutable evidence directory required for release proof; it must be outside --temp-parent.",
+    )
+    parser.add_argument(
+        "--semantic-annotations-file",
+        default="",
+        help="Optional blinded atomic-annotation file for deterministic semantic release scoring.",
+    )
+    parser.add_argument(
+        "--evaluation-split-manifest",
+        default="",
+        help="Frozen split and floor manifest required with --semantic-annotations-file.",
+    )
+    parser.add_argument(
+        "--final-holdout-run-ledger",
+        default="",
+        help="Exclusive one-shot disclosure ledger required for release-tier semantic proof.",
+    )
+    parser.add_argument(
+        "--implementation-revision",
+        default="",
+        help="Full 40-character Git revision of the implementation under final holdout proof.",
+    )
+    parser.add_argument(
+        "--distribution-provenance-file",
+        default="",
+        help="Exact verified distribution provenance; it is never copied into protected input custody.",
+    )
+    return parser.parse_args(argv)
+
+
+def _release_path_without_symlink_segments(value: str | Path, *, label: str) -> Path:
+    path = Path(value).expanduser()
+    absolute_path = path if path.is_absolute() else Path.cwd() / path
+    current = Path(absolute_path.anchor)
+    for part in absolute_path.parts[1:]:
+        current /= part
+        if current.is_symlink():
+            raise RuntimeError(f"release proof {label} crosses a symlink: {current}")
+    return absolute_path
+
+
+def _require_sealed_release_input_root(
+    *,
+    proof_tier: str,
+    case_files: Sequence[str],
+    release_audit_file: str,
+    release_audit_repo_root: Path,
+    sealed_root: str,
+    semantic_annotations_file: str,
+    evaluation_split_manifest: str,
+    lower_capability_control_file: str = "",
+) -> None:
+    if proof_tier_from_value(proof_tier) != "release":
+        return
+    if not (
+        str(semantic_annotations_file or "").strip()
+        or str(evaluation_split_manifest or "").strip()
+    ):
+        return
+    if not sealed_root.strip():
+        raise RuntimeError("protected final-holdout proof requires --sealed-release-input-root")
+    unresolved_root = _release_path_without_symlink_segments(
+        sealed_root,
+        label="sealed input root",
+    )
+    root = unresolved_root.resolve()
+    if not root.is_dir():
+        raise RuntimeError("protected final-holdout sealed input root does not exist")
+    values = (
+        *case_files,
+        semantic_annotations_file,
+        evaluation_split_manifest,
+        lower_capability_control_file,
+    )
+    if not all(str(value or "").strip() for value in values):
+        raise RuntimeError(
+            "protected final-holdout proof requires sealed case, annotation, "
+            "evaluation-manifest, and lower-control inputs"
+        )
+    for value in values:
+        unresolved_path = _release_path_without_symlink_segments(
+            str(value),
+            label="sealed input",
+        )
+        path = unresolved_path.resolve()
+        try:
+            path.relative_to(root)
+        except ValueError as exc:
+            raise RuntimeError("release proof inputs must live under the sealed input root") from exc
+        if not path.is_file():
+            raise RuntimeError(f"release proof sealed input is missing or unsafe: {path.name}")
+    if release_audit_file:
+        unresolved_audit_root = _release_path_without_symlink_segments(
+            release_audit_repo_root,
+            label="audit root",
+        )
+        if unresolved_audit_root.resolve() != root:
+            raise RuntimeError("release proof audit root must equal the sealed input root")
+        audit_path = _release_path_without_symlink_segments(
+            release_audit_file,
+            label="audit input",
+        ).resolve()
+        try:
+            audit_path.relative_to(root)
+        except ValueError as exc:
+            raise RuntimeError("release proof audit input must live under the sealed input root") from exc
+
+
+def _final_holdout_run_from_args(
+    args: argparse.Namespace,
+    *,
+    sealed_input_root: str,
+) -> _FinalHoldoutRun | None:
+    if proof_tier_from_value(str(args.proof_tier)) != "release":
+        return None
+    annotations_token = str(
+        getattr(args, "semantic_annotations_file", "") or ""
+    ).strip()
+    manifest_token = str(
+        getattr(args, "evaluation_split_manifest", "") or ""
+    ).strip()
+    ledger_token = str(getattr(args, "final_holdout_run_ledger", "") or "").strip()
+    revision = str(getattr(args, "implementation_revision", "") or "").strip().casefold()
+    provenance_token = str(
+        getattr(args, "distribution_provenance_file", "") or ""
+    ).strip()
+    if not any((annotations_token, manifest_token, ledger_token)):
+        return None
+    if not annotations_token:
+        raise RuntimeError(
+            "protected final-holdout proof requires --semantic-annotations-file"
+        )
+    if not manifest_token:
+        raise RuntimeError(
+            "protected final-holdout proof requires --evaluation-split-manifest"
+        )
+    if not str(sealed_input_root or "").strip():
+        raise RuntimeError(
+            "protected final-holdout proof requires --sealed-release-input-root"
+        )
+    if not ledger_token:
+        raise RuntimeError(
+            "protected final-holdout proof requires --final-holdout-run-ledger"
+        )
+    if len(revision) != 40 or any(character not in "0123456789abcdef" for character in revision):
+        raise RuntimeError(
+            "protected final-holdout proof requires a full --implementation-revision"
+        )
+    output_token = str(getattr(args, "output_json", "") or "").strip()
+    if not output_token:
+        raise RuntimeError(
+            "protected final-holdout proof requires --output-json for terminal holdout evidence"
+        )
+    if not provenance_token:
+        raise RuntimeError(
+            "protected final-holdout proof requires --distribution-provenance-file"
+        )
+    ledger_path = _release_path_without_symlink_segments(
+        ledger_token,
+        label="final holdout run ledger",
+    ).resolve()
+    if ledger_path.exists():
+        raise RuntimeError("final holdout run ledger already exists; the holdout cannot be rerun")
+    sealed_root = Path(sealed_input_root).expanduser().resolve()
+    provenance_path = _release_path_without_symlink_segments(
+        provenance_token,
+        label="distribution provenance",
+    )
+    provenance = verify_distribution_provenance(
+        provenance_path=provenance_path,
+        implementation_revision=revision,
+    )
+    try:
+        ledger_path.relative_to(sealed_root)
+    except ValueError:
+        pass
+    else:
+        raise RuntimeError("final holdout run ledger must live outside the sealed input root")
+    return _FinalHoldoutRun(
+        ledger_path=ledger_path,
+        holdout_path=Path(annotations_token).expanduser().resolve(),
+        evaluation_manifest_path=Path(manifest_token).expanduser().resolve(),
+        case_paths=tuple(
+            Path(str(value)).expanduser().resolve()
+            for value in (getattr(args, "case_file", ()) or ())
+        ),
+        lower_capability_control_path=(
+            Path(str(args.lower_capability_control_file)).expanduser().resolve()
+            if str(getattr(args, "lower_capability_control_file", "") or "").strip()
+            else None
+        ),
+        implementation_revision=revision,
+        distribution_provenance_sha256=str(provenance["sha256"]),
+    )
+
+
+def _load_planned_cases_and_control(
+    *,
+    case_files: Sequence[str],
+    include_default_cases: bool,
+    lower_capability_control_file: str,
+    enforce_lexical_controls: bool,
+) -> tuple[
+    tuple[GreenfieldMatrixCase, ...],
+    tuple[GreenfieldMatrixCase, ...],
+    GreenfieldMatrixCase | None,
+]:
+    """Load and validate one corpus plus its separately scored control."""
+
+    selected_cases = _load_cli_case_files(
+        case_files,
+        enforce_lexical_controls=enforce_lexical_controls,
+    )
+    if include_default_cases:
+        try:
+            tuple(case_model_profile(case) for case in selected_cases)
+        except ValueError as error:
+            raise RuntimeError(
+                "--include-default-cases supplements require exactly one supported explicit model profile"
+            ) from error
+        planned_cases = (*assign_model_profiles(default_cases()), *selected_cases)
+        identities = tuple(_retained_case_id(case).casefold() for case in planned_cases)
+        duplicates = sorted(
+            identity for identity, count in Counter(identities).items() if count > 1
+        )
+        if duplicates:
+            raise RuntimeError(
+                "--include-default-cases has duplicate case IDs: " + ", ".join(duplicates)
+            )
+        selected_cases = planned_cases
+    else:
+        planned_cases = selected_cases or default_cases()
+    _reject_control_profiles_in_main_corpus(planned_cases)
+    lower_capability_control_case = _load_lower_capability_control_case(
+        lower_capability_control_file,
+        enforce_lexical_controls=enforce_lexical_controls,
+    )
+    if (
+        lower_capability_control_case is not None
+        and _retained_case_id(lower_capability_control_case).casefold()
+        in {_retained_case_id(case).casefold() for case in planned_cases}
+    ):
+        raise RuntimeError(
+            "lower-capability control must have an identity separate from the corpus"
+        )
+    return selected_cases, planned_cases, lower_capability_control_case
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = _parse_args(argv)
+    public_diagnostics = bool(getattr(args, "include_public_diagnostics", False))
+    if public_diagnostics:
+        violations = []
+        raw_argv = tuple(sys.argv[1:] if argv is None else argv)
+        for flag in ("--include-public-diagnostics", "--proof-tier", "--case-file"):
+            if raw_argv.count(flag) != 1 or any(value.startswith(flag + "=") for value in raw_argv):
+                violations.append("exactly one separated " + flag + " is required")
+        if args.proof_tier != "discovery":
+            violations.append("discovery tier is required")
+        if not args.case_file:
+            violations.append("explicit --case-file is required")
+        if args.install_mode != "full":
+            violations.append("full install mode is required")
+        if not args.include_browser_proof or not args.include_commit_recovery_proof:
+            violations.append("browser and installed commit recovery proof are required")
+        if not args.evidence_output_dir or not args.output_json:
+            violations.append("external evidence and output paths are required")
+        if not args.lower_capability_control_file:
+            violations.append("one separate lower-capability control file is required")
+        if args.stop_after_failures not in (0, 1) or args.stop_after_cluster_failures != 0:
+            violations.append("the failure threshold must be 0 or 1 and cluster stopping must be disabled")
+        requested_flags = {str(value).split("=", 1)[0] for value in raw_argv}
+        forbidden = requested_flags.intersection({
+            "--include-default-cases", "--release-parent-case-file", "--release-audit-file",
+            "--release-audit-repo-root", "--sealed-release-input-root", "--semantic-annotations-file",
+            "--evaluation-split-manifest", "--final-holdout-run-ledger", "--implementation-revision",
+            "--distribution-provenance-file", "--allow-skipped-browser-proof", "--skip-commit-recovery-proof",
+            "--allow-partial-stressor-coverage",
+        })
+        if forbidden:
+            violations.append("incompatible flags: " + ", ".join(sorted(forbidden)))
+        if violations:
+            raise RuntimeError("invalid public diagnostics collection: " + "; ".join(violations))
+        for destination in (args.evidence_output_dir, args.output_json):
+            path = validate_retained_evidence_output_dir(output_dir=Path(destination), temp_parent=Path(args.temp_parent))
+            if path.exists():
+                raise RuntimeError("public diagnostics output already exists; original evidence must be preserved")
+        if Path(args.lower_capability_control_file).resolve() in {Path(value).resolve() for value in args.case_file}:
+            raise RuntimeError("public diagnostics lower-capability control must be separate from the case files")
+        args.host_candidate_arg = list(_require_profile_argv_template(tuple(args.host_candidate_arg or ())))
+    include_default_cases = bool(getattr(args, "include_default_cases", False))
+    evidence_output_token = str(getattr(args, "evidence_output_dir", "") or "").strip()
+    release_audit_repo_root = (
+        Path(str(args.release_audit_repo_root)).expanduser()
+        if str(args.release_audit_repo_root or "").strip()
+        else REPO_ROOT
+    )
+    required_stressors = required_stressors_from_values(
+        args.required_stressor or (),
+        use_default=bool(args.require_high_variance_stressors),
+    )
+    campaign_config = MatrixCampaignConfig(
+        phase=campaign_phase_from_value(str(args.campaign_phase)),
+        proof_tier=proof_tier_from_value(str(args.proof_tier)),
+        telemetry_jsonl=Path(str(args.telemetry_jsonl)).expanduser().resolve()
+        if str(args.telemetry_jsonl or "").strip()
+        else None,
+        stop_after_failures=positive_int(args.stop_after_failures),
+        stop_after_cluster_failures=positive_int(args.stop_after_cluster_failures),
+        required_stressors=required_stressors,
+    )
+    _raise_for_release_full_install_mode(campaign_config, str(args.install_mode))
+    if include_default_cases:
+        violations = []
+        if not any(str(value or "").strip() for value in (args.case_file or ())):
+            violations.append("at least one --case-file is required")
+        if campaign_config.proof_tier != "discovery":
+            violations.append("--proof-tier release is not supported")
+        release_inputs = tuple(
+            name
+            for name in (
+                "release_audit_file",
+                "release_parent_case_file",
+                "release_audit_repo_root",
+                "sealed_release_input_root",
+                "semantic_annotations_file",
+                "evaluation_split_manifest",
+                "final_holdout_run_ledger",
+                "implementation_revision",
+                "distribution_provenance_file",
+                "lower_capability_control_file",
+            )
+            if str(getattr(args, name, "") or "").strip()
+        )
+        violations.extend(f"--{name.replace('_', '-')} cannot be combined" for name in release_inputs)
+        if violations:
+            raise RuntimeError("invalid --include-default-cases policy: " + "; ".join(violations))
+    sealed_input_root = str(args.sealed_release_input_root or "").strip()
+    if not sealed_input_root:
+        # Missing proof flags are actionable before a caller has named sealed inputs.
+        _raise_for_invalid_campaign_policy(
+            config=campaign_config,
+            install_mode=str(args.install_mode),
+            include_browser_proof=bool(args.include_browser_proof),
+            include_commit_recovery_proof=bool(args.include_commit_recovery_proof),
+            allow_skipped_browser_proof=bool(args.allow_skipped_browser_proof),
+            allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
+            release_audit_present=bool(str(args.release_audit_file or "").strip()),
+            semantic_annotations_file=str(args.semantic_annotations_file or ""),
+            evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
+        )
+    if campaign_config.proof_tier == "release" and hasattr(args, "host_candidate_arg"):
+        args.host_candidate_arg = list(
+            _require_profile_argv_template(
+                tuple(
+                    str(value)
+                    for value in (getattr(args, "host_candidate_arg", None) or ())
+                )
+            )
+        )
+    _require_sealed_release_input_root(
+        proof_tier=str(args.proof_tier),
+        case_files=args.case_file or (),
+        release_audit_file=str(args.release_audit_file or ""),
+        release_audit_repo_root=release_audit_repo_root,
+        sealed_root=sealed_input_root,
+        semantic_annotations_file=str(args.semantic_annotations_file or ""),
+        evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
+        lower_capability_control_file=str(
+            getattr(args, "lower_capability_control_file", "") or ""
+        ),
+    )
+    release_audit_repo_root = release_audit_repo_root.resolve()
+    _raise_for_invalid_campaign_policy(
+        config=campaign_config,
+        install_mode=str(args.install_mode),
+        include_browser_proof=bool(args.include_browser_proof),
+        include_commit_recovery_proof=bool(args.include_commit_recovery_proof),
+        allow_skipped_browser_proof=bool(args.allow_skipped_browser_proof),
+        allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
+        release_audit_present=bool(str(args.release_audit_file or "").strip()),
+        semantic_annotations_file=str(args.semantic_annotations_file or ""),
+        evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
+    )
+    if campaign_config.proof_tier == "release" and not evidence_output_token:
+        raise RuntimeError("release proof requires --evidence-output-dir")
+    if bool(args.include_commit_recovery_proof) and not evidence_output_token:
+        raise RuntimeError("commit recovery proof requires --evidence-output-dir")
+    if evidence_output_token:
+        validate_retained_evidence_output_dir(
+            output_dir=Path(evidence_output_token),
+            temp_parent=Path(args.temp_parent),
+        )
+        if bool(args.include_commit_recovery_proof):
+            evidence_path = Path(evidence_output_token)
+            validate_retained_evidence_output_dir(
+                output_dir=evidence_path.with_name(evidence_path.name + "-commit-recovery"),
+                temp_parent=Path(args.temp_parent),
+            )
+        if campaign_config.proof_tier == "release":
+            evidence_path = Path(evidence_output_token)
+            validate_retained_evidence_output_dir(
+                output_dir=evidence_path.with_name(
+                    evidence_path.name + "-lower-capability-control"
+                ),
+                temp_parent=Path(args.temp_parent),
+            )
+    authenticate_terminal_release_inputs(args)
+    final_holdout_run = _final_holdout_run_from_args(args, sealed_input_root=sealed_input_root)
+    if final_holdout_run is not None:
+        install_script = Path(args.dist_dir).expanduser().resolve() / "install.sh"
+        if not install_script.is_file():
+            raise RuntimeError("final holdout preflight requires the exact release distribution")
+        browser_issues = browser_runtime_preflight_issues() if bool(args.include_browser_proof) else ()
+        if browser_issues:
+            raise RuntimeError("final holdout browser preflight failed: " + "; ".join(browser_issues))
+    selected_cases: tuple[GreenfieldMatrixCase, ...] = ()
+    planned_cases: tuple[GreenfieldMatrixCase, ...] = ()
+    release_parent_cases: tuple[GreenfieldMatrixCase, ...] = ()
+    lower_capability_control_case: GreenfieldMatrixCase | None = None
+    if final_holdout_run is None:
+        selected_cases, planned_cases, lower_capability_control_case = (
+            _load_planned_cases_and_control(
+                case_files=args.case_file or (),
+                include_default_cases=include_default_cases,
+                lower_capability_control_file=str(
+                    getattr(args, "lower_capability_control_file", "") or ""
+                ),
+                enforce_lexical_controls=True,
+            )
+        )
+        release_parent_paths = tuple(
+            str(value)
+            for value in (getattr(args, "release_parent_case_file", None) or ())
+            if str(value or "").strip()
+        )
+        if campaign_config.proof_tier == "release" and release_parent_paths:
+            release_parent_cases = _load_cli_case_files(
+                release_parent_paths,
+                enforce_lexical_controls=True,
+            )
+            membership_issues = release_subset_membership_issues(
+                selected_cases=planned_cases,
+                parent_cases=release_parent_cases,
+            )
+            if membership_issues:
+                raise RuntimeError(
+                    "invalid disclosed release subset: " + "; ".join(membership_issues)
+                )
+    output_path = (
+        Path(str(args.output_json)).expanduser().resolve()
+        if str(args.output_json or "").strip()
+        else None
+    )
+    lease = acquire_matrix_run_lease(
+        temp_parent=Path(args.temp_parent),
+        output_path=output_path,
+    )
+    try:
+        try:
+            if final_holdout_run is not None:
+                final_holdout_run.claim()
+                selected_cases, planned_cases, lower_capability_control_case = (
+                    _load_planned_cases_and_control(
+                        case_files=args.case_file or (),
+                        include_default_cases=include_default_cases,
+                        lower_capability_control_file=str(
+                            getattr(args, "lower_capability_control_file", "") or ""
+                        ),
+                        enforce_lexical_controls=False,
+                    )
+                )
+            release_audits = (
+                load_release_audit_file(
+                    Path(str(args.release_audit_file)),
+                    repo_root=release_audit_repo_root,
+                )
+                if str(args.release_audit_file or "").strip()
+                else ()
+            )
+            if final_holdout_run is not None:
+                corpus_provenance = evaluate_frozen_evaluation_contract(
+                    repo_root=Path(sealed_input_root),
+                    manifest_path=Path(str(args.evaluation_split_manifest)),
+                    final_holdout_path=Path(str(args.semantic_annotations_file)),
+                )
+            elif campaign_config.proof_tier == "release":
+                corpus_provenance = evaluate_release_corpus(
+                    release_parent_cases or planned_cases,
+                    release_audits,
+                    repo_root=release_audit_repo_root,
+                )
+            else:
+                corpus_provenance = discovery_corpus_summary(planned_cases)
+            _raise_for_invalid_campaign_policy(
+                config=campaign_config,
+                install_mode=str(args.install_mode),
+                include_browser_proof=bool(args.include_browser_proof),
+                include_commit_recovery_proof=bool(args.include_commit_recovery_proof),
+                allow_skipped_browser_proof=bool(args.allow_skipped_browser_proof),
+                allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
+                release_corpus_issues=(
+                    tuple(
+                        corpus_provenance.get("issues")
+                        if isinstance(corpus_provenance, Mapping)
+                        else getattr(corpus_provenance, "issues", ())
+                        or ()
+                    )
+                    if campaign_config.proof_tier == "release"
+                    else ()
+                ),
+                release_audit_present=bool(str(args.release_audit_file or "").strip()),
+                semantic_annotations_file=str(args.semantic_annotations_file or ""),
+                evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
+            )
+            return_code = _execute_matrix_campaign(
+                args=args,
+                selected_cases=selected_cases,
+                planned_cases=planned_cases,
+                release_audits=release_audits,
+                release_audit_repo_root=release_audit_repo_root,
+                campaign_config=campaign_config,
+                corpus_provenance=corpus_provenance,
+                output_path=output_path,
+                lease=lease,
+                finalize_lease=True,
+                retained_evidence_run_id=(
+                    final_holdout_run.run_id if final_holdout_run is not None else ""
+                ),
+                lower_capability_control_case=lower_capability_control_case,
+                release_corpus_cases=release_parent_cases,
+            )
+            if final_holdout_run is not None and final_holdout_run.claimed:
+                if output_path is None or not output_path.is_file():
+                    raise RuntimeError("final holdout execution did not persist its result payload")
+                final_holdout_run.complete(
+                    result_path=output_path,
+                    outcome="passed" if return_code == 0 else "failed",
+                    retained_evidence_manifest=retained_evidence_manifest_path(
+                        Path(evidence_output_token)
+                    ),
+                )
+            return return_code
+        except BaseException as error:
+            if final_holdout_run is not None and final_holdout_run.claimed:
+                _terminalize_interrupted_final_holdout_without_masking(
+                    run=final_holdout_run,
+                    error=error,
+                    output_path=output_path,
+                    evidence_output_dir=Path(evidence_output_token),
+                    temp_parent=Path(args.temp_parent),
+                )
+            raise
+    finally:
+        if not lease.released:
+            _release_matrix_lease_without_masking(
+                lease=lease,
+                active_error=sys.exc_info()[1],
+            )
+
+
+def _release_outcome_statistics_passed(
+    *,
+    proof_tier: str,
+    outcome_statistics: Mapping[str, Any],
+) -> bool:
+    """Require the release statistics decision and its explicit boolean proof."""
+
+    return proof_tier != "release" or (
+        outcome_statistics.get("status") == "passed"
+        and outcome_statistics.get("passed") is True
+    )
+
+
+def _execute_matrix_campaign(
+    *,
+    args: argparse.Namespace,
+    selected_cases: tuple[GreenfieldMatrixCase, ...],
+    planned_cases: tuple[GreenfieldMatrixCase, ...],
+    release_audits: Sequence[Mapping[str, Any]],
+    release_audit_repo_root: Path = REPO_ROOT,
+    campaign_config: MatrixCampaignConfig,
+    corpus_provenance: Any,
+    output_path: Path | None,
+    lease: Any,
+    finalize_lease: bool = False,
+    before_product_execution: Callable[[], None] | None = None,
+    retained_evidence_run_id: str = "",
+    lower_capability_control_case: GreenfieldMatrixCase | None = None,
+    release_corpus_cases: tuple[GreenfieldMatrixCase, ...] = (),
+) -> int:
+    """Run one fully isolated proof campaign under its output lease."""
+
+    public_diagnostics = bool(getattr(args, "include_public_diagnostics", False))
+    temp_parent = lease.temp_namespace
+    profiled_cases = assign_model_profiles(selected_cases or planned_cases)
+    telemetry = MatrixTelemetryWriter(campaign_config.telemetry_jsonl)
+    provenance_summary = getattr(corpus_provenance, "summary", {})
+    approved_audit_bindings = (
+        provenance_summary.get("approved_audit_bindings")
+        if isinstance(provenance_summary, Mapping)
+        and isinstance(provenance_summary.get("approved_audit_bindings"), Mapping)
+        else {}
+    )
+    require_recovery_release_binding = (
+        campaign_config.proof_tier == "release"
+        and not str(getattr(args, "semantic_annotations_file", "") or "").strip()
+    )
+    recovery_case = (
+        select_recovery_case(
+            planned_cases,
+            proof_tier=campaign_config.proof_tier,
+            approved_audit_bindings=approved_audit_bindings,
+            require_release_binding=require_recovery_release_binding,
+        )
+        if bool(args.include_commit_recovery_proof)
+        else None
+    )
+    with command_lifecycle_observer(_matrix_command_observer(telemetry)):
+        results = run_matrix(
+            dist_dir=Path(args.dist_dir),
+            version=str(args.version),
+            temp_parent=temp_parent,
+            cases=profiled_cases,
+            include_browser_proof=bool(args.include_browser_proof),
+            install_mode=str(args.install_mode),
+            telemetry_jsonl=campaign_config.telemetry_jsonl,
+            campaign_phase=campaign_config.phase,
+            proof_tier=campaign_config.proof_tier,
+            stop_after_failures=campaign_config.stop_after_failures,
+            stop_after_cluster_failures=campaign_config.stop_after_cluster_failures,
+            required_stressors=campaign_config.required_stressors,
+            incremental_output_json=output_path,
+            attempt_ledger_jsonl=(
+                Path(str(args.attempt_ledger_jsonl)).expanduser().resolve()
+                if str(args.attempt_ledger_jsonl or "").strip()
+                else None
+            ),
+            allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
+            release_audits=release_audits,
+            release_corpus_cases=release_corpus_cases,
+            release_audit_repo_root=release_audit_repo_root,
+            semantic_annotations_file=str(getattr(args, "semantic_annotations_file", "") or ""),
+            evaluation_split_manifest=str(getattr(args, "evaluation_split_manifest", "") or ""),
+            evidence_output_dir=(
+                Path(str(getattr(args, "evidence_output_dir", ""))).expanduser().resolve()
+                if str(getattr(args, "evidence_output_dir", "") or "").strip()
+                else None
+            ),
+            retained_evidence_run_id=retained_evidence_run_id,
+            host_candidate_argv=tuple(str(value) for value in (getattr(args, "host_candidate_arg", None) or ())),
+            before_product_execution=before_product_execution,
+        )
+        primary_failure_reason = ""
+        failed_primary = next(
+            (
+                result
+                for result in results
+                if str(result.status or "").strip() != "passed"
+                or not result.quality.passed
+            ),
+            None,
+        )
+        if failed_primary is not None:
+            failure_detail = next(
+                (
+                    str(value).strip()
+                    for value in (
+                        *failed_primary.quality.issues,
+                        failed_primary.failure_detail,
+                        failed_primary.status,
+                    )
+                    if str(value or "").strip()
+                ),
+                "primary candidate/proposal did not pass",
+            )
+            primary_failure_reason = (
+                f"primary matrix case `{failed_primary.name}` failed: {failure_detail}"
+            )
+        lower_capability_control_results: tuple[GreenfieldMatrixResult, ...] = ()
+        control_lane_required = (
+            (campaign_config.proof_tier == "release" or public_diagnostics)
+            and hasattr(args, "lower_capability_control_file")
+        )
+        if control_lane_required and not primary_failure_reason:
+            if lower_capability_control_case is None:
+                raise RuntimeError("release proof requires one lower-capability control case")
+            raw_host_argv = tuple(
+                str(value)
+                for value in (getattr(args, "host_candidate_arg", None) or ())
+            )
+            _require_profile_argv_template(raw_host_argv)
+            control_evidence_path = Path(str(args.evidence_output_dir)).with_name(
+                Path(str(args.evidence_output_dir)).name
+                + "-lower-capability-control"
+            )
+            lower_capability_control_results = run_matrix(
+                dist_dir=Path(args.dist_dir),
+                version=str(args.version),
+                temp_parent=temp_parent,
+                cases=(lower_capability_control_case,),
+                include_browser_proof=False,
+                install_mode=str(args.install_mode),
+                campaign_phase="single-matrix",
+                proof_tier="discovery",
+                stop_after_failures=1,
+                evidence_output_dir=control_evidence_path,
+                retained_evidence_run_id=retained_evidence_run_id,
+                host_candidate_argv=raw_host_argv,
+            )
+            if len(lower_capability_control_results) != 1:
+                raise RuntimeError("release proof must execute exactly one lower-capability control")
+        if bool(args.include_commit_recovery_proof) and primary_failure_reason:
+            commit_recovery = GreenfieldInstalledCommitRecoveryProof(
+                status="not-run",
+                issues=(
+                    "installed commit recovery was not run because "
+                    + primary_failure_reason,
+                ),
+                recovery_case=(
+                    case_evidence(recovery_case) if recovery_case is not None else {}
+                ),
+            )
+        elif bool(args.include_commit_recovery_proof):
+            commit_recovery = run_installed_commit_recovery_proof(
+                dist_dir=Path(args.dist_dir),
+                version=str(args.version),
+                temp_parent=temp_parent,
+                recovery_case=recovery_case,
+                retained_evidence_run_id=retained_evidence_run_id,
+                evidence_output_dir=(
+                    Path(str(args.evidence_output_dir)).with_name(Path(str(args.evidence_output_dir)).name + "-commit-recovery")
+                    if str(getattr(args, "evidence_output_dir", "") or "").strip() else None
+                ),
+                require_release_binding=require_recovery_release_binding,
+                release_audit_binding=(
+                    approved_audit_bindings.get(recovery_case.case_id)
+                    if recovery_case is not None
+                    and isinstance(approved_audit_bindings.get(recovery_case.case_id), Mapping)
+                    else None
+                ),
+                host_candidate_argv=_host_candidate_argv_for_profile(
+                    tuple(
+                        str(value)
+                        for value in (getattr(args, "host_candidate_arg", None) or ())
+                    ),
+                    profile_id=case_model_profile(profiled_cases[0]),
+                ),
+            )
+        else:
+            commit_recovery = None
+        if (campaign_config.proof_tier == "release" or public_diagnostics) and primary_failure_reason:
+            unavailable_provider = {
+                "status": "not-run",
+                "issues": [
+                    "unavailable-provider proof was not run because "
+                    + primary_failure_reason
+                ],
+            }
+        elif campaign_config.proof_tier == "release" or public_diagnostics:
+            unavailable_provider = run_unavailable_provider_proof(
+                dist_dir=Path(args.dist_dir),
+                version=str(args.version),
+                temp_parent=temp_parent,
+                case=next(
+                    (
+                        case
+                        for case in profiled_cases
+                        if case_expectation(case) != CLARIFICATION_REQUIRED_EXPECTATION
+                    ),
+                    profiled_cases[0],
+                ),
+                host_candidate_argv=_host_candidate_argv_for_profile(
+                    tuple(
+                        str(value)
+                        for value in (getattr(args, "host_candidate_arg", None) or ())
+                    ),
+                    profile_id=STANDARD_PROFILE_ID,
+                ),
+            )
+        else:
+            unavailable_provider = {"status": "not_requested", "issues": []}
+    evidence_output_token = str(getattr(args, "evidence_output_dir", "") or "").strip()
+    retained_evidence_required = (campaign_config.proof_tier == "release" or public_diagnostics) and hasattr(args, "evidence_output_dir")
+    retained_manifest = (
+        retained_evidence_manifest_path(Path(evidence_output_token))
+        if evidence_output_token
+        else None
+    )
+    retained_evidence = retained_evidence_result(
+        retained_manifest,
+        expected_case_ids=tuple(_retained_case_id(case) for case in profiled_cases),
+        expected_run_id=retained_evidence_run_id,
+        required=retained_evidence_required,
+    )
+    browser_proof = browser_proof_summary(results, include_browser_proof=bool(args.include_browser_proof))
+    platform_leakage_proof = _platform_leakage_proof_summary(results)
+    cleanup_proof = temp_cleanup_proof(temp_parent)
+    if finalize_lease:
+        try:
+            lease.release()
+        except RuntimeError as exc:
+            cleanup_proof = {
+                **cleanup_proof,
+                "status": "failed",
+                "run_namespace_cleanup": "failed",
+                "run_namespace_cleanup_error": str(exc),
+            }
+        else:
+            cleanup_proof = {
+                **cleanup_proof,
+                "run_namespace_cleanup": "passed",
+            }
+    profile_proof = model_profile_release_proof(
+        (*results, *lower_capability_control_results),
+        require_complete=campaign_config.proof_tier == "release" or public_diagnostics,
+        composed_public_evidence=terminal_composed_evidence(args),
+    )
+    lower_capability_control_proof = {
+        "status": (
+            "passed"
+            if len(lower_capability_control_results) == 1
+            and lower_capability_control_results[0].quality.passed
+            and case_expectation(lower_capability_control_case)
+            == CLARIFICATION_REQUIRED_EXPECTATION
+            else "not_requested"
+            if not control_lane_required
+            else "failed"
+        ),
+        "issues": (
+            [
+                "lower-capability control was not run because "
+                + primary_failure_reason
+            ]
+            if control_lane_required and primary_failure_reason
+            else []
+        ),
+        "case_count": len(lower_capability_control_results),
+        "profile_id": (
+            case_model_profile(lower_capability_control_case)
+            if lower_capability_control_case is not None
+            else ""
+        ),
+        "results": [result.to_dict() for result in lower_capability_control_results],
+    }
+    browser_status = str(browser_proof.get("status") or "").strip()
+    browser_passed = browser_status == "passed" or (
+        browser_status == "skipped"
+        and campaign_config.proof_tier == "discovery"
+        and not public_diagnostics
+    )
+    platform_leakage_passed = str(platform_leakage_proof.get("status") or "").strip() == "passed"
+    cleanup_passed = str(cleanup_proof.get("status") or "").strip() == "passed"
+    semantic_release = _semantic_release_report(
+        args=args,
+        cases=profiled_cases,
+        results=results,
+        retained_evidence_manifest=retained_manifest,
+    )
+    semantic_digests = _as_mapping(semantic_release.get("normalized_semantic_digests"))
+    metamorphic_output = evaluate_metamorphic_outputs(
+        cases=profiled_cases,
+        results=results,
+        semantic_digests=semantic_digests,
+    )
+    campaign = campaign_summary(
+        cases=planned_cases,
+        results=results,
+        config=campaign_config,
+        stopped_reason=stop_reason(results, campaign_config),
+        semantic_digests=semantic_digests,
+        retained_evidence_manifest=retained_manifest,
+    )
+    outcome_statistics = _as_mapping(campaign.get("outcome_statistics"))
+    outcome_statistics_passed = _release_outcome_statistics_passed(
+        proof_tier=campaign_config.proof_tier,
+        outcome_statistics=outcome_statistics,
+    )
+    onboarding_quality_scorecard = build_onboarding_quality_scorecard(
+        results=(*results, *lower_capability_control_results),
+        browser_proof=browser_proof,
+        platform_leakage_proof=platform_leakage_proof,
+        metamorphic_output=metamorphic_output,
+        model_profile_proof=profile_proof,
+        unavailable_provider_proof=unavailable_provider,
+        commit_recovery_proof=commit_recovery,
+    )
+    semantic_release_passed = semantic_release.get("status") in {"not_requested", "passed"}
+    automated_passed = (
+        all(result.quality.passed for result in results)
+        and profile_proof.get("status") == "passed"
+        and lower_capability_control_proof.get("status") in {"not_requested", "passed"}
+        and unavailable_provider.get("status") in {"not_requested", "passed"}
+        and (commit_recovery is None or commit_recovery.passed)
+        and browser_passed
+        and platform_leakage_passed
+        and cleanup_passed
+        and bool(metamorphic_output.get("passed"))
+        and semantic_release_passed
+        and outcome_statistics_passed
+        and (
+            not retained_evidence_required
+            or retained_evidence.get("status") == "passed"
+        )
+    )
+    review_status = str(onboarding_quality_scorecard.get("status") or "")
+    awaiting_independent_review = (
+        campaign_config.proof_tier == "release"
+        and automated_passed
+        and review_status == "awaiting-independent-review"
+    )
+    passed = automated_passed and (
+        campaign_config.proof_tier != "release" or review_status == "passed"
+    )
+    payload = {
+        "version": QUALITY_MATRIX_VERSION,
+        "status": (
+            "passed"
+            if passed and campaign_config.proof_tier == "release"
+            else "awaiting-independent-review"
+            if awaiting_independent_review
+            else "discovery-passed"
+            if passed
+            else "failed"
+        ),
+        "proof_scope": {
+            **({"public_diagnostics": "source_only_discovery"} if public_diagnostics else {}),
+            "confirmation": "explicit_terminal_decision_and_same_hash_retry",
+            "native_chat": "unqualified_read_only",
+            "native_hook_visibility": "not_proven_by_this_matrix",
+            "model_profiles": "real_installed_source_cited_authored_preconfirm_cases",
+            "timing_tiers": "advisory_profile_targets_with_separate_operational_timeout",
+            "lower_capability_model": profile_proof.get("lower_capability_scope", {}),
+            "unavailable_provider": (
+                "real_installed_fail_closed_no_write"
+                if unavailable_provider.get("status") == "passed"
+                else "not_requested"
+                if unavailable_provider.get("status") == "not_requested"
+                else "failed"
+            ),
+            "commit_recovery_path": (
+                "not-run-after-primary-failure"
+                if commit_recovery is not None and commit_recovery.status == "not-run"
+                else COMMIT_RECOVERY_PROOF_SCOPE
+                if commit_recovery is not None
+                else "not_requested"
+            ),
+            "browser_surface_proof": (
+                BROWSER_SURFACE_PROOF_SCOPE if bool(args.include_browser_proof) else "not_requested"
+            ),
+        },
+        "corpus_provenance": (
+            corpus_provenance.to_dict()
+            if hasattr(corpus_provenance, "to_dict")
+            else dict(corpus_provenance)
+            if isinstance(corpus_provenance, Mapping)
+            else corpus_provenance
+        ),
+        "results": [result.to_dict() for result in results],
+        "campaign": campaign,
+        "metamorphic_output": metamorphic_output,
+        "browser_surface_proof": browser_proof,
+        "platform_domain_leakage_proof": platform_leakage_proof,
+        "temp_cleanup_proof": cleanup_proof,
+        "onboarding_quality_scorecard": onboarding_quality_scorecard,
+        "model_profile_proof": profile_proof,
+        "lower_capability_control_proof": lower_capability_control_proof,
+        "unavailable_provider_proof": unavailable_provider,
+        "semantic_release": semantic_release,
+        "retained_evidence": retained_evidence,
+        "proof_run": lease.to_dict(),
+    }
+    if commit_recovery is not None:
+        payload["commit_recovery_proof"] = commit_recovery.to_dict()
+    public_ref = terminal_public_evidence_reference(args)
+    if public_ref is not None:
+        payload["composed_public_evidence"] = public_ref
+    write_matrix_payload(output_path=output_path, payload=payload)
+    if args.json_output:
+        print(json.dumps(payload, indent=2, sort_keys=True))
+    else:
+        _print_human_summary(results)
+    return 0 if payload["status"] in {
+        "passed",
+        "discovery-passed",
+        "awaiting-independent-review",
+    } else 1
+
+
+def _semantic_release_report(
+    *,
+    args: argparse.Namespace,
+    cases: Sequence[GreenfieldMatrixCase],
+    results: Sequence[GreenfieldMatrixResult],
+    retained_evidence_manifest: Path | None = None,
+) -> dict[str, Any]:
+    annotations_token = str(getattr(args, "semantic_annotations_file", "") or "").strip()
+    manifest_token = str(getattr(args, "evaluation_split_manifest", "") or "").strip()
+    if not annotations_token and not manifest_token:
+        return {"status": "not_requested", "passed": True}
+    if not annotations_token or not manifest_token:
+        return {
+            "status": "failed",
+            "passed": False,
+            "issues": ["semantic release scoring requires both annotations and a frozen split manifest"],
+        }
+    annotations_path = Path(annotations_token).expanduser().resolve()
+    manifest_path = Path(manifest_token).expanduser().resolve()
+    try:
+        contract = evaluate_frozen_evaluation_contract(
+            repo_root=Path(str(args.sealed_release_input_root)).expanduser().resolve()
+            if str(args.sealed_release_input_root or "").strip()
+            else REPO_ROOT,
+            manifest_path=manifest_path,
+            final_holdout_path=annotations_path,
+        )
+        payload = _parse_json_object(annotations_path.read_text(encoding="utf-8"))
+        annotation_rows = payload.get("annotations")
+        selected_case_ids = {str(case.case_id or case.slug).strip() for case in cases}
+        annotation_case_ids = (
+            {
+                str(row.get("case_id") or "").strip()
+                for row in annotation_rows
+                if isinstance(row, Mapping)
+            }
+            if isinstance(annotation_rows, Sequence)
+            and not isinstance(annotation_rows, (str, bytes, bytearray))
+            else set()
+        )
+        if selected_case_ids != annotation_case_ids:
+            return {
+                "status": "failed",
+                "passed": False,
+                "evaluation_contract": contract,
+                "issues": ["semantic release case set does not exactly match the frozen holdout"],
+            }
+        annotations, annotation_issues = validate_atomic_annotations(
+            cases=cases,
+            rows=annotation_rows,
+        )
+    except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as error:
+        return {
+            "status": "failed",
+            "passed": False,
+            "issues": [f"semantic release inputs are invalid: {type(error).__name__}"],
+        }
+    if not contract.get("passed") or annotation_issues:
+        return {
+            "status": "failed",
+            "passed": False,
+            "evaluation_contract": contract,
+            "issues": list(
+                dict.fromkeys(
+                    [
+                        "frozen evaluation contract failed"
+                        if not contract.get("passed")
+                        else "atomic annotations failed validation"
+                    ]
+                )
+            ),
+        }
+    report = evaluate_semantic_release(
+        cases=cases,
+        annotations=annotations,
+        results=results,
+        floors=_as_mapping(contract.get("frozen_floors")),
+        release_required_slices=_as_mapping(contract.get("required_release_slices")),
+        retained_evidence_manifest=retained_evidence_manifest,
+    )
+    report["evaluation_contract"] = contract
+    return report
+
+
+def _load_cli_case_files(
+    case_files: Sequence[str],
+    *,
+    enforce_lexical_controls: bool = True,
+) -> tuple[GreenfieldMatrixCase, ...]:
+    cases: list[GreenfieldMatrixCase] = []
+    for case_file in case_files:
+        token = str(case_file or "").strip()
+        if token:
+            cases.extend(
+                load_case_file(
+                    Path(token),
+                    enforce_lexical_controls=enforce_lexical_controls,
+                )
+            )
+    return tuple(cases)
+
+
+def _load_lower_capability_control_case(
+    case_file: str,
+    *,
+    enforce_lexical_controls: bool = True,
+) -> GreenfieldMatrixCase | None:
+    token = str(case_file or "").strip()
+    if not token:
+        return None
+    cases = load_case_file(
+        Path(token),
+        enforce_lexical_controls=enforce_lexical_controls,
+    )
+    if len(cases) != 1:
+        raise RuntimeError("lower-capability control file must contain exactly one case")
+    if len(LOWER_CAPABILITY_CONTROL_PROFILES) != 1:
+        raise RuntimeError("release contract must declare exactly one lower-capability control profile")
+    case = cases[0]
+    if case_expectation(case) != CLARIFICATION_REQUIRED_EXPECTATION:
+        raise RuntimeError("lower-capability control case must require clarification")
+    declared_profiles = tuple(
+        str(tag).removeprefix("model-profile:")
+        for tag in case.tags
+        if str(tag).startswith("model-profile:")
+    )
+    if declared_profiles and declared_profiles != LOWER_CAPABILITY_CONTROL_PROFILES:
+        raise RuntimeError(
+            "lower-capability control file may declare only the Luna control profile"
+        )
+    tags = tuple(
+        tag for tag in case.tags if not str(tag).startswith("model-profile:")
+    )
+    return replace(
+        case,
+        tags=(
+            *tags,
+            f"model-profile:{LOWER_CAPABILITY_CONTROL_PROFILES[0]}",
+        ),
+    )
+
+
+def _reject_control_profiles_in_main_corpus(
+    cases: Sequence[GreenfieldMatrixCase],
+) -> None:
+    control_profiles = set(LOWER_CAPABILITY_CONTROL_PROFILES)
+    contaminated = tuple(
+        _retained_case_id(case)
+        for case in cases
+        if any(
+            str(tag).removeprefix("model-profile:") in control_profiles
+            for tag in case.tags
+            if str(tag).startswith("model-profile:")
+        )
+    )
+    if contaminated:
+        raise RuntimeError(
+            "main release corpus cannot contain Luna control profile tags: "
+            + ", ".join(contaminated)
+        )
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -28,7 +28,7 @@ confidence: high
 
 founder_override: no
 
-promoted_to_plan: odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md
+promoted_to_plan: odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md
 
 execution_model: standard
 
@@ -60,34 +60,581 @@ supersedes:
 
 superseded_by: 
 
+## Current release handoff gate (2026-10-16)
+
+The corrected source builds/signs one canonical draft, acquires and qualifies
+its complete signed package, then revalidates and promotes those exact hosted
+assets. It passes 787 direct-consumer tests and independent review. The separate
+Atlas readiness test correction passes its complete fifteen-test UX audit and
+independent review, preserving the original failed push and strict assertions.
+CB-347 retains the initial three release-review defects and their corrections.
+Finish governance and push the combined checkpoint, then require complete CI
+before canonical source, full benchmark and one actual signed package. Real
+hosted, installed, native/public and final qualification remain open. Existing
+quality floors remain fixed; local proof cannot substitute for those gates.
+
+## Release ordering correction (2026-10-16)
+
+CB-347 identifies a documentation-order cycle: committing benchmark charts
+changes the source measured by the required current-tree proof. Keep full
+frozen-source proof and the actual shipped-predecessor comparison before one
+package. Complete commit-bound qualification/hosted/consumer/GA commands, then
+require the distinct full pinned proof and canonical comparison. Publish its
+canonically generated snapshot and README in the reviewed metadata-only PR
+before planning closeout. Preserve each report's source, runtime and actual
+baseline; the publication commit receives no benchmark or package credit.
+Independent static review clears this sequence. Current CI, actual benchmark,
+package, native/public/final and shipped proof remain open. No feature, semantic
+stage, quality floor, corpus, model or identity guard changes.
+
+## Fixed completion scope (2026-10-12)
+
+The corrected installed creation-to-EDIT diagnostic completes confirmation,
+publication, readback and browser checks; independent review passes 13 criteria
+with no source-fidelity defect. The prior 4,258-test regression, exact package
+custody and 44-cell compatibility witness pass. The final 17-file release
+assembly passes 688 tests and independent review. The nine-file presentation
+correction independently clears the known roster, Registry and native Atlas
+capture findings; its retained matrix has 111 screenshots and zero issues.
+These results do not qualify the public families or final holdout.
+
+Freeze this scope and run the final combined regression. Prepare one canonical
+package for Primary40, High4 and genuine EDIT4; authenticate original results
+and each family's timing decision, then execute the untouched protected holdout
+once and complete independent review and release checks. Add no new product
+features, semantic stage, approval framework or open-ended evaluation campaign.
+Preserve previous failures and every existing quality threshold. CB-360 owns
+the installed mechanism, CB-303 presentation and CB-347 release assembly.
+
+## Current passive compatibility checkpoint (2026-10-05)
+
+V53 first-run closure is committed at `6d65bb271`; its 435 checks, v31 build
+(226.554 seconds) and canonical smoke (468.687 seconds) pass. Full historical
+readback then exposes a missing known v52/v9 passive EDIT pair. Add that pair
+only in the existing guard: two source lines, 27 transaction/receipt checks pass,
+and unchanged genuine v30 H0/H1 canonical readback passes with no writes or
+compiler attestation. Independent review is CLEAR (`d551b636198711409d4c75797a3a16dfaa4fca20a29cc8038ace1b55abd3baaa`).
+CB-303 owns exact proof; CB-347 retains the held v31 caller setup. Build v32 from
+the corrected checkpoint, then run each fixed Research/Agriculture source once
+with unchanged lenses and floors. Original failed consumers remain frozen.
+Installed semantic comparison and broader release gates remain open.
+
+## Previous v30 result and bounded v53 correction (2026-10-05)
+
+Agriculture's initial and EDIT proposals pass independent source fidelity
+(26/26 and 31/31); its first terminal continuation now passes rejection,
+copied-old refusal, exact publication/CLOSED readback and repeat confirmation
+in the caller, with zero model/provider/projection work. Independent terminal adjudication is CLEAR. Research H0 passes 13/13, but EDIT exposes a P1 contract
+contradiction: authoring and two membership guards exclude supporting checks
+that the ordering guard requires. CB-303/CB-347 retain actual evidence and CI's
+single stale custody-test failure; all failed consumers remain frozen.
+
+Apply the reviewed four-owner correction: existing first-run validation closes
+only cited prerequisites and preserves ordered source-path membership plus typed
+supporting roles. Admission and canonical reload share it; host contract v53
+keeps all other versions, profiles and bounds. The stale schema test, lifecycle fixture and smoke pin are aligned; 435 tests
+pass across 12 complete affected/adjacent modules, with the 24 publication owners
+unchanged. Settle governance and commit/push. Then build once and compare the same fixed public controls under
+v53 with unchanged sources, lenses and floors. Broader release gates remain open;
+no new features, parser, repair/retry, semantic owner or failed-consumer replay.
+
+## Previous source inventory simplification (2026-10-05)
+
+- One production line removes the duplicate inventory schema from stdin while
+  retaining its qualified schema file and every source/EDIT custody field.
+- 223 focused tests and independent review pass; 5,708 stdin bytes are saved.
+  Semantic and timing effects remain unproved. CB-303 owns exact proof.
+- Fresh fixed-case comparisons keep original requests, duties, floors and caps;
+  both V29 failures remain retained. No complete case or release is qualified.
+
+## Previous v52/v29 actual comparison frontier (2026-10-05)
+
+- V29 build, smoke, and final native preflight pass; CB-347 retains two setup
+  stops before product/write work and unchanged final bindings.
+- Agriculture safely refuses omitted material steward-registration action A03
+  after three source-stage calls; candidate and terminal work are zero.
+- Research H0 seals; immutable independent review passes all 13 obligations
+  with no P0/P1 semantic findings. EDIT stops in inventory, so H1 is
+  absent. This is neither a complete semantic success nor a winning mechanism.
+- CI `37324284688` passes 9,678 tests. CB-303/CB-347 retain details; Public40,
+  protected, migration, host, browser, timing, terminal, and release gates hold.
+
+## Previous v52 source and v27 convergence frontier (2026-10-05)
+
+- V28 build and canonical installation smoke pass. Both external comparison
+  entries refuse an incorrectly classified Python closure before installation
+  or model calls; neither product journey ran. CB-347 owns the retained failure
+  and required proof of the real preflight before fresh source comparisons.
+- Fresh independent proposal audits pass Research H0 13/13 and Agriculture H0
+  26/26 plus changed-hash H1 31/31 at unchanged source lenses/1.0 floors.
+- Research EDIT admits v6/v9 source then refuses candidate component/constraint
+  partial overlap; no H1. Agriculture REJECT/copied-old refusal pass, then harness
+  `NameError: SEALED_PROGRAM` stops before CONFIRM. A continuation publishes H1
+  with exit 0/CLOSED and zero model/provider/projection entries, then fails the
+  external zero-process assertion; repeat confirmation is unexecuted. Preserve
+  both failed diagnostics. CB-303/CB-347 retain evidence.
+- Implemented host v52/format v22 derives per-duty product responsibilities from
+  verified actions and exact actor addresses. Typed lifecycle ownership retains
+  guards, boundaries and proofs; shared spans cannot transfer human work. The
+  frozen patch passes 171 focused checks and independent review, with all 24
+  publication writers unchanged. Full installation passes 2,140 checks; the
+  broad gate retains 3,874 passes and two test-wrapper failures resolved by
+  148 affected checks. Fixture migration passes 324 checks and review; CB-347
+  retains every failed run. Fresh v28 semantics remain pending; no model stage
+  or cap increase follows.
+- Clean a372 CI passes 9,653 tests/six warnings; earlier failed CI stays retained.
+  B-142 remains in implementation. Public40 and private/protected, migration,
+  host, full-browser, timing and release gates remain held. No winning mechanism.
+
+## Previous v26 installed failure frontier (2026-10-05)
+
+- V51 code and both independent reviews are settled. Full installation passes
+  2,126 checks; the combined gate retains 3,840 passes and one stale version-pin
+  failure, corrected in a 25-check continuation. Date portability and affected
+  Atlas browser checks pass. This checkpoint removes EDIT locator bookkeeping
+  and adds private denial evidence; it does not qualify new semantic behavior.
+  Next: one clean v27 build and source-audited installed comparison, preserving
+  every earlier failure and the held public/private/protected gates.
+- Clean 16a/v26 build integrity and install/upgrade smoke pass. Research H0
+  independently preserves all 13 source duties, but EDIT refuses before candidate
+  authoring. Agriculture initial completeness refuses one reported supporting
+  action omission; exact governed publication remains unchanged. Neither control
+  passes the full flow. CB-303/CB-347 retain failures and diagnostic limits.
+- The existing plan bounds v51 to compiler-owned correction authorization and
+  private retention of actual source-phase denial evidence. Preserve prior duty
+  semantics, broad intake, initial and historical custody, four calls and caps.
+  This removes literal citation bookkeeping from the verifier; initial inventory
+  completeness and live semantic reliability remain unproved.
+- Public40 stays held. No release approval, protected run or original v49 H1
+  recovery is authorized by these diagnostics.
+
+## Previous v50 implementation checkpoint (2026-10-05)
+
+- The existing EDIT source-only verifier now requires a disposition for each
+  prior sealed lifecycle duty. Current typed carriers and exact correction
+  evidence retain explicit correction precedence; compound carriers support
+  intentional merges. Initial v4/v7 custody remains intact; EDIT uses v5/v8.
+  No inference stage, model call, repair, retry or fallback is added. Runtime
+  growth is 313 lines across eight existing owners, including moving the source
+  checker out of the flow owner, which is now 784 lines.
+- All 283 affected-owner checks and 64 separate guidance/smoke checks pass.
+  Independent final review is clear with three positive controls for merges and
+  two successive compiler EDITs under both receipt policies. Passive v49
+  readback preserves exact historical bytes and runtime execution refusal.
+  CB-303 and CB-347 retain the original failures, patch findings and proof limits.
+- The broader flow run retains 110 passes and eight initial fixture failures;
+  all eight corrected refusal variants now pass using actual EDIT contract and
+  source-check owners with unchanged assertions. Fresh clean installed additive/change/removal
+  semantic and terminal proof follows this checkpoint. Public/private campaigns,
+  host/timing qualification, five migration approvals and protected custody stay
+  open. Deterministic controls do not establish live semantic accuracy.
+
+## Previous convergence checkpoint (2026-10-04)
+
+- Independent v49 source audit passes H0 26/26, but H1 loses one original
+  provisional-analysis guard despite affirmative verifier completeness. It
+  passes 25/26 original and 4/5 correction units. CB-303 owns this material
+  regression. Stop H1 recovery/publication; preserve its interrupted state and
+  tighten the existing source-only actionable-coverage mechanism before new
+  qualification. Repeating the complete-source paragraph is not a new fix.
+- V49 Agriculture admits initial and changed-hash EDIT in four calls each.
+  Original REJECT and copied-old refusal pass. CONFIRM then times out at 60s
+  during generation staging; the shared write-audit pipe is read only after
+  child exit and can block a full trace. Preserve the interrupted journal and
+  failed result; correct that audit owner before deterministic recovery or the
+  still-unexecuted Research control. Mechanical admission does not satisfy the
+  independent semantic finding above.
+- The remaining populated-browser continuation passes 47 screenshots with all
+  11 authored files and modes preserved. This does not prove positive linked-plan
+  migration or the complete browser matrix. The d75 Ubuntu run has 35 failures
+  among 9,529 executed checks; exact fixture and Atlas corrections are in review.
+- The audit reader correction passes 98 owner/adopter checks and final independent
+  review is CLEAR. Local fixture proof retains its original 623-pass/one-fail
+  log and passes that failed check's focused correction; browser proof likewise
+  retains 30-pass/one-fail and passes the corrected D-037 case. Twelve reviewed
+  Atlas records are fresh; 24 unrelated stale records remain. Linux and the
+  complete browser campaign remain unqualified.
+- The next bounded EDIT mechanism requires an explicit disposition for every
+  prior sealed lifecycle duty in the existing source-only verification call.
+  Changes/removals require exact correction-only evidence. Missing duties refuse
+  before candidate authoring; prior history cannot override current corrections.
+- B-142 remains in implementation. Public/private qualification, five migration
+  classes and original protected-custody recovery remain required.
+
+## Previous actor-custody checkpoint (2026-10-04)
+
+- V48 once-only agriculture and research controls admit H0, then fail EDIT at
+  distinct boundaries. Independent strong review finds all 26 agriculture H0
+  duties materially faithful, with two minor labeling findings. No complete
+  terminal journey or broad reliability improvement is established.
+- V49 removes redundant actor-occurrence enclosure while retaining exact
+  custody, typed contexts, reference-only exclusion and semantic refusal.
+  Proposal refusals use the existing bounded diagnostic detail. Production
+  source shrinks by 19 lines; independent actor review is CLEAR and affected
+  regression passes 328 checks. Fresh changed-contract installed proof is next.
+- Frozen d75/v21 runs 8,423 checks: 8,422 pass and one stale version assertion
+  fails. Canonical local release smoke and populated installation pass. Strict
+  predecessor-byte failures remain preserved, and an already-unlinked plan
+  fixture prevents positive plan browser credit. Linux, remaining browser
+  states and all five migration classes remain unqualified.
+- Keep B-142 in implementation. Complete installed corrections and terminal
+  controls before the fixed public/private matrix. Original protected payload,
+  manifest directory and run ledger are missing, with prior lifecycle unknown;
+  custody must be settled before any protected evaluation.
+
+## Historical convergence checkpoint (2026-10-04)
+
+- R1 full lifecycle/custody readback independently passes 259 checks and rejects
+  all original rehashed corruption controls; structural correction is complete.
+- R2 disclosed-public evaluation preserves all 40 cases/425 source IDs and all
+  219 authentic civic reverse obligations. Final independent rereview passes
+  11 controls with no actionable P0/P1/P2 after custody, clarification and
+  malformed-material corrections. Actual independently adjudicated semantic
+  qualification remains open. Review:
+  /private/tmp/odylith-greenfield-r2-independent-rereview-20261004.md,
+  SHA-256 2ebc3a1d8218449e0c8f3b8a7c8a70cca32146abe5f5376e0a9299aeadbf8efe.
+- Authorized B-133 H1 memory controls improve fixed current retrieval 0/6 to
+  6/6. Independent re-review verifies both P1 cache/actionability corrections;
+  CB-355 and adjacent packet telemetry CB-356 are FixedPendingRelease. Actual
+  packet bytes/tokens fit unchanged caps and preserve useful admitted evidence.
+- CB-357's selected update/scaffold correction is independently clear. Exact
+  root-owned catalog recovery succeeds. The subsequent bounded-flow update
+  changes only owned D-025/D-043/D-045/D-047; unrelated review history is
+  preserved. CB-357 is FixedPendingRelease.
+- The detached public qualification bridge independently passes 89 tests and
+  22 controls after exact unavailable-provider shape correction, with no
+  remaining actionable P0/P1/P2 in that bounded scope. Actual public semantics
+  and complete installed timing remain unqualified.
+- Independent rereview closes the four original transport defects. The latest
+  388-test correction still depends on revoking a completion record after
+  late publication. The existing owners now issue a private completion receipt
+  only after record I/O and final deadline checks; every bounded confirmation
+  must supply it. This removes cleanup success from completion authority.
+  Independent final review passes 14 controls and the exact bootstrap test
+  with no blocking completion finding. The original expanded one-failure log
+  remains retained; proceed to the full final freeze. The declared environment excludes
+  deliberate external guardian termination; review found no supported internal
+  trigger for that additional fault-injection outcome.
+- Next gates: complete frozen runtime/install/browser regression, clean
+  checkpoint/full installed build, fresh public semantics and actual EDIT,
+  fixed public/private matrix, then the original unopened one-shot holdout.
+  Earlier dated checkpoints below remain historical evidence.
+
+## Exact public replay checkpoint (2026-09-29)
+
+- Pushed commit `0ab2929d9` passed the immutable one-case accessibility
+  replay: one proposal in `131.789s`, 5 Radar, 5 Registry, 5 Atlas, browser
+  proof, four recovery subcases, and no automated findings. Independent strong
+  semantic/UX review found no P0/P1. This is a public discovery result, not
+  release qualification or an unseen-input generalization claim.
+- CB-303 retains two P2 UX issues in the copied proof handoff and mobile Atlas
+  reading anchor. CB-347 retains a discovery-wrapper evidence-path miss that
+  occurred before any case attempt; direct-controller proof succeeded.
+- Next decisive gate is the fixed 40-case public campaign with browser,
+  recovery, and independent quality adjudication. Stop on a recurring
+  semantic/UX failure class. Keep the protected holdout unopened until the
+  public campaign and release evidence are clean.
+
+## Current Greenfield release lane (2026-09-29)
+
+- B-142 remains in implementation, not release-ready. The failed V49 live
+  author/reviewer composition is retired. One active host now authors the
+  complete canonical candidate; deterministic admission seals it without a
+  second semantic/model call. Human confirmation remains mandatory.
+- Frozen non-holdout runtime checks pass 1,380 tests; release/install checks
+  pass 1,266; the combined runtime/install/integration suite passes 2,629;
+  focused terminal release-gate checks pass 128. Independent gate review finds
+  no remaining release-bypassing P0/P1. Detached semantic
+  and UX review is bound to one persistent HEAD-scoped release proof, with
+  dispatch-time revalidation. These are code/proof-contract results, not
+  evidence that an unseen project meets the product-quality floor.
+- Finish the independent gate review and frozen integration checks, then push
+  one immutable build. Run the exact public accessibility replay once; if it
+  fails, retire this Greenfield production claim. If it passes, run the public
+  40-case browser/recovery campaign, independent semantic/UX qualification,
+  and only then the untouched one-shot protected holdout. No parser, regex,
+  repair, retry, fallback, model ladder, or further mechanism variant.
+
+## V31 Retained Public Qualification Gate (2026-09-27)
+
+- Keep Astra-medium as the sole automatically assigned and release-qualified
+  success profile. The attempted Sol-high comparison exposed an incomplete
+  diagnostic route: `deep` is intentionally barred from successful execution,
+  so accepting its case tag in only the assignment and aggregate layers was a
+  transitional state, not a valid comparison mechanism. Remove that path rather
+  than adding a hidden deep-success mode.
+- Preserve the independent host-native profile binding checks across configured
+  model, sealed stage, exact host argv shape/count, sealed executable identity,
+  and reviewer observation. Require external
+  retained evidence for the next live public control so a proposal-stage failure
+  cannot be reduced to a generic nonzero outcome after cleanup.
+- The bounded repair passes all `1,194` Greenfield install/release-harness tests;
+  independent release-proof re-adjudication reports no P0/P1.
+- Rebuild from the clean pushed checkpoint, run one fresh retained Astra public
+  control, then proceed to full immutable release qualification. V31 remains
+  consumed and must not be inspected, rerun, or used as tuning data. No retry,
+  repair, fallback, parser, regex, model ladder, or second candidate is permitted.
+
+## V33 Source-Local Release Frontier (2026-09-27)
+
+- The bounded V32 repair is implemented without a new semantic mechanism.
+  Typed provisional design now owns verification and proportional risk posture;
+  one presenter owns actor-aware event copy across Project, Radar, and Atlas;
+  retained evidence binds the exact semantic publication chain; browser proof
+  covers portable retained navigation and real mobile diagram interaction; and
+  the one-shot holdout ledger is claimed before any protected input is opened.
+- Exact reviewer custody now binds source, product facts, canonical candidate,
+  authored relations, provisional design coverage, and the sealed authority.
+  Independent transaction re-adjudication finds no P0/P1. The settled source
+  passes `1,826/1,826` fast, `292/292` lifecycle, `1,745/1,745` install, and
+  `6/6` direct Project browser integration tests.
+- Next gate is delivery, not feature expansion: build one complete immutable
+  distribution, prove clean install and the full generated-repository browser
+  matrix, run one fresh disclosed public qualification with independent
+  semantic/UX review, and only then verify the frozen hashes and consume the
+  untouched final holdout once. No regex/parser stack, retry, repair author,
+  fallback candidate, model ladder, or protected-case tuning is permitted.
+
+## V32 Fresh Public Control And Entrypoint Gate (2026-09-27)
+
+- Immutable build `76548dc22f782f77e538d30c45b80d72bcbc3be1` passed one genuinely new disclosed
+  Astra-medium control on the first attempt with zero automated findings, 4 Radar
+  workstreams, 4 Registry components, 5 Atlas diagrams, 14 trace nodes, 5
+  implementation prompts, and complete desktop/mobile browser-state proof.
+  The exact host and reviewer receipts plus every generated artifact and
+  screenshot are retained outside the work namespace. Proposal time was
+  `128.096s`: inside the safety window, above the advisory standard target.
+- Independent semantic and UX review then blocked release on general product and
+  proof-oracle defects: incomplete handoff/signature acceptance, empty proposed
+  risk posture, repeated Radar project copy, visible subjectless event fragments,
+  false date-only conversion, non-durable retained navigation, ephemeral report
+  paths, and absent per-diagram mobile readability evidence. Transaction review
+  remains clean. Remove these P1 classes before another immutable qualification;
+  do not treat the self-reported `10/10` as release acceptance.
+- Before the full immutable qualification, align the maintained wrapper and
+  campaign shard command with the already-enforced exact host-native argv and
+  retained-evidence contract. Keep one candidate and one independent review;
+  add no retry, parser, regex, repair, fallback, or model ladder. Then run the
+  disclosed matrix, recovery/host/browser gates, and only after those pass seal
+  a new blind holdout.
+
+## V28 Source-Custody Release Gate (2026-09-26)
+
+- Immutable V28 passed 30 disclosed cases, then committed the archive control
+  with 4 Radar workstreams, 4 Registry components, 5 Atlas sources, clean
+  browser proof and valid transaction custody. Quality correctly failed because
+  the package repeated a synthetic source identifier and paraphrased its
+  non-projection directive across Radar, Atlas, the project brief, dashboard
+  and all five handoffs. Preserve V28 as terminal evidence; the protected
+  holdout remains untouched.
+- Replace the semantic classification owner, not the evaluator or renderers.
+  Canonical v71, host format v11, contract v22 and reviewer v9 treat directives
+  governing the supplied source, fixture or candidate as authoring-transaction
+  inputs as sealed source custody, never product facts or proposed work.
+  Requested product workflows that manage evidence, provenance or source
+  identity as domain data remain product truth. A disjunctive source action
+  retains its full joined action phrase. Add no
+  parser, regex, word list, repair, retry, fallback, projection schema,
+  renderer filter, model ladder or extra call.
+- Live Astra author/reviewer controls admit a genuine product audit-ledger
+  requirement for evidence source identity and deny truncated action custody
+  plus literal and paraphrased source-control contamination. Focused proof
+  passes `437/437`; regression proof passes `1,971/1,971`
+  runtime, `1,175/1,175` installed and `23/23` integration/browser checks.
+  Build V29 and restart the 36-case public gate from case one; only complete
+  public evidence plus independent retained-output qualification may unlock
+  one fresh holdout.
+
+## V27 Coherent-Branch Release Gate (2026-09-26)
+
+- Immutable V27 passed its first 30 disclosed cases at `10/10`, including every
+  previous decisive failure, then stopped before staging on
+  `public-v11-archive-custody-01`. The candidate retained all four source
+  events and selected the acceptance walkthrough `[1, 2, 3]`, but provisional
+  design v2 incorrectly required First Run to contain the mutually exclusive
+  rejection outcome too. Preserve `/private/tmp/odylith-v27-public.KIxnJA` as
+  terminal evidence; the protected holdout remains untouched.
+- Replace the conflated owner, not the example. Typed events and component
+  support retain every source action. Provisional design v3 selects one
+  nonempty coherent branch, requires its terminal result and cited
+  predecessors, and leaves the independent reviewer to deny either a required
+  sequential omission or a concatenation of mutually exclusive outcomes.
+  Host format v10, canonical authoring v70, contract v21, and reviewer v8 make
+  the changed serialized semantics explicit. Add no parser, regex, repair,
+  retry, fallback, branch classifier, model ladder, or model call.
+- Source proof passes `1,796/1,796` fast and `288/288` lifecycle tests.
+  Independent source review returns `SHIP`. Fresh live Astra review admits the
+  archive acceptance branch while preserving the rejected branch outside the
+  walkthrough, and denies a controlled source-sufficient candidate that omits
+  the required resolution-owner assignment. Build one clean immutable
+  distribution and restart all 36 disclosed cases from case one. Only a clean
+  public/browser/recovery gate plus independent retained-output qualification
+  may unlock one fresh holdout; completion remains unclaimed.
+
+## V26 Byte-Custody Release Gate (2026-09-26)
+
+- Immutable V26 passed one complete `10/10` package and one `10/10`
+  clarification/no-write control, then failed closed before review or staging
+  because `facts.customer` normalized source `A program lead` to absent
+  `a program lead`. No governed product records were written; retain
+  `/private/tmp/odylith-v26-public.vliHJW` as terminal evidence.
+- Reject the first enumerated wording patch. Contract v20 replaces the existing
+  citation instruction with one general byte-for-byte copy law. Deterministic
+  custody, candidate v9, canonical v69, reviewer v7, transaction laws, model
+  profile, timing, and package projection stay unchanged. Add no parser, regex,
+  repair, retry, fallback, model stage, or local vocabulary rule.
+- Exact mutation proof and the host-shaped source control pass; focused proof is
+  `86/86`, complete Greenfield proof is `3,185/3,185`, governed-surface browser
+  proof is `133/133`, and independent review is `SHIP`. Commit and push this
+  checkpoint, build one new immutable distribution, and restart all 36 disclosed
+  cases from case one. A repeated byte-citation failure retires further wording
+  changes and reopens the citation representation. Only a clean public campaign
+  plus retained-output review may unlock one fresh holdout.
+
+## V23/V25 Evaluator Convergence Gate (2026-09-26)
+
+- V23 passed `25/26` disclosed public cases at `10/10`; independent review
+  proved case 162's clarification label contradicted its explicit product
+  owner, task, and visible result. V25 used the corrected disclosed label and
+  produced a complete package in `86.157s` plus `2.266s` commit time: four
+  Radar workstreams, four Registry components, five Atlas sources, ten renders,
+  clean browser proof, and no manifest issue codes.
+- V25's score-zero stop was evaluator-only. The custody check treated
+  authoritative product-path evidence as forbidden background copying, while
+  platform-baseline collection used a narrower vocabulary than generated-term
+  detection and misreported the already-native phrase `grounded summary` as new
+  leakage. Honor the explicit `source-evidence-complete-product-path` contract
+  narrowly, keep repository/source identifiers forbidden, and build the native
+  baseline from the same candidate universe used by detection.
+- The correction adds no parser, regex, phrase classifier, author, reviewer,
+  repair, retry, fallback, or model ladder. Focused proof passes `64/64`; the
+  complete Greenfield suite passes `3,137/3,137`. Preserve V23 and V25 as
+  terminal evaluator evidence, build one new exact immutable distribution, and
+  restart all 36 disclosed cases from case one. Only a clean campaign plus
+  independent retained-output review may unlock exactly one fresh holdout.
+
+## V22 Typed Admission-Witness Release Gate (2026-09-26)
+
+- Immutable V22 passed sixteen disclosed cases before case seventeen repeated
+  the source-insufficient first-path class. The retained candidate named no
+  customer, human actor, or external participant, used a title-owned product
+  event as its task, and supplied no terminal result. Reviewer v6 admitted it;
+  the harness staged a transaction instead of returning the existing
+  clarification. The proposal completed in `72.395s`, so latency was not the
+  cause, and no governed product package was published.
+- Keep the one-author/one-reviewer topology. Reviewer v7 requires each admitted
+  decision to identify one typed participant or explicit product/system task
+  owner, one task event, and one terminal-result event already present in the
+  candidate and in source order. Product/system task witnesses must bind to the
+  same event actor fact. Assumptions and provisional design cannot satisfy the
+  witness; denied and clarification outcomes carry none.
+- Release proof now verifies the private admitted receipt against the exact
+  source, candidate hash, sealed host receipt, reviewer profile, decision,
+  version, witness, and committed receipt. It cannot qualify an unreported or
+  merely retained decision. This adds no parser, regex, phrase rule, repair,
+  retry, fallback, model ladder, or model call.
+- Proof is `535/535` focused, `3,179/3,179` complete Greenfield, and `460/460`
+  comprehensive integration browser checks. Next: commit and push this frozen
+  checkpoint, build one immutable distribution, and restart all 36 disclosed
+  cases from case one. Require independent retained-output semantic review
+  before exactly one fresh untouched blind holdout. Completion remains
+  unclaimed until both gates pass.
+
+## V21 Actor-Task-Result Release Gate (2026-09-26)
+
+- Immutable V21 passed ten disclosed public cases before case eleven exposed
+  one precise reviewer omission. Seven commit cases produced complete `10/10`
+  packages, three clarification cases stopped without writes, and all ten were
+  inside the `90s` advisory target. The climate source-only case named product
+  capabilities but no human user or visible result; its host candidate left
+  `terminal` null, yet independent review admitted it and allowed transaction
+  staging. No governed product publication occurred.
+- Keep the mechanism fixed. Reviewer v6 restores the already-governed
+  actor-task-result law and maps source-missing actor, usable task, or visible
+  result to the existing `first_path` clarification. It adds no parser, regex,
+  prompt cascade, candidate repair, retry, fallback, model ladder, or model
+  call. A source-sufficient but incorrect candidate still receives denial.
+- Focused proof passes `148/148`, the complete Greenfield suite passes
+  `3,178/3,178` in `307.81s`, and the complete integration browser matrix passes
+  `261/261` in `434.34s`. Next: independent bounded review, commit and push the
+  current branch, build one immutable distribution, and restart the unchanged
+  36-case disclosed campaign from case one. Only a 100% public gate plus
+  independent retained-output semantic qualification may unlock exactly one
+  fresh untouched blind holdout.
+
+## V41 human-narrative cognitive-load findings (2026-10-06)
+
+The next presentation pass must lead with purpose, current state, risks, and
+next step in plain human language; evidence, history, and machine detail belong
+in closed detail. Casebook removes sidebar clutter and deleted Intel content
+(23 prior and nine final focused passes; installed/generated proof pending).
+Greenfield repair targets repeated Actor First Path, default Atlas generic
+action/source/performer fields, and D-004 deliverable/repeated verification.
+Remove duplicate text rather than adding features. The established V41 combined
+44 native browser passes predate this new Casebook/UX source patch and do not
+qualify it.
+
+## V42 focused source presentation proof (2026-10-08)
+
+The bounded implementation is complete at source level. Project presents each
+accepted event sentence once and places actor/source metadata in closed native
+details. Atlas presents authored purpose, lifecycle meaning, and short delivery
+titles without generic component prose; exact labels, source metadata, node
+identity, and validation remain intact. Compass preserves complete current facts
+without an invented empty digest. Radar keeps active warnings visible, leads
+with its five core narrative fields, and places supporting links in native
+details. Casebook keeps the full selected summary and searchable summary while
+removing clipped sidebar prose and default Intel chips. This does not establish
+an installed semantic journey, generated-surface refresh, full CI, package,
+Public40, native Claude, blind holdout, or release result. Source evidence:
+`/private/tmp/odylith-v41-greenfield-human-presentation-ipbh2qb6/handoff-final.json`,
+`/private/tmp/odylith-compass-radar-presentation-20261008/handoff.json`, and
+`/private/tmp/odylith-v41-casebook-sidebar-fix-20261006/combined-report.json`.
+
 ## Problem
-Empty or thin consumer repos could dead-end on broad project intent such as building an ecommerce site because Odylith treated missing app source as a hard refusal point instead of producing a confirmation-gated governance proposal. That made the consumer lane accurate but unhelpful, and it left Radar, Registry, Atlas, program waves, release planning, and validation strategy uncaptured until the operator supplied fully-formed governance fields.
+Empty or thin consumer repos could dead-end on broad project intent such as building an ecommerce site because Odylith treated missing app source as a hard refusal point instead of producing a confirmation-gated governance proposal. That made the consumer lane accurate but unhelpful, and it left Radar, Registry, Atlas, release planning, and validation strategy uncaptured until the operator supplied fully-formed governance fields.
 
 ## Customer
 Consumer-lane operators starting a new product, research project, science or math codebase, data platform, cloud platform, security workflow, device workflow, CLI, library, app, game, or education experience before source-backed boundaries exist.
 
 ## Opportunity
-Add a host-reasoned Domain Intelligence contract that turns vague greenfield intent into concrete backlog, program waves, provisional release plan, planned Registry components, host-authored Atlas topology, assumptions, risks, and validation obligations while keeping observed source, user intent, and Odylith assumptions distinct.
+Add an Odylith-owned confirmed greenfield path that turns vague or precise project intent into concrete backlog, a provisional release plan, planned Registry components, Atlas topology, assumptions, risks, and validation obligations while keeping observed source, user intent, and Odylith assumptions distinct.
 
 ## Proposed Solution
-Create a first-class `runtime/domain_intelligence` package that makes Odylith the evidence/schema/validation/apply layer, not the project-authoring brain. `odylith greenfield propose` performs a shallow repo evidence scan and emits a host-agnostic reasoning contract. Claude, Codex, or any future host then uses its full reasoning capability to draft the concrete backlog, components, Atlas Mermaid sources, waves, release plan, assumptions, risks, validation strategy, and open questions in normal chat. `odylith greenfield apply` validates the accepted proposal, requires host-authored `mermaid_source` for each Atlas draft, rejects identical diagram bodies, and writes only through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths after `--confirm`.
+The `runtime/domain_intelligence` package owns the complete evidence-to-transaction boundary. A pinned author proposes source-cited facts, actor/action events, a terminal result, assumptions and separately labeled design. The current v53 candidate adds one read-only complete-candidate reviewer inside the same model window; its native standard-tier gate failed, so this is not an adopted winning mechanism. Deterministic code verifies exact custody, projects every governed surface in isolated staging, validates the complete package, and seals one immutable `ProductCreateTransaction` before showing `CONFIRM`, `EDIT`, or `REJECT`. The confirmation command verifies receipt, hash and preconditions, publishes exact sealed bytes, and validates readback. It never interprets evidence, calls a model, generates artifacts, rebuilds persistent projections or repairs prose after confirmation. Current publication proves journaled recovery; package-level atomic visibility remains unqualified until all canonical readers resolve one atomic generation pointer.
 
 ## Research Signals
-External ecosystem checks argue against a small in-code taxonomy as the proposal author. GitHub Octoverse 2025 shows high-volume new repository creation, AI/agent growth, TypeScript-heavy application work, Python/Jupyter AI and data-science work, and private/product repos growing alongside public open source. CNCF organizes cloud-native work around infrastructure, delivery, observability, security, AI/ML, and runtime ecosystems. Apache describes mature open-source projects across data, cloud, search, libraries, geospatial, IoT, and related categories. NASA's software and open-data surfaces show science projects built from code, data, analysis pipelines, simulation/modeling tools, visualization, reproducibility, and sustained scientific libraries. Those signals prove greenfield intent is open-world; v0.1.14 therefore keeps host reasoning responsible for the project-specific plan while Odylith runtime validation owns evidence tiers, confirmation gates, topology hygiene, release targeting, program/wave formation, and durable memory.
+External ecosystem checks argue against a narrow canned project taxonomy. GitHub Octoverse 2025 shows high-volume new repository creation, AI/agent growth, TypeScript-heavy application work, Python/Jupyter AI and data-science work, and private/product repos growing alongside public open source. CNCF organizes cloud-native work around infrastructure, delivery, observability, security, AI/ML, and runtime ecosystems. Apache describes mature open-source projects across data, cloud, search, libraries, geospatial, IoT, and related categories. NASA's software and open-data surfaces show science projects built from code, data, analysis pipelines, simulation/modeling tools, visualization, reproducibility, and sustained scientific libraries. These historical signals motivate domain-neutral onboarding within the versioned operating envelope; they do not qualify unseen-input reliability. The fixed goal requires useful governance and durable learning without Greenfield programs or execution waves.
 
 ## Scope
-- Add `odylith greenfield propose` and `odylith greenfield apply`.
-- Keep host adapters thin; Claude, Codex, and future hosts route to the same CLI/runtime path.
+- Add no-write `odylith greenfield propose` for Product Intent Confirmation.
+- Make the no-write Product Intent Confirmation visibly sectioned in every
+  host lane: title, Product story, State object, First complete path, Human
+  actors, External systems, Internal product systems, Critical assumptions,
+  Ambiguities, Proof boundary, and Confirm/Edit/Reject. Do not allow one large
+  prose block, decorative Markdown around normal domain nouns, or hidden
+  structure that only the host model can infer.
+- Add confirmed `odylith greenfield create --confirm` for Odylith-owned hash-verified transaction commits.
+- Disable `odylith greenfield apply` as a confirmed write path; operators must compile a ProductCreateTransaction before final confirmation.
+- Keep host adapters thin; every supported host routes to the same CLI/runtime path.
 - Let the host model reason over any product, science, math, research,
   infrastructure, art, education, policy, device, data, or mixed project shape;
   do not constrain the proposal to an in-code domain list.
-- Require the host-authored proposal to carry concrete backlog candidates,
-  candidate Registry components, host-authored Atlas Mermaid sources,
-  program formation, wave-to-workstream policy, release strategy, validation
-  obligations, risks, assumptions, and open questions.
+- Require the staged proposal to carry concrete backlog candidates, candidate
+  Registry components, Atlas Mermaid sources, release strategy, validation
+  obligations, risks, assumptions, and open questions before confirmation.
+- Default apply-ready greenfield scaffolds must carry a multi-view Atlas
+  architecture suite, not a token diagram pair: at minimum topology,
+  first-slice sequence, component ownership, state/data contract, and
+  validation/release topology; domain-specific profiles should add the
+  operational-risk views the prompt makes material.
 - Preserve evidence separation: observed source, user intent, and Odylith assumptions must stay distinct.
-- Keep Odylith CLI proposal generation provider-free by default; the active host
-  model performs the reasoning already happening in the chat.
+- Select one pinned profile before authoring. Bound all model roles and package
+  work within the independent 90/120/150 advisory targets and 180-second
+  operational safety timeout; no retry ladder or
+  post-hoc tier promotion. Call count is a replaceable mechanism, not a substitute
+  for source fidelity, useful governance or measured completion.
+- Create no Greenfield programs, execution waves or associated residue.
 - Write only after explicit confirmation and reject missing or duplicated Atlas
   topology before any governed file changes.
 - Filter Compass timeline audit entries so zero-file prompt-intervention narration does not become fake implementation history.
@@ -110,20 +657,179 @@ External ecosystem checks argue against a small in-code taxonomy as the proposal
 - Depends on B-141 for the v0.1.14 host/runtime integrity lane: greenfield prompt routing must preserve low-latency host behavior, Intervention Engine separation, consumer-lane feature integrity, robust upgrade migration, and generated-surface refresh proof.
 
 ## Success Metrics
-Greenfield propose returns a low-latency, provider_calls=0 host-reasoning contract for any vague or precise greenfield prompt.
-The host-authored proposal includes backlog candidates, program waves, release plan, planned Registry components, draft Atlas Mermaid sources, assumptions, risks, validation strategy, open questions, and exact apply commands.
-Greenfield apply writes through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths only after --confirm, preserving user_intent evidence and source-backed truth separation.
-Apply rejects missing Mermaid source, duplicated diagram source, incomplete proposal sections, and invalid evidence tiers before any governed write.
+Greenfield propose returns a faithful, complete and reviewable transaction candidate for supported evidence, one focused material question when necessary, or an explicit unsupported-evidence or environment outcome. A timed-out clear, supported request is a qualification failure, not successful delivery. Model calls are bounded by the preselected profile; their count does not define product success.
+Product Intent Confirmation guidance requires scannable sectioned Markdown, short paragraphs, bullets where appropriate, and plain domain terms with no code ticks or decorative bold markers.
+Before confirmation, Greenfield stages an apply-ready proposal with backlog candidates, release plan, planned Registry components, draft Atlas Mermaid sources, assumptions, risks, validation strategy, open questions, and exact governed-write evidence.
+Greenfield scaffolds include a multi-view Atlas suite with mutually traceable workstream/component links; complex physical, analytical, and operational domains can add risk, safety, telemetry, deployment-boundary, and observability/audit views without hard-coded domain families.
+Greenfield proposals carry a project-first brief before backlog: direction options, pre-coding checkpoints, coding-readiness gates, and host-independent commands must be visible in text and JSON before apply.
+Greenfield Registry component specs stay component-owned: they must not copy project-level risk/security/compliance posture into every dossier, and each spec must name the component's own boundary, outside-boundary exclusions, collaborators, interfaces, failure modes, proof obligations, first source path, most specific child workstream anchor, and component-local diagram set instead of project-wide topology links.
+Greenfield create writes the exact sealed Radar, Registry, Atlas, release-targeting, and Compass bytes only after hash-bound confirmation, preserving user-intent evidence and source-backed truth separation.
+The pre-confirm compiler rejects missing Mermaid source, duplicated diagram source, incomplete proposal sections, and invalid evidence tiers before any governed write.
+Apply/create closeout leads with the project workstream and readiness gates, then names the eventual first coding workstream as a later lane rather than the immediate next action.
 Host prompt routing avoids noisy raw Observation chatter for normal greenfield intents while preserving earned intervention paths.
+Greenfield compilation validates and seals every artifact and persistent projection before confirmation; commit-only create publishes those bytes and verifies readback without regenerating Radar, Registry, Atlas or Compass.
 Compass timeline audit filters zero-file prompt-intervention narration so routing notes do not render as fake implementation history.
+Standard, rescue, and deep target the full installed proposal, confirmation, readback, recovery, browser, and quality path within 90, 120, and 150 seconds respectively, with a 180-second operational safety timeout and no retry, tier cascade, or post-confirm semantic work.
+
+## Current Completion Gate
+
+### 2026-10-05 fixed-case and UX checkpoint
+
+At source checkpoint `23881abd0e8bd15ddc64fb869b581060d50c3302`, independent source-first H0/H1 review cleared the fixed Research (`13/18` forward; `75/108` reverse) and Agriculture (`26/31` forward) controls. Separate actual terminal continuations cleared their declared reject, copied-old refusal, H1 `CLOSED`, sealed-readback, and same-hash idempotence controls in `20.785s` (Research) and `22.855s` (Agriculture). These bounded records do not meet any final release, aggregate, protected, browser, migration, or whole-journey timing gate.
+
+The active checkpoint has canonical `design.project_summary` v54 / format 23 in the existing candidate pass, retaining v53 sealed pairs as passive evidence and retiring `fbbb` execution seals through canonical v54 custody. Source UI implementation resolves five captures: repeated Accepted focus, source excerpt replacing Project summary, flattened risks, boilerplate Atlas narrative, and repeated Registry purpose copy. It puts purpose, human status, and next action before optional details; retains the actual unmapped Registry warning and all exact evidence; keeps Radar status before optional assessment and dates; and uses native details that support original route/ID recovery.
+
+The 22 human-maintained UI owners/templates change `+539/-557` lines. Root unit proof passes `385` checks; r6 UI44 passes `44/44` states with zero issues and `119` screenshots in `41.827595s`, source pins unchanged, plus four actual Atlas-guide keyboard controls (SHA-256 `d77f3c65653b0626d9abf3ed445aea401298ab0a875c41283de6b9a2da969eb6`). Preserve the original two-failure Radar lane as history. Existing CLI recovery backed up eight outputs, restored reviewed state `e7b9823c1deefee325239f6e9a31157a7c89a3f35a699276e7727ff7ffd0a9a2`, then passed forced Radar/Atlas refresh in `10s`: all `47/47` Atlas records are fresh, stale count is zero, Radar passes, and no runtime fallback ran. Bundle mirrors are regenerable outputs of unchanged renderers, not unique authored sources; all 660 authoring pins are unchanged. Current published-root Radar proof passes the original two tests in `2.34s` with default-closed details, native Enter, ten exact fields, route/ID recovery, and geometry. B-145 installed upgrade, fresh v33 build/install semantic evidence, Public40, migration, holdout, and release gates remain open.
+
+Runner-native outcome authority is now implemented. Evaluation-splits v6 and
+final-holdout v7 require a hash-bound independent source-sufficiency decision
+for every exact case before ledger claim: commit expectations must be confirmed
+as source-sufficient, clarification expectations as materially uncertain, and
+review ownership must be distributed and distinct from case derivation. The
+gate passes `20/20` direct contract tests, `142/142` release-runner/recovery
+tests, and `1,151/1,151` complete install-side Greenfield tests. No product
+prompt, parser, regex, schema, retry, or semantic owner changed.
+
+The exact frozen public mechanism at commit `74f23f1bb` passes its complete
+installed package, browser, transaction/recovery, and independent semantic
+review gates, but the terminal v6 protected run did not qualify release. CB-329
+owns 28 invalid corpus/evaluator expectations; CB-303 owns seven weak
+product-story citations and one incomplete proposed first run. Architecture is
+frozen. Close only those two public-reproducible classes, prove the runner-native
+case contract before ledger claim, repeat one immutable public gate, and then
+run one newly blind holdout. Do not commission that holdout early or add a
+parser, regex, prompt cascade, retry, repair, fallback, schema family, or second
+meaning owner. The current timing posture is `90/120/150` advisory and `180s`
+operational safety; the failed v6 run recorded no `150s` or `180s` overrun.
+
+- One model-authored direct evidence graph owns semantic selection: exact source
+  facts, ordered events, terminal result, component ownership, assumptions, and
+  ambiguities. Deterministic code may derive coordinates, hashes, actor carry,
+  exact-overlap links, transaction structure, and projections, but must not
+  reinterpret prose or invent domain meaning.
+- Registry, Radar, Atlas, Project, release topology, and Tribunal surfaces render
+  only from the sealed graph and its custody-bound structural projections. They
+  must not reparse one another's Markdown, labels, or narrative copy.
+- Every transaction-material fact must have exact eligible source custody.
+  Material ambiguity produces at most one focused question; non-material gaps
+  remain explicit assumptions. An invalid response fails closed before preview.
+- There is no semantic retry stack. Standard, rescue and deep retain their
+  preselected profiles and full installed lifecycle advisory targets of 90,
+  120 and 150 seconds respectively, under the 180-second operational safety
+  timeout. The current two-role v53 candidate failed its native
+  standard gate; neither its component tests nor a timely error qualifies it.
+- The quality gate must fail closed before confirmation on missing meaning,
+  cross-surface drift, malformed ownership, clipping, repetition, disconnected
+  topology, invalid Registry contracts, private-custody leakage, or incomplete
+  release proof. Evaluators must compare typed structure and sealed payload
+  fidelity instead of inferring quality from regex-classified prose.
+- CONFIRM is commit-only. It verifies the reviewed hash and preconditions,
+  publishes exact sealed bytes and validates readback. Before publication a
+  failure aborts safely; after observed publication it verifies or enters
+  recovery rather than silently rolling back. Any model call, evidence parsing,
+  artifact or persistent-projection generation, semantic repair, or prose repair
+  after confirmation is forbidden. All-reader atomic visibility remains open.
+- Failed mechanisms to avoid: regex/template semantic towers, rendered-text
+  rewrite loops, fixture-specific vocabulary, independently generated recovery
+  transactions, retry cascades, and stale evaluator expectations that reward a
+  superseded schema rather than consumer utility.
+- Completion requires one immutable distribution to pass fresh public standard,
+  rescue, and deep cases end to end with complete governance, browser, recovery,
+  host-parity, exact-readback, and independent quality proof. Only then may the
+  operator authorize the one-shot protected holdout.
 
 ## Validation
-- Unit tests for the host-reasoning request contract, open-world proposal validation, required host-authored Mermaid sources, duplicate-topology rejection, program waves, release plan, CLI JSON, host greenfield routing, component authoring user-intent metadata, and Compass zero-file intervention chatter filtering.
+- Unit tests for Product Intent custody, materiality, complete proposal generation, meaningful diagram depth, absence of programs/waves, sealed-byte publication, CLI JSON, deterministic host confirmation, component evidence and Compass zero-file narration filtering.
 - CLI proof for `odylith greenfield propose --format json` on empty/thin repo posture.
 - Governance proof through Casebook, Radar, Registry, Atlas, and Compass refreshes.
 - Browser proof for refreshed Radar, Registry, Atlas, Casebook, and Compass surfaces after generated assets update.
 
 ## Validation Evidence
+- 2026-07-03 harness observability checkpoint: Greenfield matrix discovery now
+  has incremental JSONL telemetry, failure clustering, proof-tier separation,
+  controlled campaign tiers, and a metadata-driven shard builder for exact
+  failed-subset replay, regression shards, volume-discovery shards, and strict
+  release-proof shards. Proof passed the focused sharder/campaign suite
+  (`18 passed`), Python compile checks, Bash entrypoint syntax checks, and a
+  disposable `make greenfield-matrix-shards` command-surface smoke with temp
+  cleanup. Fresh local dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-postconfirm-20260703b`
+  passed the 52-term platform domain-leakage guard, and an installed replay of
+  the saved `/Users/freedom/mock/grn-sim` confirmed intent completed governed
+  create in 32.451s with final manifest passed, write transaction committed,
+  core governance files present, and no `result result` Atlas copy. This is
+  installed defect replay and harness proof, not full release readiness; browser
+  and natural-rescue proof still belong to the release-proof tier.
+- 2026-07-03 incremental campaign progress checkpoint: the tiered campaign
+  runner now tails shard telemetry and writes merged
+  `campaign-progress.v1.jsonl` plus live `campaign-progress.v1.json` snapshots
+  with per-case counts, running shards, telemetry-derived stop decisions, and
+  cross-tier failure-cluster counts. Pending shards stop after the first
+  actionable failure or cluster threshold, and in-flight sibling shards receive
+  a cooperative stop signal once merged telemetry exposes tier failure evidence.
+  Failure clustering now prefers typed manifest issue ownership and concrete
+  blocker text before score buckets, so the next failed-subset replay is
+  root-cause readable instead of score-only. The shard builder now emits
+  per-tier variance evaluation and reads top-level campaign failure clusters so
+  high-volume discovery is scored by stressor coverage and ambiguity-shape
+  density, not raw project count. The campaign wrapper now performs release
+  component-forensics and Chromium preflight before strict release-proof shards.
+  Direct release-tier matrix invocations now also reject missing browser,
+  rescue-smoke, or natural-rescue proof, so the strict proof contract cannot be
+  bypassed outside the wrapper. Focused proof passed the harness suite
+  (`27 passed in 0.51s`), the broader matrix unit file (`69 passed in 0.42s`),
+  combined runner/matrix proof (`87 passed in 0.74s`), Python compile checks,
+  and Bash syntax checks. This remains
+  discovery/release-harness proof only; current post-confirm generation
+  quality failures still keep B-142 open.
+- 2026-07-03 tiered replay and actor-led product-view checkpoint: the
+  high-volume harness now flushes matrix result JSON incrementally during
+  case execution, preserves stable case identity for exact failed-subset replay
+  through id, slug, prompt hash, and confirmed-intent hash, and adds an explicit
+  240-case discovery tier with tier-specific worker limits. The latest
+  product-view no-write blocker was repaired in source by adding a
+  domain-neutral actor-led open-action owner to the first-path semantic path and
+  confirmed completion text, so long actor-led first paths no longer fall back
+  to later homonym object actions when rendering Radar product-view copy.
+  Focused campaign/progress proof passed (`29 passed`), focused first-path and
+  post-confirm slop proof passed (`56 passed`), Python compile checks passed,
+  and exact source-local replay of the failed long-first-path prompt completed
+  governed create with final manifest passed and zero issues. This is not a
+  release-ready claim: next proof is a fresh built dist, installed exact replay,
+  and resumed 60-case regression before broader 120/240 discovery.
+- 2026-07-04 source-anchored structured-rescue fallback checkpoint: the strict
+  release-proof natural-rescue blocker showed that local host CLI subprocesses
+  can miss the rescue budget even for tiny schema-bound PatchSet requests. The
+  rescue path now gives exact source-owned semantic operations a short 12s host
+  attempt, records provider failure, and applies a source-anchored semantic
+  fallback only when the accepted proposal already carries the exact
+  schema-owned fact. The same pass fixed campaign evidence inflation by
+  de-duplicating tier aggregate and shard failure-cluster counts and preserving
+  preflight tier-completion counts in live progress snapshots. Focused proof
+  passed 68 rescue/campaign/proof tests plus compile and diff checks; a
+  source-local natural-rescue replay committed governed writes in 43.439s with
+  the final manifest passed. Release readiness remains unclaimed until a fresh
+  installable dist passes strict full-install release proof with browser,
+  synthetic rescue, natural rescue, platform leakage, and temp cleanup.
+- 2026-07-04 strict installed fallback release proof checkpoint: fresh dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-working-tiered-rescue-fallback-20260704`
+  passed checksum/syntax/archive verification and strict release campaign
+  `/tmp/odylith-tiered-rescue-fallback-release-campaign.v1.json` with
+  `release_readiness_status=proven`, no failure clusters, and full-install
+  release proof. The release shard passed 12/12 high-variance cases with browser
+  proof, zero issue rows, complete governed evidence, prompt findings at zero,
+  and standard create timings of 30.674-40.448s. Synthetic rescue passed, and
+  natural rescue committed governed writes under the 90s rescue tier with
+  `cli_create_seconds=67.639`, manifest elapsed 40.888s, provider timeout
+  recorded after 12.0s, and `structured_patch_fallback.status=applied`.
+- 2026-06-29 post-domain-leakage-guard installed proof passed on local release
+  dist `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3fbacb91`:
+  build-time platform domain-leakage gate passed across 19 distinctive fixture
+  terms; maintained installed matrix proof passed 13/13 cases at hard 10/10
+  with browser proof and max create time 28.677s; synthetic typed-probe rescue
+  smoke passed in 35.129s; fresh ten-domain non-reused variance proof passed
+  10/10 cases at hard 10/10 with browser proof and max create time 29.269s;
+  all matrix temp roots were deleted after proof.
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_greenfield_host_routing.py tests/unit/runtime/test_component_authoring.py tests/unit/runtime/test_compass_transaction_runtime.py tests/unit/runtime/test_show_capabilities.py tests/unit/test_cli.py` passed with 200 tests.
 - `PYTHONPATH=src python -m pytest -q tests/unit/install/test_agents.py tests/unit/install/test_codex_project_assets.py tests/unit/install/test_claude_effective_settings.py tests/unit/runtime/test_source_bundle_mirror.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_validate_backlog_contract.py tests/unit/runtime/test_casebook_source_validation.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_validate_guidance_behavior.py tests/unit/runtime/test_validate_discipline.py tests/unit/install/test_migration_runtime.py tests/unit/install/test_casebook_metadata_migration.py tests/integration/install/test_lifecycle_simulator.py tests/integration/runtime/test_governance_sync_performance.py` passed with 269 tests.
 - Full browser proof passed with 185 tests and 1 skipped case across Atlas, Casebook, Compass, Radar, Registry, intervention visibility, filter audit, onboarding, and regression surfaces.
@@ -137,12 +843,183 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   greenfield proposal path through the 568-test engine suite, the 208-test
   host/migration suite, and the 185-test browser matrix without provider calls
   or consumer-lane source claims.
+- 2026-05-08 greenfield Atlas suite hardening proved the provider-free generic
+  scaffold now emits the baseline architecture views and richer accepted
+  scenarios can emit additional domain-specific views while validation and Tribunal still
+  pass: `PYTHONPATH=src python -m pytest -q
+  tests/unit/runtime/test_greenfield_proposals.py
+  tests/unit/runtime/test_greenfield_atlas_contract.py
+  tests/unit/runtime/test_compass_dashboard_shell.py::test_workstream_and_registry_links_stay_cross_surface_and_without_footer_actions
+  tests/integration/runtime/test_surface_browser_smoke.py::test_compass_current_workstreams_excludes_rows_already_represented_in_programs_or_release_targets
+  tests/unit/test_cli.py::test_release_migration_gate_json_reports_registered_runtime
+  tests/unit/test_cli.py::test_greenfield_propose_command_is_provider_free
+  tests/unit/test_cli.py::test_greenfield_create_help_forwards_backend_flags
+  tests/unit/test_cli.py::test_greenfield_apply_help_forwards_backend_flags`
+  (`43 passed`); `odylith sync --repo-root . --check-only --impact-mode
+  selective`; `odylith casebook validate`; `odylith release migration-gate
+  --target-version 0.1.15 --json` (`blocked_manual_migrations=0`); `git diff
+  --check`; `python -m py_compile` for the touched Domain Intelligence modules.
+- 2026-05-08 project-first greenfield UX hardening proved proposal text, JSON,
+  legacy normalization, validation rejection, customization option coverage,
+  and apply/create closeout now prioritize project shaping before coding:
+  `PYTHONPATH=src pytest -q tests/unit/runtime/test_greenfield_proposals.py`
+  (`33 passed`). Casebook bug `CB-186` captures the fixed-pending-release UX
+  regression.
+- 2026-05-08 project-intelligence deepening added a canonical
+  `project_intelligence` object before the project brief and backlog, covering
+  intent, scope, ontology, state, operators, constraints, truth map, evidence,
+  decisions, assumptions, topology, invariants, risks, validation, artifacts,
+  owners, execution memory, metrics, change rules, conflict rules, and transfer
+  priors. The CLI text now renders that control surface first, JSON carries the
+  same object, apply persists it into the parent Radar workstream, and managed
+  greenfield guidance tells Codex, Claude Code, and direct CLI users not to
+  rush to `start B-***` before project acceptance and a child technical plan.
+  Proof: `PYTHONPATH=src python -m pytest -q
+  tests/unit/runtime/test_greenfield_proposals.py` (`34 passed`),
+  `PYTHONPATH=src python -m pytest -q
+  tests/unit/runtime/test_greenfield_proposals.py
+  tests/unit/runtime/test_greenfield_atlas_contract.py
+  tests/unit/runtime/test_greenfield_host_routing.py tests/unit/test_cli.py`
+  (`225 passed`), live `odylith greenfield propose` text inspection, and
+  `odylith release migration-gate --target-version 0.1.15 --json`
+  (`blocked_manual_migrations=0`).
+- 2026-05-08 explicit invalidation and ownership hardening made
+  `invalidation_rules` a validated project-intelligence layer and made child
+  Radar workstream Domain Intelligence validate first-class `scope`, `owners`,
+  and `invalidation_rules` layers. The workstream term tables were split into
+  `greenfield_workstream_terms.py` so the generator stays under the source-size
+  soft limit instead of becoming a swollen payload builder. Proof:
+  `PYTHONPATH=src python -m pytest -q
+  tests/unit/runtime/test_greenfield_intelligence_schema.py
+  tests/unit/runtime/test_greenfield_proposals.py` (`36 passed`),
+  `PYTHONPATH=src python -m pytest -q
+  tests/unit/runtime/test_greenfield_intelligence_schema.py
+  tests/unit/runtime/test_greenfield_proposals.py
+  tests/unit/runtime/test_greenfield_atlas_contract.py
+  tests/unit/runtime/test_greenfield_host_routing.py tests/unit/test_cli.py`
+  (`227 passed`), and the bundle/hygiene mirror slice
+  (`tests/unit/runtime/test_source_bundle_mirror.py
+  tests/unit/install/test_codex_project_assets.py
+  tests/unit/install/test_agents.py tests/unit/runtime/test_hygiene.py`,
+  `101 passed`).
+- 2026-05-08 component-spec bespoke hardening proved generated Registry specs
+  no longer inherit project-wide risk/security/compliance narrative, render
+  component-named boundaries/contracts/proof/failure/runway sections, extract
+  outside-boundary exclusions, and anchor each component to its most specific
+  child workstream (`Risk Signal Engine` -> `B-003`, `Scenario Replay Harness`
+  -> `B-004`): `PYTHONPATH=src pytest -q
+  tests/unit/runtime/test_greenfield_proposals.py` (`33 passed`). Casebook bug
+  `CB-187` captures the fixed-pending-release UX regression.
+- 2026-05-08 component-spec topology tightening moved broad project links back
+  to Radar/Atlas and kept Registry dossiers component-local: external-domain generated
+  specs now bind Risk Console to `B-002` and `D-002,D-003`, Risk Signal Engine
+  to `B-003` and `D-002,D-003,D-004`, Scenario Replay Harness to `B-004` and
+  `D-005`; host-authored components without component-level diagram refs no
+  longer inherit system-context/program-wave diagrams. Proof:
+  `python -m pytest tests/unit/runtime/test_greenfield_proposals.py
+  tests/unit/runtime/test_component_authoring.py
+  tests/unit/runtime/test_governed_artifact_tribunal.py -q` (`39 passed`).
+- 2026-05-08 project-first UX deepening made proposal text render a fuller
+  project intelligence board before backlog, including all control-surface
+  rows, complete customization flow through the no-code-until-plan step, deeper
+  per-layer project reality, project design board rows, host-independent
+  "customize by saying" examples, and apply/create closeouts that label the
+  child workstream as a future implementation lane after gates instead of an
+  immediate coding instruction. Proof: `python -m pytest
+  tests/unit/runtime/test_greenfield_proposals.py
+  tests/unit/runtime/test_greenfield_intelligence_schema.py
+  tests/unit/runtime/test_component_authoring.py
+  tests/unit/install/test_local_release_smoke.py -q` (`58 passed`);
+  `python -m py_compile` passed for the touched greenfield UX modules and
+  release smoke script.
+- 2026-05-08 traceability writer hardening fixed the remaining applied-Radar
+  sludge discovered by fresh external-domain temp-repo proof: structured risks,
+  questions, dependencies, and release stages now render as complete governed
+  bullets instead of fragments like `R1.`, `Q1.`, `domain contract.`, or
+  `command.`; question punctuation is preserved; external-domain customization prompts no
+  longer split into lowercase fragments. Proof: source-local `greenfield
+  propose` produced 270-line project-first text with 24 project-intelligence
+  layers, source-local apply wrote all four external-domain Radar workstreams with no
+  shallow-fragment hits, `python -m pytest
+  tests/unit/runtime/test_greenfield_proposals.py
+  tests/unit/runtime/test_greenfield_intelligence_schema.py
+  tests/unit/runtime/test_component_authoring.py
+  tests/unit/install/test_local_release_smoke.py -q` passed (`58 passed`), and
+  `python -m py_compile` passed for the touched greenfield modules.
+- 2026-05-08 Atlas UX deepening made the default greenfield diagram suite
+  act like an architecture review board instead of a box-and-arrow sketch.
+  Canonical diagram rows now carry `review_focus`, `operator_question`, and
+  `proof_gate`; proposal text renders those fields under `Draft Atlas diagrams`;
+  the generated Mermaid sources include evidence-boundary, code-gate,
+  decision-lens, state-note, unresolved-risk, and surface-agreement annotations
+  directly inside the diagrams. Proof: source-local `greenfield propose` for
+  an external-domain fixture rendered 290 lines with per-diagram summary/review/
+  question/gate guidance, canonical JSON carried five annotated Atlas rows, and
+  `python -m pytest tests/unit/runtime/test_greenfield_atlas_contract.py
+  tests/unit/runtime/test_greenfield_proposals.py
+  tests/unit/runtime/test_greenfield_intelligence_schema.py
+  tests/unit/runtime/test_component_authoring.py
+  tests/unit/install/test_local_release_smoke.py -q` passed (`69 passed`) plus
+  `python -m py_compile` for the touched proposal rendering/scaffold modules.
+- 2026-05-08 greenfield anti-slop hardening removed the residual applied-Radar
+  weak spots found by a fresh external-domain audit: proposal-level risks are now
+  domain-specific structured records with class, severity, trigger,
+  early-warning signal, and mitigation; old generic greenfield risk boilerplate
+  is rejected before apply; workstream ontology labels are deduplicated and
+  validated; malformed generated ownership prose such as `owns Own ...` is
+  rejected; parent workstreams use program-level ontology instead of repeating
+  child implementation nouns; proposal and applied Radar risk rendering preserve
+  the structured risk fields. Proof: `python -m pytest
+  tests/unit/runtime/test_greenfield_atlas_contract.py
+  tests/unit/runtime/test_greenfield_host_routing.py
+  tests/unit/runtime/test_greenfield_intelligence_schema.py
+  tests/unit/runtime/test_greenfield_proposals.py -q` passed (`49 passed`);
+  source-local `greenfield propose/create` for an external-domain fixture
+  produced 4 workstreams, 3 components, 5 diagrams, 27 domain-intelligence
+  fields per workstream, unique ontology labels, project-gated closeout, no
+  old boilerplate, no malformed ownership phrase, and component specs with
+  Risk Console/Risk Signal Engine/Scenario Replay Harness-specific markers.
+- 2026-05-09 preview/write-gate hardening split the default greenfield text
+  from the deep accepted record. `greenfield propose` now shows four review
+  gates: product interpretation, clarify-before-apply choices, a compact
+  workstream/component/architecture preview, and the confirmed-write point.
+  The full `--format json` path still carries the deep project/workstream,
+  component, architecture, wave, release, risk, validation, and memory record
+  that `greenfield create/apply --confirm` validates before Tribunal-gated
+  writes. Domain-bearing trailing title terms are preserved instead of clipping
+  prompts at dangling prepositions, and default proposal text stays free of
+  provider/mode chatter, raw apply-ready metadata, and governance-surface names
+  masquerading as product requirements. Proof: `CB-194` plus focused preview,
+  show, bundle, Atlas, source-guard, and release-migration
+  tests; live source-local repro showed the compact gated preview and `release
+  migration-gate --target-version 0.1.15 --json` reported no blockers.
+- 2026-05-09 final greenfield guardrail hardening closed two migration-proof
+  gaps found while rerunning the product surfaces: stale consumer repair paths
+  now no-op in the Odylith product repo, and standalone Registry
+  rendering ignores stale runtime snapshots so the browser payload reflects the
+  governed source manifest. Proof: a product-repo guard regression test,
+  standalone Registry source-manifest precedence test, real `radar refresh`
+  proving the source Registry stays at 30 product components with zero external mock
+  components, a refreshed migration-observer pass for `operator-cli-contracts`
+  plus `browser-surfaces`, and a regenerated Radar, Registry, Atlas, Casebook,
+  and Compass shell surface matrix across desktop/mobile headless browser
+  viewports with zero console warnings/errors and zero horizontal overflow.
+- 2026-05-09 architecture-view title hardening fixed greenfield diagrams that
+  repeated the full prompt-derived project title before every view name. The
+  scaffold now keeps project identity in intent, slug, summary, and context,
+  while diagram titles stay concise and scannable (`System Overview`,
+  `First Slice Flow`, `Component Ownership Map`, `Domain State Model`,
+  `Validation And Release Topology`, plus domain-specific view names). The
+  Tribunal rejects project-title-prefixed diagram titles before confirmed
+  writes. Proof: `CB-195`, focused Atlas tests,
+  compact preview repro, and source-local Tribunal rejection
+  test for prefixed host-authored titles.
 - Deepening pass split science/math into targeted subdomains and added fixture
   proof for commerce, SaaS, dashboards, AI assistants, data ingestion, CLI
   libraries, physics simulation, differential-equation solvers, computational
   biology pipelines, formal proof libraries, statistics/econometrics notebooks,
   math education, geospatial climate analysis, ML experiment platforms, and
-  robotics calibration workflows. Formal-proof proposals now carry proof
+  calibration workflows. Formal-proof proposals now carry proof
   checker/theorem obligations and explicitly avoid numerical tolerance/random
   seed advice.
 - The earlier in-code fit-classification path is superseded for v0.1.13 by
@@ -187,6 +1064,73 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   passed the focused `67` test Atlas/greenfield/migration slice plus `4` Atlas
   browser tests, and kept old amber tokens out of source and generated Atlas
   text assets.
+- v0.1.14 post-release greenfield/wave hardening captured `CB-167` and closed
+  the fresh-consumer failure path where generated refresh guards could report
+  fingerprint reuse over stale Registry/Radar payloads, greenfield apply could
+  silently drop proposed waves with no token-overlap children, and wave
+  authoring forced hand-edits that the CLI contract forbids. Focused proof now
+  covers byte-content refresh fingerprints, `dashboard refresh --force`,
+  preserved zero-overlap waves, `program adopt`, `wave assign --adopt`,
+  `backlog create --parent/--umbrella`, translated wave assignment errors, and
+  non-tautological program next actions.
+- v0.1.15 greenfield quality hardening added `proposal_tribunal.py` as a
+  deterministic, host-model agnostic pre-write gate for accepted proposals. The
+  gate rejects child workstreams without component/diagram/dependency/proof
+  topology, candidate components without boundary/interface/dependency/proof
+  expectations, diagrams that do not connect to backlog and Registry topology,
+  and release/program structures that cannot make Compass visibly useful. Apply
+  now batches the visible Radar/Registry/Atlas/Compass refresh after all truth
+  writes and Compass memory recording, avoiding repeated partial refreshes on
+  the happy path. Focused proof passed `60` adjacent
+  greenfield/program/release/component/surface-refresh tests, `65`
+  bundle/capability mirror tests, `39` public-bundle/project-asset tests, and
+  the Compass/Radar release-target browser smoke.
+- 2026-05-14 confirmed-create hardening closed the v0.1.15 general regression
+  where confirmed greenfield guidance could push a host model into
+  hand-authoring and schema-repairing a hidden proposal payload after Product
+  Intent Confirmation. The confirmed path now makes
+  `greenfield create --confirm` build the apply-ready proposal inside Odylith,
+  keeps `propose --confirm-intent --format json` as an optional review artifact,
+  removes hidden `active-proposal.v1.json` from the default flow, and updates
+  release smoke to prove the exact fresh-repo journey: show, no-write Product
+  Intent JSON, confirmed apply-ready JSON, confirmed create, governed writes,
+  and refreshed surfaces. Focused proof passed the greenfield/runtime/browser
+  suite, install asset and release-smoke suites, source-local confirmed-create
+  repro in a bootstrapped empty repo, Casebook source validation, component
+  Registry validation, engine-integrity validation, and `git diff --check`.
+- 2026-05-19 confirmed-intent parser hardening fixed the next fail-closed
+  regression in the same confirmed-create contract: domain-specific systems that
+  legitimately own evidence review, such as a race gearbox `run evidence review
+  surface`, must survive Product Intent parsing and Tribunal proposal
+  construction instead of being rejected as generic fallback scaffold. The
+  guard now rejects the exact fallback trio while accepting project-specific
+  evidence-review systems, preserving both sides of the confirmation gate.
+  Focused proof passed
+  `tests/unit/runtime/test_greenfield_proposals.py::test_confirmed_intent_parser_accepts_domain_specific_evidence_review_surface`,
+  `tests/unit/runtime/test_greenfield_proposals.py::test_confirmed_intent_parser_still_rejects_exact_generic_system_scaffold`,
+  and
+  `tests/unit/test_cli.py::test_greenfield_propose_confirm_intent_json_is_provider_free`
+  (`3 passed`).
+- 2026-06-03 confirmed-intent completion decomposition moved actor row
+  completion, actor label derivation, meta-row rejection, and actor description
+  repair into `greenfield_confirmed_actor_completion.py`; the parent
+  `greenfield_confirmed_intent_completion.py` now imports that contract and
+  reuses shared confirmed-text helpers from `greenfield_confirmed_text.py`
+  instead of keeping local utility forks. The parent dropped from 1,374 to 846
+  lines, the new actor owner is 449 lines, and a source-level regression test
+  pins the actor phase outside the parent. Proof:
+  `python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py`;
+  `python -m pytest -q
+  tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py
+  tests/unit/runtime/test_greenfield_confirmed_repair.py
+  tests/unit/runtime/test_greenfield_artifact_language_quality.py` (`21
+  passed`); `python -m pytest -q
+  tests/unit/runtime/test_greenfield_confirmed_intent.py` (`26 passed`); and
+  the widened greenfield artifact bundle with confirmed-intent coverage (`93
+  passed`).
 
 ## Rollout
 - Ship in v0.1.14 with B-141 because the user-facing failure is inseparable from consumer-lane host UX hardening: low latency is not enough if empty-repo greenfield prompts dead-end or if accepted proposals fail to show programs, waves, release targets, Registry topology, and Atlas traceability.
@@ -213,14 +1157,50 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
 
 ## Interface Changes
 - New CLI family: `odylith greenfield propose`.
-- New CLI family: `odylith greenfield apply`.
+- New pre-confirm CLI path: `odylith greenfield compile-transaction`.
+- New confirmed CLI path: `odylith greenfield create --confirm`.
+- Legacy proposal-file apply path returns a clear no-write error before proposal parsing, compilation, repair, or governed writes.
+- New CLI path: `odylith program adopt <umbrella> <workstream>` sets the
+  reciprocal parent/child topology required before wave assignment.
+- `odylith wave assign` accepts `--adopt` for the common orphan-child case.
+- `odylith backlog create` accepts `--parent` / `--umbrella` so new children can
+  be born under an existing umbrella without hand-editing governed front matter.
+- `odylith dashboard refresh` and owned-surface refresh commands accept
+  `--force` to bypass generated refresh-guard reuse when an operator needs an
+  explicit rerender.
 - `odylith show` empty/thin scenarios now point to proposal-first greenfield governance instead of only asking the operator to provide all fields.
 - Component registration can record planned consumer components with `user_intent` evidence without claiming source-backed ownership.
 
 ## Migration/Compatibility
 - Existing consumer repos need no source-truth migration for greenfield behavior. Upgrading to v0.1.14 installs the additive CLI/runtime path, managed guidance, host skill shims, greenfield `0.0.1` default release targeting, program/wave authoring, and Atlas render polish. Existing source-backed governance remains unchanged; greenfield proposals are additive and confirmation-gated.
 - v0.1.14 greenfield behavior remains backward compatible: accepted proposals that name a release selector keep using that selector, while omitted selectors default to the first project release `0.0.1`. Apply now creates the umbrella execution-wave program document when child workstreams exist and targets the first wave plus umbrella to the first release so Compass can show program and release power without over-targeting every child workstream.
+- v0.1.15 greenfield acceptance is transaction-gated: proposal JSON is not a
+  confirmed write input, and newly accepted intent must compile into a
+  ProductCreateTransaction before final confirmation. Missing topology, shallow
+  component ownership, invisible release/program structure, or quality defects
+  fail before durable governance artifacts are created.
+- v0.1.15 project-first greenfield UX is additive for consumers. Existing
+  greenfield records remain readable, while new proposals add `project_brief`
+  direction options and coding-readiness gates before implementation handoff.
+  Managed guidance and browser surfaces converge through normal upgrade
+  adoption plus dashboard/sync refresh; no consumer source-truth migration is
+  required.
+- The confirmed-create hardening is additive for consumers. Existing accepted
+  greenfield records remain readable; new confirmed greenfield runs stop asking
+  hosts to hand-author private proposal JSON and instead route through
+  `odylith greenfield create --confirm`. Upgrades refresh managed guidance,
+  bundle assets, and browser surfaces; no consumer source-truth migration is
+  required.
 - One-word `Customer` values are now valid backlog truth. The relaxation is intentionally scoped to Customer only; Problem, Opportunity, Product View, and Success Metrics keep the stronger detail threshold and placeholder rejection.
+- Generated refresh-guard caches are versioned to `v2` and include file bytes,
+  not only filesystem size/mtime shape. Upgrades from older releases therefore
+  cannot reuse stale `v1` cache entries, and same-size source manifest edits
+  force the selected surface to rerender. The new `--force` path remains the
+  documented manual escape hatch for explicit operator proof.
+- Existing greenfield records do not need a destructive migration. The additive
+  authoring verbs let orphan children be adopted into an umbrella through CLI
+  truth updates, while future greenfield applies preserve every proposed wave
+  even when a wave has no confident child-token overlap.
 - Migration observer markers for this slice:
   `migration-observer:0.1.13:guidance-and-skills:d8c8ff0d951d`,
   `migration-observer:0.1.13:guidance-and-skills:b6ccbcebbd7c`,
@@ -261,20 +1241,2491 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `migration-observer:0.1.13:install-managed-assets:378a6ed807cc`,
   `migration-observer:0.1.14:guidance-and-skills:5db32f2987ff`,
   `migration-observer:0.1.14:operator-cli-contracts:e1abf985ede6`,
-  `migration-observer:0.1.14:install-managed-assets:1d4f10095f9b`.
+  `migration-observer:0.1.14:install-managed-assets:1d4f10095f9b`,
+  `migration-observer:0.1.15:browser-surfaces:0a085ecb8c35`,
+  `migration-observer:0.1.15:install-managed-assets:c46b34c03c1d`,
+  `migration-observer:0.1.15:browser-surfaces:32f36ad50bff`,
+  `migration-observer:0.1.15:install-managed-assets:e1ab4be0a00f`,
+  `migration-observer:0.1.15:guidance-and-skills:5ca274eb23df`,
+  `migration-observer:0.1.15:public-docs-and-release-guidance:83dd374589cf`,
+  `migration-observer:0.1.15:browser-surfaces:23db7fd0ca24`, and
+  `migration-observer:0.1.15:install-managed-assets:5291a3c4b08e`, and
+  `migration-observer:0.1.15:operator-cli-contracts:a8504a4c60ea`, and
+  `migration-observer:0.1.15:guidance-and-skills:64364569b086`,
+  `migration-observer:0.1.15:browser-surfaces:f469b98318dc`, and
+  `migration-observer:0.1.15:install-managed-assets:765b855989ca`,
+  `migration-observer:0.1.15:browser-surfaces:2d3918fcc7c7`, and
+  `migration-observer:0.1.15:install-managed-assets:79060c177fba`,
+  `migration-observer:0.1.15:guidance-and-skills:0df65445f86d`, and
+  `migration-observer:0.1.15:install-managed-assets:a18d34fb8a8f`,
+  `migration-observer:0.1.15:browser-surfaces:b4d20ce668d5`, and
+  `migration-observer:0.1.15:install-managed-assets:dea842f8c91c`,
+  `migration-observer:0.1.15:browser-surfaces:77f6752a8e62`, and
+  `migration-observer:0.1.15:install-managed-assets:4590f557c3cd`,
+  `migration-observer:0.1.15:operator-cli-contracts:dc5245ee5acc`, and
+  `migration-observer:0.1.15:browser-surfaces:7d4664249c0d`,
+  `migration-observer:0.1.15:browser-surfaces:5856f117145e`, and
+  `migration-observer:0.1.15:install-managed-assets:81414558e1eb`,
+  `migration-observer:0.1.15:operator-cli-contracts:918eeb86f16b`, and
+  `migration-observer:0.1.15:operator-cli-contracts:77d724bd9906`, and
+  `migration-observer:0.1.15:browser-surfaces:6faa5131670e`, and
+  `migration-observer:0.1.15:operator-cli-contracts:13e8531fb4af`,
+  `migration-observer:0.1.15:guidance-and-skills:4e1cbbef93d2`,
+  `migration-observer:0.1.15:operator-cli-contracts:778c1bb05cdd`,
+  `migration-observer:0.1.15:operator-cli-contracts:d48cd7f8f9c7`,
+  `migration-observer:0.1.15:browser-surfaces:08249609bf09`, and
+  `migration-observer:0.1.15:install-managed-assets:a15f59f7ee85`,
+  `migration-observer:0.1.15:guidance-and-skills:abed448d6309`,
+  `migration-observer:0.1.15:public-docs-and-release-guidance:103ddeb275f7`,
+  `migration-observer:0.1.15:browser-surfaces:29459cdc19ba`, and
+  `migration-observer:0.1.15:install-managed-assets:7a716e2451f2`.
   These markers cover the deepened greenfield skill guidance, refreshed
   Domain Intelligence Atlas/Registry/Radar browser surfaces, updated managed
   security-and-trust guidance, updated public README/operator/release-note/security
-  guidance, and bundled install-managed dashboard and security posture copies. Existing consumer governance truth remains unchanged; upgrades
+  guidance, the v0.1.15 Compass/Radar/Registry/Casebook browser-surface refresh
+  from the deeper greenfield diagram-suite contract, the project-first
+  product-requirements wording pass for proposal text, the product-repo source
+  guard, and the follow-up repair that rewrites already-poisoned component
+  specs, component registry records, Mermaid source diagrams, and architecture
+  catalog records toward the inferred project domain instead of internal surface
+  or unrelated template labels.
+  direction-option/readiness-gate guidance refresh, the engine-integrity
+  validator and expanded capability inventory, the canonical project-intelligence
+  proposal object and parent Radar persistence, explicit project/workstream
+  invalidation rules, first-class workstream scope and owners, component-local
+  Registry dossier topology, the anti-slop structured-risk/ontology/ownership
+  hardening for applied greenfield Radar, the fail-closed 15-area engine
+  activation contract that keeps Greenfield Domain Intelligence command-backed,
+  source-anchored, and activation-described in the product capability map, and
+  bundled install-managed dashboard copies.
+  The latest markers cover the confirmed-intent artifact requirement, the
+  prompt-only confirmed-create fail-closed path, and the consumer-facing
+  browser/install asset refresh needed so accepted product narration survives
+  into generated governance records.
+  The 2026-05-18 component-spec and live-narration hardening is assessed under
+  `migration-observer:0.1.15:operator-cli-contracts:7086f45abb8e`,
+  `migration-observer:0.1.15:browser-surfaces:6d646859699e`, and
+  `migration-observer:0.1.15:install-managed-assets:fb949a80a583`. The
+  operator contract remains additive and confirmation-gated: hosts still use
+  the same greenfield create/apply flow, while the generated records now have
+  stronger general-purpose quality constraints before they are trusted. Existing
+  consumer source truth remains readable and does not need destructive
+  migration; upgraded browser and bundle assets regenerate cleaner Dashboard,
+  Radar, Registry, and Atlas surfaces from each repo's own records.
+  Existing consumer governance truth remains unchanged; upgrades
   refresh managed guidance/assets and keep proposal writes explicit through
-  `odylith greenfield apply --confirm`.
+  `odylith greenfield create --confirm`.
+  The 2026-05-20 confirmed-create completion and Atlas self-staleness fix is
+  assessed under `migration-observer:0.1.15:browser-surfaces:4d81743c447b`.
+  Existing consumer truth remains compatible: the change affects future
+  confirmed-create generation and regenerated browser surfaces, while existing
+  Radar, Registry, Atlas, release, and Compass records stay owned by the
+  consumer repo that created them.
+
+- 2026-05-20 confirmed-create completion hardening made confirmation own the
+  full governed artifact set instead of surfacing derivable gaps back to the
+  operator. `greenfield create --confirm` now routes confirmed proposals through
+  a bounded completion gate that fills project posture, backlog risk/security
+  posture, component interfaces/dependencies/validation/risks, and Atlas watch
+  paths from the accepted intent before rerunning the greenfield Tribunal and
+  governed artifact Tribunals. The same pass removed Atlas self-watch paths so
+  newly scaffolded diagrams do not become stale by rendering their own catalog,
+  SVG, and PNG assets. Proof includes the confirmed-intent/CLI regression tests,
+  governed component Tribunal checks, focused greenfield proposal suites, and a
+  fresh external consumer create run that produced Radar, Registry, Atlas,
+  release, Compass memory, and refreshed shell surfaces end to end without
+  storing the external product's domain labels in Odylith governance truth.
+- 2026-06-02 post-confirm semantic-render hardening moved the remaining
+  first-path action, visible-result, and coordinated-verb cleanup into shared
+  domain-neutral grammar and semantic-quality gates. First-path parsing now
+  lives in `greenfield_first_path_semantics.py` so semantic rendering stays
+  separate from title normalization, release classification, and slop scanning.
+  Confirmed create now
+  rejects role/action splices, parser debris, activity-shaped actor names,
+  framework proof scaffolds, bare outcome nouns, component-boundary boilerplate,
+  and finite action drift before Radar workstreams, Registry components, Atlas
+  labels, runtime JSON, or project dashboard copy can be written. The
+  requester/reviewer case keeps post-result reviewer follow-up out of the
+  requester first-slice prose while multi-actor pre-result workflows remain
+  intact. Proof: `python -m pytest -q
+  tests/unit/runtime/test_greenfield_general_artifact_quality.py
+  tests/unit/runtime/test_greenfield_component_spec_quality.py
+  tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py
+  tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py
+  tests/unit/runtime/test_greenfield_confirmed_repair.py
+  tests/unit/runtime/test_greenfield_artifact_language_quality.py` passed
+  (`67 passed`); `python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed
+  (`1 passed`) with a stricter historical confirmed-create timing snapshot and semantic
+  slop checks enabled; `python -m pytest -q
+  tests/integration/runtime/test_project_tab_browser.py` passed (`2 passed`);
+  an ad hoc temp-repo create measurement completed in 11.67 seconds with six
+  diagrams, no missing assets, and no slop hits.
+- 2026-06-03 confirmed-create prewrite-gate decomposition moved semantic model
+  completion plus proposal, component, Registry-spec, greenfield Tribunal, and
+  governed-artifact Tribunal preflight aggregation into
+  `greenfield_confirmed_prewrite_gate.py`. The parent completion orchestrator
+  now delegates those checks and stays below the source-size hard threshold
+  (`greenfield_confirmed_completion.py`: 1294 to 1192 lines), recording a stricter historical confirmed-create timing snapshot while reducing hot-path ownership
+  pressure. Proof: `python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_prewrite_gate.py`
+  passed; `python -m pytest -q
+  tests/unit/runtime/test_greenfield_confirmed_repair.py` passed (`3 passed`);
+  the broader greenfield artifact-quality bundle passed 94 tests before the
+  browser sandbox blocked Chromium launch; rerunning
+  `python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` with browser
+  permissions passed (`1 passed in 9.81s`).
+- 2026-06-03 confirmed-intent parser decomposition moved internal-system row
+  parsing, labeled-role splitting, concise capability expansion, contextual
+  system description repair, generic scaffold detection, and public system
+  name/description helpers into `greenfield_confirmed_system_rows.py`. The
+  confirmed-intent entrypoint now stays focused on file loading, Markdown/JSON
+  section parsing, preamble derivation, and validation
+  (`greenfield_confirmed_intent.py`: 1535 to 880 lines), while
+  `test_greenfield_confirmed_intent.py` pins the system-row owner and the
+  parent line-count ceiling. Proof: `python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py`
+  passed; `python -m pytest -q
+  tests/unit/runtime/test_greenfield_confirmed_intent.py` passed (`27 passed`);
+  the broader greenfield artifact-quality bundle passed (`95 passed in
+  205.10s`).
+- 2026-06-03 post-confirm semantic drift decomposition moved contrastive
+  domain-drift detection, semantic repetition clustering, generated-artifact
+  sentence extraction, intent/component signature building, and semantic
+  overlap scoring into `greenfield_preconfirm_semantic_drift.py`. The
+  post-confirm completion gate now keeps package orchestration, prewrite
+  preview checks, and formatted failure reporting separate from drift-token
+  ownership (`greenfield_preconfirm_completion.py`: 1214 to 853 lines), while
+  `test_greenfield_general_artifact_quality.py` pins the dedicated owner and
+  parent line-count ceiling. Proof: `python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py
+  src/odylith/runtime/domain_intelligence/greenfield_preconfirm_semantic_drift.py
+  tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed;
+  `python -m pytest -q
+  tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed (`39
+  passed in 154.23s`); `python -m pytest -q
+  tests/unit/runtime/test_greenfield_prewrite_transaction.py` passed (`22
+  passed in 108.95s`); the broader greenfield artifact-quality bundle passed
+  (`118 passed in 311.35s`); and the escalated Chromium-capable run of
+  `PYTHONPATH=src python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 14.83s`).
+- 2026-06-03 post-confirm semantic-alignment decomposition moved semantic model
+  shape checks, component/workstream/diagram alignment, rendered Registry spec
+  alignment, component ID fallback, and first-release scope checks into
+  `greenfield_preconfirm_semantic_alignment.py`. Shared post-confirm list row
+  coercion now lives in `greenfield_preconfirm_rows.py`, so the completion
+  parent and drift owner no longer carry local `_mapping_rows` clones. The
+  package completion parent now stays below the soft source-size limit
+  (`greenfield_preconfirm_completion.py`: 853 to 691 lines), and
+  `test_greenfield_general_artifact_quality.py` pins the alignment, drift, and
+  row-helper ownership boundaries. Proof: `python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py
+  src/odylith/runtime/domain_intelligence/greenfield_preconfirm_semantic_drift.py
+  src/odylith/runtime/domain_intelligence/greenfield_preconfirm_semantic_alignment.py
+  src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rows.py
+  tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed;
+  `python -m pytest -q
+  tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed (`39
+  passed in 170.88s`); the broader greenfield artifact-quality bundle passed
+  (`118 passed in 334.66s`); and the escalated Chromium-capable run of
+  `PYTHONPATH=src python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 11.96s`).
+- 2026-06-03 confirmed-intent validation decomposition moved field-threshold
+  checks, meta-narration rejection, qualitative intent gap detection,
+  progression/outcome scoring, and semantic-overlap term extraction into
+  `greenfield_confirmed_intent_validation.py`. The confirmed-intent parser now
+  stays focused on file loading, JSON/Markdown normalization, section parsing,
+  and preamble derivation (`greenfield_confirmed_intent.py`: 880 to 671
+  lines), while `test_greenfield_confirmed_intent.py` pins validation ownership
+  and the parser soft-limit ceiling. Proof: `python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_validation.py
+  tests/unit/runtime/test_greenfield_confirmed_intent.py` passed;
+  `python -m pytest -q
+  tests/unit/runtime/test_greenfield_confirmed_intent.py` passed (`27 passed in
+  41.27s`); the broader greenfield artifact-quality bundle passed (`118 passed
+  in 349.90s`); and the escalated Chromium-capable run of `PYTHONPATH=src
+  python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 11.79s`).
+- 2026-06-03 confirmed-completion quality decomposition moved generic text
+  repair detection, sequence repair detection, proof-boundary weakness checks,
+  and bad sentence-tail detection into
+  `greenfield_confirmed_completion_quality.py`. The confirmed-completion
+  orchestrator now calls the shared quality owner instead of carrying local
+  `_text_needs_repair`, `_sequence_needs_repair`, and `_has_bad_tail` helpers
+  (`greenfield_confirmed_completion.py`: 1192 to 1068 lines), while
+  `test_greenfield_confirmed_repair.py` pins the owner split. Proof:
+  `python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_quality.py
+  tests/unit/runtime/test_greenfield_confirmed_repair.py` passed;
+  `python -m pytest -q
+  tests/unit/runtime/test_greenfield_confirmed_repair.py` passed (`3 passed in
+  10.66s`); the broader greenfield artifact-quality bundle passed (`118 passed
+  in 332.17s`); and the escalated Chromium-capable run of `PYTHONPATH=src
+  python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 11.54s`).
+- 2026-06-03 confirmed-completion text-model decomposition moved confirmed-create
+  phrase derivation, workstream labels and sentences, component/backlog lexical
+  matching, diagram/project title derivation, first-path/proof/state summaries,
+  actor summaries, and keyword extraction into
+  `greenfield_confirmed_completion_text_model.py`. The completion parent now
+  calls that owner directly, removed dead pass-through component wrappers for
+  interfaces/dependencies/validation, and dropped below the 800-line soft limit
+  (`greenfield_confirmed_completion.py`: 1068 to 793 lines), while
+  `test_greenfield_confirmed_repair.py` pins the text-model owner split. Proof:
+  `python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py
+  tests/unit/runtime/test_greenfield_confirmed_repair.py` passed;
+  `python -m pytest -q
+  tests/unit/runtime/test_greenfield_confirmed_repair.py` passed (`3 passed in
+  9.95s`); the broader greenfield artifact-quality bundle passed (`118 passed
+  in 310.95s`); and `PYTHONPATH=src python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 10.08s`).
+- 2026-06-03 confirmed-component helper cleanup removed the duplicate
+  `_title_phrase` definition and unused `_can_clause` helper from
+  `greenfield_confirmed_components.py`. The component owner now stays below the
+  800-line soft limit (`808` to `792` lines), and
+  `test_greenfield_component_spec_quality.py` pins the single title helper,
+  absence of the dead clause helper, and soft-limit ceiling. Proof:
+  `python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py
+  tests/unit/runtime/test_greenfield_component_spec_quality.py` passed; focused
+  component proof passed with `python -m pytest -q
+  tests/unit/runtime/test_greenfield_component_spec_quality.py
+  tests/unit/runtime/test_greenfield_confirmed_surfaces.py::test_confirmed_greenfield_noun_phrase_responsibilities_stay_grammatical`
+  (`9 passed in 0.34s`).
+- 2026-06-03 confirmed-backlog text-model decomposition moved Radar
+  workstream phrase derivation, actor label extraction, first-action/outcome
+  clauses, proof focus selection, problem fallback wording, product-term
+  overlap checks, and rationale-line generation into
+  `greenfield_confirmed_backlog_text_model.py`. The Radar row builder now
+  stays focused on program/release/backlog record assembly
+  (`greenfield_confirmed_backlog.py`: 911 to 503 lines), while
+  `test_greenfield_artifact_language_quality.py` pins the text-model owner and
+  parent soft-limit ceiling. Proof: `python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_proposal.py
+  tests/unit/runtime/test_greenfield_component_spec_quality.py
+  tests/unit/runtime/test_greenfield_artifact_language_quality.py` passed;
+  focused artifact-language/component proof passed (`15 passed in 3.04s`);
+  the broader greenfield artifact-quality bundle passed (`120 passed in
+  311.68s`); and `PYTHONPATH=src python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 10.09s`).
+- 2026-06-03 confirmed-Atlas diagram text-model decomposition moved component
+  card descriptions, product/actor/proof briefs, proof-review labels,
+  workstream title derivation, Mermaid label trimming, and short-label cleanup
+  into `greenfield_confirmed_diagram_text.py`. The diagram owner now keeps
+  row assembly and flowchart wiring focused (`greenfield_confirmed_diagrams.py`:
+  999 to 468 lines), while `test_greenfield_confirmed_diagrams.py` pins the
+  text-model owner and parent soft-limit ceiling. The same pass repaired a
+  stale confirmed-surface assertion so the test expects the current imperative
+  action label `Tap Record` instead of the older third-person label. Proof:
+  `python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagrams.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py
+  tests/unit/runtime/test_greenfield_confirmed_diagrams.py
+  tests/unit/runtime/test_greenfield_confirmed_surfaces.py` passed; focused
+  diagram/surface proof passed (`6 passed in 5.80s`); the broader greenfield
+  artifact-quality bundle passed (`126 passed in 388.79s`); and
+  `PYTHONPATH=src python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 14.50s`).
+- 2026-06-03 component contract profile decomposition moved the document-context
+  and status-view contract builders, profile-specific phrase extraction,
+  transition selection, outside-boundary wording, and local proof row generation
+  into `greenfield_component_contract_profiles.py`. The component contract
+  parent now selects the profile and owns the generic fallback contract without
+  carrying specialized profile grammar (`greenfield_component_contract.py`: 952
+  to 603 lines), while `test_greenfield_component_spec_quality.py` pins the
+  profile owner and parent soft-limit ceiling. Proof: `python -m
+  py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_component_contract.py
+  src/odylith/runtime/domain_intelligence/greenfield_component_contract_profiles.py
+  tests/unit/runtime/test_greenfield_component_spec_quality.py` passed; focused
+  component spec and semantic contract proof passed (`10 passed in 0.40s`); the
+  broader greenfield artifact-quality bundle passed (`127 passed in 403.37s`);
+  and `PYTHONPATH=src python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 13.49s`).
+- 2026-06-03 component semantic-context decomposition moved context-derived
+  phrase extraction, late first-path/proof backfill selection, context anchor
+  expansion, actor/action prefix removal, and context-backfill decisions into
+  `greenfield_component_semantic_context.py`. The semantic contract owner now
+  focuses on assembling component-local Registry contracts from accepted product
+  facts (`greenfield_component_semantic_contract.py`: 863 to 627 lines), while
+  `test_greenfield_component_semantic_contract_quality.py` pins the context
+  owner and parent soft-limit ceiling. Proof: `python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py
+  src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py
+  tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py`
+  passed; focused component semantic/spec proof passed (`11 passed in 0.41s`);
+  the broader greenfield artifact-quality bundle passed (`128 passed in
+  345.24s`); and `PYTHONPATH=src python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 11.45s`).
+- 2026-06-03 component contract target decomposition moved rendered-spec issue
+  parsing, repair target selection, duplicate-target dedupe, and
+  operator-facing component-spec blocker copy into
+  `greenfield_component_contract_targets.py`. The differentiation owner now
+  repairs component-local contracts without carrying spec-target parsing
+  (`greenfield_component_contract_differentiation.py`: 837 to 772 lines), while
+  `test_greenfield_component_spec_quality.py` pins the target owner, parent
+  soft-limit ceiling, and concrete issue-to-row mapping. Proof:
+  `python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py
+  src/odylith/runtime/domain_intelligence/greenfield_component_contract_targets.py
+  src/odylith/runtime/domain_intelligence/greenfield_proposals.py
+  src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py
+  tests/unit/runtime/test_greenfield_component_spec_quality.py
+  tests/unit/runtime/test_greenfield_confirmed_body_comp.py
+  tests/unit/runtime/test_greenfield_confirmed_repair.py` passed; focused
+  component/prewrite proof passed (`15 passed in 14.63s`); the broader
+  greenfield artifact-quality bundle passed (`129 passed in 332.92s`); and
+  `PYTHONPATH=src python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 11.39s`).
+- 2026-06-03 apply-prewrite Registry/Atlas decomposition moved first-release
+  component input shaping, dry-run Registry component preview, in-memory
+  Registry spec rendering, component dependency/risk/responsibility copy, Atlas
+  prewrite Mermaid preview, and diagram ID allocation into
+  `greenfield_apply_components.py` and `greenfield_apply_diagrams.py`. The
+  apply-prewrite parent now owns staged package assembly, release preview,
+  accepted-project/Compass preview, and path remapping without carrying
+  Registry/Atlas rendering policy (`greenfield_apply_prewrite.py`: 1034 to 459
+  lines), while `test_greenfield_prewrite_transaction.py` pins the component
+  and diagram owners outside the parent. Proof: `python -m
+  py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py
+  src/odylith/runtime/domain_intelligence/greenfield_apply_components.py
+  src/odylith/runtime/domain_intelligence/greenfield_apply_diagrams.py
+  src/odylith/runtime/domain_intelligence/greenfield_proposals.py
+  tests/unit/runtime/test_greenfield_prewrite_transaction.py
+  tests/unit/runtime/test_greenfield_general_artifact_quality.py
+  tests/unit/runtime/test_greenfield_proposals.py` passed; focused prewrite
+  proof passed (`25 passed in 124.26s`); the broader greenfield
+  artifact-quality bundle passed (`130 passed in 333.90s`); and
+  `PYTHONPATH=src python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 10.93s`).
+- 2026-06-03 final apply governed-write decomposition moved Radar file writes,
+  stale workstream artifact cleanup, release targeting writes, program
+  creation, Atlas scaffold/upsert behavior, Registry component authoring,
+  accepted-project memory recording, dashboard refresh, and next-step shaping
+  into `greenfield_apply_write.py`. `greenfield_proposals.py` now stays focused
+  on no-write intent preview, proposal normalization, prewrite package repair,
+  transaction setup, and CLI output (`greenfield_proposals.py`: 676 lines;
+  `greenfield_apply_write.py`: 477 lines), while
+  `test_greenfield_proposals.py::test_greenfield_apply_write_stays_in_dedicated_owner`
+  prevents final writes from returning to the parent. The same proof pass fixed
+  a post-confirm semantic alignment edge: blank component `release_scope` now
+  means active unless explicitly deferred/out of scope, matching the semantic
+  model builder and Registry writer, and apply-time semantic repair can refresh
+  stale semantic models before the gate runs. Proof: `python -m
+  py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py
+  src/odylith/runtime/domain_intelligence/greenfield_apply_write.py
+  src/odylith/runtime/domain_intelligence/greenfield_preconfirm_semantic_alignment.py
+  src/odylith/runtime/domain_intelligence/greenfield_proposals.py
+  tests/unit/runtime/test_greenfield_proposals.py
+  tests/unit/runtime/test_greenfield_prewrite_transaction.py
+  tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed;
+  focused final-apply proof passed (`68 passed in 141.47s`); the broader
+  greenfield artifact-quality bundle passed (`130 passed in 331.45s`); and
+  `PYTHONPATH=src python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 11.41s`).
+- 2026-06-03 first-path clause-renderer decomposition moved generated
+  action/capability/outcome clause rendering, visible-result cleanup, trivial
+  start detection, and action-chain grammar into
+  `greenfield_first_path_clauses.py`; shared typed records now live in
+  `greenfield_first_path_types.py`. `greenfield_first_path_semantics.py` now
+  owns first-path parsing and model extraction only (`1054` to `358` lines),
+  while the clause owner is `734` lines and the type owner is `27` lines.
+  `test_greenfield_preconfirm_slop_regressions.py::test_first_path_clause_rendering_stays_in_dedicated_owner`
+  pins the owner boundary. Proof: `python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py
+  src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py
+  src/odylith/runtime/domain_intelligence/greenfield_first_path_types.py
+  src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py
+  tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py`
+  passed; first-path slop proof passed (`14 passed in 2.73s`); broader
+  artifact-quality proof passed (`61 passed in 174.67s`); the full
+  confirmed-greenfield regression bundle passed (`131 passed in 322.94s`);
+  and confirmed-create performance proof passed (`1 passed in 10.11s`).
+- 2026-06-03 Tribunal substance-gate decomposition moved confirmed generated
+  Radar thinness checks, Registry component-contract substance checks,
+  cross-axis proof leakage checks, Atlas scaffold-node checks, first-path
+  tail-preservation checks, and first-boundary routing checks into
+  `proposal_tribunal_substance.py`. `proposal_tribunal.py` now stays focused
+  on deterministic adjudication orchestration, release/program topology,
+  backlog/component/diagram traceability, domain security posture, and visible
+  Tribunal actors (`972` to `522` lines), while the substance owner is `466`
+  lines. `test_greenfield_general_artifact_quality.py::test_greenfield_tribunal_substance_gate_stays_in_dedicated_owner`
+  pins the owner boundary. Proof: `python -m py_compile
+  src/odylith/runtime/domain_intelligence/proposal_tribunal.py
+  src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py
+  tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed;
+  focused Tribunal proof passed (`5 passed in 10.58s`); broader
+  artifact-quality proof passed (`62 passed in 165.34s`); full
+  confirmed-greenfield regression proof passed (`132 passed in 315.92s`); and
+  confirmed-create performance proof passed (`1 passed in 9.77s`).
+- 2026-06-03 confirmed-intent system-completion decomposition moved internal
+  system row completion, fallback system generation, system label cleanup,
+  state-label extraction, and context-clause matching into
+  `greenfield_confirmed_system_completion.py`. The confirmed-intent completion
+  parent now stays focused on orchestration, core-field completion, product
+  posture, title repair, and first-path/proof wording (`846` to `646` lines),
+  while the system-completion owner is `228` lines.
+  `test_greenfield_confirmed_intent.py::test_confirmed_intent_system_completion_stays_in_dedicated_owner`
+  pins the owner boundary. Proof: `python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py
+  tests/unit/runtime/test_greenfield_confirmed_intent.py` passed; focused
+  confirmed-intent proof passed (`28 passed in 39.53s`); broader
+  artifact-quality proof passed (`90 passed in 225.71s`); full
+  confirmed-greenfield regression proof passed (`133 passed in 341.80s`); and
+  confirmed-create performance proof passed (`1 passed in 12.05s`).
+- 2026-06-03 Atlas first-path step derivation decomposition moved semantic
+  event extraction, launcher-only filtering, first-path step fallback,
+  compound-step expansion, and step dedupe into `greenfield_sequence_steps.py`.
+  `greenfield_sequence_diagram.py` now owns participant routing, component
+  routing, Mermaid labels, and diagram rendering only (`868` to `701` lines),
+  while the new step owner is `199` lines. The same pass hardened accepted
+  first paths whose final user decision includes `act later` so the Atlas tail
+  preservation gate still sees the final action, and kept short
+  role-qualified Registry artifacts such as `person follow list` intact in
+  generated component contracts. Proof: focused diagram/sequence proof passed
+  (`11 passed, 36 deselected in 29.77s`); full confirmed-greenfield proof
+  passed (`48 passed in 69.77s`); broader artifact-quality proof passed (`98
+  passed in 244.93s`); and confirmed-create performance proof passed (`1
+  passed in 12.44s`).
+- 2026-06-04 Atlas sequence-step label-term follow-through moved
+  launcher-only and numbered-step display word counts in
+  `greenfield_sequence_steps.py` onto `greenfield_domain_term_index.label_terms`.
+  The sequence step owner still owns semantic event extraction, fallback
+  splitting, compound expansion, and dedupe, but it no longer carries local
+  raw word-count regexes for Atlas first-path step filtering. Touched files
+  remain below limits (`greenfield_sequence_steps.py`: 200 lines;
+  `greenfield_domain_term_index.py`: 131 lines;
+  `test_greenfield_confirmed_diagrams.py`: 202 lines). Proof: syntax proof
+  passed for the touched modules and test; focused confirmed-diagrams proof
+  passed (`5 passed in 0.06s`); wider greenfield artifact proof passed (`162
+  passed in 192.91s`); and confirmed-create performance proof passed (`1
+  passed in 9.52s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 first-path parser label-term follow-through moved new-action
+  clause and valid-step display-token thresholds in
+  `greenfield_first_path_semantics.py` onto
+  `greenfield_domain_term_index.label_terms`. The first-path parser still owns
+  prefix stripping, action splitting, role-can normalization, subjectless
+  action normalization, material action selection, visible outcome selection,
+  recovery extraction, and `FirstPathModel` assembly, while the shared term
+  index now owns display-token counting for first-path parser thresholds.
+  Touched files remain below limits (`greenfield_first_path_semantics.py`: 364
+  lines; `greenfield_domain_term_index.py`: 131 lines;
+  `test_greenfield_preconfirm_slop_regressions.py`: 699 lines). Proof:
+  syntax proof passed for the touched module and test; focused post-confirm
+  first-path proof passed (`14 passed in 1.33s`); wider greenfield artifact
+  proof passed (`162 passed in 192.42s`); and confirmed-create performance
+  proof passed (`1 passed in 9.65s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 confirmed Atlas proof-label word-count follow-through moved
+  semantic proof checkpoint and proof-review clause thresholds in
+  `greenfield_confirmed_diagram_text.py` onto
+  `greenfield_confirmed_text.word_count`. The confirmed diagram text owner
+  still owns proof-label cleanup, proof-review label selection, Mermaid label
+  trimming, and short-label cleanup, but confirmed text now owns Markdown
+  cleanup and visible word counting for Atlas proof labels. Touched files
+  remain below limits (`greenfield_confirmed_diagram_text.py`: 544 lines;
+  `greenfield_confirmed_text.py`: 399 lines;
+  `test_greenfield_confirmed_diagrams.py`: 215 lines). Proof: syntax proof
+  passed for the touched modules and test; focused confirmed-diagrams proof
+  passed (`5 passed in 0.06s`); wider greenfield artifact proof passed (`162
+  passed in 193.46s`); and confirmed-create performance proof passed (`1
+  passed in 9.56s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 semantic-model proof-checkpoint word-count follow-through moved
+  diagram-event proof checkpoint clause thresholds in
+  `greenfield_semantic_model.py` onto `greenfield_confirmed_text.word_count`.
+  The semantic model still owns first-path contracts, ontology, component refs,
+  workstream refs, diagram event graph assembly, and proof-obligation shaping,
+  but confirmed text now owns Markdown cleanup and visible word counting for
+  proof-checkpoint thresholds. Touched files remain below limits
+  (`greenfield_semantic_model.py`: 495 lines; `greenfield_confirmed_text.py`:
+  399 lines; `test_greenfield_intelligence_schema.py`: 127 lines). Proof:
+  syntax proof passed for the touched modules and test; focused semantic-schema
+  proof passed (`3 passed in 0.15s`); wider greenfield artifact proof passed
+  (`162 passed in 194.12s`); and confirmed-create performance proof passed (`1
+  passed in 9.64s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 confirmed component word-count follow-through moved
+  responsibility-depth, generated-or-weak, and dependency-focus thresholds in
+  `greenfield_confirmed_components.py` onto
+  `greenfield_confirmed_text.word_count`. The confirmed component owner still
+  owns internal-system component generation, component labels, kind selection,
+  responsibility, boundary, dependency, interface, validation, and fallback
+  contract shaping, while confirmed text now owns Markdown cleanup and visible
+  word counting for component-generation thresholds. Touched files remain below
+  limits (`greenfield_confirmed_components.py`: 578 lines;
+  `greenfield_confirmed_text.py`: 399 lines;
+  `test_greenfield_component_spec_quality.py`: 568 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component-spec proof passed
+  (`12 passed in 0.14s`); wider greenfield artifact proof passed (`162 passed
+  in 192.35s`); and confirmed-create performance proof passed (`1 passed in
+  9.14s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-03 artifact-enrichment graph and Tribunal actor decomposition moved
+  Domain Intelligence graph normalization into `artifact_graph.py` and visible
+  Tribunal actor projection into `artifact_tribunal_actors.py`.
+  `artifact_enrichment.py` now owns artifact projections only (`843` to `228`
+  lines), while the graph owner is `180` lines and the actor owner is `465`
+  lines. `test_greenfield_proposals.py::test_artifact_enrichment_graph_and_tribunal_actors_stay_in_dedicated_owners`
+  pins the owner boundary and public export list. Proof: syntax proof passed
+  for touched Domain Intelligence and project-intelligence modules; focused
+  projection proof passed (`13 passed, 74 deselected in 13.48s`); standard
+  greenfield artifact-quality proof passed (`143 passed in 235.82s`); and
+  confirmed-create performance proof passed (`1 passed in 11.44s`).
+- 2026-06-03 confirmed project-brief decomposition moved project-brief
+  generation and host-independent command handoff text into
+  `greenfield_confirmed_project_brief.py`, and consolidated greenfield command
+  quoting in `greenfield_command_text.py`. `greenfield_confirmed_components.py`
+  now owns Registry component generation only (`792` to `581` lines), while
+  the project-brief owner is `249` lines and the command-text owner is `10`
+  lines. `test_greenfield_component_spec_quality.py::test_confirmed_project_brief_stays_in_dedicated_owner`
+  pins the owner boundary and single shell-quote owner. Proof: syntax proof
+  passed for touched component, project-brief, proposal, rendering, and review
+  card modules; focused component/proposal proof passed (`60 passed in
+  21.26s`); standard greenfield artifact-quality proof passed (`144 passed in
+  238.94s`); and confirmed-create performance proof passed (`1 passed in
+  11.48s`).
+- 2026-06-03 component contract phrase-owner consolidation moved natural short
+  list rendering into `greenfield_component_terms.py` and migrated base
+  component contracts, semantic contracts, and contract differentiation away
+  from local `_term_phrase`, `_phrase`, and `_content_terms` clones. The shared
+  terms owner now exports `natural_phrase` beside the existing comma-clause
+  `phrase`, while `greenfield_component_contract_differentiation.py` uses
+  `domain_terms` for fallback contract term filtering (`772` to `755` lines);
+  `greenfield_component_contract.py` is `593` lines,
+  `greenfield_component_semantic_contract.py` is `626` lines, and
+  `greenfield_component_terms.py` remains below the soft limit at `779` lines.
+  `test_greenfield_component_spec_quality.py::test_component_contract_phrase_helpers_stay_in_terms_owner`
+  pins the owner boundary and formatter behavior. Proof: syntax proof passed
+  for the touched component-contract and test modules; focused component-spec
+  proof passed (`12 passed in 0.23s`); standard greenfield artifact-quality
+  proof passed (`145 passed in 243.87s`); and confirmed-create performance
+  proof passed (`1 passed in 11.93s`).
+- 2026-06-03 confirmed component-completion decomposition moved Registry
+  component row completion, contract normalization, component field weakness
+  checks, component risk enrichment, and component sentence repair into
+  `greenfield_confirmed_component_completion.py`. The confirmed completion
+  parent now owns the repair loop, project/backlog/diagram completion, prewrite
+  issue repair, and release-validation language only (`793` to `592` lines),
+  while the component-completion owner is `248` lines.
+  `test_greenfield_confirmed_repair.py::test_confirmed_completion_prewrite_gate_stays_in_dedicated_owner`
+  now pins the component owner boundary and keeps contract-derived component
+  copy out of the parent. Proof: syntax proof passed for the touched confirmed
+  completion modules; focused confirmed-repair proof passed (`3 passed in
+  10.34s`); focused component-risk/watch-path proof passed (`1 passed in
+  3.92s`); standard greenfield artifact-quality proof passed (`145 passed in
+  234.45s`); and confirmed-create performance proof passed (`1 passed in
+  11.48s`).
+- 2026-06-03 row-coercion ownership consolidation promoted shared generated
+  list-row coercion into `greenfield_rows.py` and removed local
+  `_mapping_rows` clones from confirmed prewrite gating, the deterministic
+  Tribunal, confirmed title repair, apply-prewrite remapping, and post-confirm
+  semantic/package checks. The former post-confirm-specific row owner was
+  deleted instead of left as a wrapper, so row coercion is no longer coupled to
+  one package phase (`greenfield_rows.py`: 12 lines;
+  `greenfield_preconfirm_completion.py`: 693 lines;
+  `proposal_tribunal.py`: 519 lines; `greenfield_apply_prewrite.py`: 456
+  lines). `tests/unit/runtime/test_greenfield_row_coercion.py` now pins the
+  shared owner and prevents private `_mapping_rows` helpers from returning.
+  Proof: syntax proof passed for the touched Domain Intelligence modules and
+  row-owner tests; focused row-owner proof passed (`1 passed in 0.02s`);
+  focused post-confirm/Tribunal structural proof passed (`2 passed, 38
+  deselected in 0.21s`); standard greenfield artifact-quality proof passed
+  (`146 passed in 232.66s`); and confirmed-create performance proof passed (`1
+  passed in 11.42s`).
+- 2026-06-03 dict-row and count follow-through added `dict_rows`,
+  `row_count`, and `mapping_count` to the same shared row owner and removed
+  duplicate `_dict_rows`, `_row_count`, and `_mapping_count` clones from
+  confirmed completion, confirmed prewrite gating, and post-confirm package
+  reporting. Mutable generated rows and package artifact counts now share the
+  same row-coercion contract as mapping rows (`greenfield_rows.py`: 30 lines;
+  `greenfield_confirmed_completion.py`: 587 lines;
+  `greenfield_confirmed_prewrite_gate.py`: 118 lines;
+  `greenfield_preconfirm_completion.py`: 687 lines), and
+  `tests/unit/runtime/test_greenfield_row_coercion.py` prevents private row
+  coercion and count helpers from returning. Proof: syntax proof passed for
+  the touched row/completion/prewrite/post-confirm modules; focused
+  row/post-confirm proof passed (`3 passed, 38 deselected in 4.98s`);
+  standard greenfield artifact-quality proof passed (`146 passed in
+  235.23s`); and confirmed-create performance proof passed (`1 passed in
+  11.63s`).
+- 2026-06-03 row-owner and semantic-copy follow-through routed remaining
+  component, backlog, handoff, created-row, proposal-row, and wave-row readers
+  through `greenfield_rows.py` instead of package-local `_component_rows` or
+  `_created_rows` helpers. The same pass hardened confirmed project-brief and
+  Registry semantic-context text so metadata-led actor/action phrases such as
+  `resident create repair request` and ditransitive copy such as `shows the
+  resident a confirmation` do not leak into generated component contracts or
+  project posture. Touched owners stay below the soft limit
+  (`greenfield_backlog_impact.py`: 156 lines;
+  `greenfield_component_contract_differentiation.py`: 749 lines;
+  `greenfield_confirmed_component_completion.py`: 242 lines;
+  `greenfield_confirmed_project_brief.py`: 263 lines;
+  `greenfield_component_semantic_context.py`: 308 lines;
+  `greenfield_experience.py`: 473 lines). Proof: syntax proof passed for all
+  touched modules; focused row/component artifact proof passed (`59 passed in
+  164.10s`); the two exposed post-confirm slop regressions passed (`2 passed
+  in 1.15s`); broad confirmed-greenfield proof passed (`160 passed in
+  239.60s`); and confirmed-create performance proof passed (`1 passed in
+  11.51s`).
+- 2026-06-03 confirmed-intent text-list follow-through moved duplicate
+  `_strings` helpers from the parser, completion, actor completion, system
+  completion, and validation modules into `greenfield_confirmed_text.py` as
+  `confirmed_text_values`. Confirmed list fields now share one strict
+  str-or-sequence cleaner for Markdown marker removal while preserving the
+  no-mapping-flattening contract of accepted intent records. The moved callers
+  stay below the source soft limit (`greenfield_confirmed_text.py`: 356 lines;
+  `greenfield_confirmed_intent.py`: 666 lines;
+  `greenfield_confirmed_intent_completion.py`: 643 lines;
+  `greenfield_confirmed_actor_completion.py`: 445 lines;
+  `greenfield_confirmed_system_completion.py`: 226 lines;
+  `greenfield_confirmed_intent_validation.py`: 249 lines), and the new
+  enforcement test lives in a focused 32-line test file instead of growing the
+  oversized confirmed-intent fixture suite. Proof: syntax proof passed for all
+  touched modules; focused confirmed-text/intent proof passed (`29 passed in
+  39.80s`); broad confirmed-greenfield proof passed (`160 passed in
+  240.87s`); and confirmed-create performance proof passed (`1 passed in
+  11.52s`).
+- 2026-06-04 confirmed project-surface word-count follow-through moved
+  project-brief and project-intelligence shallow-row checks onto
+  `greenfield_confirmed_text.word_count`. The project brief and project
+  intelligence validators now keep schema/row requirements while the confirmed
+  text owner handles Markdown cleanup and visible word counting, removing the
+  local `_word_count` helpers from both generated project-surface validators.
+  Touched files remain below limits (`greenfield_confirmed_text.py`: 399 lines;
+  `greenfield_project_brief.py`: 254 lines;
+  `greenfield_project_intelligence.py`: 200 lines;
+  `test_greenfield_confirmed_text.py`: 102 lines). Proof: syntax proof passed
+  for the touched modules and test; focused confirmed-text/project-surface proof
+  passed (`5 passed in 0.21s`); wider greenfield artifact proof passed (`160
+  passed in 195.36s`); and confirmed-create performance proof passed (`1 passed
+  in 9.59s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 confirmed-intent parser word-count follow-through moved accepted
+  intent section inference onto `greenfield_confirmed_text.word_count`. The
+  parser still owns Markdown/JSON section parsing, preamble paragraph
+  selection, and story/state/path/proof derivation, but confirmed text owns
+  Markdown cleanup plus visible word counting, removing the parser-local
+  `_word_count` helper and the last confirmed parser fork in this slice.
+  Touched files remain below limits (`greenfield_confirmed_intent.py`: 663
+  lines; `greenfield_confirmed_text.py`: 399 lines;
+  `test_greenfield_confirmed_text.py`: 117 lines). Proof: syntax proof passed
+  for the touched modules and test; focused confirmed-intent proof passed (`32
+  passed in 32.52s`); wider greenfield artifact proof passed (`161 passed in
+  196.16s`); and confirmed-create performance proof passed (`1 passed in
+  9.60s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-03 greenfield coercion hygiene follow-through removed the remaining
+  workstream-local `_list_values` clone and the project-binding-local
+  `_mapping` clone from the B-142/CB-202 slice. Workstream Domain Intelligence
+  validation and rendering now use the shared `greenfield_text.text_values`
+  owner directly, while project-intelligence artifact binding uses
+  `runtime.common.value_coercion.mapping_copy` for root and release-plan
+  mapping coercion. `tests/unit/runtime/test_greenfield_coercion_hygiene.py`
+  pins both owner boundaries so future artifact-quality fixes cannot re-add
+  private list or mapping coercion in those modules. Proof: focused
+  coercion/domain-intelligence/project-binding proof passed (`49 passed in
+  16.10s`); broader greenfield artifact-quality and confirmed-create proof
+  passed (`119 passed in 233.71s`), including a stricter historical confirmed-create timing snapshot.
+- 2026-06-03 project-brief rendering ownership follow-through moved proposal
+  text rendering for the top-level `project_brief` into
+  `greenfield_project_brief.py`. `proposal_rendering.py` now delegates through
+  `render_project_brief_lines` instead of owning `_project_brief_lines`,
+  blueprint-section, customization-option, checkpoint, or host-path helpers,
+  and the project-brief owner uses shared `greenfield_rows.mapping_rows` for
+  mixed generated rows. Touched files stay small (`proposal_rendering.py`: 573
+  lines; `greenfield_project_brief.py`: 257 lines; enforcement test: 88
+  lines). Proof: syntax proof passed for the touched renderer modules and test;
+  focused project-brief/proposal proof passed (`4 passed in 0.22s`); broader
+  proposal and artifact-quality proof passed (`87 passed in 189.11s`); and
+  confirmed-create performance proof passed (`1 passed in 11.97s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-03 component-axis term-helper follow-through removed the remaining
+  `_content_terms`, `_term_token`, `_phrase`, and `_normalize_axis_text`
+  helpers from `greenfield_component_axes.py`. Derived Registry semantic axes
+  now use `greenfield_component_terms.domain_terms` and the shared
+  space-joined `term_phrase` helper, so axis keys, component contracts, and
+  artifact-quality checks share the same component-term owner instead of
+  drifting through a local fork. Touched files remain below the soft limit
+  (`greenfield_component_axes.py`: 148 lines; `greenfield_component_terms.py`:
+  784 lines; `test_greenfield_component_spec_quality.py`: 364 lines). Proof:
+  syntax proof passed for the touched modules and test; focused component-axis
+  and spec-quality proof passed (`15 passed in 13.16s`); broad component and
+  artifact-quality proof passed (`54 passed in 166.71s`); and confirmed-create
+  performance proof passed (`1 passed in 11.73s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 component contract field phrase-helper follow-through removed the
+  remaining local `_phrase` helper from
+  `greenfield_component_contract_fields.py`. Supporting-artifact text now calls
+  the shared comma-clause `greenfield_component_terms.phrase` helper, so
+  component axis derivation, component contracts, contract differentiation, and
+  field-level support-artifact wording share the same component-term owner.
+  Touched files remain below the soft limit
+  (`greenfield_component_contract_fields.py`: 450 lines;
+  `greenfield_component_terms.py`: 784 lines;
+  `test_greenfield_component_spec_quality.py`: 370 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component-spec proof passed
+  (`12 passed in 0.24s`); broad component and artifact-quality proof passed
+  (`54 passed in 170.39s`); and confirmed-create performance proof passed
+  (`1 passed in 13.04s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 component term-index ownership follow-through moved ordered
+  component-local term extraction out of the Registry quality gate and into
+  `greenfield_component_term_index.py`. Component contracts, contract
+  differentiation, component terms, and component quality gates now import
+  `ordered_domain_terms` from the dedicated term-index owner instead of
+  reaching through `greenfield_component_contract_quality.py`, so Registry
+  quality checks no longer hide the reusable term extraction owner. Touched
+  files remain below the soft limit (`greenfield_component_term_index.py`: 105
+  lines; `greenfield_component_contract_quality.py`: 588 lines;
+  `greenfield_component_terms.py`: 784 lines;
+  `test_greenfield_component_spec_quality.py`: 391 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component-spec proof passed
+  (`12 passed in 0.22s`); broad component and artifact-quality proof passed
+  (`54 passed in 152.75s`); and confirmed-create performance proof passed
+  (`1 passed in 9.95s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 greenfield domain-term index follow-through split shared
+  artifact specificity tokenization into `greenfield_domain_term_index.py`.
+  Product-risk genericity checks now use `ordered_terms` with risk-specific
+  stopwords instead of a local `_domain_terms` helper, and the component-term
+  index delegates tokenization to the same shared kernel while keeping
+  component-specific stopwords. This keeps Radar product-risk specificity and
+  Registry component term matching on one host/model/project-agnostic term
+  normalization path. Touched files remain below limits
+  (`greenfield_domain_term_index.py`: 46 lines;
+  `greenfield_component_term_index.py`: 84 lines;
+  `greenfield_product_risks.py`: 555 lines;
+  `test_greenfield_proposals.py`: 1391 lines). Proof: syntax proof passed
+  for the touched modules and test; focused proposal proof passed
+  (`46 passed in 15.79s`); focused component proof passed
+  (`12 passed in 0.23s`); broad artifact/proposal proof passed
+  (`100 passed in 176.18s`); and confirmed-create performance proof passed
+  (`1 passed in 11.47s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 Registry spec term-distinctiveness follow-through moved
+  component-domain term sets, section-term filtering, and component-local
+  distinctiveness scoring into `greenfield_component_term_index.py`.
+  `greenfield_component_contract_quality.py` now decides quality failures by
+  calling `component_domain_terms`, `section_domain_terms`, and
+  `component_local_terms` instead of owning `domain_terms`, `_section_terms`,
+  or `_local_domain_terms`. This keeps generated Registry spec quality checks
+  on the same component-term index owner as contracts, component terms, and
+  contract differentiation while keeping the quality gate focused on
+  fail-closed decisions. Touched files remain below limits
+  (`greenfield_component_term_index.py`: 128 lines;
+  `greenfield_component_contract_quality.py`: 538 lines;
+  `test_greenfield_component_spec_quality.py`: 417 lines). Proof: syntax
+  proof passed for the touched modules and test; focused component-spec proof
+  passed (`12 passed in 0.24s`); broad artifact/proposal proof passed
+  (`128 passed in 222.27s`); and confirmed-create performance proof passed
+  (`1 passed in 11.39s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 confirmed-intent semantic-term follow-through moved validation
+  and internal-system semantic token extraction into
+  `greenfield_confirmed_text.semantic_terms`. Confirmed-intent validation now
+  passes `CONFIRMED_INTENT_VALIDATION_STOPWORDS` into the shared text owner
+  instead of carrying its own `_TERM_STOPWORDS` and `_semantic_terms` loop, and
+  `greenfield_confirmed_system_rows.py` imports the same owner instead of
+  normalizing tokens locally. The pass also split ownership and parser tests
+  into `test_greenfield_confirmed_intent_ownership.py`, bringing
+  `test_greenfield_confirmed_intent.py` back below the test ceiling. Touched
+  files remain below limits (`greenfield_confirmed_text.py`: 398 lines;
+  `greenfield_confirmed_intent_validation.py`: 197 lines;
+  `greenfield_confirmed_system_rows.py`: 693 lines;
+  `test_greenfield_confirmed_text.py`: 61 lines;
+  `test_greenfield_confirmed_intent.py`: 1459 lines;
+  `test_greenfield_confirmed_intent_ownership.py`: 269 lines). Proof: syntax
+  proof passed for the touched modules and tests; focused confirmed-intent
+  proof passed (`30 passed in 37.40s`); broad artifact/proposal proof passed
+  (`130 passed in 204.69s`); and confirmed-create performance proof passed
+  (`1 passed in 9.91s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 Atlas sequence term-routing follow-through moved first-path
+  sequence and flowchart component matching onto
+  `greenfield_domain_term_index.ordered_terms`. The shared term index now
+  supports caller-owned `stem_ing=True` for sequence routing that needs the
+  previous gerund collapse, while `greenfield_sequence_diagram.py` keeps only
+  sequence-specific stopwords and no longer imports `normalize_domain_token` or
+  owns `_domain_terms`. Touched files remain below limits
+  (`greenfield_domain_term_index.py`: 54 lines;
+  `greenfield_sequence_diagram.py`: 695 lines;
+  `test_greenfield_confirmed_diagrams.py`: 189 lines). Proof: syntax proof
+  passed for the touched modules and test; focused diagram proof passed
+  (`5 passed in 0.05s`); wider artifact/proposal proof passed
+  (`105 passed in 166.48s`); and confirmed-create performance proof passed
+  (`1 passed in 9.90s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 semantic-model term-index follow-through moved generated semantic
+  model ontology terms, required-field terms, event-target terms, and actor
+  terms onto `greenfield_domain_term_index.ordered_terms`.
+  `greenfield_semantic_model.py` now owns only semantic-model stopwords and no
+  longer imports `normalize_domain_token` or defines `_semantic_terms`, keeping
+  generated Radar, Registry, Atlas, and Tribunal semantic model vocabulary on
+  the same shared normalization owner as product risks and Atlas sequence
+  routing. Touched files remain below limits
+  (`greenfield_semantic_model.py`: 494 lines;
+  `test_greenfield_intelligence_schema.py`: 111 lines). Proof: syntax proof
+  passed for the touched module and test; focused intelligence-schema proof
+  passed (`3 passed in 0.11s`); wider artifact/proposal/post-confirm proof
+  passed (`108 passed in 168.60s`); and confirmed-create performance proof
+  passed (`1 passed in 9.91s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 post-confirm drift term-index follow-through moved semantic
+  repetition signatures, overlap signatures, and contrastive drift term
+  signatures onto `greenfield_domain_term_index.ordered_terms`.
+  `greenfield_preconfirm_semantic_drift.py` now owns only post-confirm
+  stopwords and separator cleanup, and no longer imports
+  `normalize_domain_token` or loops over regex tokens locally. The enforcement
+  guard lives in a dedicated small test instead of growing the oversized
+  aggregate artifact-quality suite. Touched files remain below limits
+  (`greenfield_preconfirm_semantic_drift.py`: 389 lines;
+  `test_greenfield_semantic_drift_terms.py`: 32 lines). Proof: syntax proof
+  passed for the touched module and test; focused drift proof passed
+  (`2 passed in 0.11s`); wider artifact/proposal/post-confirm proof passed
+  (`101 passed in 164.28s`); and confirmed-create performance proof passed
+  (`1 passed in 9.69s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 confirmed-artifact Tribunal term-index follow-through moved
+  confirmed Radar substance terms, Registry proof-boundary terms, and Atlas
+  first-path tail terms onto `greenfield_domain_term_index.ordered_terms`.
+  `proposal_tribunal_substance.py` now owns only Tribunal-specific stopwords
+  and Atlas action aliases, and no longer imports `normalize_domain_token` or
+  loops over regex tokens locally. The enforcement guard lives in a dedicated
+  small test instead of growing the oversized aggregate artifact-quality suite.
+  Touched files remain below limits (`proposal_tribunal_substance.py`: 461
+  lines; `test_greenfield_tribunal_term_index.py`: 31 lines). Proof: syntax
+  proof passed for the touched module and test; focused Tribunal proof passed
+  (`4 passed in 6.89s`); wider artifact/proposal/post-confirm proof passed
+  (`102 passed in 162.96s`); and confirmed-create performance proof passed
+  (`1 passed in 9.68s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 confirmed-artifact Tribunal accepted-term follow-through moved
+  accepted public-text product phrase matching onto
+  `greenfield_domain_term_index.label_terms`. `proposal_tribunal_substance.py`
+  still owns Tribunal scaffold repetition policy and generated-artifact
+  substance decisions, but it no longer carries a local accepted-term regex for
+  the `evidence record` and `reviewer decision` product-phrase exceptions.
+  Touched files remain below limits (`proposal_tribunal_substance.py`: 462
+  lines; `greenfield_domain_term_index.py`: 131 lines;
+  `test_greenfield_tribunal_term_index.py`: 41 lines). Proof: syntax proof
+  passed for the touched modules and test; focused Tribunal term-index proof
+  passed (`1 passed in 0.02s`); wider greenfield artifact proof passed (`162
+  passed in 193.53s`); and confirmed-create performance proof passed (`1
+  passed in 9.54s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 semantic-quality release-scope term-index follow-through moved
+  release-scope and scope-context term signatures onto
+  `greenfield_domain_term_index.ordered_terms`. The shared term index now
+  supports caller-owned exact aliases and prefix aliases so semantic quality can
+  preserve reminder and sharing vocabulary folding while
+  `greenfield_semantic_quality.py` owns only release-scope stopwords, alias
+  policy, and release-scope decisions. It no longer imports
+  `normalize_domain_token` or loops over regex tokens locally. The enforcement
+  guard lives in a dedicated small test instead of growing the oversized
+  aggregate artifact-quality suite. Touched files remain below limits
+  (`greenfield_domain_term_index.py`: 87 lines;
+  `greenfield_semantic_quality.py`: 478 lines;
+  `test_greenfield_semantic_quality_terms.py`: 47 lines). Proof: syntax proof
+  passed for the touched modules and test; focused semantic-quality proof passed
+  (`1 passed in 0.03s`) and the health-tracking release-scope scenario passed
+  (`1 passed in 3.59s`); wider artifact/proposal/post-confirm proof passed
+  (`111 passed in 162.71s`); and confirmed-create performance proof passed
+  (`1 passed in 9.67s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 semantic-quality raw-token follow-through moved sentence-overlap
+  n-gram extraction and scoped-clause word counts onto
+  `greenfield_domain_term_index.label_terms`. `greenfield_semantic_quality.py`
+  now keeps release-scope decisions, sentence-overlap policy, and stopword
+  choices while the shared term-index owner handles raw token extraction for
+  both semantic and visible-label callers. This removes the remaining
+  `re.findall` token loops from the semantic-quality gate without changing
+  normalized release-scope term policy. Touched files remain below limits
+  (`greenfield_domain_term_index.py`: 131 lines;
+  `greenfield_semantic_quality.py`: 475 lines;
+  `test_greenfield_semantic_quality_terms.py`: 72 lines). Proof: syntax proof
+  passed for the touched modules and test; focused semantic-quality proof passed
+  (`1 passed in 0.03s`); wider greenfield artifact proof passed (`157 passed
+  in 195.20s`); and confirmed-create performance proof passed (`1 passed in
+  9.61s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 confirmed-intent semantic term-index follow-through kept
+  `greenfield_confirmed_text.semantic_terms` as the accepted-intent semantic
+  API while moving its reusable token indexing onto
+  `greenfield_domain_term_index.ordered_terms`. The shared term index now
+  supports caller-owned `stem_ing_minimum_length`, so confirmed-intent overlap
+  checks can preserve their previous gerund threshold without changing Atlas,
+  Tribunal, semantic-model, risk, or release-scope callers. `greenfield_confirmed_text.py`
+  no longer imports `normalize_domain_token` or loops over regex tokens for
+  semantic terms locally. Touched files remain below limits
+  (`greenfield_domain_term_index.py`: 90 lines;
+  `greenfield_confirmed_text.py`: 399 lines;
+  `test_greenfield_confirmed_text.py`: 84 lines). Proof: syntax proof passed
+  for the touched modules and test; focused confirmed-text proof passed
+  (`2 passed in 0.03s`); focused confirmed-intent proof passed
+  (`30 passed in 35.33s`); wider artifact/proposal/post-confirm proof passed
+  (`141 passed in 200.44s`); and confirmed-create performance proof passed
+  (`1 passed in 9.63s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 Registry component term-index follow-through moved component
+  phrase identity terms and contract-field transition candidates onto
+  `greenfield_domain_term_index.ordered_terms`. `greenfield_component_terms.py`
+  now owns only artifact-carrier stopword policy, `greenfield_component_contract_fields.py`
+  owns only state/transition decisions, and `greenfield_component_semantic_contract.py`
+  imports the phrase-identity owner directly instead of keeping a pass-through
+  wrapper. The touched Registry component path no longer imports
+  `normalize_domain_token` or loops over regex tokens locally for those term
+  sets. Touched files remain below limits (`greenfield_component_terms.py`: 781
+  lines; `greenfield_component_contract_fields.py`: 443 lines;
+  `greenfield_component_semantic_contract.py`: 620 lines;
+  `test_greenfield_component_spec_quality.py`: 440 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component-spec proof passed
+  (`12 passed in 0.21s`); wider artifact/proposal proof passed
+  (`120 passed in 162.97s`); and confirmed-create performance proof passed
+  (`1 passed in 9.72s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 base component profile term-index follow-through moved
+  `_profile` focused label/kind token extraction in
+  `greenfield_component_contract.py` onto
+  `greenfield_domain_term_index.ordered_terms` with caller-owned short-term
+  preservation. The base component contract owner still owns profile
+  selection, generic fallback contract assembly, focus phrase derivation, state
+  terms, boundary clauses, and public contract field projection, while the
+  shared domain-term index owns reusable token parsing and plural folding for
+  profile words. Touched files remain below limits
+  (`greenfield_component_contract.py`: 551 lines;
+  `greenfield_component_term_index.py`: 128 lines;
+  `test_greenfield_component_spec_quality.py`: 574 lines). Proof: syntax proof
+  passed for the touched module and test; focused component-spec proof passed
+  (`14 passed in 0.16s`); wider greenfield artifact proof passed
+  (`162 passed in 190.72s`); and confirmed-create performance proof passed
+  (`1 passed in 9.50s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 confirmed-completion keyword term-index follow-through moved
+  label focus and keyword extraction in
+  `greenfield_confirmed_completion_text_model.py` onto
+  `greenfield_domain_term_index.label_terms` and `ordered_terms`. The
+  completion text model still owns action/outcome phrasing, workstream
+  sentences, project/component/diagram labels, first-path/proof/state
+  summaries, actor summaries, and backlog-to-component matching policy, while
+  the shared domain-term index owns reusable token parsing, plural folding,
+  digit filtering, and visible label words. Touched files remain below limits
+  (`greenfield_confirmed_completion_text_model.py`: 284 lines;
+  `greenfield_domain_term_index.py`: 131 lines;
+  `test_greenfield_confirmed_repair.py`: 305 lines). Proof: syntax proof
+  passed for the touched module and test; focused confirmed-repair proof
+  passed (`8 passed in 8.82s`); wider greenfield artifact proof passed
+  (`165 passed in 200.56s`); and confirmed-create performance proof passed
+  (`1 passed in 9.61s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 public quality-gate term-index follow-through moved prompt echo
+  and semantic contract noun extraction in `greenfield_quality_gate.py` onto
+  `greenfield_domain_term_index.ordered_terms`. The shared index now supports
+  caller-owned `preserve_terms`, so the public quality gate can retain short
+  domain abbreviations such as AI, ML, UI, and UX without owning a local regex
+  token loop or direct `normalize_domain_token` import. Touched files remain
+  below limits (`greenfield_domain_term_index.py`: 103 lines;
+  `greenfield_quality_gate.py`: 659 lines;
+  `test_greenfield_domain_profile_quality.py`: 275 lines). Proof: syntax proof
+  passed for the touched modules and test; focused quality-gate proof passed
+  (`17 passed in 13.90s`); wider greenfield proof passed (`168 passed in
+  226.89s`); and confirmed-create performance proof passed (`1 passed in
+  9.44s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 first-path actor term-index follow-through moved actor signature
+  term extraction in `greenfield_first_path_clauses.py` onto
+  `greenfield_domain_term_index.ordered_terms`. The first-path clause owner now
+  keeps only action/capability/result grammar and actor-specific stopword policy,
+  while the shared index preserves short domain actor terms such as AI, ML, UI,
+  and UX. This prevents later plain-actor follow-up actions from bleeding into a
+  qualified actor's first path after a visible result. Touched files remain below
+  limits (`greenfield_first_path_clauses.py`: 742 lines;
+  `test_greenfield_preconfirm_slop_regressions.py`: 674 lines). Proof:
+  syntax proof passed for the touched module and test; focused post-confirm slop
+  proof passed (`14 passed in 2.78s`); wider greenfield proof passed (`151
+  passed in 237.66s`); and confirmed-create performance proof passed (`1 passed
+  in 11.47s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 first-path actor display-token follow-through moved
+  `strip_action_subject`, `_actor_signature`, and `leading_subject_prefix`
+  actor-prefix length thresholds in `greenfield_first_path_clauses.py` onto
+  `greenfield_domain_term_index.label_terms`. The first-path clause owner still
+  owns action/capability/result grammar, actor filtering, and actor-specific
+  term policy, while the shared index owns display-token counting for deciding
+  whether an actor or system prefix is short enough to strip or use as a
+  signature subject. Touched files remain below limits
+  (`greenfield_first_path_clauses.py`: 742 lines;
+  `greenfield_domain_term_index.py`: 131 lines;
+  `test_greenfield_preconfirm_slop_regressions.py`: 701 lines). Proof:
+  syntax proof passed for the touched module and test; focused post-confirm
+  first-path proof passed (`14 passed in 1.37s`); wider greenfield artifact
+  proof passed (`162 passed in 193.05s`); and confirmed-create performance
+  proof passed (`1 passed in 9.55s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 confirmed component label term-index follow-through moved
+  `domain_label` token extraction in `greenfield_confirmed_components.py` onto
+  `greenfield_domain_term_index.label_terms`. The shared term-index owner now
+  separates visible label words from semantic normalized terms, preserving
+  acronyms and alphanumeric labels such as AI, CRM, GIS, UI, UX, `3D`, and
+  `W-2` while removing the component generator's local regex token loop.
+  Touched files remain below limits (`greenfield_domain_term_index.py`: 131
+  lines; `greenfield_confirmed_components.py`: 577 lines;
+  `test_greenfield_component_spec_quality.py`: 455 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component-spec proof passed
+  (`12 passed in 0.25s`); wider greenfield proof passed (`151 passed in
+  233.14s`); and confirmed-create performance proof passed (`1 passed in
+  11.90s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 component handoff title-match term-index follow-through moved
+  generated component handoff workstream-title matching in `greenfield_experience.py`
+  onto `greenfield_domain_term_index.ordered_terms`. The handoff owner now keeps
+  only matching policy and stopwords, while the shared index handles plural
+  folding so `status dashboards` can match `Status Dashboard Surface` and
+  `reviews service` does not leak past the intended `review` and `service`
+  stopwords. Touched files remain below limits (`greenfield_experience.py`: 481
+  lines; `test_greenfield_experience_terms.py`: 55 lines). Proof: syntax proof
+  passed for the touched module and test; focused experience/row proof passed
+  (`2 passed in 0.08s`); wider greenfield proof passed (`152 passed in
+  229.35s`); and confirmed-create performance proof passed (`1 passed in
+  11.57s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 traceability semantic token term-index follow-through moved
+  generated Radar, Registry, and Atlas traceability matching in
+  `greenfield_traceability.py` onto `greenfield_domain_term_index.ordered_terms`.
+  The traceability owner now keeps scoring thresholds and compound identifier
+  expansion, while the shared index handles plural folding so component labels
+  such as `Status Windows` can link to singular workstream titles such as
+  `Build window proof`. Touched files remain below limits
+  (`greenfield_traceability.py`: 661 lines; `test_greenfield_traceability_terms.py`:
+  65 lines). Proof: syntax proof passed for the touched module and test;
+  focused traceability/artifact proof passed (`41 passed in 162.78s`); wider
+  greenfield proof passed (`153 passed in 230.09s`); and confirmed-create
+  performance proof passed (`1 passed in 11.77s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 confirmed Radar backlog term-index follow-through moved
+  `semantic_words` and `shares_product_terms` in
+  `greenfield_confirmed_backlog_text_model.py` onto
+  `greenfield_domain_term_index.ordered_terms`. The Radar backlog text model now
+  keeps backlog-specific stopwords and first-slice text decisions, while the
+  shared index handles plural folding so `status windows` and `window proof`
+  share the same product terms without matching on generic release/path glue.
+  Touched files remain below limits (`greenfield_confirmed_backlog_text_model.py`:
+  473 lines; `test_greenfield_confirmed_backlog_terms.py`: 39 lines). Proof:
+  syntax proof passed for the touched module and test; focused backlog text proof
+  passed (`11 passed in 13.37s`); wider greenfield proof passed (`154 passed in
+  228.69s`); and confirmed-create performance proof passed (`1 passed in
+  12.05s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 confirmed Radar backlog visible-count follow-through moved proof
+  focus word-count thresholds and repeated-required detection in
+  `greenfield_confirmed_backlog_text_model.py` onto
+  `greenfield_confirmed_text.word_count` and `word_occurrences`. The Radar
+  backlog text model still owns proof focus selection, first-slice wording,
+  mechanical-summary rejection, and product-term matching policy, while
+  confirmed text owns Markdown cleanup, visible word counting, and exact word
+  occurrence counting. Touched files remain below limits
+  (`greenfield_confirmed_backlog_text_model.py`: 475 lines;
+  `greenfield_confirmed_text.py`: 406 lines;
+  `test_greenfield_confirmed_backlog_terms.py`: 56 lines;
+  `test_greenfield_confirmed_text.py`: 120 lines). Proof: syntax proof passed
+  for the touched modules and tests; focused backlog/text proof passed
+  (`8 passed in 8.94s`); wider greenfield artifact proof passed
+  (`165 passed in 201.36s`); and confirmed-create performance proof passed
+  (`1 passed in 9.52s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 Registry fallback term-window follow-through moved component label
+  compounds and nearby context-window parsing from
+  `greenfield_component_contract_differentiation.py` into
+  `greenfield_component_term_windows.py`. Contract differentiation now keeps
+  fallback-axis scoring and repair policy, while the term-window owner handles
+  token parsing, plural folding, and short label compounds such as AI CRM without
+  growing the near-limit `greenfield_component_terms.py` module. Touched files
+  remain below limits (`greenfield_component_terms.py`: 781 lines;
+  `greenfield_component_term_windows.py`: 75 lines;
+  `greenfield_component_contract_differentiation.py`: 705 lines;
+  `test_greenfield_component_spec_quality.py`: 481 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component-spec proof passed
+  (`12 passed in 0.25s`); wider greenfield proof passed (`154 passed in
+  224.99s`); and confirmed-create performance proof passed (`1 passed in
+  11.72s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 Registry literal label-term follow-through moved component label
+  term extraction from `greenfield_component_contract.py` and
+  `greenfield_component_contract_fields.py` into
+  `greenfield_component_term_windows.py`. Base contracts, semantic contracts,
+  and fallback differentiation now share the same label-term owner, preserving
+  short labels such as AI CRM and plural artifact-carrier phrases such as
+  `policy guardrails` without reopening caller-local regex token loops. Touched
+  files remain below limits (`greenfield_component_term_windows.py`: 91 lines;
+  `greenfield_component_contract.py`: 554 lines;
+  `greenfield_component_contract_fields.py`: 413 lines;
+  `greenfield_component_semantic_contract.py`: 620 lines;
+  `test_greenfield_component_spec_quality.py`: 505 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component/guardrail proof
+  passed (`13 passed in 3.38s`); wider greenfield proof passed (`154 passed in
+  216.42s`); and confirmed-create performance proof passed (`1 passed in
+  10.18s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 Registry actor/action artifact-term follow-through moved
+  actor-role token detection into `greenfield_actor_terms.py` and made
+  `greenfield_component_terms.py` use cached action-form lookup when cleaning
+  generated Registry artifact phrases. Component semantic context now imports
+  the same actor-role classifier instead of carrying its own local role list,
+  so phrases such as `inspector reviews permit note` become `permit note`
+  consistently across base artifact cleanup and context extraction. Touched
+  files remain below limits (`greenfield_actor_terms.py`: 61 lines;
+  `greenfield_component_terms.py`: 776 lines;
+  `greenfield_component_semantic_context.py`: 282 lines;
+  `test_greenfield_component_spec_quality.py`: 519 lines;
+  `test_greenfield_component_semantic_contract_quality.py`: 69 lines). Proof:
+  syntax proof passed for the touched modules and tests; focused component
+  proof passed (`14 passed in 0.14s`); wider greenfield artifact proof passed
+  (`156 passed in 195.31s`); and confirmed-create performance proof passed
+  (`1 passed in 9.29s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 Registry generic actor-label prefix follow-through moved
+  local operator/reviewer prefix detection into `greenfield_actor_terms.py`.
+  Component contract fields, contract differentiation, and rendered-spec
+  quality now share `generic_actor_label_prefix`,
+  `starts_with_generic_actor_label`, and `localize_generic_actor_label`
+  instead of carrying local actor-prefix regexes. Generic prefixes that leave a
+  concrete artifact behind, such as `Primary user request status` and
+  `Risk reviewer guardrails`, now reduce to the owned artifact phrase, while
+  bare generic actor labels such as `Operator approval packet` stay localized.
+  Touched files remain below limits (`greenfield_actor_terms.py`: 107 lines;
+  `greenfield_component_contract_fields.py`: 413 lines;
+  `greenfield_component_contract_differentiation.py`: 700 lines;
+  `greenfield_component_contract_quality.py`: 537 lines;
+  `test_greenfield_component_spec_quality.py`: 560 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component proof passed
+  (`14 passed in 0.17s`); wider greenfield artifact proof passed (`156 passed
+  in 194.91s`); and confirmed-create performance proof passed (`1 passed in
+  9.55s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 post-confirm drift frequency follow-through moved repeated
+  contrastive term counting in `greenfield_preconfirm_semantic_drift.py`
+  onto `greenfield_domain_term_index.term_frequencies` and moved generated
+  sentence length filtering onto `greenfield_text.word_count`. The drift owner
+  still owns post-confirm stopwords, signature separator cleanup, repetition
+  clustering, and overlap policy, while shared text and term-index owners handle
+  reusable token counting with one normalized pass instead of one regex scan per
+  term. Touched files remain below limits
+  (`greenfield_preconfirm_semantic_drift.py`: 398 lines;
+  `greenfield_domain_term_index.py`: 193 lines; `greenfield_text.py`: 149
+  lines; `greenfield_confirmed_text.py`: 413 lines;
+  `test_greenfield_semantic_drift_terms.py`: 63 lines). Proof: syntax proof
+  passed for the touched modules and tests; focused drift/text proof passed
+  (`45 passed in 131.74s`); wider greenfield artifact proof passed
+  (`166 passed in 197.92s`); and confirmed-create performance proof passed
+  (`1 passed in 9.42s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 proposal validation text-depth follow-through moved backlog,
+  rationale-line, success-metric, component-responsibility, and diagram
+  component-description word-depth checks in `proposal_validation.py` onto
+  `greenfield_text.word_count`. Proposal validation still owns required-field
+  policy, issue batching, evidence-tier checks, diagram safety, and proposal
+  shape gates, while shared text owns reusable visible word counting for
+  hyphenated product terms such as source-backed checkout-recovery proof.
+  Touched files remain below limits (`proposal_validation.py`: 371 lines;
+  `greenfield_text.py`: 149 lines;
+  `test_greenfield_proposal_validation_text.py`: 46 lines). Proof: syntax proof
+  passed for the touched module and test; focused proposal validation proof
+  passed (`4 passed in 3.49s`); wider greenfield artifact proof passed
+  (`167 passed in 197.00s`); and confirmed-create performance proof passed
+  (`1 passed in 9.56s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 program wave term follow-through moved release-wave to
+  workstream matching in `greenfield_programs.py` onto
+  `greenfield_domain_term_index.ordered_terms`. Program wave creation still
+  owns release selector parsing, explicit workstream refs, wave fallback order,
+  execution-wave document shape, and release-target helpers, while the shared
+  domain term index owns reusable plural folding and token filtering for
+  arbitrary wave and backlog vocabulary. Touched files remain below limits
+  (`greenfield_programs.py`: 460 lines; `greenfield_domain_term_index.py`: 212
+  lines; `test_greenfield_program_terms.py`: 45 lines). Proof: syntax proof
+  passed for the touched module and test; focused program proof passed
+  (`2 passed in 0.83s`); wider greenfield artifact proof passed (`168 passed
+  in 197.44s`); and confirmed-create performance proof passed (`1 passed in
+  9.34s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 Registry contract visible-word follow-through moved status-only
+  and ranked contract phrase word extraction in
+  `greenfield_component_contract_fields.py` onto `greenfield_text.visible_words`.
+  Contract fields still own shell-artifact rejection, status-only field policy,
+  ranked-output normalization, and contract list cleanup, while shared text owns
+  reusable visible word splitting for hyphenated component field phrases such as
+  blocked-state update. Touched files remain below limits
+  (`greenfield_text.py`: 153 lines;
+  `greenfield_component_contract_fields.py`: 414 lines;
+  `test_greenfield_component_spec_quality.py`: 586 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component proof passed
+  (`12 passed in 0.15s`); wider greenfield artifact proof passed (`168 passed
+  in 198.26s`); and confirmed-create performance proof passed (`1 passed in
+  9.56s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 Registry contract differentiation visible-word follow-through
+  moved fallback-axis trigger matching in
+  `greenfield_component_contract_differentiation.py` onto
+  `greenfield_text.visible_words`. Contract differentiation still owns
+  fallback-axis scoring, sibling repair, and component contract repair
+  decisions, while shared text owns reusable visible word splitting for
+  hyphenated trigger phrases such as status-window proof. Touched files remain
+  below limits (`greenfield_component_contract_differentiation.py`: 701 lines;
+  `greenfield_text.py`: 153 lines; `test_greenfield_component_spec_quality.py`:
+  592 lines). Proof: syntax proof passed for the touched modules and test;
+  focused component proof passed (`12 passed in 0.16s`); wider greenfield
+  artifact proof passed (`168 passed in 199.10s`); and confirmed-create
+  performance proof passed (`1 passed in 9.47s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 Registry profile object-label follow-through moved document
+  context and status-view object phrase token extraction in
+  `greenfield_component_contract_profiles.py` onto
+  `greenfield_domain_term_index.label_terms`. Profile contracts still own
+  document-context wording, status-view wording, local proof rows, and profile
+  state-object policy, while the shared domain term index owns reusable visible
+  label tokenization for hyphenated and underscore-separated state labels such
+  as source-backed_review record. Touched files remain below limits
+  (`greenfield_component_contract_profiles.py`: 369 lines;
+  `greenfield_domain_term_index.py`: 212 lines;
+  `test_greenfield_component_spec_quality.py`: 599 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component proof passed
+  (`12 passed in 0.15s`); wider greenfield artifact proof passed (`168 passed
+  in 199.26s`); and confirmed-create performance proof passed (`1 passed in
+  9.53s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 Registry semantic compact-artifact follow-through moved compact
+  artifact phrase token counting in
+  `greenfield_component_semantic_contract.py` onto
+  `greenfield_domain_term_index.label_terms`. Semantic contracts still own
+  object-phrase dedupe, compact-artifact preservation, phrase prioritization,
+  and local contract assembly, while the shared domain term index owns reusable
+  display-token parsing for hyphenated and underscore-separated artifact
+  phrases such as source-backed_review record. Touched files remain below
+  limits (`greenfield_component_semantic_contract.py`: 621 lines;
+  `greenfield_domain_term_index.py`: 212 lines;
+  `test_greenfield_component_semantic_contract_quality.py`: 74 lines). Proof:
+  syntax proof passed for the touched modules and test; focused semantic
+  contract proof passed (`2 passed in 0.07s`); wider greenfield artifact proof
+  passed (`168 passed in 201.86s`); and confirmed-create performance proof
+  passed (`1 passed in 9.61s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 Registry term-window raw-token follow-through moved the remaining
+  raw display-token loops in `greenfield_component_term_windows.py` onto
+  `greenfield_domain_term_index.label_terms`. The term-window owner still owns
+  label-term preservation, compound construction, and nearby context-window
+  policy, while the shared domain term index owns reusable display-token
+  parsing for hyphenated and underscore-separated component labels and context
+  phrases. Touched files remain below limits
+  (`greenfield_component_term_windows.py`: 91 lines;
+  `greenfield_domain_term_index.py`: 212 lines;
+  `test_greenfield_component_spec_quality.py`: 616 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component proof passed
+  (`12 passed in 0.16s`); paired Registry component/semantic proof passed
+  (`14 passed in 0.13s`); wider greenfield artifact proof passed (`168 passed
+  in 198.38s`); and confirmed-create performance proof passed (`1 passed in
+  9.69s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 Confirmed component kind-token follow-through moved internal
+  system kind classification in `greenfield_confirmed_components.py` onto
+  `greenfield_text.visible_words`. Confirmed components still own
+  internal-system component generation, labels, kind selection, responsibility,
+  boundary, dependency, interface, validation, and fallback contract shaping,
+  while shared greenfield text owns reusable visible-word splitting for
+  hyphenated and slash-separated system names such as UI-client dashboard and
+  web/ui surface. Touched files remain below limits
+  (`greenfield_confirmed_components.py`: 579 lines; `greenfield_text.py`: 153
+  lines; `test_greenfield_component_spec_quality.py`: 629 lines). Proof:
+  syntax proof passed for the touched modules and test; focused component proof
+  passed (`12 passed in 0.15s`); wider greenfield artifact proof passed (`168
+  passed in 198.29s`); and confirmed-create performance proof passed (`1 passed
+  in 9.54s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 Registry artifact cleanup visible-word follow-through moved
+  action-token filtering in `greenfield_component_terms.py` onto
+  `greenfield_text.visible_words` and repaired slash-separated visible-result
+  cleanup so `web/ui surface` no longer becomes malformed as
+  `web state/ui surface`. Component terms still own artifact phrase cleanup,
+  actor/action trimming, action-form classification, artifact-carrier policy,
+  and phrase identity, while shared greenfield text owns reusable visible-word
+  splitting for generated artifact phrases. Touched files remain below limits
+  (`greenfield_component_terms.py`: 777 lines; `greenfield_text.py`: 153
+  lines; `test_greenfield_component_spec_quality.py`: 632 lines). Proof:
+  syntax proof passed for the touched modules and test; focused component proof
+  passed (`12 passed in 0.16s`); wider greenfield artifact proof passed (`168
+  passed in 197.06s`); and confirmed-create performance proof passed (`1
+  passed in 9.35s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 confirmed-intent title display-token follow-through moved title
+  repair word checks and system-label qualifier cleanup in
+  `greenfield_confirmed_intent_completion.py` onto
+  `greenfield_domain_term_index.label_terms`. Confirmed-intent completion still
+  owns title repair, title noun selection, qualifier ranking, core-field
+  completion, and product-posture completion, while the shared term index owns
+  reusable display-token extraction for slash-separated accepted labels such as
+  AI/ML review record. The visible generated title now preserves that product
+  signal as `AI/ML Review Record Workspace` instead of clipping it to
+  `ML Review Record Workspace`. Touched files remain below limits
+  (`greenfield_confirmed_intent_completion.py`: 644 lines;
+  `greenfield_domain_term_index.py`: 212 lines;
+  `test_greenfield_confirmed_intent_ownership.py`: 301 lines). Proof: syntax
+  proof passed for the touched modules and test; focused ownership proof passed
+  (`9 passed in 0.22s`); wider greenfield artifact proof passed (`177 passed
+  in 198.50s`); and confirmed-create performance proof passed (`1 passed in
+  9.62s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 confirmed title-repair display-token follow-through moved
+  canonical project-title repair acceptance checks in
+  `greenfield_confirmed_title_repair.py` onto
+  `greenfield_domain_term_index.label_terms`. The title-repair owner still
+  owns stale title detection, existing-title candidate selection, proposal-wide
+  replacement, slug repair, and project-intelligence rebinding, while the
+  shared term index owns reusable display-token extraction for slash-separated
+  generated title candidates such as AI/ML Review Workspace. Touched files
+  remain below limits (`greenfield_confirmed_title_repair.py`: 205 lines;
+  `greenfield_domain_term_index.py`: 212 lines;
+  `test_greenfield_confirmed_title_quality.py`: 265 lines). Proof: syntax
+  proof passed for the touched modules and test; focused title-quality proof
+  passed (`8 passed in 7.88s`); wider greenfield artifact proof passed (`178
+  passed in 201.72s`); and confirmed-create performance proof passed (`1
+  passed in 9.49s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 confirmed focus-label display-token follow-through moved confirmed
+  project focus-label title token extraction in `greenfield_confirmed_text.py`
+  onto `greenfield_domain_term_index.label_terms`. Confirmed text still owns
+  confirmed Markdown cleanup, list coercion, semantic terms, word counts,
+  repeated-word counts, title casing, focus-label selection, and domain object
+  labels, while the shared term index owns reusable display-token extraction
+  for hyphenated generated titles such as Source-backed Review Workspace. The
+  visible focus label now preserves that product signal as
+  `Source-backed Review` instead of flattening it to `Source Backed Review`.
+  Touched files remain below limits (`greenfield_confirmed_text.py`: 413 lines;
+  `greenfield_domain_term_index.py`: 212 lines;
+  `test_greenfield_confirmed_text.py`: 132 lines). Proof: syntax proof passed
+  for the touched modules and test; focused confirmed-text proof passed (`5
+  passed in 0.03s`); wider greenfield artifact proof passed (`179 passed in
+  202.27s`); and confirmed-create performance proof passed (`1 passed in
+  9.54s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 confirmed actor-candidate display-token follow-through moved
+  derived actor role candidate token extraction in
+  `greenfield_confirmed_actor_completion.py` onto
+  `greenfield_domain_term_index.label_terms`. Actor completion still owns
+  accepted actor row completion, role-word policy, artifact-context filtering,
+  non-actor lead trimming, actor-label fallback selection, and actor
+  descriptions, while the shared term index owns reusable display-token
+  extraction for hyphenated accepted role phrases such as Source-backed
+  reviewer. The public completion path still preserves that role as
+  `Source-backed Reviewer` when accepted intent text leaves human actors empty.
+  Touched files remain below limits
+  (`greenfield_confirmed_actor_completion.py`: 446 lines;
+  `greenfield_domain_term_index.py`: 212 lines;
+  `test_greenfield_confirmed_intent_ownership.py`: 324 lines). Proof: syntax
+  proof passed for the touched modules and test; focused ownership proof passed
+  (`10 passed in 0.22s`); wider greenfield artifact proof passed (`180 passed
+  in 201.94s`); and confirmed-create performance proof passed (`1 passed in
+  9.71s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 confirmed-intent bare-title display-token follow-through moved
+  preamble bare-title word counting in `greenfield_confirmed_intent.py` onto
+  `greenfield_domain_term_index.label_terms`. The confirmed-intent parser still
+  owns section parsing, heading classification, preamble title detection,
+  prewrite normalization, completion, and validation, while the shared term
+  index owns reusable display-token extraction for hyphenated confirmed titles
+  such as Source-backed Evidence Workspace. The bare-title classifier still
+  accepts that title and rejects action-shaped prose such as Reviewer needs
+  status proof. Touched files remain below limits
+  (`greenfield_confirmed_intent.py`: 664 lines;
+  `greenfield_domain_term_index.py`: 212 lines;
+  `test_greenfield_confirmed_intent_ownership.py`: 336 lines). Proof: syntax
+  proof passed for the touched modules and test; focused ownership proof passed
+  (`11 passed in 0.20s`); wider greenfield artifact proof passed (`181 passed
+  in 200.39s`); and confirmed-create performance proof passed (`1 passed in
+  9.45s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 Registry state-token display-word follow-through moved generated
+  component contract state transition token scanning in
+  `greenfield_component_contract.py` onto `greenfield_text.visible_words`.
+  Component contracts still own lifecycle state vocabulary, state-label
+  extraction, focus phrase selection, contract assembly, and proof wording,
+  while shared greenfield text owns reusable visible-word splitting for
+  hyphenated state phrases such as blocked-state update. The state term
+  extractor now preserves ordered unique lifecycle terms from
+  submitted draft was blocked-state, ready, recovered, and ready again as
+  `submitted`, `draft`, `blocked`, `ready`, and `recovered`. Touched files
+  remain below limits (`greenfield_component_contract.py`: 576 lines;
+  `greenfield_text.py`: 153 lines;
+  `test_greenfield_component_spec_quality.py`: 638 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component proof passed (`12
+  passed in 0.17s`); wider greenfield artifact proof passed (`181 passed in
+  201.34s`); and confirmed-create performance proof passed (`1 passed in
+  9.59s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 progression-marker count follow-through moved confirmed-intent
+  progression/outcome connector counting, punctuation counting, and quality-gate
+  first-path event marker counting onto
+  `greenfield_text.progression_marker_count`. Confirmed-intent validation still
+  owns qualitative thresholds, connector vocabulary, outcome fallback, and
+  semantic overlap, while the quality gate still owns first-path event
+  sufficiency policy. Shared greenfield text now owns reusable
+  connector/punctuation marker counting for both callers. Touched files remain
+  below limits (`greenfield_confirmed_intent_validation.py`: 205 lines;
+  `greenfield_quality_gate.py`: 660 lines; `greenfield_text.py`: 169 lines;
+  `test_greenfield_confirmed_intent_ownership.py`: 346 lines;
+  `test_greenfield_domain_profile_quality.py`: 277 lines;
+  `test_greenfield_component_spec_quality.py`: 640 lines). Proof: syntax proof
+  passed for the touched modules and tests; focused ownership/quality proof
+  passed (`46 passed in 13.75s`); wider greenfield artifact proof passed (`182
+  passed in 203.05s`); and confirmed-create performance proof passed (`1 passed
+  in 9.73s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 Tribunal flowchart node-count follow-through moved confirmed
+  first-path flowchart step counting out of
+  `proposal_tribunal_substance.py` and into
+  `mermaid_text.numbered_flowchart_node_count`. The Tribunal substance owner
+  still decides the minimum event threshold and the Atlas debris checks, while
+  shared Mermaid text owns numbered flowchart node discovery. The helper counts
+  unique node IDs in first-seen order, so duplicate `S2` declarations cannot
+  inflate first-path event depth. Touched files remain below limits
+  (`proposal_tribunal_substance.py`: 463 lines; `mermaid_text.py`: 212 lines;
+  `test_greenfield_tribunal_term_index.py`: 43 lines;
+  `test_greenfield_confirmed_surfaces.py`: 282 lines). Proof: syntax proof
+  passed for the touched modules and tests; focused Tribunal/Mermaid proof
+  passed (`7 passed in 7.21s`); wider greenfield artifact proof passed (`183
+  passed in 204.28s`); and confirmed-create performance proof passed (`1 passed
+  in 9.25s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 confirmed exact-word occurrence follow-through moved repeated-word
+  counting mechanics from `greenfield_confirmed_text.py` into
+  `greenfield_text.word_occurrences`. Confirmed text still owns confirmed
+  Markdown cleanup and the public confirmed-text API, while shared greenfield
+  text owns reusable exact whole-word counting for generated Radar phrases such
+  as repeated `required` mechanical summaries. Touched files remain below limits
+  (`greenfield_confirmed_text.py`: 405 lines; `greenfield_text.py`: 182 lines;
+  `greenfield_confirmed_backlog_text_model.py`: 475 lines;
+  `test_greenfield_confirmed_text.py`: 142 lines;
+  `test_greenfield_confirmed_backlog_terms.py`: 56 lines). Proof: syntax proof
+  passed for the touched modules and tests; focused confirmed-text/backlog proof
+  passed (`6 passed in 0.05s`); wider greenfield artifact proof passed (`183
+  passed in 203.61s`); and confirmed-create performance proof passed (`1 passed
+  in 9.79s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 word-boundary clipping follow-through moved reusable whole-word
+  clipping and trailing connector stripping mechanics into
+  `greenfield_text.clip_text_at_word_boundary` and
+  `greenfield_text.strip_dangling_word_tail`. Confirmed text, first-path clause
+  rendering, semantic proof labels, confirmed system rows, confirmed Atlas label
+  text, sequence diagrams, experience handoff text, and project-brief clauses
+  still own their domain cleanup, grammar, and fallback policies, while shared
+  greenfield text owns the common clipping mechanics. The touched artifact text
+  callers no longer keep local `.rsplit(" ", 1)` word-boundary clip forks.
+  Touched files remain below limits (`greenfield_first_path_clauses.py`: 760
+  lines; `greenfield_sequence_diagram.py`: 700 lines;
+  `greenfield_confirmed_system_rows.py`: 692 lines;
+  `greenfield_confirmed_diagram_text.py`: 543 lines;
+  `greenfield_semantic_model.py`: 494 lines; `greenfield_experience.py`: 477
+  lines; `greenfield_confirmed_text.py`: 429 lines;
+  `greenfield_confirmed_project_brief.py`: 264 lines; `greenfield_text.py`: 215
+  lines; `test_greenfield_confirmed_text.py`: 172 lines). Proof: syntax proof
+  passed for the touched modules and test; focused artifact text proof passed
+  (`24 passed in 0.27s`); wider greenfield artifact proof passed (`184 passed
+  in 219.55s`); and confirmed-create performance proof passed (`1 passed in
+  11.13s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 visible-result language follow-through moved reusable
+  `readout plus`, `on screen, alongside`, `alongside`, and
+  `visible-result event` wording normalization into
+  `greenfield_text.normalize_visible_result_language`. First-path clauses,
+  sequence steps, component artifact terms, confirmed system rows, confirmed
+  intent completion, product-risk wording, and confirmed Atlas diagram labels
+  still own their parsing, sentence removal, risk framing, and label policy,
+  while shared greenfield text owns the repeated visible-result phrase
+  rewrites. The touched callers no longer keep local `readout plus` or
+  `alongside` rewrite forks. Touched files remain below limits
+  (`greenfield_component_terms.py`: 774 lines;
+  `greenfield_first_path_clauses.py`: 758 lines;
+  `test_greenfield_preconfirm_slop_regressions.py`: 736 lines;
+  `greenfield_confirmed_system_rows.py`: 691 lines;
+  `greenfield_confirmed_intent_completion.py`: 643 lines;
+  `greenfield_product_risks.py`: 554 lines;
+  `greenfield_confirmed_diagram_text.py`: 540 lines;
+  `greenfield_text.py`: 224 lines; `greenfield_sequence_steps.py`: 199 lines).
+  Proof: syntax proof passed for the touched modules and tests; focused
+  visible-result/artifact proof passed (`90 passed in 17.29s`); wider
+  greenfield artifact proof passed (`185 passed in 210.64s`); and
+  confirmed-create performance proof passed (`1 passed in 9.84s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 proof-boundary language follow-through moved reusable evidence,
+  trust, success, replay, and done-means lead cleanup into
+  `greenfield_text.normalize_proof_boundary_language`. Confirmed Atlas diagram
+  text still owns brief proof summaries, semantic checkpoint selection, clause
+  splitting, label length limits, and Mermaid-safe rendering, while shared
+  greenfield text owns the repeated proof-boundary prefix rewrites. The touched
+  diagram text owner no longer keeps local proof-lead regex forks. Touched files
+  remain below limits (`greenfield_confirmed_diagram_text.py`: 517 lines;
+  `greenfield_text.py`: 248 lines;
+  `test_greenfield_preconfirm_slop_regressions.py`: 767 lines). Proof:
+  syntax proof passed for the touched modules and test; focused proof-boundary
+  and Atlas surface proof passed (`2 passed in 0.17s`); wider greenfield
+  artifact proof passed (`186 passed in 203.82s`); and confirmed-create
+  performance proof passed (`1 passed in 9.57s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 artifact-cleaning follow-through moved reusable backtick removal,
+  punctuation-spacing cleanup, whitespace collapse, and optional parenthesis
+  splitting into `greenfield_text.clean_artifact_text`. Registry component
+  contracts, contract differentiation, contract fields, component profiles,
+  contract quality gates, semantic context, semantic contracts, component
+  terms, the shared domain term index, and semantic quality still own their
+  contract selection, token policy, phrase policy, and validation thresholds,
+  while shared greenfield text owns the repeated generated-artifact cleaning
+  mechanics. The touched callers no longer keep local backtick-removal plus
+  punctuation-spacing regex bodies. Touched files remain below limits
+  (`greenfield_component_terms.py`: 775 lines;
+  `greenfield_component_contract_differentiation.py`: 699 lines;
+  `greenfield_component_semantic_contract.py`: 619 lines;
+  `greenfield_component_contract.py`: 574 lines;
+  `greenfield_component_contract_quality.py`: 535 lines;
+  `greenfield_semantic_quality.py`: 473 lines;
+  `greenfield_component_contract_fields.py`: 412 lines;
+  `greenfield_component_contract_profiles.py`: 367 lines;
+  `greenfield_component_semantic_context.py`: 280 lines;
+  `greenfield_text.py`: 256 lines;
+  `greenfield_domain_term_index.py`: 210 lines). Proof: syntax proof passed
+  for the touched modules and test; focused artifact-cleaning proof passed
+  (`4 passed in 0.14s`); full component-spec quality proof passed (`13 passed
+  in 0.10s`); wider greenfield artifact proof passed (`187 passed in
+  193.63s`); and confirmed-create performance proof passed (`1 passed in
+  9.32s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 confirmed Markdown-cleanup follow-through moved reusable emphasis
+  token stripping, backtick removal, punctuation-spacing cleanup, and whitespace
+  collapse into `greenfield_text.clean_markdown_text`. Confirmed text still
+  owns confirmed-list coercion, semantic terms, word-count APIs, title/focus
+  labels, and generated sentence shaping; the confirmed-intent parser still
+  owns section parsing and title detection; actor labels still own
+  project-specific role normalization. The touched callers no longer keep local
+  `**`, `__`, or backtick-stripping bodies. Touched files remain below limits
+  (`greenfield_confirmed_intent.py`: 662 lines;
+  `greenfield_confirmed_text.py`: 423 lines; `greenfield_actor_labels.py`: 361
+  lines; `greenfield_text.py`: 262 lines;
+  `test_greenfield_confirmed_text.py`: 194 lines). Proof: syntax proof passed
+  for the touched modules and test; focused Markdown-cleanup proof passed
+  (`3 passed in 0.14s`); broader confirmed text/intent proof passed (`47
+  passed in 38.12s`); wider greenfield artifact proof passed (`188 passed in
+  193.25s`); and confirmed-create performance proof passed (`1 passed in
+  9.39s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 inline Markdown-cleanup follow-through extended the shared
+  `greenfield_text.clean_markdown_text` owner to confirmed component labels,
+  first-path text cleanup, sequence-step sentence shaping, confirmed Atlas
+  sentence text, semantic-model cleanup, and Registry component term windows.
+  The shared owner now uses the common inline-emphasis stripper plus one
+  punctuation-spacing helper, while callers keep their domain policies for
+  component naming, first-path parsing, sentence casing, semantic model
+  assembly, and term-window scoring. The touched callers no longer keep local
+  inline emphasis, backtick, or punctuation-spacing cleanup forks. Touched files
+  remain below limits (`greenfield_first_path_clauses.py`: 756 lines;
+  `greenfield_confirmed_components.py`: 577 lines;
+  `greenfield_confirmed_diagram_text.py`: 516 lines;
+  `greenfield_semantic_model.py`: 495 lines; `greenfield_text.py`: 265 lines;
+  `greenfield_sequence_steps.py`: 198 lines;
+  `greenfield_component_term_windows.py`: 91 lines;
+  `test_greenfield_confirmed_text.py`: 241 lines). Proof: syntax proof passed
+  for the touched modules and test; focused shared-cleanup proof passed (`10
+  passed in 0.27s`); relevant greenfield caller proof passed (`35 passed in
+  4.27s`); wider greenfield artifact proof passed (`189 passed in 208.74s`);
+  and confirmed-create performance proof passed (`1 passed in 11.13s`),
+  recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 Markdown sentence cleanup follow-through moved reusable
+  Markdown-cleaned sentence casing and trailing-period mechanics into
+  `greenfield_text.clean_markdown_sentence`. Confirmed Atlas diagram text still
+  owns component description selection and diagram label policy, and sequence
+  steps still own first-path step derivation and dedupe; shared greenfield text
+  now owns the repeated `clean_markdown_text` plus sentence-casing body. The
+  touched callers no longer keep local `text[:1].upper() + text[1:]` and
+  `return f"{text}." if text else ""` forks. Touched files remain below limits
+  (`greenfield_confirmed_diagram_text.py`: 513 lines;
+  `greenfield_sequence_steps.py`: 195 lines; `greenfield_text.py`: 272 lines;
+  `test_greenfield_confirmed_text.py`: 264 lines). Proof: syntax proof passed
+  for the touched modules and test; focused sentence-cleanup proof passed (`5
+  passed in 0.09s`); relevant caller proof passed (`22 passed in 3.91s`);
+  wider greenfield artifact proof passed (`190 passed in 204.17s`); and
+  confirmed-create performance proof passed (`1 passed in 10.32s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 artifact sentence cleanup follow-through moved reusable
+  artifact-text sentence casing and trailing-period mechanics into
+  `greenfield_text.clean_artifact_sentence`. Component contracts still own
+  contract assembly, state terms, interfaces, and proof wording; component
+  contract quality still owns public-prose policy and generic actor-label
+  localization. Shared greenfield text now owns the repeated
+  `clean_artifact_text` plus sentence-casing body. The touched callers no
+  longer keep local `return text[:1].upper() + text[1:] + "."` forks. Touched
+  files remain below limits (`greenfield_component_contract.py`: 572 lines;
+  `greenfield_component_contract_quality.py`: 536 lines;
+  `greenfield_text.py`: 279 lines;
+  `test_greenfield_component_spec_quality.py`: 699 lines). Proof: syntax proof
+  passed for the touched modules and test; focused artifact-sentence proof
+  passed (`3 passed in 0.12s`); full component-spec quality proof passed (`14
+  passed in 0.12s`); wider greenfield artifact proof passed (`191 passed in
+  224.52s`); and confirmed-create performance proof passed (`1 passed in
+  13.98s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 cleaned-text dedupe follow-through routed first-path and
+  semantic-quality duplicate suppression through `greenfield_text.unique_text`.
+  First-path clauses still own first-path cleanup, first-path semantics still
+  owns step parsing, and semantic quality still owns generated-artifact
+  validation policy; shared greenfield text now owns the repeated cleaned-text
+  casefold dedupe body. The touched callers no longer keep local `seen` plus
+  `text.casefold()` loops. Touched files remain below limits
+  (`greenfield_first_path_clauses.py`: 749 lines;
+  `greenfield_first_path_semantics.py`: 357 lines;
+  `greenfield_semantic_quality.py`: 466 lines; `greenfield_text.py`: 279
+  lines; `test_greenfield_preconfirm_slop_regressions.py`: 803 lines).
+  Proof: syntax proof passed for the touched modules and test; focused
+  cleaned-text proof passed (`4 passed in 0.32s`); wider greenfield artifact
+  proof passed (`192 passed in 234.56s`); and confirmed-create performance
+  proof passed (`1 passed in 11.92s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 exact string dedupe follow-through routed component-axis terms,
+  contract differentiation terms, component contract quality issue rows, and
+  Atlas catalog apply-write watch rows through
+  `runtime.common.value_coercion.dedupe_strings`. Component axes still own
+  semantic-axis derivation, contract differentiation still owns lowercase term
+  policy, component contract quality still owns issue cleanup, and apply-write
+  still owns catalog update semantics; common value coercion now owns the
+  repeated trim, empty-filter, and exact-order dedupe body. The touched callers
+  no longer keep local `seen` plus `seen.add(...)` loops for exact string
+  rows. Touched files remain below limits (`greenfield_component_axes.py`: 137
+  lines; `greenfield_component_contract_differentiation.py`: 693 lines;
+  `greenfield_component_contract_quality.py`: 530 lines;
+  `greenfield_apply_write.py`: 465 lines; `value_coercion.py`: 108 lines;
+  `test_greenfield_component_spec_quality.py`: 740 lines). Proof: syntax proof
+  passed for the touched modules and test; focused exact-dedupe proof passed
+  (`16 passed in 6.80s`); wider greenfield artifact proof passed (`193 passed
+  in 215.97s`); and confirmed-create performance proof passed (`1 passed in
+  11.41s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 validation and memory issue-dedupe follow-through routed proposal
+  issue reports, quality-gate issue rows, traceability ID joins, and accepted
+  project memory preview rows through
+  `runtime.common.value_coercion.dedupe_strings`. Proposal validation still owns
+  operator-facing failure copy, quality gate still owns generated artifact
+  policy, traceability still owns ID normalization, and proposal memory still
+  owns accepted-project Markdown cleanup; common value coercion now owns the
+  repeated trim, empty-filter, limit, and exact-order dedupe body. The touched
+  callers no longer keep local `seen` plus `seen.add(...)` loops for exact
+  issue/string rows. Touched files remain below limits (`proposal_validation.py`:
+  364 lines; `greenfield_quality_gate.py`: 653 lines;
+  `greenfield_traceability.py`: 654 lines; `proposal_memory.py`: 258 lines;
+  `value_coercion.py`: 108 lines;
+  `test_greenfield_proposal_validation_text.py`: 88 lines). Proof: syntax
+  proof passed for the touched modules and test; focused validation and
+  traceability proof passed (`66 passed in 29.68s`); wider greenfield artifact
+  proof passed (`194 passed in 211.12s`); and confirmed-create performance proof
+  passed (`1 passed in 11.00s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 keyed dedupe follow-through moved sequence-step display dedupe,
+  artifact enrichment bullet dedupe, and component repair-target row dedupe
+  through `runtime.common.value_coercion.dedupe_by_key`. Sequence steps still
+  own canonical step keys, artifact enrichment still owns artifact-native
+  bullet keys, and component repair targets still own row-identity keys; common
+  value coercion now owns the repeated key-set/order-preserving body. The
+  touched callers no longer keep local `seen` plus `seen.add(...)` keyed loops.
+  Touched files remain below limits (`value_coercion.py`: 125 lines;
+  `greenfield_sequence_steps.py`: 194 lines; `artifact_enrichment.py`: 222
+  lines; `greenfield_component_contract_targets.py`: 84 lines;
+  `test_value_coercion.py`: 65 lines; `test_greenfield_confirmed_diagrams.py`:
+  222 lines; `test_greenfield_component_spec_quality.py`: 751 lines;
+  `test_greenfield_proposals.py`: 1397 lines). Proof: syntax proof passed for
+  the touched modules and tests; focused keyed-dedupe proof passed (`5 passed in
+  0.33s`); relevant caller proof passed (`75 passed in 15.15s`); wider
+  greenfield artifact proof passed (`194 passed in 206.29s`); and
+  confirmed-create performance proof passed (`1 passed in 14.35s`), recording a stricter historical standard-path timing snapshot.
+- 2026-06-04 semantic-model dead-code follow-through removed unused
+  human-actor term extraction from `greenfield_semantic_model.py`.
+  `_proof_checkpoint` no longer accepts an `actor_terms` parameter that it did
+  not read, and the semantic model no longer runs a local `_actor_terms`
+  `seen`/`seen.add(...)` dedupe loop on every confirmed-create semantic model
+  build. Domain term extraction remains owned by
+  `greenfield_domain_term_index.ordered_terms`, and generated proof checkpoint
+  text still renders from the accepted visible-result or proof-boundary text.
+  Touched files remain below limits (`greenfield_semantic_model.py`: 474 lines;
+  `test_greenfield_intelligence_schema.py`: 131 lines). Proof: syntax proof
+  passed for the touched module and test; focused semantic-model regression
+  passed (`1 passed in 0.15s`); owning schema proof passed (`3 passed in
+  0.12s`); wider greenfield artifact proof passed (`194 passed in 200.15s`);
+  and confirmed-create performance proof passed (`1 passed in 11.01s`),
+  recording a stricter historical standard-path timing snapshot.
+- 2026-06-29 adversarial installed variance reopened the post-confirm release
+  gate after the `a4ede761` installed matrix pass. A fresh twelve-case
+  installed matrix produced eleven hard 10/10 passes and one no-write failure
+  in 30.707s where a valid comma-separated proof-action list was rejected as a
+  gerundized actor-role splice. The source fix keeps the gate fail-closed while
+  moving detection closer to semantic custody: `greenfield_generated_prose_shape.py`
+  now scans clause-local windows and requires the normalized prefix to end in a
+  shared actor-role head from `greenfield_actor_roles.py`, preserving the true
+  `intaking coordinator records...` rejection without domain vocabulary or
+  whole-text prompt scanning. The same pass replaced mechanical state-boundary
+  titles of the form `... changes it` with compact review/action-focus titles
+  and changed SemanticModelIR persistence copy to avoid pronoun tails. Focused
+  proof passed 18 prose-shape/backlog/semantic tests and 10 affected semantic
+  and Project-prompt tests. Exact source-local replay of the failed prompt wrote
+  4 Radar workstreams, 3 Registry specs, 6 Atlas diagrams, zero manifest issues,
+  and no `changes it` readback in 19.192s. The next release proof must rebuild
+  the installable dist and rerun the fresh adversarial installed matrix with
+  browser proof and temp cleanup before any release-readiness claim.
+- 2026-06-29 proof review found and fixed a related sequence-projection quality
+  miss before commit. An existing request-handoff create fixture failed the
+  Project Brief public-copy gate because `sequence_event_steps` expanded a
+  valid accepted first path into orphan fragments: `Required request context`
+  and `Or more-info request`, producing `handles an accept, decline. Or
+  more-info request.` in `project_brief.blueprint_sections.1.must_capture`.
+  The fix stays generic: connector-led and short non-finite object tails remain
+  attached to the previous action in the sequence-step owner, while true
+  finite actor/action clauses still split. The live replay then exposed the
+  next custody layer: those sequence-step variants must be typed canonical
+  first-path projection facts, or the package repetition gate correctly rejects
+  them as repeated noncanonical prose across surfaces. Canonical projection
+  facts now include sequence-step variants, focused repetition/sequence proof
+  passed, and the request-handoff source-local CLI replay wrote 4 Radar
+  records, 3 Registry specs, 6 Atlas diagrams, zero issues, and no `. Or`
+  fragment in 19.609s with temp cleanup. No-refresh unit fixtures now
+  explicitly bypass rendered-custody enforcement when they also bypass surface
+  refresh; live source-local create remains the real rendered-custody proof.
+- 2026-06-29 fresh custom installed variance reopened B-142 after a prior
+  maintained-matrix pass. The `72c100d1` local dist passed eight of ten
+  non-reused custom projects, but failed AI-eval red-team finding board before
+  governed writes with gerundized actor-role false positives on valid
+  title-compound user roles, and failed airport runway closure readiness before
+  governed writes with adjacent duplicate Project prompt copy from a
+  preposition-led actor label. The source fix stays general-purpose: actor
+  path-role cleanup is now a separate owner, actor completion trims
+  preposition/action-led role fragments and strips longer title-suffix subjects,
+  generated prose-shape accepts title-compound user roles while preserving the
+  direct actor-role splice rejection, and non-goal derivation moved out of the
+  confirmed-intent parent. Focused regressions passed, the affected greenfield
+  pack passed 136 tests, and exact source-local replays wrote complete governed
+  records for both failures. Rebuilt dist `21ed5b0a` then passed the maintained
+  installed matrix (13/13 cases, hard 10/10 scores, zero issues, browser proof,
+  complete governed readback, 22.975-28.762s create timings, temp cleanup) and
+  a custom closure matrix covering the AI-eval, runway, museum accession, and
+  battery materials prompts (4/4 cases, hard 10/10 scores, zero issues, browser
+  proof, 25.191-27.711s create timings, temp cleanup). Synthetic typed-probe
+  rescue wiring passed in 34.408s; natural host-model semantic rescue quality
+  remains a separate proof class.
+- 2026-06-29 fresh recursive variance reopened B-142 again after the 31cc84ef
+  governance checkpoint. The same rebuilt dist `21ed5b0a` passed nine of ten
+  new installed domains with hard 10/10 scores, browser proof, complete
+  governed counts, zero issues, and 23.221-25.678s create timings, but
+  `indigenous language curriculum evidence circle` failed before governed
+  writes in 21.296s. The blocker was generic Atlas sequence custody: the
+  semantic model preserved all three accepted first-path events, but the First
+  Path Sequence terminal flowchart node compressed `Coordinators record learner
+  progress evidence` to `Progress evidence`, dropping the distinctive accepted
+  tail terms and tripping the tail-preservation gate. A parallel validator
+  review found remaining false-confidence risk in the 10/10 scorer: several
+  dimensions still prove thresholds/self-consistency more than independent
+  semantic correctness. Next work must fix terminal sequence-label custody and
+  strengthen validation with negative/mutation/adversarial proof rather than
+  adding domain vocabulary, prose patching, or weaker gates.
+  Source-local repair now caps terminal flowchart label compaction when the
+  rendered node loses distinctive accepted-event tail terms, using the
+  first-path action clause as the fallback label. The exact failed prompt
+  replay returned 0 in about 20s, wrote 4 Radar workstreams, 3 Registry specs,
+  6 Atlas sources, and rendered the terminal node as `Record learner progress
+  evidence`; the temp repo was deleted. Installed release proof remains pending
+  on a rebuilt dist.
+- 2026-06-29 rebuilt installed proof on dist `597e5ca7` closed the terminal
+  sequence-label custody failure pending release. The exact failed
+  indigenous-language replay passed with hard 10/10 score, zero issues, complete
+  governed records, browser surface proof, and 24.223s create timing. The
+  maintained 13-case installed matrix passed 13/13 with hard 10/10 scores, zero
+  issues, browser proof, complete governed records, 21.790-26.657s create
+  timings, and synthetic typed-probe rescue smoke at 32.401s. A fresh 10-domain
+  variance matrix then passed 10/10 with hard 10/10 scores, zero issues, browser
+  proof, complete governed records, and 23.264-25.210s create timings, including
+  the previously failing indigenous-language case at 23.714s. Temp cleanup was
+  verified clean after the installed runs. Natural host-model semantic rescue
+  quality remains a separate unproven class; do not collapse that risk into the
+  synthetic rescue smoke result.
+- 2026-06-29 scorer-hardening follow-up addressed one concrete
+  false-confidence gap from the independent review. The installed release
+  scorer no longer lets a package pass domain-expert readback by carrying source
+  terms somewhere in the overall rendered package; Radar, Registry, Atlas, and
+  Project prompt surfaces each need local semantic grounding. A regression now
+  rejects a package whose Registry specs are generic proof boilerplate even
+  when Radar, Atlas, and Project prompts carry the accepted source terms.
+  Focused matrix-scorer tests passed 36/36, and a two-case installed smoke
+  under the stricter local scorer passed the previously failing indigenous
+  prompt and the retained quantum prompt at hard 10/10 with zero issues. This
+  improves eval brutality without adding domain allowlists or generator regex
+  rules, but full installed matrix proof must be rerun under the stricter scorer
+  before release closure.
+- 2026-06-29 focused reviewer regression found a red source test after scorer
+  hardening: workstream title action selection could drop an accepted
+  preservation constraint such as `while keeping legal signoff separate from
+  evidence collection` when first-path fragmentation split it away from the
+  first action. The source fix keeps the repair in semantic title-action
+  ownership, preserving a compact `with ... separate` constraint through title
+  projection without adding domain vocabulary, post-render title repair, or a
+  new regex parser. Focused proof passed the quality-repair and backlog-title
+  tests together (44/44). Rebuilt installed matrix proof remains pending for
+  this source delta.
+- 2026-06-29 rebuilt installed proof on dist `a46ef6cc` closed the
+  workstream-title preservation checkpoint. The maintained matrix passed 13/13
+  standard cases with hard 10/10 scores, zero quality issues, generated browser
+  proof for every case, complete governed readback, and 21.980-26.653s standard
+  create timings; synthetic typed-probe rescue wiring passed in 32.990s. A
+  fresh ten-domain non-reused variance matrix then passed with hard 10/10
+  scores, zero issues, browser proof for every case, complete governed
+  readback, 24.258-26.624s timings, and clean temp cleanup. Natural host-model
+  semantic rescue quality remains unclaimed.
+- 2026-06-29 leakage-proof custody now follows selected simulation cases, not
+  only the maintained default matrix vocabulary. Programmatic fresh-variance
+  calls to `run_matrix(...)` require every selected case to contribute
+  distinctive leakage terms, prefer explicit `GreenfieldMatrixCase.leakage_terms`
+  over scoring anchors, filter standalone platform-native words, scan protected
+  source plus local-release dist custody before creating temp repos, and fail
+  closed on leakage. Focused install tests passed 50/50, release matrix
+  bootstrap checks passed, and the current maintained corpus scans 44 explicit
+  terms with zero missing cases and zero source/dist findings.
+- 2026-06-29 post-confirm repair custody no longer permits whole rendered
+  preview tree mutation. Safe mechanical cleanup requires exact
+  artifact-draft leaf paths from source-owned package findings; Compass memory
+  preview leaves are covered, broad `prewrite_package.<surface>.<category>`
+  generated-copy findings are suppressed when exact package findings exist, and
+  remaining broad completion findings route to projection repair rather than
+  `artifact_draft_cleaner`. Focused proof passed 41 artifact-plan and
+  quality-repair tests, and the widened post-confirm engine/projection set
+  passed 76 tests in 50.17s with independent reviewer confirmation.
+- 2026-06-29 platform domain-leakage custody was broadened after a follow-up
+  audit found no actual project-domain leak but did find the standalone guard
+  too narrow for release claims. The guard now scans root `.codex`, public
+  `docs/`, historical escaped-domain sentinels, and Odylith runtime tarball
+  payloads while keeping selected matrix preflight selected-case-only. Focused
+  proof passed 52 install tests, and source plus dist
+  `odylith-local-release-0.1.15-cd6cf643` passed the strengthened 49-term
+  leakage check with zero protected-custody findings. Fresh local release dist
+  `odylith-local-release-0.1.15-14f5102a` then rebuilt from the committed
+  checkpoint and passed the same 49-term platform domain-leakage build gate.
+- 2026-07-01 CB-214 reopened the source-local proof loop after a scientific
+  model request failed post-confirm before governed writes because Atlas labels
+  rendered adjacent repeated result copy. The fix keeps the final quality gate
+  intact and moves custody into typed/generic owners: Product Intent guidance
+  and source recovery now preserve scientific evaluation depth, optional
+  EvaluationSemanticsIR projects evidence/method/baseline/uncertainty/
+  reproducibility obligations into governed artifacts, saved-as result objects
+  collapse generic result/output/outcome/artifact terms to the saved target,
+  and Mermaid header/body label composition prevents fixed result wrappers from
+  repeating body-leading words. Source-local replay of the saved failed intent
+  completed create in 25s with governed writes, and a second thin scientific
+  prompt replay completed in 24s with no adjacent result/evidence duplicates.
+  Fresh committed-head local release dist `odylith-local-release-0.1.15-9bea5784`
+  passed source-plus-dist leakage proof; installed saved-intent replay
+  completed create in 32s, and installed thin scientific propose-to-create
+  completed in 28s. Full installed matrix proof remains required before release
+  closure.
+- 2026-07-01 follow-up source proof repaired a second grn-sim Atlas projection
+  defect without weakening gates. First-path Mermaid step labels now convert
+  finite coordinated actions through the shared prose grammar owner instead of
+  a local Atlas action table, and typed Mermaid-label quality checks reject
+  mixed finite/base labels such as `Uploads or select`. A subagent QA pass found
+  that token-only conversion would corrupt noun coordinations such as
+  `methods and controls`, so the shared owner now distinguishes action clauses
+  from plural object lists before converting or rejecting label copy. A later
+  source pressure test found one more leading-action ambiguity, so labels such
+  as `checks and controls for drift` now stay action coordination while plural
+  object lists remain intact. The saved grn-sim confirmed intent replay
+  completed governed create in about 24.00s with 4 backlog
+  records, 5 Registry components, 6 Atlas diagrams, final manifest passed,
+  Registry validation passed, Atlas render passed, and zero repeated-copy or
+  known clipped-copy hits across generated artifacts. Fresh working-tree
+  local-release proof from
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-working-label-qa2`
+  then passed the maintained installed matrix with 14/14 varied standard cases
+  at hard 10/10 in 23.594-28.426 seconds, all generated browser-surface checks
+  passing, synthetic rescue passing in 34.934 seconds, natural structured
+  rescue passing in 66.245 seconds, platform domain-leakage proof passing across
+  213 generated readback terms, and no remaining temp roots. Final
+  committed-head installed release proof remains pending.
+- 2026-07-03 first-path requirement-control and structured Atlas coverage
+  repair advanced the generic Greenfield compiler. The high-variance failed
+  subset showed that a modal requirement sentence can be valid product
+  instruction but invalid path-event material. Domain Intelligence now keeps
+  those control clauses out of `FirstPathContract.events` when real path
+  actions remain, lets terminal review-result steps own the visible result,
+  splits temporal review tails from rich material heads, normalizes
+  subjectless coordinated action labels before Atlas render, and validates
+  Atlas FirstPathContract coverage against structured projection facts. Exact
+  source-local quantum repeater and fusion plasma replays completed governed
+  creates in 27.086s and 35.305s with Radar, Registry, and Atlas records
+  written; this remains source proof, not final installed release readiness.
+- 2026-07-03 installed failed-subset proof and campaign temp-isolation fix:
+  the fresh working-tree dist
+  `odylith-local-release-0.1.15-working-requirement-control-20260703`
+  completed the exact quantum repeater and fusion plasma failed subset in
+  installed mode under the standard budget with zero issues and hard 10/10
+  scored quality. The next 60-case campaign exposed a harness failure rather
+  than an artifact failure: one all-passed shard returned failed because child
+  cleanup proof was scoped to a shared `TEMP_PARENT` while a sibling shard was
+  still active. The release harness now gives each shard an isolated temp
+  parent, precleans stale shard scope, records the temp scope in progress, and
+  removes the shard temp parent after completion or interruption. Remaining
+  work: rerun the 60-case campaign with the isolated harness, then continue
+  unseen controlled-concurrency shards before any release-readiness claim.
+- 2026-07-03 tiered replay plus sentinel-distinctiveness checkpoint: the
+  working-tiered-replay dist proved the exact actor-led product-view failure in
+  installed mode, then the tiered 60-case discovery lane surfaced a harness
+  vocabulary false positive before project execution. The fix keeps leakage
+  proof strict by rejecting short declared sentinels made only from
+  platform-native/common governance terms while preserving project-specific
+  phrases. Focused leakage proof passed, shard 010 reran 6/6 clean, shard 009
+  reran 6/6 clean, and combined aggregate-plus-rerun evidence now covers 60
+  unique high-variance cases with zero failed result records and no remaining
+  generated project temp roots under `/Users/freedom/mock`. This remains
+  discovery evidence because browser and natural rescue proof were deliberately
+  skipped. Fresh rebuild
+  `odylith-local-release-0.1.15-working-tiered-replay2-20260703` then passed
+  checksum, installer syntax, archive readability, build-time platform leakage,
+  and a 7-case selected installed package proof covering the exact actor-led
+  replay plus the leakage-sentinel tranche. The selected proof had 7/7 governed
+  writes, hard 10/10 scored quality, zero issues, all expert lenses green, max
+  create time 37.229s, generated-readback leakage proof passing, and temp
+  cleanup passing. The full available 72-case high-variance volume-discovery
+  tier then passed on the same fresh package with two-shard concurrency and
+  stop thresholds active: 72/72 governed writes, zero issues, zero failure
+  clusters, hard 10/10 scored quality for every case, max create 39.321s,
+  average 33.575s, p95 38.143s, and no temp simulation roots. The corpus
+  covered every tracked stressor class. Next work: run strict
+  browser/natural-rescue release proof, then expand to larger 120/240 unseen
+  corpora only after release proof is green.
+
+- 2026-07-03 strict release-proof natural-rescue blocker: release readiness is
+  still blocked even after 72/72 discovery creates passed. Strict release proof
+  passed standard cases, browser proof, leakage proof, temp cleanup, and
+  synthetic rescue, but failed the natural provider-backed rescue leg because
+  the Tribunal structured patch planner timed out after 45 seconds before
+  returning a schema-bound operation for `structured_rescue_semantic_patch`.
+  The next slice must make structured host repair low-latency and reliable
+  inside the 90-second rescue tier while preserving fail-closed write custody.
+
+- 2026-08-02 Phase 2 checkpoint moved Greenfield back to the narrow onboarding
+  contract. Canonical meaning now owns distinct problem, first-path, boundary,
+  capability, proof, visible-result, and component-contract slots before
+  projection; public gates reject repeated slot copy, sentence fragments,
+  presentation wrappers, and internal patch-ledger prose. EDIT keeps later
+  bullet evidence after unchanged-field declarations, actor/product ownership
+  preserves coordinated human action chains, and source casing remains visible
+  without changing structural IDs. Greenfield program and execution-wave
+  creation was removed from compilation, commit, result, and first-release
+  targeting. The rollback guard now validates a durable complete snapshot
+  manifest before restore and validates restored readback, so missing snapshot
+  bytes cannot be reported as rollback success. Affected proposal, CLI,
+  anti-slop, Project, component, browser, transaction, recovery, provenance,
+  and high-variance suites are green. B-142 remains open for frozen-corpus,
+  cross-host, clean-install, full browser-state, and final release proof.
+- 2026-08-02 source-hardening checkpoint closed the remaining canonical-meaning
+  defects found by exact CLI replay. Context-only titles now derive a specific
+  product identity from the accepted state object, chained actions select the
+  durable object instead of retaining a verb, internal-system projection keeps
+  every distinct source responsibility, and sparse record components gain only
+  the state terms needed for component-local Registry proof. Recovery evidence
+  now records generation, active-pointer, journal, publication, and abort state
+  around governed SIGKILL and fsync faults. Adversarial review then closed stale
+  per-row action custody, fake imperative records, shared-subject fragment loss,
+  manifest-only generation observation, and route-only navigation proof. The
+  touched-surface suite passed `460` tests. Exact pediatric, quantum, security,
+  semiconductor, and thin permit source-local proposals all reached a passed
+  hash-bound transaction with visible CONFIRM, EDIT, and REJECT choices; installed,
+  cross-host, browser-state, and one-shot frozen-holdout proof remain open.
+
+- 2026-08-06 independent one-shot release holdout failed against exact dist from
+  `aa51e5cf92da4daa79fd3aa40944d49a0211eb75`. Only `4/24` package cases passed;
+  semantic release scored `0/24`, accepted-fact custody `0/136`, critical
+  constraint recall `2/21`, explicit-system recall `2/7`, material-question
+  recall `0/3`, and first-path comprehension `22/108`. The result does not show
+  a governed post-confirm failure: three material-authority cases staged
+  pre-confirm runtime records instead of clarifying, one transaction was safely
+  rejected before publish on an after-image fingerprint mismatch, and recovery
+  proof stopped in pre-confirm duplicate-copy validation. Shared grammar,
+  clipping, duplicate, Radar, Atlas, and term-custody failures blocked the rest.
+  The corpus is disclosed and retired to regression. B-142 remains open for an
+  atom-level evidence-custody ledger, authority-aware write-free clarification,
+  shared copy-composition repair, exact failed-corpus replay, rebuilt dist, and
+  a newly authored blind holdout. Do not tune production behavior to the retired
+  domains or weaken the release floors.
+
+- 2026-08-06 atomic-custody checkpoint implemented the first bounded repair for
+  CB-323. The Product Intent authority now seals atom-level actors, actions,
+  states, outputs, constraints, dependencies, assumptions, ambiguities, and
+  non-goals with polarity, exact source references, canonical projection links,
+  and an aggregate hash. Runtime validation recomputes atom identity,
+  projection values, source hashes, polarity, and ordered entailment. The
+  release scorer independently reconstructs evidence units and rejects forged
+  custody; the matrix receipt independently recomputes the transaction body
+  hash; and verified v3 envelopes migrate only before confirmation. The scorer
+  also excludes Research Notes and source-metadata clauses from independent
+  accepted-fact proof. Focused source proof passes 111 tests with the
+  pre-existing clarification-expectation family explicitly excluded. This is
+  not semantic-quality closure: retired
+  corpus diagnosis still finds prompt-to-canonical-intent loss in 13 of 14
+  commit cases, so the next bounded slice must repair domain-neutral action,
+  constraint, dependency, actor, and state extraction before replay, dist, and
+  fresh holdout proof.
+
+- 2026-08-06 canonical-custody replay checkpoint closed the disclosed corpus
+  extraction loss without domain-specific production dictionaries. Prompt
+  materialization now preserves complete ordered workflow evidence, explicit
+  actors, transition state objects, visible outputs, named dependencies, and
+  prohibitions while keeping research and host instructions evidence-only.
+  Canonical paths retain source facts alongside bounded projections; component
+  naming derives from the leading owned action so later noun phrases cannot be
+  reinterpreted as verbs or generic actors. Edited First Complete Path sections
+  can establish their own human actor without requiring a redundant actor
+  section, and coordinated paths no longer repeat the same actor sentence by
+  sentence. The 21-case commit corpus preserves and seals every annotated fact
+  in a 44-test matrix; the full recovery, materiality, and requirement-boundary
+  family passes 120 tests with no exclusions; atomic-ledger and envelope proof
+  passes 40 tests. This is a stable source checkpoint, not release closure.
+  Browser-state proof, rebuilt exact dist, installed replay, recovery laws, and
+  a fresh untouched holdout remain mandatory.
+
+- 2026-09-02 compact direct-evidence graph checkpoint replaces the failed v3
+  installed mechanism with one model-authored fact/event/terminal/component
+  graph and deterministic exact custody. The bounded public comparison passes
+  standard, rescue, and deep authoring in `37.463s`, `44.556s`, and `87.369s`;
+  the reduced v15 production contract passes a fresh standard call in
+  `29.524s`, complete Greenfield runtime/install proof at `594/594` and
+  `432/432`, and the normal/compact/blank/degraded Project browser matrix at
+  `4/4`. The obsolete 828-line relation compiler and redundant model-authored
+  event/proof links are removed without adding semantic regexes or retries.
+  B-142 remains in implementation until the rebuilt immutable package passes
+  the exact installed `60/90/120` transaction, recovery, browser/readback, and
+  quality matrix, followed by independent public adjudication and the
+  explicitly approved untouched holdout.
+
+- 2026-09-02 immutable-matrix correction: revision `c2208bb7e` built cleanly
+  but failed the exact installed public matrix `0/3` before confirmation because
+  two responses omitted source-present transaction-material facts and one
+  response supplied an impossible exact-quote ordinal. Intent-authoring v16 now
+  requires all five material fact classes, constrains component owners to
+  selected product-system or title facts, and leaves impossible ordinal
+  normalization to deterministic exact-byte custody. It adds no semantic regex,
+  retry, or tier cascade. Corrected standard, rescue, and deep source
+  discriminators pass in `36.362s`, `30.353s`, and `60.315s`, and widened proof
+  passes `153/153`. The mechanism remains provisional until a rebuilt immutable
+  package passes the complete installed public gate.
+
+- 2026-09-02 installed workstream-visibility correction: revision
+  `9bcdce790` completed the exact standard, rescue, and deep model calls within
+  budget in `36.589s`, `31.545s`, and `72.587s`, but failed closed `0/3` before
+  transaction staging because the project row could not cite the first-path
+  fact exclusively owned by the workflow row. Authored-workstream-semantics v4
+  preserves one semantic owner and gives the integrative project explicit
+  shared citations;
+  absent optional presentation facts fall back only to exact selected
+  product-story, first-actor, state/path, and proof facts. It adds no regex,
+  prose parser, model call, retry, or repair cascade. All three recorded public
+  responses now compile completion-ready and the authored/model suite passes
+  `122/122`. B-142 remains in implementation until a rebuilt immutable package
+  passes the complete installed public gate.
+
+- 2026-09-02 v8 event-restatement correction: immutable revision `ced54a967`
+  passed two public cases at full package quality and within budget, but the
+  rescue case failed closed after its one model call restated an event that did
+  not match the already selected exact path fact. Intent-authoring v17 removes
+  model-authored event text, ordinal, actor kind, and carry state. Ordered exact
+  first-path facts are the event spans; deterministic custody derives those
+  structural fields while the model retains the semantic actor/action/target,
+  recovery, terminal, and ownership decisions. This reduces the contract and
+  code surface without regex, retries, or post-confirm work. Source proof is
+  `81/81` focused, `610/610` complete Greenfield runtime, and `459/459`
+  install/release. B-142 remains in implementation pending the separate
+  recovery-identity correction and a rebuilt exact installed matrix.
+
+- 2026-09-02 recovery-identity source correction: the v8 installed recovery
+  gate rejected a cloned, byte-identical runtime before SIGKILL injection
+  because compiler identity included resolved absolute source paths. The
+  compiler identity v5 contract hashes the fixed logical post-confirm source
+  names and their bytes, so install-root relocation is stable while any covered
+  byte change still invalidates confirmation before writes. Focused provenance
+  and recovery proof passes `49/49`; the complete Greenfield runtime and
+  install suites pass `611/611` and `459/459`. `CB-325` records the escaped
+  proof defect and bans per-phase reauthoring, receipt rewriting, or drift-guard
+  weakening. B-142 remains in implementation until an immutable installed
+  recovery run crosses the former failure phase and the unchanged public
+  `60/90/120` matrix passes.
+
+- 2026-09-02 terminal-result contract alignment gate: exact immutable candidate
+  `1fe4209b3` failed closed during the installed recovery proof's single
+  authoring call, before compiler-identity verification, fault injection, or
+  governed writes. The direct-evidence graph accepts an exact terminal result
+  from any selected source fact, while the later authored-semantics validator
+  independently accepts only first-path, proof-boundary, or success-metric
+  evidence. Align both owners on one explicit set of selected output, path, and
+  proof fields and pin the cross-owner contract. Do not add a retry, semantic
+  regex, prose parser, fallback tier, or second model call. B-142 remains in
+  implementation until the rebuilt installed recovery proof crosses the
+  identity guard and the unchanged public `60/90/120` matrix passes.
+
+- 2026-09-02 terminal-result source correction: intent-authoring v18 and
+  authored-semantics v9 now share one typed set of eligible selected facts:
+  Product Story, Opportunity, Product View, Success Metric, First Path, and
+  Proof Boundary. The model owns the exact terminal meaning and quote;
+  deterministic code verifies only field eligibility and byte custody. The
+  selected-output regression, widened contract pack, complete Greenfield
+  runtime suite, and install suite pass `2/2`, `113/113`, `612/612`, and
+  `459/459`. No semantic regex, prose reparser, retry, extra model call, or
+  post-confirm work was added. B-142 remains in implementation pending rebuilt
+  immutable recovery and the unchanged public `60/90/120` matrix.
+
+- 2026-09-02 exact v10 recovery-provenance reopen: immutable candidate
+  `f26925486` crossed authoring and staging, then the isolated SIGKILL phase
+  failed closed before injection because `repo_root_fingerprint` still hashed
+  the absolute checkout path. No governed write occurred. Runtime identity v5
+  removed one location dependency, but this adjacent provenance field retained
+  it. Replace the path digest with a stable repository-context policy marker;
+  preserve the sealed managed-file fingerprints, active-generation identity,
+  transaction hash, receipt, and runtime-byte guards. Bump compiler identity
+  and prove relocated success plus real repository-state drift rejection. Do
+  not reauthor per phase or weaken fail-closed preconditions. B-142 remains in
+  implementation before the unchanged public `60/90/120` matrix.
+
+- 2026-09-02 recovery repository-context source correction: compiler identity
+  v6 removes the remaining absolute checkout digest and records one stable
+  repository-context policy. Safety remains content-bound through the sealed
+  write-set hash, managed before-fingerprints, active generation, transaction
+  bytes, compiler receipt, and runtime-byte identity. Relocated transaction
+  admission and real drift controls pass in the focused `65/65` proof; the
+  complete Greenfield runtime and install suites pass `614/614` and `459/459`.
+  No receipt rewrite, per-phase reauthoring, or precondition weakening was
+  added. B-142 remains in implementation pending immutable installed recovery
+  and then the unchanged public `60/90/120` matrix.
+
+- 2026-09-03 typed-fact cardinality reopen: immutable dist-v11 crossed the
+  corrected recovery provenance boundary, then the public standard-tier case
+  failed before transaction staging because the one-pass model emitted more
+  than one citation for a scalar intent field. `CB-326` identifies the owning
+  abstraction: one heterogeneous fact array cannot express scalar versus
+  repeated cardinality, so prompt prose and a downstream rejection still share
+  the contract. Replace that array with one closed typed fact object whose
+  scalar keys accept one citation or null and whose repeated keys accept
+  bounded ordered citation arrays. Remove the superseded flat contract; do not
+  add regex semantics, response rewriting, a retry, or another model call.
+  B-142 remains in implementation until the rebuilt installed recovery proof
+  and unchanged public `60/90/120` matrix pass.
+
+- 2026-09-03 typed-fact cardinality source correction: intent-authoring v19
+  makes scalar multiplicity unrepresentable with a closed fact object while
+  keeping bounded arrays for repeated facts. It removes the superseded flat
+  response path and its post-hoc singular-field rejection. Aggregate citation
+  limits, exact byte custody, one-pass model ownership, and fail-closed writes
+  remain intact; no regex, retry, response repair, or case exception was added.
+  Focused authoring/custody proof passes `140/140`, complete Greenfield runtime
+  passes `616/616`, and install/release passes `459/459`. B-142 remains in
+  implementation pending immutable installed recovery and the unchanged public
+  `60/90/120` matrix.
+
+- 2026-09-03 product-owner alias reopen: clean immutable dist-v12 accepted the
+  typed v19 fact object, then the public standard-tier case failed before
+  staging because the selected product title and one internal system shared an
+  exact source label. `CB-327` traces three duplicate identity consumers across
+  event, actor, and component custody. Replace them with one typed product-owner
+  resolver that treats a title plus one exact internal-system label as one
+  identity, preferring the narrower system path, while retaining fail-closed
+  rejection for cross-kind collisions and multiple indistinguishable internal
+  systems. Do not add prompt-only warnings, regexes, retries, or response
+  rewriting. B-142 remains in implementation pending rebuilt recovery and the
+  unchanged public `60/90/120` matrix.
+
+- 2026-09-03 product-owner alias source correction: authored-semantics v10
+  centralizes product identity for the direct graph and sealed validator. A
+  title plus one same-label internal system resolves to the narrower system
+  path; multiple internal paths and product/human collisions still fail closed.
+  Focused, complete runtime, and install/release proof passes `92/92`,
+  `618/618`, and `459/459`. A fresh one-call standard-profile authoring run on
+  the same public case passes with four grounded events in `26.465s`. No regex,
+  retry, response mutation, or extra model call was added. B-142 remains in
+  implementation pending immutable installed recovery and the unchanged public
+  `60/90/120` matrix.
+
+- 2026-09-03 v13 recovery-clone and downstream-owner reopen: immutable dist-v13
+  crossed the corrected product-owner authoring boundary and injected SIGKILL,
+  but recovery stopped because the proof clone had dereferenced the installed
+  `current` runtime symlink into a non-versioned directory. A phase-local,
+  version-bound clone corrects that harness defect and rejects external runtime
+  targets. The next installed call then exposed the same owner alias in Radar:
+  direct and sealed semantics used the canonical internal-system path, while
+  backlog citation independently rematched the component label against both
+  title and system facts. Radar now consumes the shared canonical owner map, and
+  the alias regression builds the complete proposal through all backlog rows.
+  Focused proof passes `35/35`, complete Greenfield runtime passes `618/618`,
+  and install/release passes `460/460`. No semantic regex, retry, response
+  repair, additional model call, or post-confirm interpretation was added.
+  B-142 remains in implementation pending rebuilt immutable recovery and the
+  unchanged public `60/90/120` matrix.
+
+- 2026-09-03 immutable v14 public winning-candidate proof: clean dist-v14 from
+  candidate `62bcdd8147e47874e984483b48fb1fb0a20ca413` passes the unchanged
+  installed standard, rescue, and deep cases in `44.315s`, `44.053s`, and
+  `66.854s`, inside the exact `60/90/120` proposal budgets. Commit-only create
+  completes in `1.712s`, `1.733s`, and `1.752s`; every package scores
+  release-quality `10/10`. Browser proof passes `3/3`, and installed SIGKILL
+  recovery, operator-conflict preservation, fsync rollback and retry,
+  same-hash idempotency, generation readback, and cleanup pass without issues.
+  `CB-325`, `CB-326`, and `CB-327` are fixed pending release. The winning
+  candidate keeps one model-authored direct evidence graph, exact typed custody,
+  one shared product-owner map, deterministic projection, no semantic regex,
+  no retry or tier cascade, no second model call, and no post-confirm
+  interpretation. B-142 remains in implementation because the public matrix is
+  descriptive evidence, not a universal guarantee; approved correction and
+  one-shot execution of the untouched protected revision-6 evaluation package
+  remain the next release gate.
+
+- 2026-09-03 protected evaluation contract rejection: approved access closed
+  the two independent-review P1s inside the revision-6 package, and its
+  standalone eight-case custody validator passes with zero errors. The product
+  release preflight still rejects the package because its intent-authoring v2
+  and custom manifest/corpus schemas do not match intent-authoring v19,
+  evaluation-splits v4, or final-holdout v4. Eight cases also cannot satisfy
+  the frozen minimum of four independent observations for each of three
+  complexity bands and three pinned model profiles. CB-328 owns this release
+  evidence defect. The one-shot ledger remains absent and the winning candidate
+  remains frozen. Replace the package directly with independently authored,
+  current-contract evidence; do not bridge the stale schema, lower floors, or
+  change production behavior. B-142 remains in implementation until pure
+  contract and leakage preflight pass and that replacement holdout completes
+  its single installed run.
+
+## Current-Contract Protected Holdout Adjudication (2026-09-03)
+
+- A blind 21-case final-holdout v4 package passed independent review and pure
+  release preflight, then ran exactly once against immutable dist-v14. The
+  standard, rescue, and deep maxima remained inside `60/90/120`; recovery,
+  unavailable-provider behavior, and cleanup passed. Release quality did not.
+- CB-315 owns the reproduced clarification-before-write breach. CB-323 retains
+  the two direct-evidence graph completeness failures. CB-329 owns the
+  release-only snapshot omission, duplicate evaluator semantics, and missing
+  retained proof. CB-328 is fixed
+  pending release because the stale-package class was replaced by a valid
+  current-contract package.
+- The next bounded wave must move ownership, not add rules: one pure
+  clarification decision before persistence; structurally complete terminal
+  and component relations; a release snapshot that carries every canonical
+  projection;
+  product-parser reuse for Atlas; governed-write-only observation; strict
+  point acceptance separated from achievable confidence reporting; and raw
+  artifact retention through adjudication. The disclosed corpus is regression
+  evidence only. No new blind holdout may start until focused regressions and
+  unchanged public `60/90/120` proof are green.
 
 ## Test Strategy
-- Run focused unit tests for domain intelligence, host routing, component authoring, CLI dispatch, show capabilities, and Compass transaction filtering.
-- Run governance validators for Casebook, backlog, plan binding/traceability as touched, release migration gate, and refreshed Radar/Registry/Atlas/Compass surfaces.
-- Run headless browser smoke over the regenerated dashboards so the new records and the timeline-audit fix are visible without layout regressions.
+- The v21 replacement makes authored and clarification responses structurally
+  exclusive, makes the first event explicitly human-owned, and removes
+  redundant actor/action restatement. Standard `terra/high` and rescue
+  `sol/high` pass the three bounded live probes in `40.259s`, `5.686s`, and
+  `56.592s`; focused, complete runtime, install/release, mirror/Atlas, and
+  semantic-regex proof pass `211`, `633`, `507`, `48`, and `4` tests. Treat
+  this as candidate evidence only. The next decision is the frozen installed
+  14-case public matrix with exact `60/90/120`, raw response retention,
+  recovery/readback, and 28 browser-state cells per accepted package. A public
+  failure rejects the mechanism; a full pass permits one newly blind holdout.
+- The current convergence checkpoint replaces the parser/repair mechanism with
+  one v20 source-cited typed graph and deletes 30 obsolete modules / 4,927
+  lines. An executed public proposal trace reports zero semantic regex callers;
+  the combined source gate passes 1,171 tests, the maintained fast/lifecycle
+  targets pass 445/208, and the full desktop/mobile browser-state contract
+  passes 28/28 with zero clipping or overflow. This evidence freezes the
+  mechanism pending immutable installed proof; do not add another parser,
+  vocabulary, retry, repair tier, second model call, or post-confirm semantics.
+- The 2,518-line generated shell stylesheet has one bounded five-line mobile
+  wrapping exception in this release. After the Greenfield release gate closes,
+  B-142 must extract coherent shell layout ownership below the red-zone limit
+  before unrelated stylesheet growth; this decomposition must preserve the
+  source/generated/bundle parity contract and rerun the 28-cell browser matrix.
+- Historical under-30 timing notes above are standard-path evidence snapshots.
+  The active release contract is standard post-confirm under 60 seconds without
+  host rescue, rescue under 90 seconds with one targeted semantic or plan patch,
+  and 120 seconds only for explicit premium/deep repair or CI simulation.
+- The v20 immutable public candidate is a losing mechanism at `4/14`: deep
+  passed `4/4`, while standard and rescue passed `0/10` inside `60/90` seconds.
+  The next bounded wave replaces the flat authored/clarification response shape
+  and redundant actor-surface obligation, adds externally retained raw
+  adjudication evidence, then reruns the same public gate. The blind holdout
+  remains unspent until that public matrix passes every case.
+- Run focused unit tests for domain intelligence, host routing, component
+  authoring, CLI dispatch, show capabilities, and Compass transaction filtering
+  with the active Python interpreter, for example `python -m pytest -q
+  tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py
+  tests/unit/runtime/test_greenfield_component_spec_quality.py`.
+- For confirmed-create speed and artifact quality, run `python -m
+  pytest -q tests/integration/runtime/test_greenfield_create_performance.py`;
+  it must prove the standard post-confirm path stays under 60 seconds and
+  rejects generated semantic slop in the create payload. Add the dedicated
+  rescue-path timing test before claiming the 90-second host-repair contract.
+- Run governance validators for Casebook, backlog, plan binding/traceability as
+  touched, release migration gate, and refreshed Radar/Registry/Atlas/Compass
+  surfaces.
+- Run headless browser smoke over the regenerated dashboards so the new records
+  and the timeline-audit fix are visible without layout regressions.
 
 ## Open Questions
 - Should a future signed domain-pack marketplace augment host reasoning with
   curated evidence, examples, and validators after v0.1.14 ships the open-world
   host-reasoned baseline?
+
+## V21 Rejection And V22 Ordered-Event Convergence (2026-09-03)
+
+- Reject immutable v21 wheel
+  `727e28500619a2912f6b61d59726698aafc385f15195a6d608d0b212483b6868`.
+  The public campaign stopped at `1/3` completed cases after pediatric agency
+  exposed a disconnected State and Evidence view and semiconductor custody
+  failed pre-staging under the forced human-start contract. Browser rendering,
+  latency, and commit-only behavior were not the cause.
+- V22 removes the human-start/following split and represents the selected
+  first path as one ordered list of identical typed actor/target/recovery
+  edges. Product-led workflows remain product-led; selected human users stay
+  visible as typed facts without requiring an invented human action. Exact
+  target containment, source custody, terminal result, component ownership,
+  one-call authorship, and all transaction laws remain fixed.
+- State and Evidence now draws a dotted result-to-proof edge only when the
+  exact accepted visible result is contained in the accepted proof boundary;
+  unrelated facts remain unconnected rather than gaining a fictional causal
+  edge. Focused proof passes `74/74`, Greenfield runtime `636/636`, and
+  install/release `507/507`. Live standard security and rescue semiconductor
+  proposals stage successfully; the thin assay request returns the required
+  single clarification without staging.
+- The next admissible step is one governance-synced immutable rebuild followed
+  by the complete public `14/14` `60/90/120`, quality, browser, readback, and
+  recovery gate. A repeated independent failure rejects v22. A full pass alone
+  permits commissioning one new blind holdout.
+
+## V22 Rejection And V23 Source-Bound Target Candidate (2026-09-03)
+
+- Reject v22 as a winning mechanism. After Flood passed the complete installed
+  path at `10/10` in `56.711s`, Pediatric failed pre-staging in `44.015s` when
+  its one model response selected `children served across multiple schools` as
+  an exact Customer fact and as the event target, while the narrower aligned
+  event fact did not repeat that target. The selected Product Story contained
+  both exact facts. This same public case had passed an independent v22 run, so
+  strict target-in-event containment creates a recurring nondeterministic false
+  negative. Semiconductor then passed in `42.814s`; the campaign stopped
+  because `14/14` was already impossible.
+- A bounded comparison rejected retaining strict event-only target containment
+  and rejected deleting event targets, which would erase component
+  `event_targets` and proposal/Tribunal `target_entity` meaning. V23 retains one
+  optional typed target and accepts it only when it is either an exact event
+  substring or an exact selected fact co-contained with the event by another
+  selected fact. The same predicate owns direct compilation, sealed validation,
+  atomic custody, and release scoring. It performs no tokenization, regex
+  interpretation, phrase matching, retry, repair, or additional model call.
+- The exact retained pediatric response now compiles with its target atom bound
+  to `/customer`; invented targets and selected-but-unrelated targets still fail
+  closed. A fresh one-call pediatric rescue proposal staged in `45.56s`, inside
+  the non-negotiable 90-second budget. Focused target proof passes `96/96`, the
+  complete Greenfield runtime suite passes `638/638`, and the installed-lane
+  Greenfield suite passes `509/509`.
+- V23 is not yet a winner. Freeze one immutable build and require the unchanged
+  public `14/14` `60/90/120`, `10/10`, browser, readback, and recovery gate.
+  Only that full pass permits commissioning a newly blind holdout.
+
+## V23 Rejection And V29 Qualification Gate (2026-09-04)
+
+- Reject v23. Its public run completed eleven in-budget packages, but review
+  proved adjacent target acceptance, false location dependency, repeated
+  missing-field prose, unearned expert scores, and a conditional confirmation
+  path. These are independent P1 classes even though the campaign's stopping
+  assay result was itself an evaluator false negative.
+- V29 deletes cross-fact target co-containment, uses an exact non-regex decision
+  protocol, renders absent source facts as explicit gaps, centralizes evaluator
+  receipt semantics, and replaces the accumulated authoring instructions with
+  one shorter typed contract. A fresh pediatric rescue transaction passed the
+  known discriminator in `48.79s`; semantic-retirement proof passes `80/80` and
+  the focused post-broad-gate corrections pass `31/31`.
+- The complete frozen source suite passes `3,790/3,790` in `275.35s`. The next
+  gate is deliberately unchanged: build immutable bytes, then require public
+  `14/14` quality, `60/90/120` latency, browser, readback, recovery, and three
+  independent reviews. Commission a newly blind holdout only after all public
+  evidence is green. Do not add another prompt layer, regex rule, retry, or
+  post-confirm interpretation if v29 fails.
+
+## V29 Rejection And V30 Bounded Comparison (2026-09-04)
+
+- Reject immutable v29 wheel `2c7bcd38317938ddba15a0b8668c0c1a25271818786759a35905b827b4e9ac4d`.
+  Its first public case stayed inside the deep 120-second envelope and proved
+  sealed commit-only custody plus `28/28` browser states, but canonical meaning
+  collapsed five executable human actions into one broad product event and an
+  ambiguity-only predicate emitted a redundant Component Boundary View.
+- Retain the winning parts: one model-authored source-cited graph, exact typed
+  custody, deterministic projection, exact CONFIRM/EDIT/REJECT, and commit-only
+  publication. Replace only the failed event and artifact-eligibility contracts:
+  require model-authored exact action and event-actor quotes, immediate identical
+  actor carry, and boundary views backed by distinct typed boundary evidence.
+- Falsify v30 first on the unchanged flood discriminator. It must preserve the
+  outer product capability as component ownership, yield the complete ordered
+  city-staff workflow and consent-state linkage, omit the redundant boundary
+  diagram, and pass source quality with one call. Only then rebuild immutable
+  bytes and restart the unchanged public `14/14`, `60/90/120`, browser, readback,
+  recovery, and three-review gate. Do not commission a blind holdout early.
+
+## V30 Source Qualification (2026-09-04)
+
+- The unchanged flood discriminator passed in one `49.80s` deep authoring call:
+  direct customer `city staff`, five source-ordered human events, five exact
+  action/object bindings, the broad product capability retained as component
+  ownership, and no redundant D-004. Exact hash-bound publication took `1.06s`
+  for `83` sealed writes and passed readback.
+- A thin ecommerce request returned the required one-question, no-write material
+  clarification in `13.64s`. Focused Greenfield and Compass contracts pass
+  `1,525/1,525`; deterministic diff inspection finds no added semantic regex,
+  phrase matcher, keyword rule, retry, or second model call.
+- Keep v30 provisional. The next decision gate is one immutable installed build
+  against all fourteen unchanged public cases, exact `60/90/120` tier budgets,
+  package quality, normal/empty/degraded desktop and mobile browser evidence,
+  readback, recovery, and three independent reviews. Commission a new blind
+  holdout only after that gate is entirely green.
+
+## V30 Immutable Rejection And V31 Profile Gate (2026-09-04)
+
+- Reject immutable v30 wheel
+  `d3804d736b9dab468fb352455dbc87aa30c131068e945c593822cfb8e0a23d2d`.
+  Six public cases passed at hard `10/10` with one model call, complete
+  packages, browser proof, and proposal times of `48.056-56.242s`; the seventh
+  standard case failed closed at `56.377s` before staging. Its authoring
+  observation is zero bytes, which localizes the failure to the
+  `gpt-5.6-terra/high` `55s` response envelope rather than graph compilation.
+- Preserve the V30 semantic and transaction mechanisms. V31 is a bounded
+  one-variable model-profile comparison: first test `gpt-5.6-terra/medium`,
+  then a faster single-call profile only if needed, on the exact failed request
+  and one independent standard stress request. Predict materially lower latency
+  with unchanged source-cited event completeness. Remove the losing profile;
+  add no retry, cascade, parser, phrase rule, or second call.
+- Rebuild immutable bytes only after the winning profile passes source quality
+  and focused contracts. Restart the public campaign from case one and require
+  `14/14`, exact `60/90/120` budgets, browser, recovery, readback, and three
+  independent reviews before commissioning a newly blind holdout.
+
+## V31 Source Profile Selection (2026-09-04)
+
+- `gpt-5.6-terra/medium` wins the bounded single-call comparison. The exact V30
+  failure stages a complete five-event transaction in `29.410s`, versus V30's
+  zero-response failure at `56.377s`; exact commit-only publication takes
+  `1.3s`, writes `60` sealed files, and passes readback. The independent
+  open-source security embargo stress case stages in `36.689s`, versus
+  `56.242s` on Terra high, without losing its five events, customer, evidence,
+  non-goal, or visible result.
+- Pin `greenfield-standard-gpt-5.6-terra-medium-v6`; delete the superseded
+  standard high profile instead of retaining a ladder. Rescue and deep remain
+  the explicit preselected Sol-high `90/120` profiles. Focused profile,
+  authoring, custody, and envelope proof passes `96/96`; the complete
+  Greenfield runtime, integration, and install source gate passes
+  `1,123/1,123` in `141.13s`. Live/bundle surface parity, hygiene, and Compass
+  normal/fallback/degraded browser regression proof passes `130/130`.
+- This is source qualification, not release proof. Build one clean immutable
+  V31 distribution and restart the unchanged public campaign from case one.
+  The blind holdout remains sealed.
+
+## V19 Public Fail-Fast And Tri-State Review Wave (2026-09-25)
+
+- Exact distribution `0c12bff00` passed seven public cases with four Radar
+  workstreams, four Registry components, five Atlas diagrams, browser proof,
+  and zero package issues before the first civic-tech clarification case failed
+  closed. Authentication, host argv custody, and timing were healthy; Astra
+  authored from repository-purpose metadata, and independent review correctly
+  denied unsupported product ownership.
+- Replace binary candidate admission with one typed independent-review outcome:
+  admitted, material clarification, or denied. Material clarification maps to
+  the existing canonical field question before staging. Denial remains terminal
+  for a bad candidate when the source is sufficient. This reuses the existing
+  reviewer and adds no parser, regex, candidate revision, retry, repair,
+  fallback, or model call.
+- Seal exact host candidate and proposal bytes before temporary cleanup and
+  bind the full reviewer receipt through the existing parent-granted private
+  proof descriptor. Identify reviewer-selected clarification from that receipt,
+  the authored host response, its typed public question, and the
+  complete-source-missingness basis. Eliminate legacy
+  two-role diagnostics for every host-native outcome and require the exact host
+  argv before release-tier execution. Prove the disclosed failure plus an
+  independent positive and direct clarification control before rebuilding
+  immutable bytes and restarting the public campaign from case one. Do not
+  touch the protected holdout until the complete public gate and independent
+  semantic review pass.
+
+## V20 Product-Story Contract Parity Gate (2026-09-25)
+
+- Exact immutable V20 passed the previously blocked civic clarification
+  discriminator, then stopped on public case one when Astra selected the
+  operator invocation as `product_story`. Independent review denied the
+  candidate in `9.405s`; the `75.866s` author call stayed within the advisory
+  envelope, and no transaction or governed write occurred.
+- Reopen no architecture. CB-303 already owns this product-story failure class.
+  The reviewer carried the correct behavior/outcome role, while the external
+  host schema omitted it. Use one shared semantic definition at both boundaries
+  and exclude operator creation requests and title/category labels. Add no
+  parser, regex, phrase classifier, stacked prompt, retry, repair, fallback,
+  model ladder, or second author.
+- Focused proof passes `95/95`, the complete Greenfield suite passes
+  `3,177/3,177`, the cross-surface browser/UX matrix passes `68/68`, and an
+  independent bounded review returns `SHIP`. Commit and push the existing
+  branch, build one clean immutable distribution, and restart all 36 disclosed
+  cases from case one. Only a 100% public/package/browser/recovery pass plus
+  final independent semantic review may unlock exactly one fresh untouched
+  blind holdout.

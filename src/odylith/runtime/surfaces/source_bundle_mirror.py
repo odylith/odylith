@@ -15,6 +15,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Iterable
 
+from odylith.runtime.domain_intelligence.greenfield_repository_write_set import greenfield_repository_layout
+
 _SCOPED_GUIDANCE_FILENAMES = frozenset({"AGENTS.md", "CLAUDE.md"})
 _MAINTAINER_TRUTH_PREFIXES = (
     "atlas/source/",
@@ -36,6 +38,7 @@ _MAINTAINER_GENERATED_EXACT = frozenset(
         "radar/traceability-graph.v1.json",
         "registry/registry-payload.v1.js",
         "tooling-payload.v1.js",
+        "tooling-shell.html",
     }
 )
 _MAINTAINER_GENERATED_PREFIXES = (
@@ -110,16 +113,21 @@ def _live_relative_path(*, repo_root: Path, live_path: Path) -> Path:
 
 def bundle_mirror_path(*, repo_root: Path, live_path: Path) -> Path:
     """Return the mirrored bundle path for one live surface file."""
+    relative = _live_relative_path(repo_root=repo_root, live_path=live_path)
+    if relative == Path("tooling-shell.html"):
+        layout = greenfield_repository_layout(repo_root)
+        if layout.publication_protected and Path(live_path).resolve() == layout.target_path("odylith/index.html"):
+            relative = Path("index.html")
     return (
         source_bundle_root(repo_root=repo_root)
-        / _live_relative_path(repo_root=repo_root, live_path=live_path)
+        / relative
     ).resolve()
 
 
 def should_mirror_live_path(*, repo_root: Path, live_path: Path) -> bool:
     """Return whether a live product-repo path may be mirrored into the bundle."""
     return is_consumer_safe_bundle_relative_path(
-        _live_relative_path(repo_root=repo_root, live_path=live_path)
+        bundle_mirror_path(repo_root=repo_root, live_path=live_path).relative_to(source_bundle_root(repo_root=repo_root))
     )
 
 

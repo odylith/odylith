@@ -137,20 +137,15 @@ Related Bugs:
 - [x] Risk: one source file and one bundled copy drift.
   - [x] Mitigation: patch source-owned and bundled copies in the same change.
 - [x] Risk: the guidance still sounds like interpreter choice controls edit
-  - [ ] Mitigation: TODO (add explicit mitigation).
-    authority.
+  - [ ] Mitigation: TODO (add explicit mitigation). authority.
 - [ ] Risk: Unspecified risk (legacy backfill).
-  - [x] Mitigation: use one repeated three-boundary framing across docs and
-    skills.
+  - [x] Mitigation: use one repeated three-boundary framing across docs and skills.
 - [x] Risk: maintainer overlay leaks into consumer bundle language.
-  - [x] Mitigation: keep consumer bundles explicit that maintainer-only release
-    overlays remain product-repo-only.
+  - [x] Mitigation: keep consumer bundles explicit that maintainer-only release overlays remain product-repo-only.
 - [x] Risk: making sync faster by silently removing Tribunal coverage.
-  - [x] Mitigation: preserve deterministic Tribunal `case_queue` generation for
-    delivery refresh and test it directly.
+  - [x] Mitigation: preserve deterministic Tribunal `case_queue` generation for delivery refresh and test it directly.
 - [x] Risk: provider timeout still multiplies across explicit Tribunal cases.
-  - [x] Mitigation: disable provider enrichment for the rest of the run after
-    the first timeout or transport failure and record the degraded reason.
+  - [x] Mitigation: disable provider enrichment for the rest of the run after the first timeout or transport failure and record the degraded reason.
 
 ## Validation/Test Plan
 - [x] `PYTHONPATH=src python -m pytest -q tests/unit/install/test_agents.py`

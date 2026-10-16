@@ -1,0 +1,72 @@
+{
+  "status": "independent source-only first census frozen before A/B annotation inspection",
+  "source_cases_sha256": "5da8ec8a344d3097ad5a65a14e4f0af0756943a03d6a22e4ff8557e67694e485",
+  "canonical_frames_sha256": "3020f24efae67a669b72574a24ed4f4146b235449180e91854faae32633a7c4a",
+  "product_outputs_read": false,
+  "author_predictions_read": false,
+  "annotation_a_or_b_read": false,
+  "capacity_law": {
+    "total_performed_action_rows": 32,
+    "sum": ["first_path_actions", "supporting_human_actions", "system_duties"],
+    "first_path_actions": 24,
+    "supporting_human_actions": 24,
+    "system_duties": 32,
+    "state_fields": 32,
+    "conditional_guards": 32,
+    "boundaries": 32,
+    "proof_duties": 32,
+    "off_path_transitions": 24
+  },
+  "counting_rules": [
+    "Count explicitly performed affirmative system behavior, including positive conditional and recurring behavior; a negative out-of-scope instruction does not invent an affirmative enforcement action.",
+    "A source identity, content description, collection authority, ownership allocation, durable-record field or proof requirement remains material even when it is not an extra performed action.",
+    "Independent human handoffs remain separate; repeated presentation of the same action and authoring-time EDIT retention instructions do not automatically create new runtime occurrences.",
+    "Atomic requirements and spans must remain separate even when they constrain the same action. No caps may be met by merging distinct performed actions.",
+    "H0 and H1 have one governed work item and one complete path. Only the scored H1 is required to classify high."
+  ],
+  "cases": [
+    {
+      "case_id": "prospective-edit-climate-heat-response-window-20261010",
+      "H0": {"human_roles": 5, "declared_first_path_handoffs": 6, "internal_systems": 4, "external_systems": 17, "state_objects": 1, "paths": 1, "documents": 1, "bytes": 6595},
+      "H1": {"human_roles": 5, "preserved_declared_handoffs": 6, "new_required_support_handoffs": 2, "internal_systems": 4, "external_systems": 17, "state_objects": 1, "paths": 1, "documents": 2, "bytes": 7356},
+      "first_path": ["heat coordinator opens window", "meteorologist associates sources and records interpretation", "public-health lead records aggregate vulnerability/exposure assessment", "access planner records routes/sites usability", "duty controller records readiness decision", "heat coordinator verifies window/source revisions and closes record"],
+      "new_edit_requirements": ["access planner attaches housing acknowledgement", "controller checks acknowledgement before overnight readiness", "gate leaves missing/wrong-night acknowledgement assessed", "shelter snapshot, other source relationships and previous assessments retained"],
+      "capacity_assessment": "Borderline; the ten source services explicitly saying identifies perform behavior and count as system duties. The first five authoritative-for descriptions and two contains descriptions are source custody, not invented actions. Must reconcile exact positive whole-product/component/conditional occurrences before ACCEPT; no confident combined total is claimed yet.",
+      "band_assessment": "H1 high if at least nine distinct source-backed safety/authority/data-use boundaries are retained: docs1 + roles1 + object1 + systems2 + boundaries2 =7. H0 may remain moderate."
+    },
+    {
+      "case_id": "prospective-edit-healthcare-trial-site-activation-20261010",
+      "H0": {"human_roles": 17, "declared_first_path_handoffs": 17, "internal_systems": 4, "external_systems": 5, "state_objects": 1, "paths": 1, "documents": 1, "bytes": 5161},
+      "H1": {"human_roles": 17, "preserved_declared_handoffs": 17, "new_required_support_handoffs": 1, "internal_systems": 4, "external_systems": 5, "state_objects": 1, "paths": 1, "documents": 2, "bytes": 5881},
+      "first_path": ["coordinator", "principal investigator", "sponsor representative", "ethics liaison", "consent specialist", "language-access reviewer", "accessibility reviewer", "pharmacist", "laboratory director", "specimen logistics officer", "data manager", "statistician", "privacy officer", "security reviewer", "site operations lead", "training coordinator", "readiness chair"],
+      "new_edit_requirements": ["sponsor insurance confirmation", "exact site/trial/effective-date/operating-start custody", "missing or outside-date confirmation leaves sponsor handoff incomplete", "original specialist and source relationships retained", "final evidence retains insurance reference"],
+      "capacity_assessment": "17 human actions consume the shared capacity. Gate/journal/reference retention and positive invalidation duties also count; ownership-only component labels and five upstream source-of descriptions do not independently consume action rows. Exact positive duty enumeration remains to be reconciled before ACCEPT.",
+      "band_assessment": "H1 high if at least nine distinct source-backed boundaries retained: docs1 + roles2 + object1 + systems1 + boundaries2 =7. H0 may remain moderate."
+    },
+    {
+      "case_id": "prospective-edit-open-data-river-federation-transfer-20261010",
+      "H0": {"human_roles": 5, "declared_first_path_handoffs": 6, "internal_systems": 4, "external_systems": 17, "state_objects": 1, "paths": 1, "documents": 1, "bytes": 6257},
+      "H1": {"human_roles": 5, "preserved_declared_handoffs": 6, "new_required_support_handoffs": 2, "internal_systems": 4, "external_systems": 17, "state_objects": 1, "paths": 1, "documents": 2, "bytes": 7041},
+      "first_path": ["coordinator opens transfer record", "steward attaches exports and availability/conditions", "hydrologist records reconciliation", "quality reviewer records transfer disposition", "liaison downloads packet and records acknowledgement", "coordinator verifies digest and marks acknowledged"],
+      "new_edit_requirements": ["liaison records acknowledged recipient purpose", "steward confirms purpose allowed by every attached collection", "digest alone insufficient", "out-of-conditions purpose stays transferred with restriction visible", "acknowledgement and all original relationships/versions retained"],
+      "capacity_assessment": "The 17 contains descriptions identify source content and authority, not 17 invented fetch/validation/publication actions. Explicit product preservation, restriction enforcement, clearance invalidation and rejection-history duties count. Likely within shared32, pending exact duty census.",
+      "band_assessment": "H1 high at nine or more distinct source-backed boundaries: docs1 + roles1 + object1 + systems2 + boundaries2 =7. H0 may remain moderate."
+    },
+    {
+      "case_id": "prospective-edit-security-isolated-recovery-rehearsal-20261010",
+      "H0": {"human_roles": 17, "declared_first_path_handoffs": 17, "internal_systems": 4, "external_systems": 5, "state_objects": 1, "paths": 1, "documents": 1, "bytes": 4951},
+      "H1": {"human_roles": 17, "preserved_declared_handoffs": 17, "new_required_support_handoffs": 1, "internal_systems": 4, "external_systems": 5, "state_objects": 1, "paths": 1, "documents": 2, "bytes": 5683},
+      "first_path": ["coordinator", "forensic examiner", "evidence custodian", "identity lead", "network lead", "privacy officer", "backup operator", "storage lead", "key custodian", "database operator", "endpoint lead", "application owner", "threat analyst", "integrity auditor", "business process owner", "continuity manager", "recovery director"],
+      "new_edit_requirements": ["custodian attests laboratory destruction receipt", "receipt identifies same restoration destination", "cleanup attestation required before director completion", "missing/mismatched receipt cannot satisfy handoff", "redacted restoration proof and custody history survive cleanup", "all original handoffs and sources retained"],
+      "capacity_assessment": "17 human handoffs plus explicit gate hold, conflicting-evidence retention, digest-triggered invalidation and stop-history duties consume the shared32. Five external source-of descriptions remain custody rather than invented behavior. Likely within32, pending exact duty census.",
+      "band_assessment": "H1 high at nine or more distinct source-backed boundaries: docs1 + roles2 + object1 + systems1 + boundaries2 =7. H0 may remain moderate."
+    }
+  ],
+  "unresolved_before_annotations": [
+    "Exact complete positive system-duty enumeration, especially climate combined32 boundary.",
+    "Material atomization must preserve distinct conditions/results even when not separate event occurrences.",
+    "Verify exact safety-boundary counts using literal source spans rather than padding to obtain high.",
+    "Formal validator success proves closed custody only; independent semantic source adjudication remains required."
+  ],
+  "qualification_credit": 0
+}

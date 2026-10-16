@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.runtime.surfaces import codex_host_shared
+from odylith.runtime.surfaces import host_startup_summary
 from odylith.runtime.surfaces import host_intervention_support
 from odylith.runtime.surfaces import session_brief_refresh_queue
 
@@ -19,6 +20,15 @@ _CURRENT_RUNTIME_PATH = "odylith/compass/runtime/current.v1.json"
 
 def _env_truthy(name: str) -> bool:
     return str(os.environ.get(name) or "").strip().casefold() in {"1", "true", "yes", "on"}
+
+
+def _startup_summary_for_chat(startup_source: str) -> str:
+    text = str(startup_source or "").strip()
+    if not text:
+        return ""
+    if host_startup_summary.startup_output_needs_narrowing(text):
+        return host_startup_summary.narrowing_chat_summary()
+    return codex_host_shared.collapse_whitespace(text, limit=480)
 
 
 def render_codex_session_brief(
@@ -58,7 +68,7 @@ def render_codex_session_brief(
             repo_root=repo_root,
             host_family="codex",
         )
-    startup = codex_host_shared.collapse_whitespace(startup_source, limit=480)
+    startup = _startup_summary_for_chat(startup_source)
     if startup:
         lines.append(f"Startup: {startup}")
     return "\n".join(lines).rstrip()

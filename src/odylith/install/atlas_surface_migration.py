@@ -39,29 +39,37 @@ _OLD_VIEWER_BACKGROUND_TOKENS = (
     "linear-gradient(rgba(15, 23, 42, 0.06)",
 )
 _POLISHED_CLUSTER_FILLS = frozenset(
-    {"#effcf9", "#f1f7ff", "#fff3f0", "#f2fbef", "#fbf7ff"}
+    {"#fbfdff"}
+)
+_POLISHED_CLUSTER_STROKES = frozenset(
+    {"#d8e5f4", "#bfd7fe", "#a7e9e3", "#ddd6fe", "#f6d98b", "#f7b4ae"}
 )
 _POLISHED_NODE_FILLS = frozenset(
     {
-        "#e8fbf7",
-        "#eaf3ff",
-        "#ffece7",
-        "#f4ebff",
-        "#ebf9e8",
-        "#f5f8fb",
-        "#effcf9",
-        "#f1f7ff",
-        "#fff3f0",
-        "#f2fbef",
-        "#fbf7ff",
+        "#fbfdff",
+        "#eff6ff",
+        "#ecfdfb",
+        "#f5f3ff",
+        "#fff8e6",
+        "#fff1f0",
     }
 )
+_POLISHED_NODE_STROKES = frozenset(
+    {"#d8e5f4", "#bfd7fe", "#a7e9e3", "#ddd6fe", "#f6d98b", "#f7b4ae"}
+)
 _SEMANTIC_CLUSTER_FILL_BY_BUCKET = {
-    "input": "#effcf9",
-    "intelligence": "#f1f7ff",
-    "decision": "#fff3f0",
-    "apply": "#fbf7ff",
-    "memory": "#f2fbef",
+    "primary": "#fbfdff",
+    "execution": "#fbfdff",
+    "governance": "#fbfdff",
+    "constraint": "#fbfdff",
+    "invalid": "#fbfdff",
+}
+_SEMANTIC_CLUSTER_STROKE_BY_BUCKET = {
+    "primary": "#bfd7fe",
+    "execution": "#a7e9e3",
+    "governance": "#ddd6fe",
+    "constraint": "#f6d98b",
+    "invalid": "#f7b4ae",
 }
 _LEGACY_CLUSTER_STYLE_TOKENS = (
     "style=\"\"",
@@ -77,6 +85,16 @@ _LEGACY_CLUSTER_STYLE_TOKENS = (
     "stroke:#ebd0a0",
     "stroke:#cbe4c3",
     "stroke:#dccbf4",
+    "fill:#effcf9",
+    "fill:#f1f7ff",
+    "fill:#fff3f0",
+    "fill:#f2fbef",
+    "fill:#fbf7ff",
+    "stroke:#9bd8cf",
+    "stroke:#a8c7f7",
+    "stroke:#efb3a4",
+    "stroke:#a9d69e",
+    "stroke:#d3b9f5",
 )
 _LEGACY_NODE_STYLE_TOKENS = (
     "fill:#eafbf7",
@@ -101,6 +119,7 @@ class _SvgStyleInspection:
     lowered_text: str
     cluster_blocks: tuple[str, ...]
     node_blocks: tuple[str, ...]
+    valid_xml: bool
 
 
 @dataclass(frozen=True)
@@ -234,14 +253,14 @@ def _write_ledger(
         "removed_paths": list(removed_paths),
         "verification_result": dict(verification_result),
         "notes": (
-            "v0.1.14 migrates Atlas generated diagram assets and the Atlas "
-            "dashboard to the pure-white viewer background plus the darker "
-            "managed cluster and semantic node color contract, including the "
-            "Soft Coral decision/gate node accent and lighter Soft Coral Wash "
-            "container tone with semantic-label-first lane coloring. Source "
-            "Mermaid remains topology truth; the migration regenerates derived render "
-            "surfaces, rebuilds the shared topology traceability graph, and "
-            "records verified fingerprints plus topology integrity evidence."
+            "v0.1.14+ migrates Atlas generated diagram assets and the Atlas "
+            "dashboard to the pure-white viewer background plus the managed "
+            "semantic color contract: neutral structural containers, semantic "
+            "node fills, rare amber constraints, rare red invalid states, and "
+            "subdued connector styling. Source Mermaid remains topology truth; "
+            "the migration regenerates derived render surfaces, rebuilds the "
+            "shared topology traceability graph, and records verified "
+            "fingerprints plus topology integrity evidence."
         ),
     }
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -331,6 +350,7 @@ def _svg_style_inspection(path: Path) -> _SvgStyleInspection | None:
         lowered_text=lowered_text,
         cluster_blocks=class_blocks.get("cluster", ()),
         node_blocks=class_blocks.get("node", ()),
+        valid_xml=bool(class_blocks),
     )
 
 
@@ -340,40 +360,56 @@ def _svg_cluster_needs_polish(path: Path) -> bool:
 
 
 def _svg_cluster_needs_polish_from_inspection(inspection: _SvgStyleInspection) -> bool:
-    if "cluster" not in inspection.lowered_text:
-        return False
-    cluster_blocks = inspection.cluster_blocks
-    if not cluster_blocks:
-        return any(token in inspection.lowered_text for token in _LEGACY_CLUSTER_STYLE_TOKENS)
-    for block in cluster_blocks:
-        if any(token in block for token in _LEGACY_CLUSTER_STYLE_TOKENS):
-            return True
+    if not inspection.valid_xml:
+        return True
+    for block in inspection.cluster_blocks:
+        actual_fill = _cluster_rect_fill(block)
+        actual_stroke = _cluster_rect_stroke(block)
+        if actual_fill in _POLISHED_CLUSTER_FILLS:
+            if actual_stroke and actual_stroke not in _POLISHED_CLUSTER_STROKES:
+                return True
+            if _semantic_cluster_style_mismatch(block):
+                return True
+            continue
         if _semantic_cluster_style_mismatch(block):
             return True
-        if any(fill in block for fill in _POLISHED_CLUSTER_FILLS):
-            continue
+        if actual_fill and actual_fill not in _POLISHED_CLUSTER_FILLS:
+            return True
+        if actual_stroke and any(token == f"stroke:{actual_stroke}" for token in _LEGACY_CLUSTER_STYLE_TOKENS):
+            return True
+        if any(token in block for token in _LEGACY_CLUSTER_STYLE_TOKENS):
+            return True
         return True
     return False
 
 
 def _semantic_bucket_for_text(text: str) -> str:
     normalized = str(text or "").lower()
-    if re.search(r"\?|decision|decide|gate|confirm|choose|blocked|valid|stale|ready|pass|fail|whether", normalized):
-        return "decision"
     if re.search(
-        r"\b(apply|write|render|refresh|sync|update|publish|release|migrate|deploy|repair|scaffold|register|create|author|materialize|bundle)\b",
+        r"\b(denied?|reject(?:ed|ion)?|invalid|security violation|policy rejection|destructive failure|unrecoverable)\b",
         normalized,
     ):
-        return "apply"
-    if re.search(r"\b(memory|compass|state|ledger|history|cache|session|timeline|proof|observation)\b", normalized):
-        return "memory"
-    if re.search(r"\b(input|intent|prompt|source|repo|docs|catalog|watch|signal|request|operator|user|external)\b", normalized):
-        return "input"
+        return "invalid"
     if re.search(
-        r"\b(engine|compiler|planner|routing|classifier|agent|runtime|registry|radar|atlas|casebook|tribunal|context|component|analysis|proposal)\b",
+        r"\b(ambiguous|ambiguity|missing|unresolved|assumption|partial|fallback|conflict|retry|pending|conditional|condition|stale|blocked|blocker|gap|decision|decide|gate|confirm|choose|whether)\b",
+        normalized,
+    ) or "?" in normalized:
+        return "constraint"
+    if re.search(
+        r"\b(policy|grant|ownership|owner|governance|rule|provenance|authorization|authorisation|access|tribunal|adjudication|audit|dossier|reasoning|evidence|proof)\b",
         normalized,
     ):
-        return "intelligence"
+        return "governance"
+    if re.search(
+        r"\b(runtime|execution|service|cache|lookup|notification|persist|persistence|record|create|write|apply|render|refresh|sync|update|publish|release|migrate|deploy|repair|scaffold|register|materialize|bundle|worker|daemon|process|valid|resolved|success|memory|compass|state|ledger|history|timeline|observation)\b",
+        normalized,
+    ):
+        return "execution"
+    if re.search(
+        r"\b(user|developer|operator|input|intent|prompt|request|api|entry|source|repo|docs|catalog|watch|signal|external|atlas|diagram|metadata|report|final|dashboard|output|artifact|proposal)\b",
+        normalized,
+    ):
+        return "primary"
     return ""
 
 
@@ -431,6 +467,17 @@ def _semantic_cluster_expected_fills(source_mmd_path: Path) -> tuple[str, ...]:
     return tuple(fills)
 
 
+def _semantic_cluster_expected_styles(source_mmd_path: Path) -> tuple[tuple[str, str], ...]:
+    styles: list[tuple[str, str]] = []
+    for semantic_text in _mermaid_subgraph_semantic_texts(source_mmd_path):
+        bucket = _semantic_bucket_for_text(semantic_text)
+        fill = _SEMANTIC_CLUSTER_FILL_BY_BUCKET.get(bucket, "")
+        stroke = _SEMANTIC_CLUSTER_STROKE_BY_BUCKET.get(bucket, "")
+        if fill and stroke:
+            styles.append((fill, stroke))
+    return tuple(styles)
+
+
 def _svg_block_text(block: str) -> str:
     return " ".join(html.unescape(re.sub(r"<[^>]+>", " ", str(block or ""))).split())
 
@@ -456,44 +503,65 @@ def _svg_cluster_semantic_text(block: str) -> str:
     return " ".join(part for part in (_svg_cluster_label_text(block), root.attrib.get("id", "")) if part).strip()
 
 
-def _cluster_rect_fill(block: str) -> str:
+def _svg_color_value(tag: str, property_name: str) -> str:
+    style = re.search(r"\bstyle\s*=\s*['\"]([^'\"]*)['\"]", tag, flags=re.IGNORECASE)
+    if style:
+        values = re.findall(rf"{re.escape(property_name)}\s*:\s*(#[0-9a-fA-F]{{6}})", style.group(1))
+        if values:
+            return values[-1].lower()
+    attr = re.search(rf"\b{re.escape(property_name)}\s*=\s*['\"](#[0-9a-fA-F]{{6}})['\"]", tag, flags=re.IGNORECASE)
+    return attr.group(1).lower() if attr else ""
+
+
+def _cluster_rect_style_value(block: str, property_name: str) -> str:
     match = re.search(r"<(?:\w+:)?rect\b[^>]*>", str(block or ""), flags=re.IGNORECASE)
     if not match:
         return ""
-    rect = match.group(0)
-    style = re.search(r"\bstyle\s*=\s*['\"]([^'\"]*)['\"]", rect, flags=re.IGNORECASE)
-    if style:
-        fills = re.findall(r"fill\s*:\s*(#[0-9a-fA-F]{6})", style.group(1))
-        if fills:
-            return fills[-1].lower()
-    attr = re.search(r"\bfill\s*=\s*['\"](#[0-9a-fA-F]{6})['\"]", rect, flags=re.IGNORECASE)
-    return attr.group(1).lower() if attr else ""
+    return _svg_color_value(match.group(0), property_name)
+
+
+def _cluster_rect_fill(block: str) -> str:
+    return _cluster_rect_style_value(block, "fill")
+
+
+def _cluster_rect_stroke(block: str) -> str:
+    return _cluster_rect_style_value(block, "stroke")
 
 
 def _semantic_cluster_style_mismatch(block: str) -> bool:
     bucket = _semantic_bucket_for_text(_svg_cluster_semantic_text(block))
     expected_fill = _SEMANTIC_CLUSTER_FILL_BY_BUCKET.get(bucket, "")
+    expected_stroke = _SEMANTIC_CLUSTER_STROKE_BY_BUCKET.get(bucket, "")
     actual_fill = _cluster_rect_fill(block)
-    return bool(expected_fill and actual_fill and actual_fill != expected_fill)
+    actual_stroke = _cluster_rect_stroke(block)
+    if not expected_fill and not expected_stroke:
+        return False
+    if not actual_fill or not actual_stroke:
+        return True
+    return actual_fill != expected_fill or actual_stroke != expected_stroke
 
 
 def _semantic_cluster_source_mismatch(source_mmd_path: Path, inspection: _SvgStyleInspection) -> bool:
     if any(_semantic_bucket_for_text(_svg_cluster_semantic_text(block)) for block in inspection.cluster_blocks):
         return False
-    expected_fills = _semantic_cluster_expected_fills(source_mmd_path)
-    if not expected_fills:
+    expected_styles = _semantic_cluster_expected_styles(source_mmd_path)
+    if not expected_styles:
         return False
-    actual_fills = tuple(
-        fill for fill in (_cluster_rect_fill(block) for block in inspection.cluster_blocks) if fill
+    actual_styles = tuple(
+        (fill, stroke)
+        for fill, stroke in (
+            (_cluster_rect_fill(block), _cluster_rect_stroke(block)) for block in inspection.cluster_blocks
+        )
+        if fill and stroke
     )
-    if not actual_fills:
+    if not actual_styles:
         return True
     # Mermaid commonly serializes clusters in reverse source order, and older
     # SVGs may not expose cluster labels. This source-order fallback is only for
     # that label-less shape; label-bearing clusters are checked per cluster.
-    if actual_fills[: len(expected_fills)] == expected_fills:
+    if actual_styles[: len(expected_styles)] == expected_styles:
         return False
-    if actual_fills[: len(expected_fills)] == tuple(reversed(expected_fills)):
+    if actual_styles[: len(expected_styles)] == tuple(reversed(expected_styles)):
         return False
     return True
 
@@ -523,10 +591,16 @@ def _svg_node_needs_polish_from_inspection(inspection: _SvgStyleInspection) -> b
     node_blocks = inspection.node_blocks
     if node_blocks:
         for block in node_blocks:
+            actual_fill = _node_shape_fill(block)
+            if actual_fill in _POLISHED_NODE_FILLS:
+                actual_stroke = _node_shape_stroke(block)
+                if actual_stroke and actual_stroke not in _POLISHED_NODE_STROKES:
+                    return True
+                continue
+            if actual_fill and actual_fill not in _POLISHED_NODE_FILLS:
+                return True
             if any(token in block for token in _LEGACY_NODE_STYLE_TOKENS):
                 return True
-            if any(fill in block for fill in _POLISHED_NODE_FILLS):
-                continue
             return True
         return False
     if any(token in inspection.lowered_text for token in _LEGACY_NODE_STYLE_TOKENS):
@@ -534,6 +608,30 @@ def _svg_node_needs_polish_from_inspection(inspection: _SvgStyleInspection) -> b
     if any(fill in inspection.lowered_text for fill in _POLISHED_NODE_FILLS):
         return False
     return True
+
+
+def _node_shape_fill(block: str) -> str:
+    return _node_shape_style_value(block, "fill")
+
+
+def _node_shape_stroke(block: str) -> str:
+    return _node_shape_style_value(block, "stroke")
+
+
+def _node_shape_style_value(block: str, property_name: str) -> str:
+    label_container = re.search(
+        r"<(?:\w+:)?rect\b(?=[^>]*\b(?:label-container|basic)\b)[^>]*>",
+        str(block or ""),
+        flags=re.IGNORECASE,
+    )
+    if label_container:
+        return _svg_color_value(label_container.group(0), property_name)
+    shape = re.search(
+        r"<(?:\w+:)?(?:rect|circle|ellipse|polygon|path)\b[^>]*>",
+        str(block or ""),
+        flags=re.IGNORECASE,
+    )
+    return _svg_color_value(shape.group(0), property_name) if shape else ""
 
 
 def _svg_needs_polish(path: Path, *, source_mmd_path: Path | None = None) -> bool:

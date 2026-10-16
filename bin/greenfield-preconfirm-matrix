@@ -1,0 +1,187 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
+
+requested_version="${1:-${VERSION:-$(current_source_version)}}"
+dist_arg="${2:-${DIST:-}}"
+temp_parent="${TEMP_PARENT:-${TMPDIR:-$(cd /tmp && pwd -P)}}"
+require_version "$requested_version"
+
+if [[ -z "$dist_arg" ]]; then
+  dist_dir="${TMPDIR:-/tmp}/odylith-local-release-${requested_version}"
+elif [[ "$dist_arg" == /* ]]; then
+  dist_dir="$dist_arg"
+else
+  dist_dir="$odylith_repo_root/$dist_arg"
+fi
+
+if [[ ! -f "$dist_dir/install.sh" ]]; then
+  die "local release dist is missing install.sh: $dist_dir"
+fi
+
+require_current_component_forensics
+"$odylith_python" scripts/release/platform_domain_leakage_check.py --repo-root "$odylith_repo_root" --dist-dir "$dist_dir"
+
+proof_json="${GREENFIELD_MATRIX_OUTPUT_JSON:-$dist_dir/greenfield-preconfirm-matrix.v1.json}"
+evidence_output_dir="${GREENFIELD_MATRIX_EVIDENCE_OUTPUT_DIR:-}"
+mkdir -p "$temp_parent"
+wrapper_temp_root="$(mktemp -d "$temp_parent/odylith-greenfield-wrapper-run.XXXXXX")"
+preserve_wrapper_temp_root=0
+
+cleanup_wrapper_temp_root() {
+  if [[ "$preserve_wrapper_temp_root" == "0" && -d "${wrapper_temp_root:-}" ]]; then
+    rm -rf "$wrapper_temp_root"
+  fi
+}
+
+preserve_wrapper_temp_root_on_signal() {
+  preserve_wrapper_temp_root=1
+}
+trap cleanup_wrapper_temp_root EXIT
+trap preserve_wrapper_temp_root_on_signal INT TERM
+
+extra_args=()
+browser_proof_enabled=1
+commit_recovery_proof_enabled=1
+if [[ "${BROWSER_PROOF:-1}" == "0" ]]; then
+  browser_proof_enabled=0
+fi
+if [[ "${COMMIT_RECOVERY_PROOF:-1}" == "0" ]]; then
+  commit_recovery_proof_enabled=0
+fi
+release_case_file="${GREENFIELD_MATRIX_CASE_FILE:-}"
+release_audit_file="${GREENFIELD_MATRIX_RELEASE_AUDIT_FILE:-}"
+release_audit_repo_root="${GREENFIELD_MATRIX_RELEASE_AUDIT_REPO_ROOT:-}"
+sealed_release_input_root="${GREENFIELD_MATRIX_SEALED_RELEASE_INPUT_ROOT:-}"
+semantic_annotations_file="${GREENFIELD_MATRIX_SEMANTIC_ANNOTATIONS_FILE:-}"
+evaluation_split_manifest="${GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST:-}"
+final_holdout_run_ledger="${GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER:-}"
+implementation_revision="${GREENFIELD_MATRIX_IMPLEMENTATION_REVISION:-}"
+distribution_provenance_file="${GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE:-}"
+lower_capability_control_file="${GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE:-}"
+composed_public_evidence="${GREENFIELD_MATRIX_COMPOSED_PUBLIC_EVIDENCE:-}"
+release_intent="${GREENFIELD_MATRIX_RELEASE_INTENT:-0}"
+if [[ "$release_intent" != "0" && "$release_intent" != "1" ]]; then
+  die "GREENFIELD_MATRIX_RELEASE_INTENT must be 0 or 1"
+fi
+if [[ "$release_intent" == "1" ]]; then
+  [[ -n "$release_case_file" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_CASE_FILE"
+  [[ -f "$release_case_file" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 case file is missing: $release_case_file"
+  [[ -n "$sealed_release_input_root" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_SEALED_RELEASE_INPUT_ROOT"
+  [[ -n "$semantic_annotations_file" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_SEMANTIC_ANNOTATIONS_FILE"
+  [[ -n "$evaluation_split_manifest" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST"
+  [[ -n "$final_holdout_run_ledger" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER"
+  [[ -n "$implementation_revision" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_IMPLEMENTATION_REVISION"
+  [[ -n "$distribution_provenance_file" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE"
+  [[ -n "$lower_capability_control_file" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE"
+  [[ -f "$lower_capability_control_file" ]] || die "GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE is missing: $lower_capability_control_file"
+  [[ -n "$evidence_output_dir" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_EVIDENCE_OUTPUT_DIR"
+  [[ "$browser_proof_enabled" == "1" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires BROWSER_PROOF=1"
+  [[ "$commit_recovery_proof_enabled" == "1" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires COMMIT_RECOVERY_PROOF=1"
+elif [[ -n "$release_audit_file" && -z "$release_case_file" ]]; then
+  die "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE requires GREENFIELD_MATRIX_CASE_FILE"
+fi
+if [[ "$release_intent" == "1" && -n "$release_audit_file" && -z "$release_audit_repo_root" ]]; then
+  release_audit_repo_root="$sealed_release_input_root"
+fi
+if [[ -n "$release_audit_repo_root" && -z "$release_audit_file" ]]; then
+  die "GREENFIELD_MATRIX_RELEASE_AUDIT_REPO_ROOT requires GREENFIELD_MATRIX_RELEASE_AUDIT_FILE"
+fi
+if [[ -n "$release_audit_file" ]]; then
+  [[ -f "$release_audit_file" ]] || die "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE is missing: $release_audit_file"
+fi
+if [[ "$release_intent" == "1" ]]; then
+  extra_args+=(--proof-tier release)
+else
+  extra_args+=(--proof-tier discovery)
+fi
+if [[ "$browser_proof_enabled" == "1" ]]; then
+  extra_args+=(--include-browser-proof)
+  ensure_playwright_chromium
+else
+  extra_args+=(--allow-skipped-browser-proof)
+fi
+if [[ "$commit_recovery_proof_enabled" == "1" ]]; then
+  extra_args+=(--include-commit-recovery-proof)
+else
+  extra_args+=(--skip-commit-recovery-proof)
+fi
+if [[ -n "$release_case_file" ]]; then
+  extra_args+=(--case-file "$release_case_file")
+fi
+if [[ -n "$release_audit_file" ]]; then
+  extra_args+=(--release-audit-file "$release_audit_file")
+fi
+if [[ -n "$release_audit_repo_root" ]]; then
+  extra_args+=(--release-audit-repo-root "$release_audit_repo_root")
+fi
+if [[ "$release_intent" == "1" ]]; then
+  extra_args+=(
+    --sealed-release-input-root "$sealed_release_input_root"
+    --semantic-annotations-file "$semantic_annotations_file"
+    --evaluation-split-manifest "$evaluation_split_manifest"
+    --final-holdout-run-ledger "$final_holdout_run_ledger"
+    --implementation-revision "$implementation_revision"
+    --distribution-provenance-file "$distribution_provenance_file"
+    --lower-capability-control-file "$lower_capability_control_file"
+    --evidence-output-dir "$evidence_output_dir"
+  )
+  if [[ -n "$composed_public_evidence" ]]; then
+    extra_args+=(--composed-public-evidence "$composed_public_evidence")
+  fi
+elif [[ -n "$evidence_output_dir" ]]; then
+  extra_args+=(--evidence-output-dir "$evidence_output_dir")
+fi
+host_candidate_args=()
+while IFS= read -r argument; do
+  host_candidate_args+=("$argument")
+done < <(
+  PYTHONPATH="$odylith_repo_root/scripts/release${PYTHONPATH:+:$PYTHONPATH}" \
+    "$odylith_python" -m odylith.runtime.domain_intelligence.greenfield_host_transport --print-argv-template
+)
+[[ "${#host_candidate_args[@]}" == "14" ]] || die "canonical host-candidate argv emission failed"
+for argument in "${host_candidate_args[@]}"; do
+  extra_args+=(--host-candidate-arg="$argument")
+done
+if [[ -n "${GREENFIELD_MATRIX_INSTALL_MODE:-}" ]]; then
+  extra_args+=(--install-mode "$GREENFIELD_MATRIX_INSTALL_MODE")
+fi
+if [[ -n "${GREENFIELD_MATRIX_TELEMETRY_JSONL:-}" ]]; then
+  extra_args+=(--telemetry-jsonl "$GREENFIELD_MATRIX_TELEMETRY_JSONL")
+fi
+if [[ -n "${GREENFIELD_MATRIX_CAMPAIGN_PHASE:-}" ]]; then
+  extra_args+=(--campaign-phase "$GREENFIELD_MATRIX_CAMPAIGN_PHASE")
+fi
+if [[ -n "${GREENFIELD_MATRIX_STOP_AFTER_FAILURES:-}" ]]; then
+  extra_args+=(--stop-after-failures "$GREENFIELD_MATRIX_STOP_AFTER_FAILURES")
+fi
+if [[ -n "${GREENFIELD_MATRIX_STOP_AFTER_CLUSTER_FAILURES:-}" ]]; then
+  extra_args+=(--stop-after-cluster-failures "$GREENFIELD_MATRIX_STOP_AFTER_CLUSTER_FAILURES")
+fi
+if [[ "${GREENFIELD_MATRIX_REQUIRE_HIGH_VARIANCE_STRESSORS:-0}" == "1" ]]; then
+  extra_args+=(--require-high-variance-stressors)
+fi
+if [[ -n "${GREENFIELD_MATRIX_REQUIRED_STRESSORS:-}" ]]; then
+  IFS=',' read -r -a required_stressors <<< "$GREENFIELD_MATRIX_REQUIRED_STRESSORS"
+  for stressor in "${required_stressors[@]}"; do
+    if [[ -n "$stressor" ]]; then
+      extra_args+=(--required-stressor "$stressor")
+    fi
+  done
+fi
+
+set +e
+PYTHONPATH="$odylith_repo_root/src${PYTHONPATH:+:$PYTHONPATH}" \
+"$odylith_python" scripts/release/greenfield_preconfirm_matrix.py \
+  --dist-dir "$dist_dir" \
+  --version "$requested_version" \
+  --temp-parent "$wrapper_temp_root" \
+  --output-json "$proof_json" \
+  "${extra_args[@]}"
+controller_status=$?
+set -e
+if [[ "$controller_status" -ne 0 ]]; then
+  preserve_wrapper_temp_root=1
+  printf 'greenfield proof controller failed; retained temporary evidence at: %s\n' "$wrapper_temp_root" >&2
+  exit "$controller_status"
+fi

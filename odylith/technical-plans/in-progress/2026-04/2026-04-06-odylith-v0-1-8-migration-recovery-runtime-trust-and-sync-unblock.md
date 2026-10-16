@@ -133,18 +133,15 @@ Related Bugs:
 - [ ] [v0.1.8.md](/Users/freedom/code/odylith/odylith/runtime/source/release-notes/v0.1.8.md)
 
 ## Risks & Mitigations
+
 - [ ] Risk: helper extraction still grows oversized files indirectly.
-  - [ ] Mitigation: keep new runtime and sync policy in small adjacent modules
-        and use thin call-site glue only.
+  - [ ] Mitigation: keep new runtime and sync policy in small adjacent modules and use thin call-site glue only.
 - [ ] Risk: benign-warning suppression hides real verification errors.
-  - [ ] Mitigation: allowlist only known success-path warnings and preserve
-        fatal stderr on failure.
+  - [ ] Mitigation: allowlist only known success-path warnings and preserve fatal stderr on failure.
 - [ ] Risk: legacy Radar normalization overwrites authored rationale.
-  - [ ] Mitigation: backfill only missing required bullets and preserve
-        existing prose verbatim.
+  - [ ] Mitigation: backfill only missing required bullets and preserve existing prose verbatim.
 - [ ] Risk: stale-reference audit scans too much generated content.
-  - [ ] Mitigation: restrict to tracked text files outside managed runtime,
-        cache, and generated state trees.
+  - [ ] Mitigation: restrict to tracked text files outside managed runtime, cache, and generated state trees.
 
 ## Validation/Test Plan
 - [ ] `pytest -q tests/unit/install/test_runtime.py`
@@ -184,3 +181,20 @@ Related Bugs:
       a generic failure summary when version reports trust-degraded detail.
 - [ ] Runtime, migration, sync, and CLI hardening are still in progress as an
       umbrella wave.
+
+## Traceability
+
+Legacy-root migration and recovery; installed managed-runtime ownership and governed sync.
+
+### Runbooks
+
+- `docs/runbooks/odylith-migration.md`
+
+### Developer Docs
+
+- `docs/specs/odylith-repo-integration-contract.md`
+
+### Code References
+
+- `src/odylith/install/runtime_integrity.py`
+- `src/odylith/runtime/governance/sync_workstream_artifacts.py`

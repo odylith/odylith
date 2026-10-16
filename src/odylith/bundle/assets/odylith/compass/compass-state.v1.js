@@ -1,5 +1,129 @@
-    function params() {
-      const qs = new URLSearchParams(window.location.search);
+
+(() => {
+  'use strict';
+  const OFFER = 'odylith.frame-bridge.offer.v1';
+
+  function surface({readSnapshot}) {
+    const actor = Array.from(crypto.getRandomValues(new Uint8Array(16)),
+      byte => byte.toString(16).padStart(2, '0')).join('');
+    let port = null;
+    let disposed = false;
+    let pending = false;
+    let pendingRoute;
+    const embedded = window.parent !== window;
+
+    function publish() {
+      if (disposed || !port) return false;
+      port.postMessage({kind: 'snapshot', actor, snapshot: readSnapshot()});
+      return true;
+    }
+
+    function navigate(route) {
+      if (disposed || !embedded) return false;
+      if (port) port.postMessage({kind: 'navigate', actor, route});
+      else {
+        pending = true;
+        pendingRoute = route;
+      }
+      return true;
+    }
+
+    function offer(event) {
+      if (!event.data || event.data.type !== OFFER) return;
+      if (!embedded || event.source !== window.parent || event.ports.length !== 1) {
+        event.ports.forEach(candidate => candidate.close());
+        return;
+      }
+      if (port) port.close();
+      port = event.ports[0];
+      publish();
+      if (pending) {
+        const route = pendingRoute;
+        pending = false;
+        pendingRoute = undefined;
+        navigate(route);
+      }
+    }
+
+    function dispose() {
+      disposed = true;
+      window.removeEventListener('message', offer);
+      if (port) port.close();
+      port = null;
+      pending = false;
+      pendingRoute = undefined;
+    }
+
+    window.addEventListener('message', offer);
+    return {publish, navigate, dispose};
+  }
+
+  function frame({frame, onSnapshot, onNavigate, onActor}) {
+    let active = null;
+    let disposed = false;
+    let acceptedActor = null;
+
+    function revoke() {
+      const retired = active;
+      active = null;
+      if (retired) retired.close();
+    }
+
+    function bind() {
+      revoke();
+      if (disposed || !frame.contentWindow) return false;
+      const channel = new MessageChannel();
+      const port = channel.port1;
+      let portActor = null;
+      active = port;
+      port.addEventListener('message', event => {
+        if (disposed || active !== port || !event.data) return;
+        const data = event.data;
+        if (data.kind !== 'snapshot' && data.kind !== 'navigate') return;
+        if (typeof data.actor !== 'string' || data.actor.length !== 32 ||
+            (portActor !== null && portActor !== data.actor)) {
+          revoke();
+          return;
+        }
+        if (portActor === null) {
+          portActor = data.actor;
+          // Rebinding a port is not a new surface actor; a new Document is.
+          if (acceptedActor !== portActor) {
+            acceptedActor = portActor;
+            if (onActor) onActor(portActor);
+          }
+        }
+        // Actor notification may synchronously revoke, dispose, or replace this binding.
+        if (disposed || active !== port) return;
+        if (data.kind === 'snapshot') onSnapshot(data.snapshot);
+        else onNavigate(data.route);
+      });
+      port.start();
+      try {
+        // Opaque file origins need '*'; the capability is offered only to this frame.
+        frame.contentWindow.postMessage({type: OFFER}, '*', [channel.port2]);
+      } catch (error) {
+        revoke();
+        channel.port2.close();
+        throw error;
+      }
+      return true;
+    }
+
+    function dispose() {
+      disposed = true;
+      revoke();
+    }
+
+    // Navigation intent must revoke before changing the frame; callers bind on load.
+    return {bind, revoke, dispose};
+  }
+
+  window.OdylithFrameBridge = {surface, frame};
+})();
+
+    function params(search = window.location.search) {
+      const qs = new URLSearchParams(search);
       const windowToken = (qs.get("window") || "").trim().toLowerCase();
       const dateToken = (qs.get("date") || "live").trim();
       const scopeToken = (qs.get("scope") || "").trim();
@@ -17,6 +141,32 @@
         audit_day_pinned: DATE_RE.test(auditDayToken) || ((dateToken || "live") !== "live" && DATE_RE.test(dateToken)),
       };
     }
+
+    function compassRoute(state) {
+      return {
+        tab: "compass",
+        workstream: state.workstream,
+        window: state.window,
+        date: state.date,
+        audit_day: state.audit_day,
+      };
+    }
+
+    const compassRequestedRoute = compassRoute(params());
+    const compassInitialQuery = new URLSearchParams(window.location.search);
+    ["window", "date", "audit_day"].forEach((key) => {
+      if (!compassInitialQuery.has(key)) compassRequestedRoute[key] = "";
+    });
+    Object.freeze(compassRequestedRoute);
+    let compassRenderedRoute = null;
+    let compassRenderOutcome = "loading";
+    const compassFrameBridge = window.OdylithFrameBridge.surface({
+      readSnapshot: () => ({
+        requested: compassRequestedRoute,
+        rendered: compassRenderedRoute,
+        outcome: compassRenderOutcome,
+      }),
+    });
 
     const compassDisclosureStateMemory = Object.create(null);
 
@@ -493,76 +643,15 @@
       banner.title = text;
     }
 
-    function syncParentShellCompassUrl(query) {
-      try {
-        if (!window.parent || window.parent === window) return;
-        const parentLocation = window.parent.location;
-        if (!parentLocation || String(parentLocation.origin || "") !== String(window.location.origin || "")) return;
-        const parentUrl = new URL(String(parentLocation.href || ""));
-        const parentQuery = new URLSearchParams();
-        const scopeToken = String(query.get("scope") || "").trim();
-        const windowToken = String(query.get("window") || "").trim().toLowerCase();
-        const dateToken = String(query.get("date") || "").trim();
-        const auditDayToken = String(query.get("audit_day") || "").trim();
-
-        parentQuery.set("tab", "compass");
-        if (WORKSTREAM_RE.test(scopeToken)) {
-          parentQuery.set("scope", scopeToken);
-        }
-        if (windowToken === "24h" || windowToken === "48h") {
-          parentQuery.set("window", windowToken);
-        }
-        if (dateToken === "live" || DATE_RE.test(dateToken)) {
-          parentQuery.set("date", dateToken);
-        }
-        if (DATE_RE.test(auditDayToken)) {
-          parentQuery.set("audit_day", auditDayToken);
-        }
-
-        const nextSearch = parentQuery.toString();
-        const nextUrl = `${parentUrl.pathname}${nextSearch ? `?${nextSearch}` : ""}${parentUrl.hash || ""}`;
-        const currentUrl = `${parentLocation.pathname}${parentLocation.search}${parentLocation.hash}`;
-        if (nextUrl !== currentUrl) {
-          window.parent.history.replaceState(null, "", nextUrl);
-        }
-      } catch (_error) {
-        // Fall back to parent postMessage sync when direct same-origin history access is unavailable.
-      }
-    }
-
     function navigateCompass(nextQuery) {
       const query = nextQuery instanceof URLSearchParams
         ? nextQuery
         : new URLSearchParams(String(nextQuery || ""));
       query.delete("workstream");
       const localSearch = query.toString();
-
-      syncParentShellCompassUrl(query);
-
-      try {
-        if (window.parent && window.parent !== window) {
-          const scope = String(query.get("scope") || "").trim();
-          const windowToken = String(query.get("window") || "").trim().toLowerCase();
-          const dateToken = String(query.get("date") || "").trim();
-          const auditDayToken = String(query.get("audit_day") || "").trim();
-          window.parent.postMessage(
-            {
-              type: "odylith-compass-navigate",
-              state: {
-                tab: "compass",
-                scope: WORKSTREAM_RE.test(scope) ? scope : "",
-                window: (windowToken === "24h" || windowToken === "48h") ? windowToken : "48h",
-                date: (dateToken === "live" || DATE_RE.test(dateToken)) ? dateToken : "live",
-                audit_day: DATE_RE.test(auditDayToken) ? auditDayToken : "",
-              },
-            },
-            "*",
-          );
-        }
-      } catch (_error) {
-        // Fall through to local navigation when parent sync is unavailable.
-      }
-
+      const state = params(query);
+      if (state.date !== "live" && !DATE_RE.test(state.date)) state.date = "live";
+      if (compassFrameBridge.navigate({ route: compassRoute(state), replaceDocument: true })) return;
       window.location.search = localSearch;
     }
 
@@ -586,11 +675,15 @@
       if (!token) return false;
       return (
         token.includes("no snapshot available") ||
+        token.includes("compass snapshot is") ||
         token.includes("live runtime is") ||
         token.includes("refresh with `odylith") ||
         token.includes("falling back") ||
         token.includes("runtime unavailable") ||
         token.includes("brief reused") ||
+        token.includes("brief unavailable") ||
+        token.includes("brief needs another provider pass") ||
+        token.includes("not usable yet") ||
         token.includes("failed")
       );
     }
@@ -785,9 +878,9 @@
           await ensureEmbeddedHistoryLoaded();
           dates = normalizeHistoryIndexDates(window.__ODYLITH_COMPASS_HISTORY__);
         }
-        if (liveMeta && Array.isArray(liveMeta.dates) && liveMeta.dates.length) {
+        if (liveMeta && (Array.isArray(liveMeta.dates) || Array.isArray(liveMeta.restored_dates))) {
           dates = normalizeHistoryDateTokens([
-            ...liveMeta.dates,
+            ...(Array.isArray(liveMeta.dates) ? liveMeta.dates : []),
             ...(Array.isArray(liveMeta.restored_dates) ? liveMeta.restored_dates : []),
           ]);
         }
@@ -826,6 +919,181 @@
         payload: null,
         warning: warnOnFailure ? `No snapshot available for this day (${token}). Showing live runtime.` : "",
       };
+    }
+
+    function standupBriefIsReadyForFallback(brief) {
+      if (!brief || typeof brief !== "object") return false;
+      if (String(brief.status || "").trim() !== "ready") return false;
+      return Array.isArray(brief.sections) && brief.sections.length > 0;
+    }
+
+    function standupBriefWindowOrder(requestedWindow) {
+      const primary = requestedWindow === "24h" ? "24h" : "48h";
+      return primary === "24h" ? ["24h", "48h"] : ["48h", "24h"];
+    }
+
+    function historyGlobalStandupBrief(payload, windowKey) {
+      const standupBrief = payload && payload.standup_brief && typeof payload.standup_brief === "object"
+        ? payload.standup_brief
+        : {};
+      const brief = standupBrief[String(windowKey || "").trim()];
+      return standupBriefIsReadyForFallback(brief) ? brief : null;
+    }
+
+    function historyScopedStandupBrief(payload, windowKey, scopeId) {
+      const scoped = payload && payload.standup_brief_scoped && typeof payload.standup_brief_scoped === "object"
+        ? payload.standup_brief_scoped
+        : {};
+      const scopedWindow = scoped[String(windowKey || "").trim()];
+      if (!scopedWindow || typeof scopedWindow !== "object") return null;
+      const brief = scopedWindow[String(scopeId || "").trim()];
+      return standupBriefIsReadyForFallback(brief) ? brief : null;
+    }
+
+    function liveBriefFailureDiagnostics(brief) {
+      if (!brief || typeof brief !== "object") return {};
+      if (brief.diagnostics && typeof brief.diagnostics === "object") return brief.diagnostics;
+      if (brief.notice && typeof brief.notice === "object") return brief.notice;
+      return {};
+    }
+
+    function standupBriefCanUseHistoryFallback(brief) {
+      const diagnostics = liveBriefFailureDiagnostics(brief);
+      const reason = String(diagnostics.reason || "").trim().toLowerCase();
+      return reason !== "scoped_window_inactive";
+    }
+
+    function historyFallbackNotice(failedBrief, fallback) {
+      const diagnostics = liveBriefFailureDiagnostics(failedBrief);
+      const title = String(diagnostics.title || "Brief unavailable right now").trim();
+      const message = String(diagnostics.message || "Compass could not build the requested standup brief.").trim();
+      const reason = String(diagnostics.reason || "brief_unavailable").trim().toLowerCase() || "brief_unavailable";
+      const requestedWindow = fallback.requestedWindow === "24h" ? "24h" : "48h";
+      const fallbackWindow = fallback.window === "24h" ? "24-hour" : "48-hour";
+      const fallbackDate = String(fallback.date || "").trim();
+      const scopePrefix = fallback.scopeKind === "scoped" ? "scoped" : "global";
+      const dateCopy = fallbackDate ? ` from ${fallbackDate}` : "";
+      const messageParts = [
+        message,
+        fallback.window && fallback.window !== requestedWindow
+          ? `Compass is showing the last ready ${fallbackWindow} standup brief${dateCopy} while it retries the ${requestedWindow === "24h" ? "24-hour" : "48-hour"} brief.`
+          : `Compass is showing the last ready standup brief${dateCopy} while it retries.`,
+      ];
+      const notice = {
+        title,
+        message: messageParts.join(" ").trim(),
+        reason: `${scopePrefix}_${reason}_showing_previous`,
+      };
+      const nextRetryUtc = String(diagnostics.next_retry_utc || "").trim();
+      if (nextRetryUtc) notice.next_retry_utc = nextRetryUtc;
+      return notice;
+    }
+
+    function historyFallbackBrief(readyBrief, failedBrief, fallback) {
+      const cloned = cloneJsonPayload(readyBrief);
+      if (!cloned) return null;
+      cloned.notice = historyFallbackNotice(failedBrief, fallback);
+      cloned.history_fallback = {
+        mode: "runtime_history",
+        scope: fallback.scopeKind === "scoped" ? "scoped" : "global",
+        requested_window: fallback.requestedWindow === "24h" ? "24h" : "48h",
+        window: fallback.window === "24h" ? "24h" : "48h",
+        date: String(fallback.date || "").trim(),
+      };
+      return cloned;
+    }
+
+    async function latestReadyHistoryStandupBrief(payload, state, failedBrief) {
+      const scopedWorkstream = WORKSTREAM_RE.test(String(state && state.workstream ? state.workstream : "").trim())
+        ? String(state.workstream || "").trim()
+        : "";
+      const requestedWindow = state && state.window === "24h" ? "24h" : "48h";
+      const windows = standupBriefWindowOrder(requestedWindow);
+      const snapshotToken = runtimeSnapshotDayToken(payload);
+      const browserToken = toLocalDateToken(new Date());
+      const todayToken = snapshotToken || browserToken;
+      const liveToken = calendarMaxDateToken(payload);
+      const dates = await loadAvailableHistoryDates();
+      for (const dateToken of dates) {
+        if (!DATE_RE.test(dateToken)) continue;
+        if (dateToken === todayToken) continue;
+        if (dateToken === liveToken && (dateToken === snapshotToken || dateToken === browserToken)) continue;
+        const history = await loadHistorySnapshot(dateToken, { allowUnknownDirectFetch: false });
+        const historyPayload = history && history.payload && typeof history.payload === "object" ? history.payload : null;
+        if (!historyPayload || historyPayload === payload) continue;
+        if (scopedWorkstream) {
+          for (const windowKey of windows) {
+            const scopedBrief = historyScopedStandupBrief(historyPayload, windowKey, scopedWorkstream);
+            if (scopedBrief) {
+              return {
+                brief: historyFallbackBrief(scopedBrief, failedBrief, {
+                  scopeKind: "scoped",
+                  requestedWindow,
+                  window: windowKey,
+                  date: dateToken,
+                }),
+                scopeKind: "scoped",
+                scopeId: scopedWorkstream,
+                window: windowKey,
+                date: dateToken,
+              };
+            }
+          }
+        }
+        for (const windowKey of windows) {
+          const globalBrief = historyGlobalStandupBrief(historyPayload, windowKey);
+          if (globalBrief) {
+            return {
+              brief: historyFallbackBrief(globalBrief, failedBrief, {
+                scopeKind: scopedWorkstream ? "scoped" : "global",
+                requestedWindow,
+                window: windowKey,
+                date: dateToken,
+              }),
+              scopeKind: scopedWorkstream ? "scoped" : "global",
+              scopeId: scopedWorkstream,
+              window: windowKey,
+              date: dateToken,
+            };
+          }
+        }
+      }
+      return null;
+    }
+
+    async function augmentLiveStandupBriefFallback(payload, state) {
+      if (shellRedirectInProgress()) return payload;
+      if (!payload || typeof payload !== "object") return payload;
+      if (state.date !== "live") return payload;
+      const selectedBrief = standupBriefForState(payload, state);
+      if (standupBriefIsReadyForFallback(selectedBrief)) return payload;
+      if (!standupBriefCanUseHistoryFallback(selectedBrief)) return payload;
+      const fallback = await latestReadyHistoryStandupBrief(payload, state, selectedBrief);
+      if (!fallback || !fallback.brief) return payload;
+      const updated = { ...payload };
+      const windowKey = state.window === "24h" ? "24h" : "48h";
+      if (fallback.scopeId) {
+        const scoped = updated.standup_brief_scoped && typeof updated.standup_brief_scoped === "object"
+          ? { ...updated.standup_brief_scoped }
+          : {};
+        const scopedWindow = scoped[windowKey] && typeof scoped[windowKey] === "object" ? { ...scoped[windowKey] } : {};
+        scopedWindow[fallback.scopeId] = fallback.brief;
+        scoped[windowKey] = scopedWindow;
+        updated.standup_brief_scoped = scoped;
+        const digestScoped = updated.digest_scoped && typeof updated.digest_scoped === "object" ? { ...updated.digest_scoped } : {};
+        const digestWindow = digestScoped[windowKey] && typeof digestScoped[windowKey] === "object" ? { ...digestScoped[windowKey] } : {};
+        digestWindow[fallback.scopeId] = standupBriefToDigestLines(fallback.brief);
+        digestScoped[windowKey] = digestWindow;
+        updated.digest_scoped = digestScoped;
+      } else {
+        const standupBrief = updated.standup_brief && typeof updated.standup_brief === "object" ? { ...updated.standup_brief } : {};
+        standupBrief[windowKey] = fallback.brief;
+        updated.standup_brief = standupBrief;
+        const digest = updated.digest && typeof updated.digest === "object" ? { ...updated.digest } : {};
+        digest[windowKey] = standupBriefToDigestLines(fallback.brief);
+        updated.digest = digest;
+      }
+      return updated;
     }
 
     async function loadRuntime(state) {
@@ -1532,7 +1800,5 @@
       if (String(state && state.date ? state.date : "live") !== "live") return "";
       const ageMinutes = runtimeAgeMinutes(payload);
       if (ageMinutes === null || ageMinutes < 90) return "";
-      const snapshot = runtimeSnapshotDate(payload);
-      const snapshotLabel = snapshot ? formatDateTimeInCompassTimeZone(snapshot) : "unknown time";
-      return `Compass snapshot ${snapshotLabel} is ${formatRuntimeAge(ageMinutes)} old; timeline stays pinned there. Refresh: \`odylith dashboard refresh --repo-root .\` or ask agent \`Refresh Compass runtime for this repo.\``;
+      return `Compass snapshot is ${formatRuntimeAge(ageMinutes)} old; timeline pinned.`;
     }

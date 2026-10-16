@@ -13,16 +13,19 @@
   <link rel="icon" type="image/png" sizes="16x16" href="../surfaces/brand/favicon/favicon-16.png" />
   <link rel="apple-touch-icon" sizes="256x256" href="../surfaces/brand/icon/odylith-icon-256x256.png" />
   <link rel="mask-icon" href="../surfaces/brand/icon/odylith-icon-monochrome.svg" color="#173f83" />
-  <link rel="stylesheet" href="compass-style-base.v1.css?v=1776382192882020422" />
-  <link rel="stylesheet" href="compass-style-execution-waves.v1.css?v=1777792098324232433" />
-  <link rel="stylesheet" href="compass-style-surface.v1.css?v=1775757431138420548" />
+  <link rel="stylesheet" href="compass-style-base.v1.css?v=1791522479534335067" />
+  <link rel="stylesheet" href="compass-style-execution-waves.v1.css?v=1783259767965633093" />
+  <link rel="stylesheet" href="compass-style-surface.v1.css?v=1790194732423330768" />
 </head>
 <body data-surface-ready="loading">
   <main class="shell">
     <section class="hero">
       <h1>Executive Compass</h1>
       <p class="subtitle">Current workstream direction, risks, and runtime evidence across Radar, plans, bugs, and Atlas traceability.</p>
-      <section class="stats" id="kpi-grid"></section>
+      <details class="brief-evidence">
+        <summary class="brief-evidence-toggle">Activity and counts</summary>
+        <section class="stats" id="kpi-grid"></section>
+      </details>
       <div class="controls" id="controls">
         <button class="pill" data-window="24h" type="button">24h Window</button>
         <button class="pill" data-window="48h" type="button">48h Window</button>
@@ -113,26 +116,23 @@
     }
     window.__ODYLITH_SHELL_REDIRECTING__ = true;
     window.__ODYLITH_SHELL_REDIRECT_TARGET__ = shellUrl.toString();
-    if (typeof window.stop === "function") {
-      window.stop();
-    }
     targetWindow.location.replace(shellUrl.toString());
   } catch (_error) {
     // Fail open so embedded surfaces can still load if canonical shell handoff cannot be resolved.
   }
 })();
 </script>
-  <script src="compass-shared.v1.js?v=1776615408115680319"></script>
-  <script src="compass-runtime-truth.v1.js?v=1776703704398400032"></script>
-  <script src="compass-state.v1.js?v=1777869440277728617"></script>
-  <script src="compass-summary.v1.js?v=1777792095872542270"></script>
-  <script src="compass-timeline.v1.js?v=1775792032862262699"></script>
-  <script src="compass-waves.v1.js?v=1777792095351807687"></script>
-  <script src="compass-releases.v1.js?v=1777792098669319028"></script>
-  <script src="compass-workstreams.v1.js?v=1777567205238545382"></script>
-  <script src="compass-ui-runtime.v1.js?v=1777792095872685979"></script>
-  <script src="runtime/current.v1.js?v=1777876991161975049"></script>
-  <script id="compassShellData" src="compass-payload.v1.js?v=d58df77e8fa0"></script>
-  <script src="compass-app.v1.js?v=d58df77e8fa0"></script>
+  <script src="compass-shared.v1.js?v=1779083732000000000"></script>
+  <script src="compass-runtime-truth.v1.js?v=1776703704000000000"></script>
+  <script src="compass-state.v1.js?v=1790194732416734483"></script>
+  <script src="compass-summary.v1.js?v=1791522479536578543"></script>
+  <script src="compass-timeline.v1.js?v=1791522479537263464"></script>
+  <script src="compass-waves.v1.js?v=1778134656000000000"></script>
+  <script src="compass-releases.v1.js?v=1778377529000000000"></script>
+  <script src="compass-workstreams.v1.js?v=1791522479538375515"></script>
+  <script src="compass-ui-runtime.v1.js?v=1791308173413631010"></script>
+  <script src="runtime/current.v1.js?v=1791945585746842488"></script>
+  <script id="compassShellData" src="compass-payload.v1.js?v=4746cdfa153e"></script>
+  <script src="compass-app.v1.js?v=4746cdfa153e"></script>
 </body>
 </html>

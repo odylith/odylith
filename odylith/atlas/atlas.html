@@ -381,7 +381,7 @@
       min-height: calc(100vh - 40px);
     }
 
-    .hero {
+        .hero {
       display: grid;
       gap: 10px;
       min-width: 0;
@@ -516,17 +516,7 @@
       flex-wrap: wrap;
       gap: 8px;
       align-items: center;
-      justify-content: flex-end;
-    }
-
-    .source-links-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      justify-content: flex-end;
-      width: 100%;
-      min-width: 0;
+      justify-content: flex-start;
     }
 
     .source-link {
@@ -557,7 +547,7 @@
       background: #ffffff;
       overflow: hidden;
       display: grid;
-      grid-template-rows: auto 1fr;
+      grid-template-rows: auto auto minmax(560px, 1fr);
       min-height: 660px;
     }
 
@@ -594,6 +584,11 @@
       --chip-link-text-hover: #0b645f;
     }
 
+    .viewer-shell .tool-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
     .viewer-stage {
       position: relative;
       overflow: hidden;
@@ -605,6 +600,17 @@
 
     .viewer-stage.dragging {
       cursor: grabbing;
+    }
+
+    .viewer-stage:focus {
+      outline: 3px solid #0369a1;
+      outline-offset: -3px;
+    }
+
+    .viewer-instructions {
+      margin: 0;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
     }
 
     .viewer-image {
@@ -619,10 +625,25 @@
       user-select: none;
     }
 
+    .diagram-heading {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .diagram-heading .hero-title { flex: 1 1 220px; }
+    .hero .summary:empty { display: none; }
+    .diagram-metadata > summary { cursor: pointer; }
+    .diagram-metadata[open] > summary { margin-bottom: 12px; }
+    .diagram-metadata .source-links { margin: 12px 0; }
+
     .details-grid {
       display: grid;
+      align-content: start;
       gap: 12px;
-      grid-template-columns: 1.2fr 0.8fr;
+      grid-template-columns: minmax(0, 1fr);
       min-width: 0;
     }
 
@@ -630,44 +651,242 @@
       min-width: 0;
       max-width: 100%;
       border: 1px solid var(--border);
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.88);
-      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 16px;
     }
 
     .section h3 {
+      margin: 0 0 12px;
     }
 
     .summary {
       margin: 0;
+      color: #34475d;
+      font-size: 1rem;
+      line-height: 1.45;
+    }
+
+    .diagram-explanation-section {
+      display: grid;
+      align-content: start;
+      gap: 14px;
+    }
+
+    .diagram-guide-panel:has(> .read-guide-body:empty) { display: none; }
+
+    .diagram-guide-panel {
+      display: grid;
+      align-content: start;
+      border: 1px solid rgba(3, 105, 161, 0.14);
+      border-radius: 10px;
+      background: rgba(248, 252, 255, 0.92);
+      padding: 11px 12px;
+      min-width: 0;
+    }
+
+    .diagram-guide-panel .artifact-label {
+      margin-bottom: 5px;
+    }
+
+    .read-guide-body {
+      margin: 0;
+      color: #34475d;
+      font-size: 1rem;
+      line-height: 1.45;
+    }
+
+    .read-guide > summary {
+      cursor: pointer;
+    }
+
+    .diagram-box-section,
+    .ownership-section {
+      display: grid;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .diagram-box-section[hidden] {
+      display: none;
+    }
+
+    .diagram-box-list {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      min-width: 0;
+      border: 1px solid rgba(3, 105, 161, 0.14);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.94);
+      overflow: hidden;
+    }
+
+    .diagram-box-row {
+      display: grid;
+      grid-template-columns: 38px minmax(170px, 0.42fr) minmax(0, 1fr);
+      gap: 11px;
+      align-items: start;
+      min-width: 0;
+      padding: 9px 11px;
+      border-bottom: 1px solid rgba(3, 105, 161, 0.12);
+    }
+
+    .diagram-box-row:last-child {
+      border-bottom: 0;
+    }
+
+    .diagram-box-index {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 24px;
+      border: 1px solid rgba(13, 68, 104, 0.2);
+      border-radius: 999px;
+      color: #294961;
+      background: rgba(248, 252, 255, 0.96);
+      font-weight: 700;
+      font-size: 0.76rem;
+    }
+
+    .diagram-box-name {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .diagram-box-role {
+  --label-bg: #f6faf7;
+  --label-border: #d7e2dc;
+  --label-text: #334155;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--label-border);
+  border-radius: 4px;
+  min-height: 0px;
+  padding: 3px 8px;
+  color: var(--label-text);
+  background: var(--label-bg);
+  box-shadow: none;
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: default;
+}
+
+.diagram-box-role {
+  color: #334155;
+  font-size: 11px;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  font-weight: 700;
+  text-transform: none;
+}
+    .diagram-box-name strong,
+    .diagram-box-role,
+    .diagram-box-description {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .diagram-box-role {
+      width: fit-content;
+      max-width: 100%;
+      justify-content: flex-start;
+    }
+
+    .diagram-box-description {
+      margin: 0;
+      min-width: 0;
+    }
+
+    .diagram-box-content {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .diagram-box-details {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .diagram-box-details > summary {
+      cursor: pointer;
+      color: #36566f;
+    }
+
+    .diagram-box-details > summary:focus-visible {
+      outline: 2px solid #0369a1;
+      outline-offset: 2px;
+    }
+
+    .diagram-box-details dl {
+      margin: 8px 0 0;
+    }
+
+    .diagram-box-details dt {
+      font-weight: 600;
+      white-space: pre-wrap;
+    }
+
+    .diagram-box-details dd {
+      margin: 3px 0 10px;
+      white-space: pre-wrap;
     }
 
     .component-list {
-      margin-top: 11px;
+      margin-top: 0;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 8px;
       min-width: 0;
       max-width: 100%;
+      border: 0;
+      background: transparent;
+      overflow: visible;
     }
 
     .component-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 6px;
+      align-items: start;
       min-width: 0;
       max-width: 100%;
-      border: 1px solid rgba(3, 105, 161, 0.17);
+      border: 1px solid rgba(3, 105, 161, 0.14);
       border-radius: 10px;
-      padding: 9px 10px;
-      background: rgba(255, 255, 255, 0.95);
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.94);
     }
 
     .component-card strong {
       display: block;
     }
 
+    .component-heading {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px 8px;
+      align-items: baseline;
+      min-width: 0;
+    }
+
+    .component-token {
+      display: block;
+      margin: 2px 0 0;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
     .component-card p {
       margin: 0;
+      max-width: 72ch;
     }
-    .summary, .component-card p {
+    .summary, .read-guide-body, .component-card p {
   font-size: 15px;
   line-height: 1.55;
   color: #27445e;
@@ -686,6 +905,12 @@
       margin-bottom: 0;
     }
 
+    .artifact-group:has(> #ownerWorkstreamLinks:empty),
+    .artifact-group:has(> #activeWorkstreamLinks:empty),
+    .workstream-context:has(> .artifact-group > #ownerWorkstreamLinks:empty):has(> .artifact-group > #activeWorkstreamLinks:empty):has(> #historicalWorkstreamGroup[hidden]) {
+      display: none;
+    }
+
     .artifact-label {
       margin: 0 0 6px 0;
     }
@@ -699,6 +924,50 @@
   text-transform: uppercase;
 }
 
+    .engineering-context-list {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      min-width: 0;
+      border: 1px solid rgba(3, 105, 161, 0.14);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.94);
+      overflow: hidden;
+    }
+
+    .linked-context-section .artifact-group {
+      display: grid;
+      grid-template-columns: minmax(150px, 210px) minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 0;
+      min-width: 0;
+      padding: 10px 11px;
+      border-bottom: 1px solid rgba(3, 105, 161, 0.12);
+    }
+
+    .linked-context-section .artifact-group:last-child {
+      border-bottom: 0;
+    }
+
+    .linked-context-section .artifact-group:has(> .artifact-list:empty) {
+      display: none;
+    }
+
+    .engineering-context-empty {
+      margin: 0;
+      padding: 10px 11px;
+      color: #34475d;
+      overflow-wrap: anywhere;
+    }
+
+    .engineering-context-list:has(> .artifact-group > .artifact-list:not(:empty)) > .engineering-context-empty {
+      display: none;
+    }
+
+    .linked-context-section .artifact-label {
+      margin: 0;
+    }
+
     .artifact-list {
       list-style: none;
       margin: 0;
@@ -708,6 +977,12 @@
       gap: 6px;
       min-width: 0;
       max-width: 100%;
+    }
+
+    .linked-context-section .artifact-list {
+      max-height: none;
+      overflow: visible;
+      padding-right: 0;
     }
 
     .workstream-context-list {
@@ -739,12 +1014,12 @@
     }
 
     .atlas-context-disclosure > summary::before {
-      content: "▸";
+      content: "\\25B8";
       color: #5d7389;
     }
 
     .atlas-context-disclosure[open] > summary::before {
-      content: "▾";
+      content: "\\25BE";
     }
 
     .atlas-context-disclosure[open] > summary {
@@ -836,7 +1111,7 @@
 
 .artifact-list a.workstream-pill-link {
   font-family: inherit;
-  color: #1f4795;
+  color: var(--chip-link-text);
   font-size: var(--surface-workstream-button-font-size, 12px);
   line-height: 1;
   letter-spacing: 0.01em;
@@ -846,6 +1121,23 @@
 
     .artifact-list a.workstream-pill-link:hover {
       border-bottom: 0;
+    }
+
+    @media (max-width: 760px) {
+      .diagram-facts { grid-template-columns: 1fr; }
+
+      .diagram-box-row,
+      .component-card,
+      .linked-context-section .artifact-group {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
+      }
+    }
+        .main > [hidden], #atlasProjectLink[hidden] { display: none; }
+    .main[data-selection-empty="true"] {
+      min-height: 0;
+      grid-template-rows: auto;
+      align-content: start;
     }
 
     .diagram-name {
@@ -892,6 +1184,14 @@
   letter-spacing: 0em;
   font-weight: 700;
   text-transform: none;
+}
+
+.component-token {
+  color: #66788c;
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: 400;
+  letter-spacing: 0em;
 }
 
 .context-tag {
@@ -963,6 +1263,14 @@
         height: auto;
       }
 
+      .main {
+        order: 1;
+      }
+
+      .sidebar {
+        order: 2;
+      }
+
       .details-grid {
         grid-template-columns: 1fr;
       }
@@ -983,9 +1291,6 @@
         grid-template-columns: 1fr;
       }
 
-      .diagram-facts {
-        grid-template-columns: 1fr;
-      }
     }
   </style>
 </head>
@@ -1043,13 +1348,68 @@
         <div class="stat"><p class="k" id="statStale">0</p><p class="l">Needs Update</p></div>
       </div>
 
+      <p id="diagramListStatus" class="empty-note" role="status" hidden></p>
       <ul id="diagramList" class="diagram-list"></ul>
     </aside>
 
     <main class="panel main">
-      <section class="hero">
+            <section id="atlasEmptyState" class="section" aria-labelledby="atlasEmptyTitle" hidden>
+        <h2 id="atlasEmptyTitle"></h2>
+        <p id="atlasEmptyMessage"></p>
+        <a id="atlasProjectLink" class="tool-btn" target="_top">Open Project</a>
+      </section>
+            <section class="hero">
         <div class="hero-copy">
-          <h2 id="diagramTitle" class="hero-title"></h2>
+          <div class="diagram-heading">
+            <h2 id="diagramTitle" class="hero-title"></h2>
+            <button id="sidebarToggle" class="tool-btn" type="button" aria-controls="sidebarPanel" aria-expanded="true">Hide Panel</button>
+          </div>
+          <section id="staleAlert" class="alert" role="status"></section>
+          <p id="diagramSummary" class="summary"></p>
+        </div>
+      </section>
+
+      <section class="viewer-shell">
+        <div class="viewer-toolbar">
+          <div class="viewer-toolbar-left">
+            <span id="zoomReadout" class="meta-pill">Zoom 100%</span>
+            <span class="meta-pill">Pinch: zoom</span>
+            <span class="meta-pill">Drag: pan</span>
+            <span class="meta-pill">Shortcuts: + - 0 f</span>
+          </div>
+          <div class="viewer-toolbar-right">
+            <button id="prevDiagram" class="tool-btn" type="button">Prev</button>
+            <button id="nextDiagram" class="tool-btn" type="button">Next</button>
+            <button id="zoomIn" class="tool-btn" type="button">Zoom +</button>
+            <button id="zoomOut" class="tool-btn" type="button">Zoom -</button>
+            <button id="fit" class="tool-btn" type="button">Fit</button>
+            <button id="reset" class="tool-btn" type="button">Read at 100%</button>
+          </div>
+        </div>
+        <p id="viewerInstructions" class="viewer-instructions">Tab to diagram: arrows pan; Shift pans farther. +/− zoom; 0 reads at 100%; F fits. Outside diagram, ↑/↓ select.</p>
+        <div id="viewerStage" class="viewer-stage" tabindex="0" role="region" aria-labelledby="diagramTitle" aria-describedby="viewerInstructions">
+          <img id="viewerImage" class="viewer-image" alt="diagram visualization" draggable="false" hidden />
+        </div>
+      </section>
+
+      <section class="details-grid">
+        <article class="section diagram-explanation-section">
+          <details class="diagram-guide-panel read-guide">
+              <summary class="artifact-label">How to read this diagram</summary>
+              <p id="diagramReadGuide" class="read-guide-body"></p>
+            </details>
+          <div id="diagramBoxesSection" class="diagram-box-section" hidden>
+            <p class="artifact-label">Boxes In This Diagram</p>
+            <div id="diagramBoxList" class="diagram-box-list"></div>
+          </div>
+          <details class="ownership-section">
+            <summary class="artifact-label">Owning components</summary>
+            <div id="componentList" class="component-list"></div>
+          </details>
+        </article>
+
+        <details class="section diagram-metadata">
+          <summary class="artifact-label">Diagram details</summary>
           <div class="diagram-facts" role="list">
             <div class="diagram-fact" data-fact="diagram-id" role="listitem">
               <p class="diagram-fact-label">Diagram ID</p>
@@ -1076,90 +1436,57 @@
               <p id="diagramFreshness" class="diagram-fact-value"></p>
             </div>
           </div>
-        </div>
-        <div class="source-links-wrap">
-          <button id="sidebarToggle" class="tool-btn" type="button" aria-controls="sidebarPanel" aria-expanded="true">Hide Panel</button>
           <div id="sourceLinks" class="source-links"></div>
-        </div>
-      </section>
+          <section class="workstream-context">
+            <h3>Connected Workstream Context</h3>
+            <div class="artifact-group">
+              <p class="artifact-label">Owners</p>
+              <ul id="ownerWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
+            </div>
+            <div class="artifact-group">
+              <p class="artifact-label">Active Touches</p>
+              <ul id="activeWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
+            </div>
+            <div id="historicalWorkstreamGroup" class="artifact-group" hidden>
+              <p class="artifact-label">Historical References</p>
+              <details id="historicalWorkstreamDisclosure" class="atlas-context-disclosure">
+                <summary id="historicalWorkstreamSummary"></summary>
+                <ul id="historicalWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
+              </details>
+            </div>
+          </section>
+        </details>
 
-      <section id="staleAlert" class="alert"></section>
-
-      <article class="section">
-        <h3>Connected Workstream Context</h3>
-        <div class="artifact-group">
-          <p class="artifact-label">Owners</p>
-          <ul id="ownerWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
-        </div>
-        <div class="artifact-group">
-          <p class="artifact-label">Active Touches</p>
-          <ul id="activeWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
-        </div>
-        <div id="historicalWorkstreamGroup" class="artifact-group" hidden>
-          <p class="artifact-label">Historical References</p>
-          <details id="historicalWorkstreamDisclosure" class="atlas-context-disclosure">
-            <summary id="historicalWorkstreamSummary"></summary>
-            <ul id="historicalWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
-          </details>
-        </div>
-      </article>
-
-      <section class="viewer-shell">
-        <div class="viewer-toolbar">
-          <div class="viewer-toolbar-left">
-            <span id="zoomReadout" class="meta-pill">Zoom 100%</span>
-            <span class="meta-pill">Pinch: zoom</span>
-            <span class="meta-pill">Drag: pan</span>
-            <span class="meta-pill">Shortcuts: + - 0 f ↑ ↓</span>
+        <details class="section linked-context-section">
+          <summary class="artifact-label">Linked records</summary>
+          <div class="engineering-context-list">
+            <p class="engineering-context-empty" role="status">No engineering context is linked to this diagram yet.</p>
+            <div class="artifact-group">
+              <p class="artifact-label">Backlog</p>
+              <ul id="backlogLinks" class="artifact-list"></ul>
+            </div>
+            <div class="artifact-group">
+              <p class="artifact-label">Plans</p>
+              <ul id="planLinks" class="artifact-list"></ul>
+            </div>
+            <div class="artifact-group">
+              <p class="artifact-label">Developer Docs</p>
+              <ul id="docLinks" class="artifact-list"></ul>
+            </div>
+            <div class="artifact-group">
+              <p class="artifact-label">Implementation Code</p>
+              <ul id="codeLinks" class="artifact-list"></ul>
+            </div>
+            <div class="artifact-group">
+              <p class="artifact-label">Registry Components</p>
+              <ul id="registryLinks" class="artifact-list"></ul>
+            </div>
+            <div class="artifact-group">
+              <p class="artifact-label">Operator Surfaces</p>
+              <ul id="surfaceLinks" class="artifact-list"></ul>
+            </div>
           </div>
-          <div class="viewer-toolbar-right">
-            <button id="prevDiagram" class="tool-btn" type="button">Prev</button>
-            <button id="nextDiagram" class="tool-btn" type="button">Next</button>
-            <button id="zoomIn" class="tool-btn" type="button">Zoom +</button>
-            <button id="zoomOut" class="tool-btn" type="button">Zoom -</button>
-            <button id="fit" class="tool-btn" type="button">Fit</button>
-            <button id="reset" class="tool-btn" type="button">Reset</button>
-          </div>
-        </div>
-        <div id="viewerStage" class="viewer-stage">
-          <img id="viewerImage" class="viewer-image" alt="diagram visualization" draggable="false" />
-        </div>
-      </section>
-
-      <section class="details-grid">
-        <article class="section">
-          <h3>What This Diagram Constitutes</h3>
-          <p id="diagramSummary" class="summary"></p>
-          <div id="componentList" class="component-list"></div>
-        </article>
-
-        <article class="section">
-          <h3>Linked Engineering Context</h3>
-          <div class="artifact-group">
-            <p class="artifact-label">Backlog</p>
-            <ul id="backlogLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Plans</p>
-            <ul id="planLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Developer Docs</p>
-            <ul id="docLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Implementation Code</p>
-            <ul id="codeLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Registry Components</p>
-            <ul id="registryLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Operator Surfaces</p>
-            <ul id="surfaceLinks" class="artifact-list"></ul>
-          </div>
-        </article>
+        </details>
       </section>
     </main>
   </div>
@@ -1204,16 +1531,137 @@
     }
     window.__ODYLITH_SHELL_REDIRECTING__ = true;
     window.__ODYLITH_SHELL_REDIRECT_TARGET__ = shellUrl.toString();
-    if (typeof window.stop === "function") {
-      window.stop();
-    }
     targetWindow.location.replace(shellUrl.toString());
   } catch (_error) {
     // Fail open so embedded surfaces can still load if canonical shell handoff cannot be resolved.
   }
 })();
 </script>
-  <script id="catalogData" src="mermaid-payload.v1.js?v=2859f3af6081"></script>
-  <script src="mermaid-app.v1.js?v=2859f3af6081"></script>
+  <script id="catalogData" src="mermaid-payload.v1.js?v=585a997df0cb"></script>
+  <script>
+(() => {
+  'use strict';
+  const OFFER = 'odylith.frame-bridge.offer.v1';
+
+  function surface({readSnapshot}) {
+    const actor = Array.from(crypto.getRandomValues(new Uint8Array(16)),
+      byte => byte.toString(16).padStart(2, '0')).join('');
+    let port = null;
+    let disposed = false;
+    let pending = false;
+    let pendingRoute;
+    const embedded = window.parent !== window;
+
+    function publish() {
+      if (disposed || !port) return false;
+      port.postMessage({kind: 'snapshot', actor, snapshot: readSnapshot()});
+      return true;
+    }
+
+    function navigate(route) {
+      if (disposed || !embedded) return false;
+      if (port) port.postMessage({kind: 'navigate', actor, route});
+      else {
+        pending = true;
+        pendingRoute = route;
+      }
+      return true;
+    }
+
+    function offer(event) {
+      if (!event.data || event.data.type !== OFFER) return;
+      if (!embedded || event.source !== window.parent || event.ports.length !== 1) {
+        event.ports.forEach(candidate => candidate.close());
+        return;
+      }
+      if (port) port.close();
+      port = event.ports[0];
+      publish();
+      if (pending) {
+        const route = pendingRoute;
+        pending = false;
+        pendingRoute = undefined;
+        navigate(route);
+      }
+    }
+
+    function dispose() {
+      disposed = true;
+      window.removeEventListener('message', offer);
+      if (port) port.close();
+      port = null;
+      pending = false;
+      pendingRoute = undefined;
+    }
+
+    window.addEventListener('message', offer);
+    return {publish, navigate, dispose};
+  }
+
+  function frame({frame, onSnapshot, onNavigate, onActor}) {
+    let active = null;
+    let disposed = false;
+    let acceptedActor = null;
+
+    function revoke() {
+      const retired = active;
+      active = null;
+      if (retired) retired.close();
+    }
+
+    function bind() {
+      revoke();
+      if (disposed || !frame.contentWindow) return false;
+      const channel = new MessageChannel();
+      const port = channel.port1;
+      let portActor = null;
+      active = port;
+      port.addEventListener('message', event => {
+        if (disposed || active !== port || !event.data) return;
+        const data = event.data;
+        if (data.kind !== 'snapshot' && data.kind !== 'navigate') return;
+        if (typeof data.actor !== 'string' || data.actor.length !== 32 ||
+            (portActor !== null && portActor !== data.actor)) {
+          revoke();
+          return;
+        }
+        if (portActor === null) {
+          portActor = data.actor;
+          // Rebinding a port is not a new surface actor; a new Document is.
+          if (acceptedActor !== portActor) {
+            acceptedActor = portActor;
+            if (onActor) onActor(portActor);
+          }
+        }
+        // Actor notification may synchronously revoke, dispose, or replace this binding.
+        if (disposed || active !== port) return;
+        if (data.kind === 'snapshot') onSnapshot(data.snapshot);
+        else onNavigate(data.route);
+      });
+      port.start();
+      try {
+        // Opaque file origins need '*'; the capability is offered only to this frame.
+        frame.contentWindow.postMessage({type: OFFER}, '*', [channel.port2]);
+      } catch (error) {
+        revoke();
+        channel.port2.close();
+        throw error;
+      }
+      return true;
+    }
+
+    function dispose() {
+      disposed = true;
+      revoke();
+    }
+
+    // Navigation intent must revoke before changing the frame; callers bind on load.
+    return {bind, revoke, dispose};
+  }
+
+  window.OdylithFrameBridge = {surface, frame};
+})();
+</script>
+  <script src="mermaid-app.v1.js?v=585a997df0cb"></script>
 </body>
 </html>

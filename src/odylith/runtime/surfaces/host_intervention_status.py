@@ -5,54 +5,28 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-import re
 import sys
+import tomllib
 from typing import Any
 from typing import Mapping
 
 from odylith.common.json_objects import load_json_object as _load_json
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import claude_cli_capabilities
+from odylith.runtime.common import codex_cli_capabilities
 from odylith.runtime.intervention_engine import delivery_ledger
 from odylith.runtime.intervention_engine import visibility_contract
 from odylith.runtime.intervention_engine import visibility_broker
 from odylith.runtime.intervention_engine import visibility_replay
 from odylith.runtime.intervention_engine.visibility_contract import normalize_string as _normalize_string
 from odylith.runtime.intervention_engine.visibility_contract import normalize_token as _normalize_token
-def _matcher_tokens(value: Any) -> set[str]:
-    matcher = _normalize_string(value)
-    if matcher in {"*", ".*"}:
-        return {"*"}
-    return {token.strip() for token in re.split(r"[|,\s]+", matcher) if token.strip()}
 
 
-def _matcher_covers(value: Any, required: tuple[str, ...]) -> bool:
-    tokens = _matcher_tokens(value)
-    return "*" in tokens or all(token in tokens for token in required)
-
-
-def _codex_hook_command_present(
-    payload: Mapping[str, Any],
-    event_name: str,
-    command_token: str,
-    *,
-    matcher_tokens: tuple[str, ...] = (),
-) -> bool:
-    bucket = payload.get(event_name)
-    if not isinstance(bucket, list):
-        return False
-    for group in bucket:
-        if not isinstance(group, Mapping):
-            continue
-        if not _matcher_covers(group.get("matcher"), matcher_tokens):
-            continue
-        hooks = group.get("hooks")
-        if not isinstance(hooks, list):
-            continue
-        for hook in hooks:
-            if isinstance(hook, Mapping) and command_token in str(hook.get("command") or ""):
-                return True
-    return False
+_SUPPORTED_HOST_FAMILIES = ("codex", "claude")
+_CODEX_NATIVE_PROMPT_CHANNEL = "system_message_and_assistant_fallback"
+_CODEX_NATIVE_PROMPT_SURFACE = "codex_user_prompt_submit"
+_CODEX_NATIVE_CONFIRMATION_CHANNEL = "assistant_chat_transcript"
+_CODEX_NATIVE_CONFIRMATION_SURFACE = "codex_stop"
 
 
 def _codex_hooks_feature_configured(repo_root: Path) -> bool:
@@ -60,33 +34,36 @@ def _codex_hooks_feature_configured(repo_root: Path) -> bool:
     if not path.is_file():
         return False
     try:
-        text = path.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
+        configuration = tomllib.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError):
         return False
-    return bool(re.search(r"(?m)^\s*codex_hooks\s*=\s*true\s*$", text))
+    features = configuration.get("features")
+    return isinstance(features, dict) and features.get("hooks", features.get("codex_hooks")) is True
 
 
 def _codex_static_readiness(repo_root: Path) -> dict[str, Any]:
-    hooks = _load_json(repo_root / ".codex" / "hooks.json")
+    hooks = codex_cli_capabilities.load_codex_hook_map(repo_root)
     checks = {
         "launcher": (repo_root / ".odylith" / "bin" / "odylith").is_file(),
         "repo_guidance": (repo_root / "AGENTS.md").is_file(),
         "codex_hooks_feature_configured": _codex_hooks_feature_configured(repo_root),
-        "prompt_context_hook": _codex_hook_command_present(hooks, "UserPromptSubmit", "codex prompt-context"),
-        "post_bash_checkpoint_hook": _codex_hook_command_present(
+        "prompt_context_hook": codex_cli_capabilities.codex_hook_command_present(hooks, "UserPromptSubmit", "codex prompt-context"),
+        "post_bash_checkpoint_hook": codex_cli_capabilities.codex_hook_command_present(
             hooks,
             "PostToolUse",
             "codex post-bash-checkpoint",
-            matcher_tokens=("Bash",),
+            required_matcher_tokens=("Bash",),
         ),
-        "stop_summary_hook": _codex_hook_command_present(hooks, "Stop", "codex stop-summary"),
+        "stop_summary_hook": codex_cli_capabilities.codex_hook_command_present(hooks, "Stop", "codex stop-summary"),
     }
     return {
         "host_family": "codex",
         "ready": all(checks.values()),
         "checks": checks,
         "activation_note": (
-            "Codex hook wiring is statically ready; trusted-project approval and a fresh/reloaded session are still required for live host delivery."
+            "These checks cover configuration only, not native execution or chat visibility. "
+            "Codex requires project trust and review of each exact hook definition in /hooks; "
+            "changed definitions require review again. Use a fresh/reloaded session for live delivery proof."
         ),
     }
 
@@ -132,6 +109,13 @@ def _claude_static_readiness(repo_root: Path) -> dict[str, Any]:
 
 def _static_readiness(*, repo_root: Path, host_family: str) -> dict[str, Any]:
     host = _normalize_token(host_family)
+    if host not in _SUPPORTED_HOST_FAMILIES:
+        return {
+            "host_family": host or "unknown",
+            "ready": False,
+            "checks": {"supported_host": False},
+            "activation_note": "This host is not yet supported for Odylith intervention delivery.",
+        }
     if host == "claude":
         return _claude_static_readiness(repo_root)
     return _codex_static_readiness(repo_root)
@@ -222,6 +206,52 @@ def _chat_visible_proof(*, ledger: Mapping[str, Any], static_ready: bool) -> dic
     }
 
 
+def _codex_native_activation_evidence(ledger: Mapping[str, Any]) -> dict[str, Any]:
+    """Recognize one native prompt-to-stop delivery pair in the current session."""
+
+    raw_events = ledger.get("recent_events")
+    events = [row for row in raw_events if isinstance(row, Mapping)] if isinstance(raw_events, list) else []
+    prompt_keys = {
+        _normalize_string(row.get("chat_confirmation_key"))
+        for row in events
+        if _normalize_token(row.get("render_surface")) == _CODEX_NATIVE_PROMPT_SURFACE
+        and _normalize_token(row.get("delivery_channel")) == _CODEX_NATIVE_PROMPT_CHANNEL
+        and _normalize_token(row.get("delivery_status")) == "assistant_fallback_ready"
+        and _normalize_token(row.get("turn_phase")) == "prompt_submit"
+        and bool(row.get("has_display"))
+        and _normalize_string(row.get("chat_confirmation_key"))
+    }
+    confirmed_keys = {
+        _normalize_string(row.get("chat_confirmation_key"))
+        for row in events
+        if _normalize_token(row.get("render_surface")) == _CODEX_NATIVE_CONFIRMATION_SURFACE
+        and _normalize_token(row.get("delivery_channel")) == _CODEX_NATIVE_CONFIRMATION_CHANNEL
+        and _normalize_token(row.get("delivery_status")) == "assistant_chat_confirmed"
+        and bool(row.get("chat_confirmed"))
+        and _normalize_string(row.get("chat_confirmation_key"))
+    }
+    matched = sorted(prompt_keys & confirmed_keys)
+    if matched:
+        return {
+            "status": "proven_this_session",
+            "ready": True,
+            "matched_delivery_count": len(matched),
+            "summary": (
+                "A Codex UserPromptSubmit delivery and Codex Stop chat confirmation share "
+                "the same session-local intervention identity."
+            ),
+        }
+    return {
+        "status": "unverified",
+        "ready": False,
+        "matched_delivery_count": 0,
+        "summary": (
+            "No session-local Codex prompt-to-stop delivery pair proves native hook execution yet; "
+            "static configuration and manual fallback evidence remain partial."
+        ),
+    }
+
+
 def inspect_intervention_status(
     *,
     repo_root: Path | str = ".",
@@ -231,7 +261,30 @@ def inspect_intervention_status(
     last_assistant_message: str = "",
 ) -> dict[str, Any]:
     root = Path(repo_root).expanduser().resolve()
-    host = _normalize_token(host_family) or "codex"
+    host = _normalize_token(host_family)
+    if host not in _SUPPORTED_HOST_FAMILIES:
+        unsupported_host = host or "unknown"
+        readiness = _static_readiness(repo_root=root, host_family=unsupported_host)
+        return {
+            "version": "v1",
+            "host_family": unsupported_host,
+            "repo_root": str(root),
+            "session_id": _normalize_string(session_id),
+            "activation": "unsupported",
+            "static_readiness": readiness,
+            "chat_visibility_contract": "Odylith intervention delivery is available only on supported hosts.",
+            "chat_visible_proof": _chat_visible_proof(ledger={}, static_ready=False),
+            "assistant_visible_replay_markdown": "",
+            "assistant_visible_replay_count": 0,
+            "assistant_visible_replay_additional_count": 0,
+            "assistant_visible_replay_blocks": [],
+            "active_lanes": [],
+            "delivery_ledger": {},
+            "chat_confirmed_event_count": 0,
+            "pending_proposal_count": 0,
+            "fresh_session_required_after_runtime_change": False,
+            "smoke_command": "",
+        }
     resolved_session = _normalize_string(session_id) or agent_runtime_contract.default_host_session_id(
         host_family=host
     )
@@ -251,7 +304,16 @@ def inspect_intervention_status(
         session_id=resolved_session,
         limit=limit,
     )
+    native_activation = _codex_native_activation_evidence(ledger) if host == "codex" else {}
     activation = "ready" if bool(readiness.get("ready")) else "degraded"
+    if host == "codex" and readiness.get("ready"):
+        activation = "ready" if bool(native_activation.get("ready")) else "unverified"
+        if activation == "ready":
+            readiness = dict(readiness)
+            readiness["activation_note"] = (
+                "Codex prompt-submit and Stop delivery are proven in this session. "
+                "Any changed hook definition requires a fresh/reloaded session and a new matching delivery pair."
+            )
     proof = _chat_visible_proof(
         ledger=ledger,
         static_ready=bool(readiness.get("ready")),
@@ -284,6 +346,7 @@ def inspect_intervention_status(
             "Use hook output when the host visibly renders it; otherwise the assistant-render fallback must speak the same Markdown directly."
         ),
         "chat_visible_proof": proof,
+        "native_activation_evidence": native_activation,
         "assistant_visible_replay_markdown": replay_markdown,
         "assistant_visible_replay_count": len(replay_blocks),
         "assistant_visible_replay_additional_count": 0,
@@ -330,13 +393,18 @@ def _format_ratio(value: Any) -> str:
 
 
 def render_intervention_status(report: Mapping[str, Any]) -> str:
-    host = _normalize_token(report.get("host_family")) or "codex"
-    host_label = "Claude" if host == "claude" else "Codex"
+    host = _normalize_token(report.get("host_family")) or "unknown"
+    host_label = {"claude": "Claude", "codex": "Codex"}.get(host, "Unsupported host")
     activation = _normalize_token(report.get("activation")) or "unknown"
     readiness = report.get("static_readiness") if isinstance(report.get("static_readiness"), Mapping) else {}
     checks = readiness.get("checks") if isinstance(readiness.get("checks"), Mapping) else {}
     ledger = report.get("delivery_ledger") if isinstance(report.get("delivery_ledger"), Mapping) else {}
     proof = report.get("chat_visible_proof") if isinstance(report.get("chat_visible_proof"), Mapping) else {}
+    native_activation = (
+        report.get("native_activation_evidence")
+        if isinstance(report.get("native_activation_evidence"), Mapping)
+        else {}
+    )
     latest = ledger.get("latest_visible_event") if isinstance(ledger.get("latest_visible_event"), Mapping) else {}
     pending_count = int(report.get("pending_proposal_count") or 0)
     lines = [
@@ -356,6 +424,12 @@ def render_intervention_status(report: Mapping[str, Any]) -> str:
             "waiting states are partial."
         ),
     ]
+    native_summary = _normalize_string(native_activation.get("summary"))
+    if native_summary:
+        lines.append(
+            "Native activation evidence: "
+            f"{_normalize_token(native_activation.get('status')) or 'unknown'} - {native_summary}"
+        )
     activation_note = _normalize_string(readiness.get("activation_note"))
     if activation_note:
         lines.append(f"Fresh-session note: {activation_note}")

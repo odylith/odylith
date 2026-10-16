@@ -4,7 +4,7 @@ import json
 import tomllib
 from pathlib import Path
 
-from odylith.install import bootstrap_assets
+from odylith.install import agents, bootstrap_assets
 from odylith.runtime.common import codex_cli_capabilities
 
 
@@ -38,22 +38,42 @@ INSTALL_AND_CONTRACT_MODULES = (
     REPO_ROOT / "src" / "odylith" / "bundle" / "__init__.py",
 )
 CODEX_COMMAND_SKILLS = {
+    "odylith-atlas-auto-update/SKILL.md",
+    "odylith-atlas-render/SKILL.md",
+    "odylith-backlog-create/SKILL.md",
+    "odylith-backlog-validate/SKILL.md",
+    "odylith-casebook-bug-capture/SKILL.md",
+    "odylith-casebook-bug-investigation/SKILL.md",
+    "odylith-casebook-bug-preflight/SKILL.md",
+    "odylith-code-hygiene-guard/SKILL.md",
+    "odylith-compass-executive/SKILL.md",
+    "odylith-compass-log/SKILL.md",
+    "odylith-compass-refresh/SKILL.md",
+    "odylith-compass-timeline-stream/SKILL.md",
+    "odylith-component-registry/SKILL.md",
+    "odylith-context-engine-operations/SKILL.md",
     "odylith-start/SKILL.md",
     "odylith-context/SKILL.md",
+    "odylith-delivery-governance-surface-ops/SKILL.md",
+    "odylith-diagram-catalog/SKILL.md",
+    "odylith-discipline/SKILL.md",
     "odylith-show-me/SKILL.md",
     "odylith-query/SKILL.md",
+    "odylith-registry-spec-sync/SKILL.md",
+    "odylith-registry-sync-specs/SKILL.md",
+    "odylith-registry-validate/SKILL.md",
+    "odylith-release-planning/SKILL.md",
+    "odylith-schema-registry-governance/SKILL.md",
+    "odylith-security-hardening/SKILL.md",
     "odylith-session-brief/SKILL.md",
+    "odylith-session-context/SKILL.md",
+    "odylith-subagent-orchestrator/SKILL.md",
+    "odylith-subagent-router/SKILL.md",
     "odylith-sync/SKILL.md",
     "odylith-version/SKILL.md",
     "odylith-doctor/SKILL.md",
-    "odylith-compass-log/SKILL.md",
-    "odylith-compass-refresh/SKILL.md",
     "odylith-greenfield-governance/SKILL.md",
-    "odylith-casebook-bug-capture/SKILL.md",
-    "odylith-casebook-bug-preflight/SKILL.md",
-    "odylith-code-hygiene-guard/SKILL.md",
     "odylith-guidance-behavior/SKILL.md",
-    "odylith-discipline/SKILL.md",
 }
 
 
@@ -108,6 +128,8 @@ def test_claude_project_bridge_and_hooks_stay_low_surface() -> None:
         text = path.read_text(encoding="utf-8")
         assert "@../AGENTS.md" in text
         assert "Treat AI slop as a regression." not in text
+        assert "freedom-research" not in text
+        assert "Commit messages must use only" not in text
         assert len(text.encode("utf-8")) < 1600
 
     settings_paths = (
@@ -197,6 +219,102 @@ def test_claude_backlog_skill_shim_carries_exact_cli_enum_guard() -> None:
         for token in ("`Low`", "`Medium`", "`High`", "`VeryHigh`"):
             assert token in text
         assert "moderate" in text
+
+
+def test_greenfield_guidance_keeps_public_review_separate_from_operator_create() -> None:
+    guidance_paths = (
+        REPO_ROOT / "AGENTS.md",
+        REPO_ROOT / "odylith" / "AGENTS.md",
+        REPO_ROOT / "odylith" / "README.md",
+        REPO_ROOT / "odylith" / "skills" / "odylith-greenfield-governance" / "SKILL.md",
+        REPO_ROOT / "odylith" / "skills" / "odylith-show-me" / "SKILL.md",
+        REPO_ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
+        REPO_ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "README.md",
+        REPO_ROOT
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "skills"
+        / "odylith-greenfield-governance"
+        / "SKILL.md",
+        REPO_ROOT
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "skills"
+        / "odylith-show-me"
+        / "SKILL.md",
+    )
+    forbidden = (
+        "host drafts backlog",
+        "host model drafts",
+        "greenfield apply --repo-root . --proposal-file <proposal.json>",
+        "host-authored proposal JSON is reviewed",
+        "host authors an internal proposal payload",
+        "active-proposal.v1.json",
+    )
+
+    rendered = [(path, path.read_text(encoding="utf-8")) for path in guidance_paths]
+    rendered.extend([
+        ("product root template", agents.managed_block(repo_role="product_repo")),
+        ("consumer root template", agents.managed_block(repo_role="consumer_repo")),
+        ("consumer scoped template", bootstrap_assets.customer_bootstrap_guidance()),
+    ])
+    for path, text in rendered:
+        compact_text = " ".join(text.split())
+        assert "ProductCreateTransaction" in compact_text, path
+        assert "greenfield create" in text, path
+        assert "--transaction-file" in compact_text, path
+        assert "--transaction-hash" in compact_text, path
+        assert "--confirm" in text, path
+        assert "--intent-file" not in text, path
+        assert "--confirm-intent" not in text, path
+        assert "read-only" in text, path
+        assert "source-ledger-check" in compact_text, path
+        assert "source-only verifier" in compact_text, path
+        if "greenfield prepare" in compact_text:
+            assert "--completion-receipt" in compact_text, path
+            assert "660" in compact_text and "diagnostic" in compact_text, path
+            assert "candidate" in compact_text and "authority gate" in compact_text, path
+        else:
+            assert "--ledger-file" in compact_text, path
+            assert "decision_task" in compact_text, path
+            assert "--decision-file" in compact_text, path
+        if "greenfield propose" in compact_text and "greenfield prepare" not in compact_text:
+            assert (
+                compact_text.index("greenfield authority-check")
+                < compact_text.index("greenfield source-ledger-check")
+                < compact_text.index("--decision-file")
+                < compact_text.index("greenfield propose")
+            ), path
+        assert "qualified confirmation interface" in compact_text, path
+        assert "chat approval" in compact_text or "Chat/hooks cannot authorize create" in compact_text or "hooks cannot authorize creation" in compact_text, path
+        assert "odylith greenfield decide" in compact_text, path
+        assert "CONFIRM" in compact_text, path
+        assert "EDIT" in compact_text, path
+        assert "REJECT" in compact_text, path
+        assert "chat approval" in compact_text or "Chat/hooks cannot authorize create" in compact_text or "hooks cannot authorize creation" in compact_text, path
+        assert "## Choose one command" not in text, path
+        assert "rollback guard" in compact_text, path
+        assert ".odylith/runtime/greenfield/confirmed-intent.md" not in compact_text, path
+        assert ".odylith/runtime/greenfield/confirmed-intent.json" not in compact_text, path
+        assert "greenfield compile-transaction" not in compact_text, path
+        for token in forbidden:
+            assert token not in text, f"{path} still carries stale greenfield guidance: {token}"
+
+
+def test_greenfield_skill_preserves_deterministic_completion_relay() -> None:
+    for root in (REPO_ROOT, REPO_ROOT / "src" / "odylith" / "bundle" / "assets"):
+        path = root / "odylith" / "skills" / "odylith-greenfield-governance" / "SKILL.md"
+        text = " ".join(path.read_text(encoding="utf-8").split())
+        assert "outcome without reinterpretation" in text, path
+        assert "post-confirm navigation block exactly once" in text, path
+        assert "do not regenerate artifacts, rebuild projections" in text, path
+        assert "or substitute a model-authored success message" in text, path
 
 
 def test_claude_output_style_keeps_observation_rare_and_assist_concrete() -> None:
@@ -359,21 +477,24 @@ def test_codex_project_config_uses_verified_contract_keys() -> None:
 
 def test_codex_project_agents_have_expected_schema_and_runtime_fields() -> None:
     expected = {
-        "odylith-atlas-diagrammer.toml": ("gpt-5.3-codex", "medium", "workspace-write"),
-        "odylith-compass-briefer.toml": ("gpt-5.4-mini", "high", "read-only"),
+        "odylith-atlas-diagrammer.toml": ("gpt-5.6-terra", "medium", "workspace-write"),
+        "odylith-compass-briefer.toml": ("gpt-5.6-luna", "high", "read-only"),
         "odylith-compass-narrator.toml": ("gpt-5.3-codex-spark", "medium", "read-only"),
-        "odylith-context-engine.toml": ("gpt-5.4-mini", "medium", "read-only"),
-        "odylith-governance-scribe.toml": ("gpt-5.3-codex", "medium", "workspace-write"),
-        "odylith-registry-scribe.toml": ("gpt-5.3-codex", "medium", "workspace-write"),
-        "odylith-reviewer.toml": ("gpt-5.4", "high", "read-only"),
-        "odylith-validator.toml": ("gpt-5.4-mini", "high", "read-only"),
-        "odylith-workstream.toml": ("gpt-5.3-codex", "medium", "workspace-write"),
+        "odylith-context-engine.toml": ("gpt-5.6-luna", "medium", "read-only"),
+        "odylith-governance-scribe.toml": ("gpt-5.6-terra", "medium", "workspace-write"),
+        "odylith-registry-scribe.toml": ("gpt-5.6-terra", "medium", "workspace-write"),
+        "odylith-reviewer.toml": ("gpt-5.6-sol", "high", "read-only"),
+        "odylith-validator.toml": ("gpt-5.6-luna", "high", "read-only"),
+        "odylith-workstream.toml": ("gpt-5.6-terra", "medium", "workspace-write"),
     }
 
     agent_dir = LIVE_CODEX_ROOT / "agents"
+    bundled_dir = PROJECT_ROOT_BUNDLE / ".codex" / "agents"
     assert {path.name for path in agent_dir.glob("*.toml")} == set(expected)
+    assert {path.name for path in bundled_dir.glob("*.toml")} == set(expected)
 
     for filename, (model, reasoning, sandbox_mode) in expected.items():
+        assert (agent_dir / filename).read_bytes() == (bundled_dir / filename).read_bytes()
         payload = tomllib.loads((agent_dir / filename).read_text(encoding="utf-8"))
         assert payload["name"]
         assert payload["description"]
@@ -384,7 +505,9 @@ def test_codex_project_agents_have_expected_schema_and_runtime_fields() -> None:
 
 
 def test_codex_hooks_register_supported_events_only() -> None:
-    payload = json.loads((LIVE_CODEX_ROOT / "hooks.json").read_text(encoding="utf-8"))
+    document = json.loads((LIVE_CODEX_ROOT / "hooks.json").read_text(encoding="utf-8"))
+    assert set(document) == {"hooks"}
+    payload = document["hooks"]
 
     assert set(payload) == {"SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop"}
     assert payload["SessionStart"][0]["matcher"] == "startup|resume"
@@ -460,12 +583,12 @@ def test_write_effective_codex_hooks_merges_without_destroying_user_hooks(tmp_pa
     payload = json.loads(hooks_path.read_text(encoding="utf-8"))
     prompt_commands = [
         hook["command"]
-        for group in payload["UserPromptSubmit"]
+        for group in payload["hooks"]["UserPromptSubmit"]
         for hook in group.get("hooks", [])
     ]
     stop_commands = [
         hook["command"]
-        for group in payload["Stop"]
+        for group in payload["hooks"]["Stop"]
         for hook in group.get("hooks", [])
     ]
     assert "python3 user_prompt.py" in prompt_commands

@@ -11,6 +11,7 @@ from typing import Mapping
 
 from odylith.runtime.intervention_engine import prompt_signal_runtime
 from odylith.runtime.surfaces import codex_host_shared
+from odylith.runtime.surfaces import greenfield_host_confirmation
 from odylith.runtime.surfaces import host_intervention_support
 from odylith.runtime.surfaces import host_prompt_route_locks
 
@@ -47,6 +48,9 @@ def render_codex_prompt_context(
     ref = prompt_signal_runtime.prompt_anchor(prompt)
     needs_live_bundle = bool(ref) or host_intervention_support.prompt_needs_live_bundle(
         prompt=prompt,
+        repo_root=repo_root,
+        session_id=session_id,
+        host_family="codex",
         bundle_override=conversation_bundle_override,
         intervention_bundle_override=intervention_bundle_override,
     )
@@ -97,11 +101,20 @@ def main(argv: list[str] | None = None) -> int:
     payload = codex_host_shared.load_payload()
     prompt = str(payload.get("prompt", "")).strip()
     session_id = codex_host_shared.hook_session_id(payload)
+    greenfield_decision = greenfield_host_confirmation.maybe_handle_greenfield_decision(
+        repo_root=args.repo_root,
+        host_family="codex",
+        prompt=prompt,
+    )
+    if greenfield_decision is not None:
+        sys.stdout.write(json.dumps(greenfield_host_confirmation.host_hook_payload(greenfield_decision)))
+        return 0
     route_context = host_prompt_route_locks.route_lock_context(host_family="codex", prompt=prompt)
     if route_context:
         sys.stdout.write(
             json.dumps(
                 {
+                    "systemMessage": route_context,
                     "hookSpecificOutput": {
                         "hookEventName": "UserPromptSubmit",
                         "additionalContext": route_context,
@@ -120,7 +133,9 @@ def main(argv: list[str] | None = None) -> int:
     if host_intervention_support.suppress_prompt_live_narration(prompt=prompt):
         return 0
     ref = prompt_signal_runtime.prompt_anchor(prompt)
-    if not ref and not host_intervention_support.prompt_needs_live_bundle(prompt=prompt):
+    if not ref and not host_intervention_support.prompt_needs_live_bundle(
+        prompt=prompt, repo_root=args.repo_root, session_id=session_id, host_family="codex"
+    ):
         receipt = (
             ""
             if confirmed_events or not host_intervention_support.prompt_first_receipt_eligible(prompt)
@@ -161,11 +176,6 @@ def main(argv: list[str] | None = None) -> int:
         include_closeout=True,
         developer_include_closeout=True,
     )
-    replay = host_intervention_support.preferred_live_replay_markdown(
-        repo_root=args.repo_root,
-        host_family="codex",
-        session_id=session_id,
-    )
     summary = render_codex_prompt_context(
         args.repo_root,
         prompt=prompt,
@@ -178,12 +188,8 @@ def main(argv: list[str] | None = None) -> int:
         session_id=session_id,
         conversation_bundle_override=bundle,
     )
-    summary = (
-        host_intervention_support.join_sections(replay, summary)
-        if replay
-        else host_intervention_support.join_sections(summary, decision.developer_context)
-    )
-    system_message = replay or decision.visible_markdown or system_message
+    summary = host_intervention_support.join_sections(summary, decision.developer_context)
+    system_message = decision.visible_markdown or system_message
     if not summary and not system_message:
         return 0
     host_surface_runtime.append_visible_intervention_events(

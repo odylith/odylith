@@ -66,3 +66,33 @@ def test_context_signal_summary_blocks_feedback_only_consumer_writes() -> None:
     assert summary["allow_odylith_mutations"] is False
     assert summary["odylith_write_protected_roots"] == ["odylith"]
     assert summary["consumer_odylith_write_blocked"] is True
+
+
+def test_context_signal_summary_infers_spawn_ready_for_codex_host_runtime() -> None:
+    request = router.RouteRequest(
+        prompt="Inspect the bounded runtime path.",
+        needs_write=False,
+        context_signals={"host_runtime": "codex_cli"},
+    )
+
+    summary = signal_summary._context_signal_summary(request)
+
+    assert summary["host_runtime"] == "codex_cli"
+    assert summary["native_spawn_supported"] is True
+    assert summary["native_spawn_ready"] is True
+    assert summary["native_spawn_ready_explicit"] is False
+    assert summary["odylith_routing_signal_present"] is True
+
+
+def test_context_signal_summary_preserves_explicit_spawn_not_ready() -> None:
+    request = router.RouteRequest(
+        prompt="Inspect the bounded runtime path.",
+        needs_write=False,
+        context_signals={"host_runtime": "codex_cli", "native_spawn_ready": False},
+    )
+
+    summary = signal_summary._context_signal_summary(request)
+
+    assert summary["native_spawn_supported"] is True
+    assert summary["native_spawn_ready"] is False
+    assert summary["native_spawn_ready_explicit"] is True

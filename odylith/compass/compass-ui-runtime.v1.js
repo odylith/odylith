@@ -1,6 +1,13 @@
     function markCompassSurfaceReady(isReady) {
+      if (!isReady) compassRenderOutcome = "loading";
       if (!document.body || !document.body.dataset) return;
       document.body.dataset.surfaceReady = isReady ? "ready" : "loading";
+    }
+
+    function publishCompassRender(state, outcome) {
+      compassRenderedRoute = state ? compassRoute(state) : null;
+      compassRenderOutcome = outcome;
+      compassFrameBridge.publish();
     }
 
     function syncControls(state, events, payload) {
@@ -170,6 +177,8 @@
     function showFallback(message) {
       const target = document.getElementById("kpi-grid");
       target.innerHTML = `<article class="stat"><p class="kpi-label">Runtime Unavailable</p><p class="muted">${message}</p></article>`;
+      const activityDetails = target.closest("details");
+      if (activityDetails) activityDetails.open = true;
       CURRENT_STANDUP_BRIEF = null;
       const briefCard = document.getElementById("standup-brief-card");
       if (briefCard) {
@@ -184,15 +193,16 @@
         copyButton.setAttribute("tabindex", "-1");
       }
       showBriefCopyStatus("");
-      document.getElementById("digest-list").innerHTML = '<div class="empty">Runtime data unavailable.</div>';
+      document.getElementById("digest-list").innerHTML = '<div class="empty">Current information is unavailable.</div>';
       const executionWavesHost = document.getElementById("execution-waves-host");
       if (executionWavesHost) executionWavesHost.innerHTML = "";
       const releaseGroupsHost = document.getElementById("release-groups-host");
       if (releaseGroupsHost) releaseGroupsHost.innerHTML = "";
       document.getElementById("current-workstreams").innerHTML = '<p class="empty">Run sync to regenerate Compass runtime snapshots.</p>';
-      document.getElementById("timeline").innerHTML = '<div class="empty">No timeline data available.</div>';
-      document.getElementById("risk-list").innerHTML = '<p class="empty">No risk payload available.</p>';
+      document.getElementById("timeline").innerHTML = '<div class="empty">Timeline information is unavailable.</div>';
+      document.getElementById("risk-list").innerHTML = '<p class="empty">Risk information is unavailable.</p>';
       markCompassSurfaceReady(true);
+      publishCompassRender(null, "degraded");
     }
 
     let briefCopyStatusTimer = null;
@@ -260,6 +270,7 @@
       let payload = runtime.payload;
       let normalized = normalizeStateWithPayload(rawState, payload);
       payload = await augmentLiveHistoryIntoPayload(payload, normalized.state);
+      payload = await augmentLiveStandupBriefFallback(payload, normalized.state);
       normalized = normalizeStateWithPayload(rawState, payload);
       const state = normalized.state;
       const summaryState = stateForSummary(state);
@@ -277,8 +288,9 @@
     }
 
     async function renderCompassRuntime(rawState, runtime) {
+      markCompassSurfaceReady(false);
       if (!runtime.payload) {
-        showFallback("Compass runtime files were not found. Run `odylith sync --repo-root . --force`.");
+        showFallback("Compass information could not be loaded. Refresh it with `odylith sync --repo-root . --force`.");
         return { brief: null, state: rawState };
       }
       const resolved = await resolveCompassRuntimeView(rawState, runtime);
@@ -303,7 +315,7 @@
       const uniqueNotices = dedupeNoticeLines(notices);
       if (uniqueNotices.length) {
         const hasWarn = uniqueNotices.some((line) => isWarningNotice(line));
-        showStatus(uniqueNotices.join(" "), hasWarn ? "warn" : "info");
+        showStatus(uniqueNotices.join(" · "), hasWarn ? "warn" : "info");
       } else {
         showStatus("");
       }
@@ -316,6 +328,7 @@
       renderTimeline(payload, state, timelineEvents, timelineTransactions);
       renderRisks(payload, summaryState);
       markCompassSurfaceReady(true);
+      publishCompassRender(state, uniqueNotices.some((line) => isWarningNotice(line)) ? "degraded" : "ready");
       return { brief: CURRENT_STANDUP_BRIEF, state };
     }
 

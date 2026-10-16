@@ -1,0 +1,136 @@
+{
+  "case_id": "gfhi-021",
+  "started_at_unix_ms": 1786972719543,
+  "finished_at_unix_ms": 1786972780485,
+  "materiality_assessment": {
+    "version": "odylith.greenfield.semantic-materiality-assessment.v1",
+    "evidence_sha256": "6b191c335c4e4be7db24d6b19947bb6cbbe88224c9c6200d94f945ff58d3bb9f",
+    "authoring_contract_sha256": "373d226c1f6e6654955eba7ef682a7b2f55fe6e1cf006bdd7cdbfcb9df67e6df",
+    "assessment_basis": "prompt_only_pre_graph",
+    "decision": "authorize_graph",
+    "clarification": {
+      "field": "",
+      "question": ""
+    },
+    "fields": [
+      {
+        "field": "identity",
+        "status": "source_entailable",
+        "source_refs": [
+          {
+            "source_id": "operator_prompt",
+            "quote": "Final edit: a board keeper accepts one pending panel.",
+            "occurrence": 1
+          }
+        ],
+        "alternatives": []
+      },
+      {
+        "field": "role",
+        "status": "explicit",
+        "source_refs": [
+          {
+            "source_id": "operator_prompt",
+            "quote": "a board keeper",
+            "occurrence": 1
+          }
+        ],
+        "alternatives": []
+      },
+      {
+        "field": "first_path",
+        "status": "explicit",
+        "source_refs": [
+          {
+            "source_id": "operator_prompt",
+            "quote": "Final edit: a board keeper accepts one pending panel. The panel moves from pending to accepted and shows a local acceptance token.",
+            "occurrence": 1
+          },
+          {
+            "source_id": "operator_prompt",
+            "quote": "Read the repo panel register.",
+            "occurrence": 1
+          }
+        ],
+        "alternatives": []
+      },
+      {
+        "field": "state_object",
+        "status": "explicit",
+        "source_refs": [
+          {
+            "source_id": "operator_prompt",
+            "quote": "The panel moves from pending to accepted",
+            "occurrence": 1
+          }
+        ],
+        "alternatives": []
+      },
+      {
+        "field": "visible_result",
+        "status": "explicit",
+        "source_refs": [
+          {
+            "source_id": "operator_prompt",
+            "quote": "shows a local acceptance token",
+            "occurrence": 1
+          }
+        ],
+        "alternatives": []
+      },
+      {
+        "field": "dependency",
+        "status": "explicit",
+        "source_refs": [
+          {
+            "source_id": "operator_prompt",
+            "quote": "Read the repo panel register.",
+            "occurrence": 1
+          }
+        ],
+        "alternatives": []
+      },
+      {
+        "field": "constraint",
+        "status": "explicit",
+        "source_refs": [
+          {
+            "source_id": "operator_prompt",
+            "quote": "Do not call any messaging service.",
+            "occurrence": 1
+          }
+        ],
+        "alternatives": []
+      },
+      {
+        "field": "non_goal",
+        "status": "explicit",
+        "source_refs": [
+          {
+            "source_id": "operator_prompt",
+            "quote": "Do not broadcast the acceptance.",
+            "occurrence": 1
+          }
+        ],
+        "alternatives": []
+      },
+      {
+        "field": "component_boundary",
+        "status": "source_entailable",
+        "source_refs": [
+          {
+            "source_id": "operator_prompt",
+            "quote": "Read the repo panel register.",
+            "occurrence": 1
+          },
+          {
+            "source_id": "operator_prompt",
+            "quote": "The panel moves from pending to accepted and shows a local acceptance token.",
+            "occurrence": 1
+          }
+        ],
+        "alternatives": []
+      }
+    ]
+  }
+}

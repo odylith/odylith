@@ -85,46 +85,10 @@ def _radar_route_href(
 
 
 def _extract_sections_with_body(path: Path) -> list[tuple[str, list[str]]]:
-    """Parse markdown `##` sections into ordered title/body pairs."""
+    """Read authored section spans through the shared Markdown parser."""
 
-    content = path.read_text(encoding="utf-8")
-    lines = content.splitlines()
-    sections: list[tuple[str, list[str]]] = []
-    current_title: str | None = None
-    current_lines: list[str] = []
-    for line in lines:
-        if line.startswith("## "):
-            if current_title is not None:
-                sections.append((current_title, current_lines))
-            current_title = line[3:].strip()
-            current_lines = []
-            continue
-        if current_title is not None:
-            current_lines.append(line)
-    if current_title is not None:
-        sections.append((current_title, current_lines))
-    return sections
+    return backlog_rich_text.extract_section_bodies(path.read_text(encoding="utf-8"))
 
-
-def _extract_sections_from_markdown(path: Path) -> dict[str, str]:
-    """Flatten markdown `##` sections into one summary string per heading."""
-
-    sections: dict[str, list[str]] = {}
-    current: str | None = None
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if line.startswith("## "):
-            current = line[3:].strip()
-            sections.setdefault(current, [])
-            continue
-        if current is None:
-            continue
-        sections[current].append(line)
-
-    normalized: dict[str, str] = {}
-    for key, raw_lines in sections.items():
-        merged = " ".join(token.strip() for token in raw_lines if token.strip())
-        normalized[key] = merged.strip()
-    return normalized
 
 
 def _split_metadata_ids(*, value: str, pattern: re.Pattern[str]) -> list[str]:
@@ -169,13 +133,58 @@ def _extract_plan_dates(plan_path: Path) -> tuple[str, str, str]:
     return created, "", filename_date
 
 
-def _rewrite_section_text(*, repo_root: Path, text: str) -> str:
-    """Normalize inline repo references in standalone Radar content blocks."""
-
-    return backlog_rich_text._rewrite_section_text(repo_root=repo_root, text=text)
-
-
 def _render_section_body(*, repo_root: Path, lines: list[str]) -> str:
     """Render markdown body lines through the shared backlog HTML formatter."""
 
     return backlog_rich_text.render_section_body(repo_root=repo_root, lines=lines)
+
+
+def assessment_display(value: object) -> str:
+    """Display an absent judgment without inventing a numeric value."""
+    token = str(value).strip() if value is not None else ""
+    return "Not assessed" if token.lower() in {"", "unassessed"} else token
+
+
+def assessment_provenance_label(value: object) -> str:
+    token = str(value or "").strip()
+    return "Provisional Greenfield design" if token == "greenfield_provisional_design" else token
+
+
+def assessment_runtime_js() -> str:
+    """Own Radar's assessment presentation and nullable numeric comparison."""
+    return """
+    function assessmentNumber(value) {
+      if (value === null || value === undefined || String(value).trim() === "" || typeof value === "boolean") return null;
+      const number = Number(value);
+      return Number.isFinite(number) ? number : null;
+    }
+
+    function compareAssessmentNumbers(left, right, descending = false) {
+      const a = assessmentNumber(left);
+      const b = assessmentNumber(right);
+      if (a === null || b === null) return a === b ? 0 : (a === null ? 1 : -1);
+      return descending ? b - a : a - b;
+    }
+
+    function assessmentLabel(value) {
+      if (value === null || value === undefined || String(value).trim() === "" || String(value).toLowerCase() === "unassessed") return "Not assessed";
+      return String(value);
+    }
+
+    function assessmentView(row) {
+      const unassessed = row.assessment_status === "unassessed";
+      const score = unassessed ? null : assessmentNumber(row.ordering_score);
+      const label = value => assessmentLabel(unassessed ? null : value);
+      const provenance = row.assessment_provenance === "greenfield_provisional_design"
+        ? "Provisional Greenfield design" : String(row.assessment_provenance || "");
+      return {
+        score: assessmentLabel(score),
+        confidence: label(row.confidence), priority: label(row.priority),
+        sizing: unassessed ? "Not assessed" : `${label(row.sizing)} / ${label(row.complexity)}`,
+        rankingClass: score === null ? "assessment-unassessed" : (row.founder_override === "yes" ? "founder-override" : "score-ordered"),
+        rankingText: score === null ? "Not assessed" : (row.founder_override === "yes" ? "Priority Override" : "Score Ordered"),
+        meter: score === null ? "" : `<div class="bar"><div class="fill" style="width: ${Math.max(3, Math.min(100, score))}%"></div></div>`,
+        provenance,
+      };
+    }
+    """.strip()

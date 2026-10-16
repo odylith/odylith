@@ -65,15 +65,11 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [x] Risk: tab-local state restoration drops legitimate deep-link context.
-  - [x] Mitigation: explicit cross-surface deeplinks still drive the URL
-    directly; only top-tab switching restores remembered destination state.
+  - [x] Mitigation: explicit cross-surface deeplinks still drive the URL directly; only top-tab switching restores remembered destination state.
 - [x] Risk: Atlas normalization hides real state inconsistencies instead of
-  - [x] Mitigation: normalize only when the selected diagram and workstream are
-    representing them.
-    provably incompatible, and cover the route with browser proof.
+  - [x] Mitigation: normalize only when the selected diagram and workstream are representing them. provably incompatible, and cover the route with browser proof.
 - [x] Risk: browser proof becomes brittle.
-  - [x] Mitigation: assert stable shell query state, selected ids, and stat
-    totals instead of incidental styling.
+  - [x] Mitigation: assert stable shell query state, selected ids, and stat totals instead of incidental styling.
 
 ## Validation/Test Plan
 - [x] `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_render_mermaid_catalog.py tests/unit/runtime/test_render_tooling_dashboard.py`

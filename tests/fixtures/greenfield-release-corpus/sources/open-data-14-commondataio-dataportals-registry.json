@@ -1,0 +1,56 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "open data",
+    "dataset",
+    "catalog",
+    "geospatial",
+    "statistics",
+    "records"
+  ],
+  "matched_description_evidence_terms": [
+    "dataset",
+    "catalog"
+  ],
+  "repository": {
+    "default_branch": "main",
+    "description": "Registry of data portals, catalogs, data repositories including data catalogs dataset and catalog description standard",
+    "full_name": "commondataio/dataportals-registry",
+    "id": 618921702,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "dataportals-registry",
+    "node_id": "R_kgDOJOP-5g",
+    "pushed_at": "2026-06-22T07:37:16Z",
+    "topics": [
+      "data-catalog",
+      "data-discovery",
+      "data-portal",
+      "data-repository",
+      "dataset",
+      "datasets",
+      "open-data",
+      "opendata",
+      "registry"
+    ]
+  },
+  "response_item_index": 65,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aopen-data&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:16:10 GMT",
+    "x-github-request-id": "D137:6E34A:14D4C8B:1538597:6A5B6077"
+  },
+  "search_response_path": "responses/open-data.json",
+  "search_response_sha256": "4d77cfe0a39c519611a54291a6548bf716de952ff9c5e684ec4890f55ecf01c1",
+  "selection_index": 14,
+  "source_family": "open-data",
+  "source_id": "github-repository:618921702",
+  "source_uri": "https://github.com/commondataio/dataportals-registry",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

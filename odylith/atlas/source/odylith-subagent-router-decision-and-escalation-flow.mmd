@@ -1,4 +1,4 @@
-%% Reviewed 2026-03-26 for B-001 to keep Odylith product topology and governance diagrams canonical in the public Atlas catalog.
+%% Reviewed 2026-09-15: seven canonical roles, current Codex defaults, and existing bounded escalation and rescoping policy.
 flowchart TB
   subgraph Intake["1. Route request intake"]
     Prompt["Bounded prompt"]
@@ -21,15 +21,18 @@ flowchart TB
     Local["Keep in main thread"]
     Weighted["Weighted profile scoring"]
     Guard["Runtime-backed local guard<br/>hold local when Odylith still wants narrowing,<br/>route is not spawn-ready, merge burden stays too high,<br/>architecture dossier says full_scan_recommended or low-confidence high-risk,<br/>advisory evidence is stale / weak / conflicted,<br/>or packetizer alignment drifts / packet yield turns wasteful"]
-    Backstop["Confidence backstop<br/>promote low-confidence writes<br/>onto stronger GPT-5.4 tiers"]
+    Backstop["Confidence backstop<br/>promote low-confidence writes<br/>onto stronger writing or frontier tiers"]
     Align["Odylith execution alignment<br/>runtime-backed priors bias profile/model/reasoning choice<br/>when confidence + route readiness agree;<br/>grounded high-risk architecture can earn strongest bounded lane"]
     Policy["Task-class policy matrix<br/>default profile + minimum delegated floor<br/>per task family"]
-    SparkM["gpt-5.3-codex-spark<br/>medium"]
-    SparkH["gpt-5.3-codex-spark<br/>high"]
-    G54M["gpt-5.4<br/>medium"]
-    G54H["gpt-5.4<br/>high"]
+    AnalysisM["analysis_medium<br/>Codex: Luna / medium"]
+    AnalysisH["analysis_high<br/>Codex: Luna / high"]
+    SparkM["fast_worker<br/>Codex: Spark / medium"]
+    WriteM["write_medium<br/>Codex: Terra / medium"]
+    WriteH["write_high<br/>Codex: Terra / high"]
+    FrontierH["frontier_high<br/>Codex: Sol / high"]
     XGate["xhigh gate<br/>critical-risk or max-accuracy feature slice"]
-    G54X["gpt-5.4<br/>xhigh"]
+    FrontierX["frontier_xhigh<br/>Codex: Sol / xhigh"]
+    Resolver["Shared host resolver<br/>canonical role to model and effort<br/>Claude: Haiku / Sonnet / Opus<br/>explicit role precedes legacy tuple inference"]
   end
 
   subgraph Execution["4. Spawn, validate, and adapt"]
@@ -37,7 +40,7 @@ flowchart TB
     Contract["Spawn + close contract<br/>agent_role alias + agent_type,<br/>owner, goal, expected_output,<br/>termination_expectation, closeout payload"]
     Idle["Idle timeout rule<br/>waiting on instruction >= threshold<br/>use close_agent_overrides<br/>then resume/reroute fresh slice"]
     Validate["Outcome classification<br/>accepted | blocked | ambiguous | artifact missing | quality weak | broader coordination"]
-    Escalate["One-step escalation ladder<br/>Spark M -> Spark H or 5.4 M<br/>Spark H -> 5.4 H<br/>5.4 M -> 5.4 H<br/>5.4 H -> 5.4 X"]
+    Escalate["Bounded semantic-role escalation<br/>analysis M to analysis H, or write M for writes<br/>analysis H to frontier H; fast worker to write M<br/>write M to write H, or frontier H for critical work<br/>write H to frontier H; frontier H to xhigh when eligible"]
     Rescope["Return to main thread<br/>when failure shows the slice should be tightened locally"]
     Return["Return control to main thread after xhigh or refusal"]
     Tune["record_outcome()<br/>global + family-aware soft-bias tuning in .odylith"]
@@ -64,21 +67,28 @@ flowchart TB
   Policy --> Backstop
   Backstop --> Align
   Weighted --> SparkM
-  Weighted --> SparkH
-  Weighted --> G54M
-  Weighted --> G54H
-  Align --> G54M
-  Align --> G54H
+  Weighted --> AnalysisM
+  Weighted --> AnalysisH
+  Weighted --> WriteM
+  Weighted --> WriteH
+  Weighted --> FrontierH
+  Align --> AnalysisM
+  Align --> AnalysisH
+  Align --> WriteM
+  Align --> WriteH
+  Align --> FrontierH
   Align --> SparkM
-  Align --> SparkH
   Features --> XGate
-  XGate -- "open" --> G54X
+  XGate -- "open" --> FrontierX
 
-  SparkM --> Spawn
-  SparkH --> Spawn
-  G54M --> Spawn
-  G54H --> Spawn
-  G54X --> Spawn
+  AnalysisM --> Resolver
+  AnalysisH --> Resolver
+  SparkM --> Resolver
+  WriteM --> Resolver
+  WriteH --> Resolver
+  FrontierH --> Resolver
+  FrontierX --> Resolver
+  Resolver --> Spawn
 
   Spawn --> Contract
   Contract --> Idle

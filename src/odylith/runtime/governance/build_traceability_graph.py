@@ -14,6 +14,7 @@ from odylith.runtime.common.consumer_profile import canonical_truth_token
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance import execution_wave_contract
 from odylith.runtime.governance import release_planning_view_model
+from odylith.runtime.governance import traceability_freshness
 from odylith.runtime.governance import traceability_graph_spine
 from odylith.runtime.governance import topology_integrity
 from odylith.runtime.surfaces import backlog_traceability_paths
@@ -730,6 +731,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             "execution_programs_root": execution_wave_contract.PROGRAMS_DIR.as_posix(),
             "release_planning_root": "odylith/radar/source/releases",
         },
+        "source_fingerprint": traceability_freshness.traceability_source_fingerprint(
+            repo_root=repo_root,
+        ).as_dict(),
         "workstreams": workstreams,
         "releases": release_catalog,
         "release_aliases": release_aliases,

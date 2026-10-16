@@ -25,6 +25,7 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.surfaces import compass_standup_brief_status
 from odylith.runtime.surfaces import compass_standup_brief_substrate
 from odylith.runtime.surfaces import compass_standup_brief_voice_validation
 
@@ -1035,104 +1036,36 @@ def _section_facts(
     return ranked
 
 
-def _provider_display_name(provider: str) -> str:
-    token = str(provider or "").strip().lower()
-    if token == "codex-cli":
-        return "Codex CLI"
-    if token == "claude-cli":
-        return "Claude Code"
-    if token == "openai-compatible":
-        return "OpenAI-compatible endpoint"
-    if token == "auto-local":
-        return "local provider"
-    return str(provider or "").strip()
+def _local_runtime_fallback_digest(*, fact_packet: Mapping[str, Any]) -> list[str]:
+    lines: list[str] = []
+    section_order = (
+        ("current_execution", "Current"),
+        ("next_planned", "Next"),
+        ("risks_to_watch", "Watch"),
+    )
+    for section_key, label in section_order:
+        facts = _section_facts(fact_packet=fact_packet, section_key=section_key)
+        if not facts:
+            continue
+        text = str(facts[0].get("text") or "").strip()
+        if text:
+            lines.append(f"{label}: {text}")
+    return lines
 
 
-def _provider_attempt_label(*, diagnostics: Mapping[str, Any] | None = None) -> str:
-    if not isinstance(diagnostics, Mapping):
-        return ""
-    provider_label = _provider_display_name(str(diagnostics.get("provider", "")).strip())
-    model_label = str(diagnostics.get("provider_model", "") or diagnostics.get("model", "")).strip()
-    if provider_label and model_label:
-        return f"{provider_label} using {model_label}"
-    return provider_label or model_label
-
-
-def _unavailable_brief_message(
-    reason: str,
+def _diagnostics_with_local_fallback(
     *,
+    fact_packet: Mapping[str, Any],
     diagnostics: Mapping[str, Any] | None = None,
-) -> str:
-    token = str(reason or "").strip().lower()
-    if token == "skipped_not_worth_calling":
-        return "Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
-    if token == "provider_deferred":
-        return "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
-    if token == "rate_limited":
-        return "Compass hit narration provider capacity while warming this brief. It will retry on backoff."
-    if token == "credits_exhausted":
-        attempt_label = _provider_attempt_label(diagnostics=diagnostics)
-        if attempt_label:
-            return (
-                "Compass could not warm this brief because the last narration attempt through "
-                f"{attempt_label} may have hit a credit or budget limit. It will retry on backoff."
-            )
-        return "Compass could not warm this brief because the narration provider may have hit a credit or budget limit. It will retry on backoff."
-    if token == "timeout":
-        return "Compass asked the narration provider for this brief, but the reply took too long. It will retry on backoff."
-    if token == "provider_unavailable":
-        return "Compass is live. The optional narrated brief is not ready yet because the narration provider was not reachable and no exact replay exists for this packet."
-    if token == "transport_error":
-        return "Compass is live. The optional narrated brief could not reach the provider on the last attempt and will retry later."
-    if token == "auth_error":
-        return "Compass could not warm this brief because the narration provider rejected the request. Check provider access before trusting another retry."
-    if token == "provider_empty":
-        return "Compass did not receive a usable narration reply, and there was no exact current-packet brief to replay."
-    if token == "provider_error":
-        return "The narration provider failed on the last attempt. Compass will retry on backoff."
-    if token == "invalid_batch":
-        return "Compass received a narration reply for this brief, but the result was not usable yet. It will retry on backoff."
-    if token == "validation_failed":
-        return "Compass received an invalid brief, and there was no exact current-packet brief to replay."
-    return "Compass could not build a current standup brief for this packet."
+) -> dict[str, Any]:
+    payload = dict(diagnostics) if isinstance(diagnostics, Mapping) else {}
+    if "fallback_digest" not in payload:
+        digest = _local_runtime_fallback_digest(fact_packet=fact_packet)
+        if digest:
+            payload["fallback_title"] = "Local runtime facts"
+            payload["fallback_digest"] = digest
+    return payload
 
-
-def _unavailable_brief_title(
-    reason: str,
-    *,
-    diagnostics: Mapping[str, Any] | None = None,
-) -> str:
-    token = str(reason or "").strip().lower()
-    if token == "skipped_not_worth_calling":
-        return "Brief reused last validated narration"
-    if token == "provider_deferred":
-        return "Fresh brief still warming"
-    if token == "rate_limited":
-        return "Brief is waiting on provider capacity"
-    if token == "credits_exhausted":
-        provider_label = ""
-        if isinstance(diagnostics, Mapping):
-            provider_label = _provider_display_name(str(diagnostics.get("provider", "")).strip())
-        if provider_label:
-            return f"Brief is waiting on {provider_label} budget"
-        return "Brief is waiting on provider budget"
-    if token == "timeout":
-        return "Brief timed out"
-    if token == "provider_unavailable":
-        return "Narrated brief not ready yet"
-    if token == "transport_error":
-        return "Narrated brief will retry"
-    if token == "auth_error":
-        return "Brief provider access failed"
-    if token == "provider_empty":
-        return "Brief provider returned nothing usable"
-    if token == "provider_error":
-        return "Brief unavailable right now"
-    if token == "invalid_batch":
-        return "Brief needs another provider pass"
-    if token == "validation_failed":
-        return "Brief failed validation"
-    return "Standup brief unavailable"
 
 
 def _failure_reason_from_provider_code(code: str) -> str:
@@ -1203,8 +1136,8 @@ def _unavailable_ready_brief(
     token = str(reason or "").strip().lower() or "brief_unavailable"
     diagnostic_payload = {
         "reason": token,
-        "title": _unavailable_brief_title(token, diagnostics=diagnostics),
-        "message": _unavailable_brief_message(token, diagnostics=diagnostics),
+        "title": compass_standup_brief_status.unavailable_brief_title(token, diagnostics=diagnostics),
+        "message": compass_standup_brief_status.unavailable_brief_message(token, diagnostics=diagnostics),
     }
     if isinstance(diagnostics, Mapping):
         for key, value in diagnostics.items():
@@ -1774,6 +1707,7 @@ def build_standup_brief(
             fingerprint=fingerprint,
             generated_utc=generated_utc,
             reason="provider_deferred",
+            diagnostics=_diagnostics_with_local_fallback(fact_packet=fact_packet),
         )
     resolved_provider = provider or odylith_reasoning.provider_from_config(
         resolved_config,
@@ -1794,6 +1728,7 @@ def build_standup_brief(
             fingerprint=fingerprint,
             generated_utc=generated_utc,
             reason="provider_unavailable",
+            diagnostics=_diagnostics_with_local_fallback(fact_packet=fact_packet),
         )
 
     failover_diagnostics: dict[str, Any] = {}
@@ -1846,7 +1781,10 @@ def build_standup_brief(
             generated_utc=generated_utc,
             provider=resolved_provider,
             fallback_reason="provider_empty",
-            diagnostics=failover_diagnostics,
+            diagnostics=_diagnostics_with_local_fallback(
+                fact_packet=fact_packet,
+                diagnostics=failover_diagnostics,
+            ),
         )
 
     sections, errors = _validate_brief_response(
@@ -1886,6 +1824,7 @@ def build_standup_brief(
                 fingerprint=fingerprint,
                 generated_utc=generated_utc,
                 reason="validation_failed",
+                diagnostics=_diagnostics_with_local_fallback(fact_packet=fact_packet),
             )
 
     ready = _ready_brief(

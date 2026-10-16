@@ -17,10 +17,13 @@ from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.governance import casebook_source_validation
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import casebook_dashboard_style_runtime
+from odylith.runtime.surfaces import casebook_list_presentation_runtime
+from odylith.runtime.surfaces import casebook_selection_ui
 from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import dashboard_time
 from odylith.runtime.surfaces import generated_surface_refresh_guards
+from odylith.runtime.surfaces import governance_frame_bridge
 from odylith.runtime.surfaces import render_casebook_dashboard_cli
 from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.surfaces import source_bundle_mirror
@@ -47,6 +50,9 @@ def _refresh_guard_code_fingerprint() -> str:
     digest = hashlib.sha256()
     module_paths = (
         Path(__file__),
+        Path(str(casebook_list_presentation_runtime.__file__ or "")),
+        Path(str(casebook_selection_ui.__file__ or "")),
+        Path(str(governance_frame_bridge.__file__ or "")),
         Path(str(casebook_metadata.__file__ or "")),
         Path(str(casebook_source_validation.__file__ or "")),
     )
@@ -584,21 +590,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       gap: 10px;
       flex-wrap: wrap;
     }}
-    .panel-head-title {{
-      margin: 0;
-      color: var(--ink);
-      font-size: 12px;
-      line-height: 1.2;
-      letter-spacing: 0.06em;
-      font-weight: 800;
-      text-transform: uppercase;
-    }}
-    .panel-head-meta {{
-      color: var(--ink-muted);
-      font-size: 12px;
-      line-height: 1.35;
-      font-weight: 600;
-    }}
+    __CASEBOOK_PANEL_HEAD_TYPOGRAPHY__
     .list {{
       max-height: 640px;
       overflow: auto;
@@ -616,29 +608,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       display: grid;
       gap: 0;
       align-content: start;
-    }}
-    .bug-row {{
-      width: 100%;
-      text-align: left;
-      border: 1px solid #d6dce8;
-      border-radius: 12px;
-      background: #ffffff;
-      padding: 10px 10px 9px;
-      margin-bottom: 8px;
-      cursor: pointer;
-      color: inherit;
-      white-space: normal;
-      overflow-wrap: anywhere;
-      transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
-    }}
-    .bug-row:hover {{
-      border-color: #93c5fd;
-      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.09);
-      transform: translateY(-1px);
-    }}
-    .bug-row.active {{
-      border-color: #1d4ed8;
-      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.22);
     }}
     .bug-row-head {{
       display: flex;
@@ -891,7 +860,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       margin-top: 2px;
     }}
     .bug-row-title,
-    .bug-row-summary,
     .detail-title,
     .detail-summary,
     .detail-copy,
@@ -906,12 +874,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       line-height: 1.2;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-    }}
-    .bug-row-summary {{
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-      overflow: hidden;
     }}
     .detail-copy p {{
       margin: 0;
@@ -1044,7 +1006,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       <aside class="list-panel" aria-label="Bug selector">
         <div class="panel-head">
           <p class="panel-head-title">Bug Cases</p>
-          <span id="listMeta" class="panel-head-meta">Visible: 0</span>
+          <span id="listMeta" class="panel-head-meta">0 visible</span>
         </div>
         <div class="list">
           <div id="bugList" class="bug-list"></div>
@@ -1060,6 +1022,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
   </main>
 
   <script id="casebookData" type="application/json">{data_json}</script>
+  <script>__GOVERNANCE_FRAME_BRIDGE__</script>
   <script>
     const DATA = JSON.parse(document.getElementById("casebookData").textContent || "{{}}");
     const bugSummaries = Array.isArray(DATA.bugs) ? DATA.bugs : [];
@@ -1075,7 +1038,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     const kpiOpenTotal = document.getElementById("kpiOpenTotal");
     const kpiTotalCases = document.getElementById("kpiTotalCases");
     const kpiLatestCase = document.getElementById("kpiLatestCase");
-    let detailRenderToken = 0;
     const BUG_ID_COMPACT_RE = /^(?:CB)?-?(\\d{{1,}})$/i;
     const SORT_DEFAULT = "newest";
     const SORT_OPTIONS = [
@@ -1292,17 +1254,30 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       return match ? String(match.bug_route || "").trim() : "";
     }}
 
-    function readState() {{
+    function readRequestedState() {{
       const params = new URLSearchParams(window.location.search || "");
       return {{
         bug: canonicalizeBugToken(params.get("bug") || ""),
-        severity: canonicalizeKnownFilterToken(params.get("severity") || "", "severity_tokens"),
-        status: canonicalizeKnownFilterToken(params.get("status") || "", "status_tokens"),
+        severity: canonicalizeFilterToken(params.get("severity") || ""),
+        status: canonicalizeFilterToken(params.get("status") || ""),
         sort: canonicalizeSortToken(params.get("sort") || SORT_DEFAULT),
       }};
     }}
 
-    function writeState(state) {{
+    function readState() {{
+      const state = readRequestedState();
+      state.severity = canonicalizeKnownFilterToken(state.severity, "severity_tokens");
+      state.status = canonicalizeKnownFilterToken(state.status, "status_tokens");
+      return state;
+    }}
+
+    const requestedRoute = {{ tab: "casebook", ...readRequestedState() }};
+    if (!new URLSearchParams(window.location.search).has("sort")) requestedRoute.sort = "";
+    let frameSnapshot = {{ requested: requestedRoute, rendered: null, outcome: "loading" }};
+    const frameBridge = window.OdylithFrameBridge.surface({{ readSnapshot: () => frameSnapshot }});
+
+    function writeState(state, userIntent = false) {{
+      if (userIntent) frameBridge.navigate({{ route: {{ tab: "casebook", ...state }}, replaceDocument: false }});
       const query = new URLSearchParams();
       if (state.bug) query.set("bug", state.bug);
       if (state.severity) query.set("severity", state.severity);
@@ -1312,17 +1287,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const next = `${{window.location.pathname}}${{suffix}}`;
       if (next !== `${{window.location.pathname}}${{window.location.search}}`) {{
         window.history.replaceState(null, "", next);
-      }}
-      if (window.parent && window.parent !== window) {{
-        window.parent.postMessage({{
-          type: "odylith-casebook-navigate",
-          state: {{
-            bug: state.bug || "",
-            severity: state.severity || "",
-            status: state.status || "",
-            sort: canonicalizeSortToken(state.sort),
-          }},
-        }}, "*");
       }}
     }}
 
@@ -1763,27 +1727,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         return `Proof state is ambiguous across multiple blocker lanes${{laneIds.length ? `: ${{laneIds.join(", ")}}` : ""}}.`;
       }}
       if (state === "none") {{
-        return "No dominant proof lane is resolved for this bug yet.";
+        return "Verification status is not yet determined.";
       }}
       return "";
     }}
 
-    async function renderDetail(row) {{
-      if (!row) {{
-        detailRenderToken += 1;
-        detailPane.innerHTML = ``;
-        return;
-      }}
-      const renderToken = ++detailRenderToken;
-      detailPane.innerHTML = ``;
-      const detailKey = String(row.bug_route || row.bug_key || "").trim();
-      const loadedDetail = detailKey ? await casebookDataSource.loadDetail(detailKey) : null;
-      if (renderToken !== detailRenderToken) {{
-        return;
-      }}
-      const detail = loadedDetail && typeof loadedDetail === "object"
-        ? {{ ...row, ...loadedDetail }}
-        : row;
+    function renderDetail(detail) {{
       const fields = detail.fields && typeof detail.fields === "object" ? detail.fields : {{}};
       const proofState = detail.proof_state && typeof detail.proof_state === "object" ? detail.proof_state : {{}};
       const proofResolution = detail.proof_state_resolution && typeof detail.proof_state_resolution === "object"
@@ -1881,10 +1830,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       if (detail.archive_bucket) {{
         chips.push(`<span class="meta-chip archive-chip">Archive: ${{escapeHtml(detail.archive_bucket)}}</span>`);
       }}
-      if (totalFields) {{
-        const intelTooltip = `${{capturedCount}}/${{totalFields}} recommended fields captured`;
-        chips.push(`<span class="meta-chip ${{requiredMissingFields.length ? "warn-chip" : ""}}" data-tooltip="${{escapeHtml(intelTooltip)}}">Intel</span>`);
-      }}
       const externalIssueActions = externalIssueLinks(detail);
       const sourceLink = detail.source_href ? actionChipHtml("Source markdown", detail.source_href) : `<span class="meta-chip muted">Source markdown missing</span>`;
       const summaryText = String(detail.summary || detailFieldValue("Description") || detailFieldValue("Impact") || "").trim();
@@ -1929,13 +1874,10 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         : {{}};
       const lastFalsificationBits = [
         String(lastFalsification.recorded_at || "").trim(),
-        String(lastFalsification.failure_fingerprint || "").trim(),
         String(lastFalsification.frontier_phase || "").trim(),
       ].filter(Boolean);
       const proofRows = [
-        proofState.lane_id ? {{ label: "Proof lane", value: String(proofState.lane_id || "").trim() }} : null,
         proofState.current_blocker ? {{ label: "Current blocker", value: String(proofState.current_blocker || "").trim() }} : null,
-        proofState.failure_fingerprint ? {{ label: "Failure fingerprint", value: String(proofState.failure_fingerprint || "").trim() }} : null,
         proofState.first_failing_phase ? {{ label: "First failing phase", value: String(proofState.first_failing_phase || "").trim() }} : null,
         proofState.frontier_phase ? {{ label: "Frontier", value: String(proofState.frontier_phase || "").trim() }} : null,
         proofState.clearance_condition ? {{ label: "Clear only when", value: String(proofState.clearance_condition || "").trim() }} : null,
@@ -1943,6 +1885,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         proofState.evidence_tier ? {{ label: "Evidence tier", value: String(proofState.evidence_tier || "").trim().replace(/_/g, " ") }} : null,
         claimGuard.highest_truthful_claim ? {{ label: "Highest truthful claim", value: String(claimGuard.highest_truthful_claim || "").trim() }} : null,
         lastFalsificationBits.length ? {{ label: "Last falsification", value: lastFalsificationBits.join(" / ") }} : null,
+      ].filter(Boolean);
+      const technicalEvidenceRows = [
+        proofState.lane_id ? {{ label: "Proof lane", value: String(proofState.lane_id || "").trim() }} : null,
+        proofState.failure_fingerprint ? {{ label: "Failure fingerprint", value: String(proofState.failure_fingerprint || "").trim() }} : null,
+        lastFalsification.failure_fingerprint ? {{ label: "Last falsification fingerprint", value: String(lastFalsification.failure_fingerprint || "").trim() }} : null,
+        ...deploymentTruthRows,
       ].filter(Boolean);
       const allowedNextWork = Array.isArray(proofState.allowed_next_work)
         ? proofState.allowed_next_work.map((item) => String(item || "").trim()).filter(Boolean)
@@ -1963,7 +1911,10 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       ].filter(Boolean);
       const proofOverview = renderLabeledNarratives(proofRows);
       const proofContext = renderLabeledNarratives(proofContextRows);
-      const proofDeployment = renderLabeledNarratives(deploymentTruthRows);
+      const technicalEvidence = renderLabeledNarratives(technicalEvidenceRows);
+      const technicalEvidenceHtml = technicalEvidence
+        ? `<details class="detail-disclosure"><summary class="disclosure-title">Technical evidence</summary><div class="detail-disclosure-body detail-copy">${{technicalEvidence}}</div></details>`
+        : "";
       const proofWarningsHtml = proofWarnings.length
         ? `
           <div class="agent-band-block">
@@ -1972,17 +1923,16 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           </div>
         `
         : "";
-      const proofSection = (proofResolutionText || proofOverview || proofContext || proofDeployment || proofWarningsHtml)
+      const proofSection = (proofResolutionText || proofOverview || proofContext || technicalEvidenceHtml || proofWarningsHtml)
         ? `
           <article class="detail-section detail-section-proof">
-            <h2 class="section-heading">Proof Control Panel</h2>
-            <p class="section-lede">Pinned blocker, frontier, and proof tier for this bug lane.</p>
+            <h2 class="section-heading">Proof status</h2>
             <div class="agent-band">
               ${{proofResolutionText ? `<div class="agent-band-block"><p class="coverage-note proof-resolution-note">${{escapeHtml(proofResolutionText)}}</p></div>` : ""}}
               ${{proofOverview ? `<div class="agent-band-block"><p class="agent-band-title">Primary blocker lane</p>${{proofOverview}}</div>` : ""}}
               ${{proofContext ? `<div class="agent-band-block"><p class="agent-band-title">Proof discipline</p>${{proofContext}}</div>` : ""}}
-              ${{proofDeployment ? `<div class="agent-band-block"><p class="agent-band-title">Deployed vs local truth</p>${{proofDeployment}}</div>` : ""}}
               ${{proofWarningsHtml}}
+              ${{technicalEvidenceHtml}}
             </div>
           </article>
         `
@@ -2019,7 +1969,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
                 <span class="meta-chip">${{capturedCount}} of ${{totalFields}} recommended fields captured</span>
                 ${{requiredMissingFields.length ? `<span class="meta-chip warn-chip">Missing critical signals: ${{requiredMissingFields.length}}</span>` : ""}}
               </div>
-              <p class="coverage-note">Casebook still renders this bug, but the record is missing some of the surrounding context that makes nearby implementation work easier and safer.</p>
+              <p class="coverage-note">Review the listed missing fields before using this record for implementation.</p>
               ${{requiredMissingFields.length ? `
                 <div class="detail-copy">
                   <p class="signal-label">Missing critical signals</p>
@@ -2127,17 +2077,14 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           `
           : "",
       ].filter(Boolean).join("");
-      const agentSection = agentBlocks || remainingDetailSections || intelligenceSection
-        ? `
-          <article class="detail-section detail-section-agent">
-            <h2 class="section-heading">Odylith Agent Learnings</h2>
-            <p class="section-lede">Deeper guardrails, evidence, and nearby context for future Odylith-assisted changes.</p>
-            ${{agentBlocks ? `<div class="agent-band">${{agentBlocks}}</div>` : ""}}
-            ${{remainingDetailSections}}
-            ${{intelligenceSection}}
-          </article>
-        `
-        : "";
+      const agentSection = (agentBlocks || remainingDetailSections || intelligenceSection) ? `
+        <article class="detail-section detail-section-agent">
+          <h2 class="section-heading">Lessons and evidence</h2>
+          ${{agentBlocks ? `<div class="agent-band">${{agentBlocks}}</div>` : ""}}
+          ${{remainingDetailSections}}
+          ${{intelligenceSection}}
+        </article>
+      ` : "";
       const sectionBlocks = [
         humanSection,
         proofSection,
@@ -2162,58 +2109,33 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       `;
     }}
 
+    __CASEBOOK_LIST_PRESENTATION__
+    __CASEBOOK_SELECTION_RUNTIME__
+    const renderSelectedBug = createCasebookSelection({{
+      detail: detailPane, loadDetail: id => casebookDataSource.loadDetail(id), renderDetail,
+      onOutcome: ({{ id, outcome }}) => {{
+        frameSnapshot = {{ requested: requestedRoute, rendered: {{ tab: "casebook", ...readState(), bug: id }}, outcome }};
+        frameBridge.publish();
+      }},
+    }});
+
     function renderList(state, rows) {{
-      if (!rows.length) {{
-        bugList.innerHTML = `
-          <div class="empty-state" role="status">
-            No Casebook entries match the current filters.
-          </div>
-        `;
-        listMeta.textContent = "Visible: 0";
-        detailRenderToken += 1;
-        detailPane.innerHTML = `
-          <div class="empty-state" role="status">
-            Select a different filter or search term to inspect Casebook detail.
-          </div>
-        `;
+      const selectedRoute = state.bug ? resolveBugRoute(rows, state.bug) : String(rows[0]?.bug_route || "");
+      const presentation = casebookListPresentation({{
+        rows, totalCount: bugSummaries.length, selectedRoute, escapeHtml, displayTokenLabel,
+      }});
+      bugList.innerHTML = presentation.listHtml;
+      listMeta.textContent = presentation.meta;
+      if (presentation.detailHtml !== null) {{
+        void renderSelectedBug(null, presentation.detailHtml);
         return;
       }}
-      const selectedRoute = resolveBugRoute(rows, state.bug) || String(rows[0].bug_route || "");
-      const selected = rows.find((row) => row.bug_route === selectedRoute) || rows[0];
-      bugList.innerHTML = rows.map((row) => {{
-        const coverage = row.intelligence_coverage && typeof row.intelligence_coverage === "object" ? row.intelligence_coverage : {{}};
-        const capturedCount = Number(coverage.captured_count || 0);
-        const totalFields = Number(coverage.total_fields || 0);
-        const requiredMissingFields = Array.isArray(coverage.required_missing_fields)
-          ? coverage.required_missing_fields.map((item) => String(item || "").trim()).filter(Boolean)
-          : [];
-        const active = row.bug_route === selectedRoute;
-        const chips = [
-          row.severity ? `<span class="list-chip ${{/^p[01]$/i.test(String(row.severity || "")) ? "critical-chip" : ""}}">${{escapeHtml(row.severity)}}</span>` : "",
-          row.status ? `<span class="list-chip">${{escapeHtml(displayTokenLabel(row.status))}}</span>` : "",
-          row.archive_bucket ? `<span class="list-chip archive-chip">${{escapeHtml(row.archive_bucket)}}</span>` : "",
-          totalFields ? `<span class="list-chip ${{requiredMissingFields.length ? "warn-chip" : ""}}" data-tooltip="${{escapeHtml(`${{capturedCount}}/${{totalFields}} recommended fields captured`)}}">Intel</span>` : "",
-        ].filter(Boolean).join("");
-        return `
-          <button type="button" class="bug-row${{active ? " active" : ""}}" data-bug="${{escapeHtml(row.bug_route || "")}}">
-            <div class="bug-row-head">
-              <div>
-                ${{row.bug_id ? `<p class="bug-row-kicker">${{escapeHtml(row.bug_id)}}</p>` : ""}}
-                <p class="bug-row-title">${{escapeHtml(row.title || row.bug_key || "Bug")}}</p>
-              </div>
-              <span class="bug-row-date">${{escapeHtml(row.date || "-")}}</span>
-            </div>
-            <p class="bug-row-summary">${{escapeHtml(row.summary || row.components || "No summary available.")}}</p>
-            <div class="bug-row-meta">${{chips}}</div>
-          </button>
-        `;
-      }}).join("");
-      listMeta.textContent = `Visible: ${{rows.length}}`;
+      const selected = rows.find((row) => row.bug_route === selectedRoute);
       for (const button of bugList.querySelectorAll(".bug-row")) {{
         button.addEventListener("click", () => {{
           const bug = canonicalizeBugToken(button.getAttribute("data-bug") || "");
           const next = {{ ...readState(), bug }};
-          writeState(next);
+          writeState(next, true);
           render();
         }});
         const bug = canonicalizeBugToken(button.getAttribute("data-bug") || "");
@@ -2226,7 +2148,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           }});
         }}
       }}
-      if (selectedRoute !== state.bug) {{
+      if (selectedRoute && selectedRoute !== state.bug) {{
         writeState({{ ...state, bug: selectedRoute }});
       }}
       rows.slice(0, Math.min(6, rows.length)).forEach((row) => {{
@@ -2235,7 +2157,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           casebookDataSource.prefetch(bug);
         }}
       }});
-      void renderDetail(selected);
+      void renderSelectedBug(selected, '<div class="empty-state" role="status">The requested bug is unavailable in the current selection. Choose a bug or change the filters.</div>');
     }}
 
     function render() {{
@@ -2263,17 +2185,17 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     searchInput.addEventListener("input", () => render());
     severityFilter.addEventListener("change", () => {{
       const state = readState();
-      writeState({{ ...state, severity: canonicalizeFilterToken(severityFilter.value || ""), bug: state.bug }});
+      writeState({{ ...state, severity: canonicalizeFilterToken(severityFilter.value || ""), bug: state.bug }}, true);
       render();
     }});
     statusFilter.addEventListener("change", () => {{
       const state = readState();
-      writeState({{ ...state, status: canonicalizeFilterToken(statusFilter.value || ""), bug: state.bug }});
+      writeState({{ ...state, status: canonicalizeFilterToken(statusFilter.value || ""), bug: state.bug }}, true);
       render();
     }});
     sortFilter.addEventListener("change", () => {{
       const state = readState();
-      writeState({{ ...state, sort: canonicalizeSortToken(sortFilter.value || SORT_DEFAULT), bug: state.bug }});
+      writeState({{ ...state, sort: canonicalizeSortToken(sortFilter.value || SORT_DEFAULT), bug: state.bug }}, true);
       render();
     }});
     window.addEventListener("popstate", () => {{
@@ -2299,6 +2221,9 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 </html>
 """
     html = html.replace("__ODYLITH_BRAND_HEAD__", str(payload.get("brand_head_html", "")).strip())
+    html = html.replace("__CASEBOOK_LIST_PRESENTATION__", casebook_list_presentation_runtime.LIST_PRESENTATION_JS)
+    html = html.replace("__CASEBOOK_SELECTION_RUNTIME__", casebook_selection_ui.runtime_js())
+    html = html.replace("__GOVERNANCE_FRAME_BRIDGE__", governance_frame_bridge.runtime_js())
     html = casebook_dashboard_style_runtime.apply_casebook_dashboard_style_placeholders(html, styles)
     return html
 

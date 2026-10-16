@@ -1,0 +1,1469 @@
+from __future__ import annotations
+
+import hashlib
+import json
+from dataclasses import replace
+from pathlib import Path
+import shlex
+from types import SimpleNamespace
+import sys
+
+import pytest
+
+from odylith.runtime.domain_intelligence import greenfield_create_lifecycle
+from odylith.runtime.domain_intelligence.greenfield_commit_transaction import _payload_hash
+from odylith.runtime.domain_intelligence.greenfield_cli import terminal_decision_offer
+from odylith.runtime.domain_intelligence import greenfield_generation_state
+from odylith.runtime.domain_intelligence import greenfield_generation_store
+from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence import greenfield_managed_mutation_boundary
+from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    product_facts_payload,
+)
+from tests.greenfield_matrix_campaign_test_support import SCRIPTS_ROOT
+from tests.greenfield_matrix_campaign_test_support import load_module
+from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
+
+
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+import greenfield_matrix_transaction_evidence as evidence_module
+from greenfield_matrix_transaction_evidence import commit_precompiled_transaction
+from greenfield_matrix_transaction_evidence import confirmation_preview_issues
+from greenfield_matrix_transaction_evidence import dry_run_commit_issues
+from greenfield_matrix_transaction_evidence import terminal_handoff_issues
+
+
+HASH = "a" * 64
+PRODUCT_FACTS_SHA256 = "c" * 64
+ATOMIC_CUSTODY_SHA256 = "d" * 64
+TRANSACTION_FILE = f".odylith/runtime/greenfield/pending/{HASH}/product-create-transaction.v1.json"
+OFFER_ROOT = Path("/matrix/repo")
+
+
+@pytest.mark.parametrize("tamper", [None, "product", "model", "authority"])
+def test_dry_run_uses_real_compiler_hash_with_sealed_model_timing(tmp_path: Path, tamper: str | None) -> None:
+    from odylith.runtime.domain_intelligence import greenfield_create_transaction as compiler
+    from tests.unit.runtime.test_greenfield_create_transaction import _transaction
+
+    transaction = _transaction(tmp_path)
+    quality = dict(transaction.quality_manifest)
+    quality["elapsed_seconds"] = 12.5
+    quality["model_authoring"] = {
+        **quality["model_authoring"], "elapsed_seconds": 9.0,
+    }
+    transaction = replace(transaction, quality_manifest=quality)
+    transaction = replace(transaction, transaction_hash=compiler.product_create_transaction_hash(transaction))
+    path = tmp_path / TRANSACTION_FILE
+    compiler.write_compiled_product_create_transaction_file(path, transaction)
+    if tamper:
+        payload = json.loads(path.read_text())
+        if tamper == "product":
+            payload["proposal"]["intent"]["first_path"] = "Forged product meaning."
+        elif tamper == "model":
+            payload["quality_manifest"]["model_authoring"]["elapsed_seconds"] += 1
+        else:
+            payload["quality_manifest"]["model_authoring"]["canonical_authority"][
+                "product_facts_sha256"
+            ] = "f" * 64
+        encoded = json.dumps(payload, sort_keys=True).encode()
+        path.write_bytes(encoded)
+        receipt_path = path.with_name(path.name + ".compiler-receipt.v1.json")
+        receipt = json.loads(receipt_path.read_text())
+        receipt["transaction_file_sha256"] = hashlib.sha256(encoded).hexdigest()
+        receipt_path.write_text(json.dumps(receipt, sort_keys=True))
+    receipt, issues = evidence_module._sealed_dry_run_receipt(
+        repo_root=tmp_path, transaction_file=TRANSACTION_FILE,
+        transaction_hash=transaction.transaction_hash, proposal_mode="product_create_transaction")
+    if tamper:
+        assert "transaction body does not match its declared transaction hash" in issues
+        assert receipt["status"] == "invalid"
+    else:
+        assert issues == ()
+        assert receipt["transaction_body_sha256"] == transaction.transaction_hash
+        assert receipt["status"] == "compiled"
+
+
+@pytest.mark.parametrize("show_result", ["passed", "failed", "missing_marker"])
+def test_installed_matrix_preserves_show_propose_sealed_confirm_journey(
+    tmp_path: Path, show_result: str,
+) -> None:
+    module = load_module(SCRIPTS_ROOT / "greenfield_matrix_journey.py", "matrix_installed_journey_test")
+    _path, transaction_hash = _write_transaction(tmp_path)
+    receipt, issues = evidence_module._sealed_dry_run_receipt(  # noqa: SLF001
+        repo_root=tmp_path, transaction_file=TRANSACTION_FILE,
+        transaction_hash=transaction_hash, proposal_mode="product_create_transaction",
+    )
+    assert issues == ()
+    runner = _terminal_confirm_runner(tmp_path, transaction_hash, commit_result=_create_payload(receipt))
+    calls: list[tuple[str, ...]] = []
+
+    def invoke_cli(command, _timeout):
+        command = tuple(command)
+        calls.append(command)
+        if "show" in command:
+            return SimpleNamespace(
+                returncode=1 if show_result == "failed" else 0,
+                stdout="missing" if show_result == "missing_marker" else "Odylith read this repo",
+                stderr="",
+            )
+        return runner(command)
+
+    profile = module.get_greenfield_model_profile(module.model_profile_id_for_repair_tier("auto"))
+    raw = {}
+    if show_result == "passed":
+        execution = module.run_compiled_greenfield_journey(
+            repo_root=tmp_path, env={"ODYLITH_GREENFIELD_MODEL_PROFILE": profile.profile_id},
+            repair_tier="auto", invoke_cli=invoke_cli,
+            invoke_propose=lambda _timeout: _proposal(transaction_hash), raw_streams=raw,
+            read_proposal_stage_seconds=lambda: 0.001,
+        )
+        assert ["show" if "show" in command else command[2] for command in calls] == ["show", "decide", "decide"]
+        assert execution.dry_run_receipt["transaction_hash"] == transaction_hash
+        assert execution.terminal_journal_text
+        assert not execution.output_contract_issues
+    else:
+        with pytest.raises(RuntimeError, match="capability show"):
+            module.run_compiled_greenfield_journey(
+                repo_root=tmp_path, env={"ODYLITH_GREENFIELD_MODEL_PROFILE": profile.profile_id},
+                repair_tier="auto", invoke_cli=invoke_cli,
+                invoke_propose=lambda _timeout: _proposal(transaction_hash), raw_streams=raw,
+                read_proposal_stage_seconds=lambda: 0.001,
+            )
+        assert len(calls) == 1
+    assert "show.stdout" in raw and "show.stderr" in raw
+
+
+@pytest.mark.parametrize("stage", ["propose", "decision"])
+@pytest.mark.parametrize("stream", ["stdout", "stderr"])
+@pytest.mark.parametrize("token", [
+    '"reasoning_contract"', '"host_instruction"', "active-proposal.v1.json",
+    "must be non-empty", "greenfield proposal validation failed",
+    "greenfield proposal Tribunal failed", "host-side schema repair",
+])
+def test_installed_positive_journey_rejects_successful_host_repair_output(
+    tmp_path: Path, stage: str, stream: str, token: str,
+) -> None:
+    _path, transaction_hash = _write_transaction(tmp_path)
+    proposed = _proposal(transaction_hash)
+    decision = SimpleNamespace(
+        returncode=0,
+        stdout=json.dumps({"status": "CLOSED", "command": "CONFIRM", "transaction_hash": transaction_hash}),
+        stderr="",
+    )
+    target = proposed if stage == "propose" else decision
+    if stream == "stdout":
+        payload = json.loads(target.stdout)
+        payload["leaked_contract"] = json.loads(token) if token.startswith('"') else token
+        target.stdout = json.dumps(payload)
+    else:
+        target.stderr = token
+    calls = []
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path, proposed=proposed, proposal_seconds=1,
+        invoke_cli=lambda command: calls.append(command) or _terminal_confirm_runner(
+            tmp_path,
+            transaction_hash,
+            commit_result=_create_payload(_compiled_receipt(tmp_path)[0]),
+            result=decision,
+        )(command),
+    )
+    issues = (*execution.output_contract_issues, *execution.terminal_proof_issues)
+    assert any(token in issue for issue in issues)
+    assert bool(calls) == (stage == "decision")
+    if stage == "decision":
+        assert execution.decision is decision, "Retain the actual output instead of replacing failure evidence"
+
+
+def test_commit_precompiled_transaction_validates_receipt_before_invoking_create(tmp_path: Path) -> None:
+    _transaction_path, transaction_hash = _write_transaction(tmp_path)
+    calls: list[tuple[str, ...]] = []
+    proposed = _proposal(transaction_hash)
+    receipt, issues = evidence_module._sealed_dry_run_receipt(  # noqa: SLF001
+        repo_root=tmp_path, transaction_file=TRANSACTION_FILE,
+        transaction_hash=transaction_hash, proposal_mode="product_create_transaction",
+    )
+    assert issues == ()
+    runner = _terminal_confirm_runner(tmp_path, transaction_hash, commit_result=_create_payload(receipt))
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path,
+        proposed=proposed,
+        proposal_seconds=12.5,
+        invoke_cli=lambda command: calls.append(tuple(command)) or runner(command),
+    )
+
+    assert execution.dry_run_receipt["status"] == "compiled"
+    assert execution.dry_run_receipt["transaction_hash"] == transaction_hash
+    assert execution.dry_run_receipt["semantic_snapshot"]["facts"]["first_path"] == (
+        "An operator records one decision and reviews the accepted receipt."
+    )
+    transaction = json.loads(_transaction_path.read_text(encoding="utf-8"))
+    assert execution.dry_run_receipt["semantic_snapshot"]["facts"] == product_facts_payload(
+        transaction["proposal"]["intent"]
+    )
+    assert execution.dry_run_receipt["semantic_snapshot"]["facts"]["title"] == (
+        "Decision Workspace"
+    )
+    assert execution.dry_run_receipt["semantic_snapshot"]["atomic_facts"][0]["normalized_value"] == "Operator"
+    assert execution.dry_run_receipt["semantic_snapshot"]["atomic_custody_sha256"] == ATOMIC_CUSTODY_SHA256
+    assert execution.dry_run_receipt["product_facts_sha256"] == PRODUCT_FACTS_SHA256
+    assert execution.dry_run_receipt["atomic_custody_sha256"] == ATOMIC_CUSTODY_SHA256
+    assert execution.dry_run_receipt["transaction_body_sha256"] == transaction_hash
+    assert len(execution.dry_run_receipt["transaction_file_sha256"]) == 64
+    assert len(execution.dry_run_receipt["compiler_receipt_sha256"]) == 64
+    assert len(execution.dry_run_receipt["repository_write_set_hash"]) == 64
+    assert set(execution.dry_run_receipt["managed_after_fingerprints"]) == set(
+        greenfield_repository_write_set.GREENFIELD_REPOSITORY_WRITE_PATHS
+    )
+    assert len(execution.dry_run_receipt["semantic_snapshot_sha256"]) == 64
+    assert [command[1:3] for command in calls] == [("greenfield", "decide"), ("greenfield", "decide")]
+    assert not execution.terminal_proof_issues
+    assert not execution.output_contract_issues
+
+
+@pytest.mark.parametrize(
+    "response",
+    (
+        {"status": "STALE_TRANSACTION", "command": "CONFIRM"},
+        {"status": "CLOSED", "command": "REJECT"},
+        {"status": "CLOSED", "command": "CONFIRM", "transaction_hash": "b" * 64},
+    ),
+)
+def test_terminal_confirmation_failure_never_falls_back_to_create(
+    tmp_path: Path, response: dict[str, str],
+) -> None:
+    _path, transaction_hash = _write_transaction(tmp_path)
+    calls: list[tuple[str, ...]] = []
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path,
+        proposed=_proposal(transaction_hash),
+        proposal_seconds=1.0,
+        invoke_cli=lambda command: calls.append(tuple(command)) or SimpleNamespace(
+            returncode=0, stdout=json.dumps(response), stderr="",
+        ),
+    )
+
+    assert [command[1:3] for command in calls] == [("greenfield", "decide")]
+    assert execution.retry_decision is None
+    assert execution.commit_payload == {}
+    assert execution.terminal_proof_issues
+
+
+def test_terminal_confirmation_rejects_missing_journal_before_retry(tmp_path: Path) -> None:
+    _path, transaction_hash = _write_transaction(tmp_path)
+    calls: list[tuple[str, ...]] = []
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path,
+        proposed=_proposal(transaction_hash),
+        proposal_seconds=1.0,
+        invoke_cli=lambda command: calls.append(tuple(command)) or SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps({"status": "CLOSED", "command": "CONFIRM", "transaction_hash": transaction_hash}),
+            stderr="",
+        ),
+    )
+
+    assert [command[1:3] for command in calls] == [("greenfield", "decide")]
+    assert "terminal CONFIRM journal is missing or invalid" in execution.terminal_proof_issues
+
+
+def test_terminal_confirmation_requires_the_pinned_six_field_response(tmp_path: Path) -> None:
+    _path, transaction_hash = _write_transaction(tmp_path)
+    receipt, issues = evidence_module._sealed_dry_run_receipt(  # noqa: SLF001
+        repo_root=tmp_path, transaction_file=TRANSACTION_FILE,
+        transaction_hash=transaction_hash, proposal_mode="product_create_transaction",
+    )
+    assert issues == ()
+    response = {
+        "version": "odylith.greenfield.host-confirmation-callback.invalid",
+        "status": "CLOSED",
+        "command": "CONFIRM",
+        "transaction_hash": transaction_hash,
+        "visible_markdown": "**Published**\n\nExact readback passed.",
+        "developer_context": "Return the supplied completion handoff.",
+    }
+    runner = _terminal_confirm_runner(
+        tmp_path,
+        transaction_hash,
+        commit_result=_create_payload(receipt),
+        result=SimpleNamespace(returncode=0, stdout=json.dumps(response), stderr=""),
+    )
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path, proposed=_proposal(transaction_hash), proposal_seconds=1.0, invoke_cli=runner,
+    )
+
+    assert execution.retry_decision is None
+    assert "terminal CONFIRM did not return the exact CLOSED response" in execution.terminal_proof_issues
+
+
+def test_same_hash_terminal_retry_rechecks_raw_output_contract(tmp_path: Path) -> None:
+    _path, transaction_hash = _write_transaction(tmp_path)
+    receipt, issues = evidence_module._sealed_dry_run_receipt(  # noqa: SLF001
+        repo_root=tmp_path, transaction_file=TRANSACTION_FILE,
+        transaction_hash=transaction_hash, proposal_mode="product_create_transaction",
+    )
+    assert issues == ()
+    runner = _terminal_confirm_runner(tmp_path, transaction_hash, commit_result=_create_payload(receipt))
+    calls = 0
+
+    def invoke(command):
+        nonlocal calls
+        calls += 1
+        result = runner(command)
+        if calls == 2:
+            return SimpleNamespace(returncode=0, stdout=result.stdout, stderr="host-side schema repair")
+        return result
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path, proposed=_proposal(transaction_hash), proposal_seconds=1.0, invoke_cli=invoke,
+    )
+
+    assert execution.retry_decision is not None
+    assert "greenfield decide exposed a host-side repair contract: host-side schema repair" in (
+        execution.output_contract_issues
+    )
+
+
+def test_same_hash_terminal_retry_rejects_changed_journal_bytes(tmp_path: Path) -> None:
+    _path, transaction_hash = _write_transaction(tmp_path)
+    receipt, issues = evidence_module._sealed_dry_run_receipt(  # noqa: SLF001
+        repo_root=tmp_path, transaction_file=TRANSACTION_FILE,
+        transaction_hash=transaction_hash, proposal_mode="product_create_transaction",
+    )
+    assert issues == ()
+    runner = _terminal_confirm_runner(tmp_path, transaction_hash, commit_result=_create_payload(receipt))
+    calls = 0
+
+    def invoke(command):
+        nonlocal calls
+        calls += 1
+        result = runner(command)
+        if calls == 2:
+            state = tmp_path / ".odylith/runtime/greenfield/create-journal" / transaction_hash / "state.v1.json"
+            state.write_text(state.read_text(encoding="utf-8") + " ", encoding="utf-8")
+        return result
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path, proposed=_proposal(transaction_hash), proposal_seconds=1.0, invoke_cli=invoke,
+    )
+
+    assert execution.retry_decision is not None
+    assert "same-hash terminal retry changed terminal journal bytes" in execution.output_contract_issues
+
+
+def test_commit_precompiled_transaction_carries_the_exact_sealed_operating_envelope(
+    tmp_path: Path,
+) -> None:
+    sealed = {
+        "version": "odylith.greenfield-operating-envelope.synthetic",
+        "complexity": {"band": "moderate", "dimensions": {"evidence_bytes": 413}},
+        "evidence_format": "operator_prompt",
+        "model_contract": {"observed": {"profile_id": "synthetic-profile"}},
+    }
+    _transaction_path, transaction_hash = _write_transaction(
+        tmp_path,
+        operating_envelope=sealed,
+    )
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path,
+        proposed=_proposal(transaction_hash),
+        proposal_seconds=1.0,
+        invoke_cli=lambda _command: SimpleNamespace(returncode=0, stdout="{}", stderr=""),
+    )
+
+    assert execution.dry_run_receipt["semantic_snapshot"]["operating_envelope"] == sealed
+
+
+def test_preconfirm_snapshot_carries_sealed_authored_semantics_without_reconstruction(
+    tmp_path: Path,
+) -> None:
+    sealed = {
+        "version": "odylith.greenfield.authored-semantics.synthetic",
+        "source_event_relations": [
+            {
+                "order": 1,
+                "actor": {"kind": "human", "selected_fact_path": "/human_actors/0"},
+                "literal_evidence": ["Operator", "accepted receipt"],
+            }
+        ],
+        "first_path_context_relations": [],
+        "component_responsibility_relations": [
+            {"owner_system_path": "/title", "exact_value": "Decision Workspace"}
+        ],
+    }
+    transaction_path, transaction_hash = _write_transaction(
+        tmp_path,
+        authored_semantics=sealed,
+        authored_relation_set_sha256="e" * 64,
+    )
+    transaction = json.loads(transaction_path.read_text(encoding="utf-8"))
+    sealed_mapping = transaction["proposal"]["intent"]["authored_semantics"]
+
+    direct_snapshot = evidence_module._semantic_snapshot(transaction)
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path,
+        proposed=_proposal(transaction_hash),
+        proposal_seconds=1.0,
+        invoke_cli=lambda _command: SimpleNamespace(returncode=0, stdout="{}", stderr=""),
+    )
+    receipt_snapshot = execution.dry_run_receipt["semantic_snapshot"]
+
+    assert direct_snapshot["authored_semantics"] == sealed_mapping
+    assert direct_snapshot["authored_semantics"] is not sealed_mapping
+    assert receipt_snapshot["authored_semantics"] == sealed_mapping
+    assert receipt_snapshot["authored_relation_set_sha256"] == "e" * 64
+    assert json.dumps(
+        receipt_snapshot["authored_semantics"],
+        ensure_ascii=True,
+        separators=(",", ":"),
+    ) == json.dumps(sealed_mapping, ensure_ascii=True, separators=(",", ":"))
+    direct_snapshot["authored_semantics"]["source_event_relations"][0]["order"] = 2
+    assert sealed_mapping["source_event_relations"][0]["order"] == 1
+
+
+def test_preconfirm_snapshot_preserves_absent_authored_semantics_as_absent(
+    tmp_path: Path,
+) -> None:
+    transaction_path, transaction_hash = _write_transaction(tmp_path)
+    transaction = json.loads(transaction_path.read_text(encoding="utf-8"))
+
+    direct_snapshot = evidence_module._semantic_snapshot(transaction)
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path,
+        proposed=_proposal(transaction_hash),
+        proposal_seconds=1.0,
+        invoke_cli=lambda _command: SimpleNamespace(returncode=0, stdout="{}", stderr=""),
+    )
+
+    assert direct_snapshot["authored_semantics"] is None
+    assert direct_snapshot["authored_relation_set_sha256"] is None
+    assert execution.dry_run_receipt["semantic_snapshot"]["authored_semantics"] is None
+    assert execution.dry_run_receipt["semantic_snapshot"]["authored_relation_set_sha256"] is None
+
+
+@pytest.mark.parametrize(
+    ("proof_boundary", "assumptions", "expected_key", "expected_value"),
+    (
+        (
+            "The accepted decision is visible with exact readback.",
+            [],
+            "proof_boundary",
+            "The accepted decision is visible with exact readback.",
+        ),
+        (
+            "",
+            [{"applies_to": "proof_boundary", "statement": "Review one visible accepted decision."}],
+            "assumptions",
+            [{"applies_to": "proof_boundary", "statement": "Review one visible accepted decision."}],
+        ),
+    ),
+    ids=("source-proof", "proposed-proof"),
+)
+def test_preconfirm_snapshot_preserves_the_exclusive_proof_decision(
+    proof_boundary: str,
+    assumptions: list[dict[str, str]],
+    expected_key: str,
+    expected_value: object,
+) -> None:
+    transaction = {
+        "proposal": {
+            "intent": {
+                "product_story": "A reviewer can inspect one accepted decision.",
+                "state_object": "Accepted decision",
+                "first_path": "A reviewer records and inspects one accepted decision.",
+                "proof_boundary": proof_boundary,
+                "assumptions": assumptions,
+            }
+        },
+        "intent_authority": {},
+    }
+
+    snapshot = evidence_module._semantic_snapshot(transaction)
+
+    assert snapshot["facts"][expected_key] == expected_value
+    assert ("proof_boundary" in snapshot["facts"]) != ("assumptions" in snapshot["facts"])
+
+
+@pytest.mark.parametrize(
+    ("proof_boundary", "assumptions"),
+    (
+        ("", []),
+        (
+            "Source proof.",
+            [{"applies_to": "proof_boundary", "statement": "Competing proposed proof."}],
+        ),
+        (
+            "",
+            [
+                {"applies_to": "proof_boundary", "statement": "First proposed proof."},
+                {"applies_to": "proof_boundary", "statement": "Second proposed proof."},
+            ],
+        ),
+        ("", [{"applies_to": "proof_boundary", "statement": ""}]),
+    ),
+    ids=("missing", "both", "duplicate", "invalid"),
+)
+def test_preconfirm_snapshot_rejects_invalid_proof_decisions(
+    proof_boundary: str,
+    assumptions: list[dict[str, str]],
+) -> None:
+    transaction = {
+        "proposal": {
+            "intent": {
+                "product_story": "A reviewer can inspect one accepted decision.",
+                "state_object": "Accepted decision",
+                "first_path": "A reviewer records and inspects one accepted decision.",
+                "proof_boundary": proof_boundary,
+                "assumptions": assumptions,
+            }
+        },
+        "intent_authority": {},
+    }
+
+    assert evidence_module._semantic_snapshot(transaction) == {}
+
+
+def test_commit_precompiled_transaction_rejects_mismatched_receipt_without_create(tmp_path: Path) -> None:
+    _transaction_path, transaction_hash = _write_transaction(tmp_path, receipt_hash="b" * 64)
+    calls: list[tuple[str, ...]] = []
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path,
+        proposed=_proposal(transaction_hash),
+        proposal_seconds=12.5,
+        invoke_cli=lambda command: calls.append(tuple(command)),
+    )
+
+    assert execution.failure.returncode == 2
+    assert "compiler receipt hash does not match" in execution.failure.stdout
+    assert not calls
+
+
+def test_commit_precompiled_transaction_does_not_invoke_create_for_material_clarification(tmp_path: Path) -> None:
+    calls: list[tuple[str, ...]] = []
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path,
+        proposed=SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps({"mode": "clarification_required"}),
+            stderr="",
+        ),
+        proposal_seconds=12.5,
+        invoke_cli=lambda command: calls.append(tuple(command)),
+    )
+
+    assert execution.failure.returncode == 2
+    assert execution.dry_run_receipt["status"] == "clarification_required"
+    assert not calls
+
+
+def test_commit_precompiled_transaction_does_not_invoke_create_for_path_escape(tmp_path: Path) -> None:
+    calls: list[tuple[str, ...]] = []
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path,
+        proposed=_proposal(HASH, transaction_file="../escape.json"),
+        proposal_seconds=12.5,
+        invoke_cli=lambda command: calls.append(tuple(command)),
+    )
+
+    assert execution.failure.returncode == 2
+    assert "path escapes" in execution.failure.stdout
+    assert not calls
+
+
+@pytest.mark.parametrize("missing", ("transaction", "receipt"))
+def test_commit_precompiled_transaction_does_not_invoke_create_without_compiled_files(
+    tmp_path: Path,
+    missing: str,
+) -> None:
+    transaction_path, transaction_hash = _write_transaction(tmp_path)
+    target = transaction_path if missing == "transaction" else transaction_path.with_name(
+        transaction_path.name + ".compiler-receipt.v1.json"
+    )
+    target.unlink()
+    calls: list[tuple[str, ...]] = []
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path,
+        proposed=_proposal(transaction_hash),
+        proposal_seconds=12.5,
+        invoke_cli=lambda command: calls.append(tuple(command)),
+    )
+
+    assert execution.failure.returncode == 2
+    assert "receipt is unavailable" in execution.failure.stdout
+    assert not calls
+
+
+def test_commit_precompiled_transaction_rejects_tampered_body_with_matching_local_receipt(tmp_path: Path) -> None:
+    transaction_path, transaction_hash = _write_transaction(tmp_path)
+    transaction = json.loads(transaction_path.read_text(encoding="utf-8"))
+    transaction["proposal"]["intent"]["first_path"] = "A forged path replaces the compiled path."
+    encoded = json.dumps(transaction, sort_keys=True).encode("utf-8")
+    transaction_path.write_bytes(encoded)
+    receipt_path = transaction_path.with_name(transaction_path.name + ".compiler-receipt.v1.json")
+    receipt_path.write_text(
+        json.dumps(
+            {
+                "transaction_hash": transaction_hash,
+                "transaction_file_sha256": hashlib.sha256(encoded).hexdigest(),
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+    calls: list[tuple[str, ...]] = []
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path,
+        proposed=_proposal(transaction_hash),
+        proposal_seconds=12.5,
+        invoke_cli=lambda command: calls.append(tuple(command)),
+    )
+
+    assert execution.failure.returncode == 2
+    assert "transaction body does not match" in execution.failure.stdout
+    assert not calls
+
+
+def test_commit_precompiled_transaction_rejects_changed_transaction_bytes(tmp_path: Path) -> None:
+    transaction_path, transaction_hash = _write_transaction(tmp_path)
+    transaction_path.write_bytes(transaction_path.read_bytes() + b"\n")
+    calls: list[tuple[str, ...]] = []
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path,
+        proposed=_proposal(transaction_hash),
+        proposal_seconds=12.5,
+        invoke_cli=lambda command: calls.append(tuple(command)),
+    )
+
+    assert execution.failure.returncode == 2
+    assert "compiler receipt file digest does not match" in execution.failure.stdout
+    assert not calls
+
+
+@pytest.mark.parametrize(
+    ("identity", "expected_issue"),
+    (
+        ("product_facts", "missing a valid product facts hash"),
+        ("atomic_custody", "missing a valid atomic custody hash"),
+        ("write_set", "missing a valid repository write-set hash"),
+        ("managed_after_state", "missing exact managed after-state fingerprints"),
+        ("generation_manifest", "missing valid sealed generation/publication bytes"),
+        ("publication_entry", "missing valid sealed generation/publication bytes"),
+    ),
+)
+def test_commit_precompiled_transaction_requires_every_sealed_identity(
+    tmp_path: Path,
+    identity: str,
+    expected_issue: str,
+) -> None:
+    transaction_path, _transaction_hash = _write_transaction(tmp_path)
+    transaction = json.loads(transaction_path.read_text(encoding="utf-8"))
+    if identity == "product_facts":
+        transaction["intent_authority"]["product_facts_sha256"] = ""
+        transaction["commit_summary"]["product_facts_sha256"] = ""
+    elif identity == "atomic_custody":
+        transaction["intent_authority"]["atomic_custody_sha256"] = ""
+    elif identity == "write_set":
+        transaction["prewrite_package"]["repository_write_set"]["write_set_hash"] = ""
+        transaction["commit_summary"]["repository_write_set_hash"] = ""
+    elif identity in {"generation_manifest", "publication_entry"}:
+        transaction["prewrite_package"].pop(identity + "_text")
+    else:
+        first_path = greenfield_repository_write_set.GREENFIELD_REPOSITORY_WRITE_PATHS[0]
+        transaction["prewrite_package"]["repository_write_set"]["after_fingerprints"].pop(first_path)
+    transaction_hash = _seal_transaction(transaction_path, transaction)
+    calls: list[tuple[str, ...]] = []
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path,
+        proposed=_proposal(transaction_hash),
+        proposal_seconds=12.5,
+        invoke_cli=lambda command: calls.append(tuple(command)),
+    )
+
+    assert execution.failure.returncode == 2
+    assert expected_issue in execution.failure.stdout
+    assert not calls
+
+
+def test_dry_run_commit_issues_accepts_exact_closed_active_generation(tmp_path: Path) -> None:
+    receipt, write_set = _compiled_receipt(tmp_path)
+    _publish_committed_generation(
+        repo_root=tmp_path,
+        transaction_hash=str(receipt["transaction_hash"]),
+        write_set=write_set,
+    )
+
+    assert dry_run_commit_issues(
+        receipt=receipt,
+        create_payload=_create_payload(receipt),
+        repo_root=tmp_path,
+    ) == ()
+
+
+@pytest.mark.parametrize(
+    ("path_key", "expected_issue"),
+    (
+        ("transaction_file", "post-confirm transaction bytes do not match the pre-confirm receipt"),
+        ("compiler_receipt_file", "post-confirm compiler receipt bytes do not match the pre-confirm receipt"),
+    ),
+)
+def test_dry_run_commit_issues_rejects_changed_sealed_files(
+    tmp_path: Path,
+    path_key: str,
+    expected_issue: str,
+) -> None:
+    receipt, write_set = _compiled_receipt(tmp_path)
+    _publish_committed_generation(
+        repo_root=tmp_path,
+        transaction_hash=str(receipt["transaction_hash"]),
+        write_set=write_set,
+    )
+    target = tmp_path / str(receipt[path_key])
+    target.write_bytes(target.read_bytes() + b"\n")
+
+    issues = dry_run_commit_issues(
+        receipt=receipt,
+        create_payload=_create_payload(receipt),
+        repo_root=tmp_path,
+    )
+
+    assert issues == (expected_issue,)
+
+
+@pytest.mark.parametrize(
+    ("identity", "expected_issue"),
+    (
+        ("transaction", "commit readback does not match the pre-confirm transaction hash"),
+        ("product_facts", "commit readback does not match the pre-confirm product facts hash"),
+        ("write_set", "commit readback does not match the pre-confirm repository write-set hash"),
+    ),
+)
+def test_dry_run_commit_issues_rejects_changed_commit_identity(
+    tmp_path: Path,
+    identity: str,
+    expected_issue: str,
+) -> None:
+    receipt, write_set = _compiled_receipt(tmp_path)
+    _publish_committed_generation(
+        repo_root=tmp_path,
+        transaction_hash=str(receipt["transaction_hash"]),
+        write_set=write_set,
+    )
+    payload = _create_payload(receipt)
+    if identity == "transaction":
+        payload["commit_manifest"]["write_transaction"]["product_create_transaction_hash"] = "b" * 64
+    elif identity == "product_facts":
+        payload["product_create_transaction"]["product_facts_sha256"] = "b" * 64
+    else:
+        payload["repository_write_set"]["write_set_hash"] = "b" * 64
+
+    issues = dry_run_commit_issues(
+        receipt=receipt,
+        create_payload=payload,
+        repo_root=tmp_path,
+    )
+
+    assert issues == (expected_issue,)
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "expected_issue"),
+    (
+        ("lifecycle_version", "unsupported", "commit readback does not expose the supported create lifecycle"),
+        ("lifecycle_state", "PUBLISHED", "commit readback lifecycle is not CLOSED"),
+    ),
+)
+def test_dry_run_commit_issues_requires_closed_lifecycle(
+    tmp_path: Path,
+    field: str,
+    value: str,
+    expected_issue: str,
+) -> None:
+    receipt, write_set = _compiled_receipt(tmp_path)
+    _publish_committed_generation(
+        repo_root=tmp_path,
+        transaction_hash=str(receipt["transaction_hash"]),
+        write_set=write_set,
+    )
+    payload = _create_payload(receipt)
+    payload["commit_manifest"]["write_transaction"][field] = value
+
+    issues = dry_run_commit_issues(
+        receipt=receipt,
+        create_payload=payload,
+        repo_root=tmp_path,
+    )
+
+    assert issues == (expected_issue,)
+
+
+def test_dry_run_commit_issues_rejects_changed_generation_manifest(tmp_path: Path) -> None:
+    receipt, write_set = _compiled_receipt(tmp_path)
+    transaction_hash = str(receipt["transaction_hash"])
+    _publish_committed_generation(
+        repo_root=tmp_path,
+        transaction_hash=transaction_hash,
+        write_set=write_set,
+    )
+    manifest_path = (
+        tmp_path
+        / ".odylith/runtime/greenfield/generations"
+        / str(write_set["write_set_hash"])
+        / "generation-manifest.v1.json"
+    )
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    first_path = greenfield_repository_write_set.GREENFIELD_REPOSITORY_WRITE_PATHS[0]
+    manifest["after_fingerprints"][first_path] = "b" * 64
+    manifest_path.write_text(_canonical_json(manifest), encoding="utf-8")
+
+    issues = dry_run_commit_issues(
+        receipt=receipt,
+        create_payload=_create_payload(receipt),
+        repo_root=tmp_path,
+    )
+
+    assert issues == ("immutable generation readback is missing or invalid",)
+
+
+def test_dry_run_commit_issues_rejects_changed_active_generation_identity(tmp_path: Path) -> None:
+    receipt, write_set = _compiled_receipt(tmp_path)
+    transaction_hash = str(receipt["transaction_hash"])
+    _publish_committed_generation(
+        repo_root=tmp_path,
+        transaction_hash=transaction_hash,
+        write_set=write_set,
+    )
+    publication = greenfield_generation_state.read_active_publication(tmp_path)
+    (tmp_path / "odylith/index.html").write_text(
+        greenfield_generation_state.compile_greenfield_publication_entry(
+            write_set_hash="b" * 64,
+            generation_manifest_sha256=publication["generation_manifest_sha256"],
+        ),
+        encoding="utf-8",
+    )
+
+    issues = dry_run_commit_issues(
+        receipt=receipt,
+        create_payload=_create_payload(receipt),
+        repo_root=tmp_path,
+    )
+
+    assert issues == ("active generation identity does not match the sealed transaction",)
+
+
+def test_dry_run_commit_issues_rejects_modified_publication_bytes(tmp_path: Path) -> None:
+    receipt, write_set = _compiled_receipt(tmp_path)
+    _publish_committed_generation(
+        repo_root=tmp_path, transaction_hash=str(receipt["transaction_hash"]), write_set=write_set,
+    )
+    entry = tmp_path / "odylith/index.html"
+    assert hashlib.sha256(entry.read_bytes()).hexdigest() == receipt["publication_sha256"]
+    entry.write_bytes(entry.read_bytes() + b"\n")
+
+    assert dry_run_commit_issues(
+        receipt=receipt, create_payload=_create_payload(receipt), repo_root=tmp_path,
+    ) == ("active generation readback is missing or invalid",)
+
+
+def test_generation_proof_rejects_an_unapproved_transaction_with_the_same_write_set(tmp_path: Path) -> None:
+    receipt, write_set = _compiled_receipt(tmp_path)
+    _publish_committed_generation(
+        repo_root=tmp_path, transaction_hash=str(receipt["transaction_hash"]), write_set=write_set,
+    )
+    publication = (tmp_path / "odylith/index.html").read_bytes()
+    unapproved_transaction = "b" * 64
+
+    assert evidence_module._active_generation_issues(  # noqa: SLF001
+        repo_root=tmp_path, transaction_hash=unapproved_transaction,
+        write_set_hash=str(write_set["write_set_hash"]),
+        after_fingerprints=write_set["after_fingerprints"],
+        publication_sha256=str(receipt["publication_sha256"]),
+    ) == ("immutable generation readback is missing or invalid",)
+    assert terminal_handoff_issues(
+        terminal_decision=SimpleNamespace(stdout="{}"), repo_root=tmp_path,
+        transaction_hash=unapproved_transaction, browser_open_suppressed=True,
+    ) == ("terminal handoff has no valid reviewed generation receipt",)
+    assert (tmp_path / "odylith/index.html").read_bytes() == publication
+    assert not (tmp_path / ".odylith/runtime/greenfield/create-journal" / unapproved_transaction).exists()
+
+
+def test_dry_run_commit_issues_rejects_changed_managed_repository_state(tmp_path: Path) -> None:
+    receipt, write_set = _compiled_receipt(tmp_path)
+    _publish_committed_generation(
+        repo_root=tmp_path,
+        transaction_hash=str(receipt["transaction_hash"]),
+        write_set=write_set,
+    )
+    (tmp_path / "odylith/tooling-shell.html").write_text("changed after confirmation", encoding="utf-8")
+
+    issues = dry_run_commit_issues(
+        receipt=receipt,
+        create_payload=_create_payload(receipt),
+        repo_root=tmp_path,
+    )
+
+    assert issues == ("managed repository readback does not match the sealed after-state",)
+
+
+def test_dry_run_commit_issues_rejects_changed_generation_repository_state(tmp_path: Path) -> None:
+    receipt, write_set = _compiled_receipt(tmp_path)
+    transaction_hash = str(receipt["transaction_hash"])
+    _publish_committed_generation(
+        repo_root=tmp_path,
+        transaction_hash=transaction_hash,
+        write_set=write_set,
+    )
+    generation_index = (
+        tmp_path
+        / ".odylith/runtime/greenfield/generations"
+        / str(write_set["write_set_hash"])
+        / "repository/odylith/index.html"
+    )
+    generation_index.write_text("changed immutable generation", encoding="utf-8")
+
+    issues = dry_run_commit_issues(
+        receipt=receipt,
+        create_payload=_create_payload(receipt),
+        repo_root=tmp_path,
+    )
+
+    assert issues == ("immutable generation readback is missing or invalid",)
+
+
+def test_confirmation_preview_accepts_the_exact_terminal_offer_but_requires_execution() -> None:
+    payload = _proposal_payload(HASH, repo_root=OFFER_ROOT)
+
+    assert confirmation_preview_issues(proposal_payload=payload, repo_root=OFFER_ROOT) == (
+        "terminal decision offer remains unqualified: terminal execution proof is absent",
+    )
+
+    payload["confirmation"]["choices"] = [{"label": "CONFIRM", "command": "unterminated '"}]
+
+    issues = confirmation_preview_issues(proposal_payload=payload, repo_root=OFFER_ROOT)
+    assert "pre-confirm terminal decision offer must contain exactly three choices" in issues
+
+
+def test_confirmation_preview_accepts_complete_terminal_execution_without_native_claim(tmp_path: Path) -> None:
+    _path, transaction_hash = _write_transaction(tmp_path)
+    receipt, receipt_issues = evidence_module._sealed_dry_run_receipt(  # noqa: SLF001
+        repo_root=tmp_path, transaction_file=TRANSACTION_FILE,
+        transaction_hash=transaction_hash, proposal_mode="product_create_transaction",
+    )
+    assert receipt_issues == ()
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path,
+        proposed=_proposal(transaction_hash),
+        proposal_seconds=1.0,
+        invoke_cli=_terminal_confirm_runner(
+            tmp_path, transaction_hash, commit_result=_create_payload(receipt),
+        ),
+    )
+
+    assert confirmation_preview_issues(
+        proposal_payload=_proposal_payload(transaction_hash, repo_root=tmp_path),
+        repo_root=tmp_path,
+        execution=execution,
+    ) == ()
+
+
+@pytest.mark.parametrize("damage", [None, "relative_receipt", "missing_receipt", "missing_file", "wrong_hash", "wrong_nonce",
+    "extra_metadata", "foreign_receipt", "missing_flag", "wrong_flag", "duplicate_flag", "edit_route", "edit_hash"])
+def test_confirmation_preview_requires_exact_delivered_receipt_and_bounded_edit_route(tmp_path, monkeypatch, damage) -> None:
+    from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store as pending, greenfield_process as process
+    from tests.unit.runtime.test_greenfield_create_transaction import _transaction
+
+    consumer = tmp_path / "consumer with spaces"
+    consumer.mkdir()
+    transaction = _transaction(consumer)
+    journey, nonce = "c" * 64, "d" * 64
+    marker = {"version": "odylith.greenfield.journey-supervision.v1", "journey_id": journey,
+        "completion_digest": hashlib.sha256(nonce.encode("ascii")).hexdigest()}
+    monkeypatch.setattr(process, "register_bounded_pending_transaction", lambda _path: marker)
+    path = pending.stage_pending_transaction(repo_root=consumer, transaction=transaction)
+    process._write_journey_completion(path.parent, journey_id=journey, finished=1.0, deadline=2.0)
+    receipt = pending.write_completion_receipt_delivery(repo_root=consumer, receipt={
+        "version": "odylith.greenfield.completion-receipt.v1", "journey_id": journey,
+        "transaction_hash": transaction.transaction_hash, "nonce": nonce})
+    delivered = receipt.relative_to(consumer) if damage == "relative_receipt" else receipt
+    payload = _proposal_payload(transaction.transaction_hash, repo_root=consumer, completion_receipt=delivered)
+    payload["transaction_file"] = str(path.relative_to(consumer))
+    for choice in payload["confirmation"]["choices"]:
+        label = choice["label"]
+        expected = (["odylith", "greenfield", "prepare", "--repo-root", str(consumer),
+            "--transaction-hash", transaction.transaction_hash] if label == "EDIT" else
+            ["odylith", "greenfield", "decide", "--repo-root", str(consumer), label, transaction.transaction_hash])
+        assert shlex.split(choice["command"]) == [*expected, "--completion-receipt", str(delivered),
+            *(["--edit", "<corrections>"] if label == "EDIT" else [])]
+    receipt_issue = "pre-confirm payload is missing a valid delivered completion receipt"
+    command_issue = "pre-confirm terminal decision choice is not the exact repo/hash-bound command"
+    if damage == "missing_receipt":
+        del payload["completion_receipt"]
+    elif damage == "missing_file":
+        receipt.unlink()
+    elif damage in ("wrong_hash", "wrong_nonce", "extra_metadata"):
+        metadata = json.loads(receipt.read_text())
+        metadata[{"wrong_hash": "transaction_hash", "wrong_nonce": "nonce", "extra_metadata": "extra"}[damage]] = "e" * 64
+        receipt.write_text(json.dumps(metadata))
+    elif damage == "foreign_receipt":
+        foreign = tmp_path / "foreign-receipt.json"
+        foreign.write_bytes(receipt.read_bytes())
+        payload["completion_receipt"] = str(foreign)
+        payload["confirmation"] = terminal_decision_offer(repo_root=consumer,
+            transaction_hash=transaction.transaction_hash, completion_receipt=foreign)
+    elif damage and damage != "relative_receipt":
+        choice = payload["confirmation"]["choices"][1 if damage.startswith("edit_") else 0]
+        command = shlex.split(choice["command"])
+        if damage == "missing_flag":
+            del command[-2:]
+        elif damage == "wrong_flag":
+            command[-1] = str(tmp_path / "wrong.json")
+        elif damage == "duplicate_flag":
+            command.extend(("--completion-receipt", str(receipt)))
+        elif damage == "edit_route":
+            command = ["odylith", "greenfield", "decide", "--repo-root", str(consumer), "EDIT",
+                transaction.transaction_hash, "--completion-receipt", str(receipt), "--edit", "<corrections>"]
+        else:
+            command[command.index("--transaction-hash") + 1] = "e" * 64
+        choice["command"] = shlex.join(command)
+    issues = confirmation_preview_issues(proposal_payload=payload, repo_root=consumer)
+    if damage in (None, "relative_receipt"):
+        assert issues == ("terminal decision offer remains unqualified: terminal execution proof is absent",)
+    else:
+        assert (receipt_issue if damage in ("missing_receipt", "missing_file", "wrong_hash", "wrong_nonce",
+            "extra_metadata", "foreign_receipt") else command_issue) in issues
+
+
+@pytest.mark.parametrize(
+    ("mutate", "expected_issue"),
+    (
+        (lambda payload: payload["confirmation"].update(interface="chat"),
+         "pre-confirm terminal decision offer does not declare the terminal interface"),
+        (lambda payload: payload["confirmation"].update(reason="Send ordinary chat approval."),
+         "pre-confirm terminal decision offer has an invalid terminal warning"),
+        (lambda payload: payload["confirmation"].update(
+            reason=(
+                "Nothing has been published. Run one command in a terminal; ordinary chat approval "
+                "does not authorize publication. For EDIT, replace <corrections> with your changes. "
+                "You may also approve in chat."
+            ),
+        ), "pre-confirm terminal decision offer has an invalid terminal warning"),
+        (lambda payload: payload["confirmation"].update(create_command="odylith greenfield create --confirm"),
+         "pre-confirm terminal decision offer exposes unsupported authority fields"),
+        (lambda payload: payload["confirmation"].pop("choices"),
+         "pre-confirm terminal decision offer is missing its choices list"),
+        (lambda payload: payload["confirmation"]["choices"].pop(),
+         "pre-confirm terminal decision offer must contain exactly three choices"),
+        (lambda payload: payload["confirmation"]["choices"].__setitem__(1, {
+            "label": "CONFIRM", "command": payload["confirmation"]["choices"][1]["command"],
+        }), "pre-confirm terminal decision offer must contain CONFIRM, EDIT, and REJECT once each"),
+        (lambda payload: payload["confirmation"]["choices"][0].update(command=shlex.join([
+            "odylith", "greenfield", "decide", "--repo-root", "/wrong/root", "CONFIRM", HASH,
+        ])), "pre-confirm terminal decision choice is not the exact repo/hash-bound command"),
+        (lambda payload: payload["confirmation"]["choices"][2].update(command=shlex.join([
+            "odylith", "greenfield", "create", "--repo-root", str(OFFER_ROOT), "REJECT", HASH,
+        ])), "pre-confirm terminal decision choice is not the exact repo/hash-bound command"),
+        (lambda payload: payload["confirmation"]["choices"][0].update(command=shlex.join([
+            "odylith", "greenfield", "decide", "--repo-root", str(OFFER_ROOT), "CONFIRM", "b" * 64,
+        ])), "pre-confirm terminal decision choice is not the exact repo/hash-bound command"),
+        (lambda payload: payload["confirmation"]["choices"][1].update(command="unterminated '"),
+         "pre-confirm terminal decision choice is not shell-parseable"),
+        (lambda payload: payload["confirmation"]["choices"][1].update(command=shlex.join([
+            "odylith", "greenfield", "decide", "--repo-root", str(OFFER_ROOT), "EDIT", HASH,
+            "--edit", "<corrections>", "--extra",
+        ])), "pre-confirm terminal decision choice is not the exact repo/hash-bound command"),
+    ),
+)
+def test_confirmation_preview_rejects_malformed_or_nonterminal_offers(mutate, expected_issue: str) -> None:
+    payload = _proposal_payload(HASH, repo_root=OFFER_ROOT)
+    mutate(payload)
+
+    assert expected_issue in confirmation_preview_issues(proposal_payload=payload, repo_root=OFFER_ROOT)
+
+
+def test_terminal_handoff_requires_the_reviewed_generation_workspace(tmp_path: Path) -> None:
+    receipt, write_set = _compiled_receipt(tmp_path)
+    transaction_hash = str(receipt["transaction_hash"])
+    _publish_committed_generation(
+        repo_root=tmp_path, transaction_hash=transaction_hash, write_set=write_set,
+    )
+    dashboard = (
+        tmp_path
+        / ".odylith/runtime/greenfield/generations"
+        / str(write_set["write_set_hash"])
+        / "repository/odylith/index.html"
+    ).resolve()
+    compatibility_dashboard = (tmp_path / "odylith/index.html").resolve()
+    visible = (
+        "The package is committed. Open the "
+        f"[Project dashboard]({dashboard.as_uri()}?tab=project) or use `{dashboard}`."
+    )
+    decision = SimpleNamespace(stdout=json.dumps({
+        "version": "odylith.greenfield.host-confirmation-callback.v1",
+        "status": "CLOSED",
+        "command": "CONFIRM",
+        "transaction_hash": transaction_hash,
+        "visible_markdown": visible,
+        "developer_context": "Return the supplied completion handoff.",
+    }))
+
+    assert terminal_handoff_issues(
+        terminal_decision=decision,
+        repo_root=tmp_path,
+        transaction_hash=transaction_hash,
+        browser_open_suppressed=True,
+    ) == ()
+
+    opened_decision = SimpleNamespace(stdout=json.dumps({
+        **json.loads(decision.stdout),
+        "visible_markdown": f"Opened the committed [Project dashboard]({dashboard.as_uri()}?tab=project).",
+    }))
+    assert terminal_handoff_issues(
+        terminal_decision=opened_decision,
+        repo_root=tmp_path,
+        transaction_hash=transaction_hash,
+        browser_open_suppressed=False,
+    ) == ()
+    assert terminal_handoff_issues(
+        terminal_decision=opened_decision,
+        repo_root=tmp_path,
+        transaction_hash=transaction_hash,
+        browser_open_suppressed=True,
+    ) == (
+        "terminal handoff does not expose the reviewed generation: suppressed-browser fallback handoff",
+    )
+
+    def later_writer(_repository_lock_fd):
+        compatibility_dashboard.with_name("tooling-shell.html").write_text("later complete shell\n", encoding="utf-8")
+        return 0
+
+    assert greenfield_managed_mutation_boundary.run_with_greenfield_managed_mutation_boundary(
+        repo_root=tmp_path, command_tokens=("dashboard", "refresh"), operation=later_writer,
+    ) == 0
+    assert greenfield_generation_state.active_generation_identity(tmp_path)["write_set_hash"] != write_set["write_set_hash"]
+    assert terminal_handoff_issues(
+        terminal_decision=decision, repo_root=tmp_path, transaction_hash=transaction_hash,
+        browser_open_suppressed=True,
+    ) == ()
+
+    decision.stdout = decision.stdout.replace(dashboard.as_uri(), "file:///wrong/index.html")
+
+    assert terminal_handoff_issues(
+        terminal_decision=decision,
+        repo_root=tmp_path,
+        transaction_hash=transaction_hash,
+        browser_open_suppressed=True,
+    ) == (
+        "terminal handoff does not expose the reviewed generation: reviewed generation project URL",
+    )
+
+    decision.stdout = json.dumps({
+        **json.loads(decision.stdout),
+        "visible_markdown": f"Open [Project dashboard]({dashboard.as_uri()}?tab=project).",
+    })
+    assert terminal_handoff_issues(
+        terminal_decision=decision, repo_root=tmp_path, transaction_hash=transaction_hash,
+        browser_open_suppressed=True,
+    ) == (
+        "terminal handoff does not expose the reviewed generation: reviewed generation dashboard path",
+    )
+
+    decision.stdout = json.dumps({
+        **json.loads(decision.stdout),
+        "transaction_hash": "b" * 64,
+    })
+    assert terminal_handoff_issues(
+        terminal_decision=decision, repo_root=tmp_path, transaction_hash=transaction_hash,
+        browser_open_suppressed=True,
+    ) == (
+        "terminal handoff does not expose the reviewed generation: transaction receipt, reviewed generation dashboard path",
+    )
+
+
+def _proposal(transaction_hash: str, *, transaction_file: str = TRANSACTION_FILE) -> SimpleNamespace:
+    return SimpleNamespace(
+        returncode=0,
+        stdout=json.dumps(
+            {
+                "mode": "product_create_transaction",
+                "transaction_file": transaction_file,
+                "product_create_transaction": {"transaction_hash": transaction_hash},
+            }
+        ),
+        stderr="",
+    )
+
+
+def _proposal_payload(transaction_hash: str, *, repo_root: Path, completion_receipt: Path | None = None) -> dict[str, object]:
+    return {
+        "mode": "product_create_transaction",
+        "transaction_file": TRANSACTION_FILE,
+        "product_create_transaction": {"transaction_hash": transaction_hash},
+        **({"completion_receipt": str(completion_receipt)} if completion_receipt else {}),
+        "confirmation": terminal_decision_offer(repo_root=repo_root, transaction_hash=transaction_hash,
+            completion_receipt=completion_receipt),
+    }
+
+
+def _write_transaction(
+    repo_root: Path,
+    *,
+    receipt_hash: str | None = None,
+    operating_envelope: dict[str, object] | None = None,
+    authored_semantics: dict[str, object] | None = None,
+    authored_relation_set_sha256: str = "",
+) -> tuple[Path, str]:
+    activate_greenfield_baseline_fixture(repo_root)
+    path = repo_root / TRANSACTION_FILE
+    staged_root = repo_root / ".transaction-stage"
+    staged_index = staged_root / "odylith/index.html"
+    staged_index.parent.mkdir(parents=True, exist_ok=True)
+    staged_index.write_text("<html><body>Decision Workspace</body></html>\n", encoding="utf-8")
+    write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
+        source_root=repo_root,
+        staged_root=staged_root,
+    )
+    manifest_text = greenfield_generation_store.compile_greenfield_generation_manifest(write_set)
+    publication_text = greenfield_generation_state.compile_greenfield_publication_entry(
+        write_set_hash=write_set["write_set_hash"],
+        generation_manifest_sha256=hashlib.sha256(manifest_text.encode()).hexdigest(),
+    )
+    transaction = {
+        "quality_manifest": {"status": "passed", "validation_status": "passed"},
+        "proposal": {
+            "intent": {
+                "title": "Decision Workspace",
+                "product_story": "Decision Workspace helps an operator review one governed outcome.",
+                "state_object": "A decision record tracks its evidence, status, and accepted receipt.",
+                "first_path": "An operator records one decision and reviews the accepted receipt.",
+                "proof_boundary": "The first release proves one accepted decision with readback.",
+                "human_actors": ["Operator: records and reviews the decision."],
+                "external_systems": [],
+                **(
+                    {"authored_semantics": authored_semantics}
+                    if authored_semantics is not None
+                    else {}
+                ),
+            }
+        },
+        "intent_authority": {
+            "product_facts_sha256": PRODUCT_FACTS_SHA256,
+            "atomic_custody_sha256": ATOMIC_CUSTODY_SHA256,
+            "atomic_facts": [
+                {
+                    "atom_id": "AF-operator",
+                    "categories": ["actors"],
+                    "normalized_value": "Operator",
+                    "polarity": "affirmed",
+                    "custody_state": "accepted_fact",
+                    "entailment_relationship": "ordered_source_entailment",
+                    "source_span_ids": ["human_actors:1"],
+                    "source_span_refs": [],
+                    "projection_links": [
+                        {
+                            "field": "human_actors",
+                            "path": "/human_actors/0",
+                            "value_sha256": "e" * 64,
+                        }
+                    ],
+                }
+            ],
+            "material_fields": {
+                "first_path": {
+                    "custody_state": "accepted_fact",
+                    "entailment_relationship": "direct_product_claim",
+                }
+            },
+            **(
+                {"authored_relation_set_sha256": authored_relation_set_sha256}
+                if authored_relation_set_sha256
+                else {}
+            ),
+            **(
+                {"operating_envelope": operating_envelope}
+                if operating_envelope is not None
+                else {}
+            ),
+        },
+        "prewrite_package": {
+            "repository_write_set": write_set,
+            "generation_manifest_text": manifest_text,
+            "publication_entry_text": publication_text,
+        },
+        "commit_summary": {
+            "product_facts_sha256": PRODUCT_FACTS_SHA256,
+            "repository_write_set_hash": write_set["write_set_hash"],
+        },
+    }
+    transaction_hash = _seal_transaction(path, transaction, receipt_hash=receipt_hash)
+    return path, transaction_hash
+
+
+def _seal_transaction(
+    path: Path,
+    transaction: dict[str, object],
+    *,
+    receipt_hash: str | None = None,
+) -> str:
+    transaction.pop("transaction_hash", None)
+    transaction_hash = _payload_hash(transaction)
+    transaction["transaction_hash"] = transaction_hash
+    encoded = json.dumps(transaction, sort_keys=True).encode("utf-8")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(encoded)
+    path.with_name(path.name + ".compiler-receipt.v1.json").write_text(
+        json.dumps(
+            {
+                "transaction_hash": receipt_hash or transaction_hash,
+                "transaction_file_sha256": hashlib.sha256(encoded).hexdigest(),
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+    return transaction_hash
+
+
+def _compiled_receipt(repo_root: Path) -> tuple[dict[str, object], dict[str, object]]:
+    transaction_path, transaction_hash = _write_transaction(repo_root)
+    receipt, issues = evidence_module._sealed_dry_run_receipt(  # noqa: SLF001
+        repo_root=repo_root,
+        transaction_file=TRANSACTION_FILE,
+        transaction_hash=transaction_hash,
+        proposal_mode="product_create_transaction",
+    )
+    assert issues == ()
+    assert receipt["status"] == "compiled"
+    transaction = json.loads(transaction_path.read_text(encoding="utf-8"))
+    return (
+        dict(receipt),
+        dict(transaction["prewrite_package"]["repository_write_set"]),
+    )
+
+
+def _publish_committed_generation(
+    *,
+    repo_root: Path,
+    transaction_hash: str,
+    write_set: dict[str, object],
+    commit_result: dict[str, object] | None = None,
+) -> None:
+    transaction = json.loads((repo_root / TRANSACTION_FILE).read_text(encoding="utf-8"))
+    package = transaction["prewrite_package"]
+    assert transaction["transaction_hash"] == transaction_hash
+    assert package["repository_write_set"] == write_set
+    generation = greenfield_generation_store.materialize_immutable_greenfield_generation(
+        repo_root=repo_root,
+        write_set=write_set,
+        manifest_text=package["generation_manifest_text"],
+    )
+    journal = GreenfieldCommitJournal(
+        repo_root=repo_root, transaction_hash=transaction_hash, write_set=write_set,
+    )
+    journal.prepare()
+    journal.snapshot_root.mkdir()
+    journal.mark_prepared()
+    journal.mark_projecting(
+        {}, generation_manifest_sha256=generation.manifest_sha256,
+        publication_entry_text=package["publication_entry_text"],
+    )
+    greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
+        repo_root=repo_root,
+        write_set=write_set,
+    )
+    greenfield_generation_store.publish_greenfield_generation(
+        repo_root=repo_root,
+        generation=generation,
+        write_set=write_set,
+        publication_entry_text=package["publication_entry_text"],
+    )
+    journal.mark_published({}, generation_manifest_sha256=generation.manifest_sha256)
+    journal.mark_closed(commit_result or {}, generation_manifest_sha256=generation.manifest_sha256)
+
+
+def _terminal_confirm_runner(
+    repo_root: Path,
+    transaction_hash: str,
+    *,
+    commit_result: dict[str, object],
+    result: SimpleNamespace | None = None,
+):
+    """Produce raw CLI-shaped terminal output after persisting the actual journal fixture."""
+
+    transaction = json.loads((repo_root / TRANSACTION_FILE).read_text(encoding="utf-8"))
+    write_set = dict(transaction["prewrite_package"]["repository_write_set"])
+    published = False
+
+    def invoke(command):
+        nonlocal published
+        assert command[1:3] == ("greenfield", "decide")
+        assert command[5] == "CONFIRM" and command[6] == transaction_hash
+        if not published:
+            _publish_committed_generation(
+                repo_root=repo_root,
+                transaction_hash=transaction_hash,
+                write_set=write_set,
+                commit_result=commit_result,
+            )
+            published = True
+        return result or SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps({
+                "version": "odylith.greenfield.host-confirmation-callback.v1",
+                "status": "CLOSED",
+                "command": "CONFIRM",
+                "transaction_hash": transaction_hash,
+                "visible_markdown": "**Published**\n\nExact readback passed.",
+                "developer_context": "Return the supplied completion handoff.",
+            }),
+            stderr="",
+        )
+
+    return invoke
+
+
+def _create_payload(receipt: dict[str, object]) -> dict[str, object]:
+    transaction_hash = str(receipt["transaction_hash"])
+    product_facts_hash = str(receipt["product_facts_sha256"])
+    write_set_hash = str(receipt["repository_write_set_hash"])
+    transaction = {
+        "transaction_hash": transaction_hash,
+        "product_facts_sha256": product_facts_hash,
+        "repository_write_set_hash": write_set_hash,
+    }
+    return {
+        "mode": "applied",
+        "validation_gate": {"status": "passed", "issues": []},
+        "backlog": [],
+        "components": [],
+        "diagrams": [],
+        "dashboard_refresh": {"status": "passed"},
+        "product_create_transaction": dict(transaction),
+        "repository_write_set": {"write_set_hash": write_set_hash},
+        "commit_manifest": {
+            "product_create_transaction": dict(transaction),
+            "write_transaction": {
+                "product_create_transaction_hash": transaction_hash,
+                "product_facts_sha256": product_facts_hash,
+                "repository_write_set_hash": write_set_hash,
+                "lifecycle_version": greenfield_create_lifecycle.CREATE_LIFECYCLE_VERSION,
+                "lifecycle_state": greenfield_create_lifecycle.CLOSED,
+            },
+        },
+    }
+
+
+def _canonical_json(value: object) -> str:
+    return json.dumps(value, indent=2, sort_keys=True, ensure_ascii=True) + "\n"

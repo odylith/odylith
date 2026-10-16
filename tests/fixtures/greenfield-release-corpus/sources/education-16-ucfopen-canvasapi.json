@@ -1,0 +1,54 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "education",
+    "learning",
+    "student",
+    "teaching",
+    "school",
+    "course"
+  ],
+  "matched_description_evidence_terms": [
+    "course"
+  ],
+  "repository": {
+    "default_branch": "develop",
+    "description": "Python API wrapper for Instructure's Canvas LMS. Easily manage courses, users, gradebooks, and more.",
+    "full_name": "ucfopen/canvasapi",
+    "id": 73851042,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "canvasapi",
+    "node_id": "MDEwOlJlcG9zaXRvcnk3Mzg1MTA0Mg==",
+    "pushed_at": "2026-04-16T04:34:39Z",
+    "topics": [
+      "api",
+      "canvas",
+      "canvas-lms",
+      "education",
+      "hacktoberfest",
+      "instructure",
+      "python",
+      "wrapper"
+    ]
+  },
+  "response_item_index": 44,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aeducation&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:15:57 GMT",
+    "x-github-request-id": "D127:37400:14E2036:154650B:6A5B606A"
+  },
+  "search_response_path": "responses/education.json",
+  "search_response_sha256": "d51afeba9684308dd78e53e1ecc6ffcf33d5093aa6f1d2e4bc3690c31b6b2504",
+  "selection_index": 16,
+  "source_family": "education",
+  "source_id": "github-repository:73851042",
+  "source_uri": "https://github.com/ucfopen/canvasapi",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

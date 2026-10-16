@@ -1,0 +1,90 @@
+- Bug ID: CB-255
+
+- Status: InProgress
+
+- Created: 2026-07-16
+
+- Severity: P1
+
+- Reproducibility: Always
+
+- Type: Product
+
+- Description: The first 240-case discovery case was correctly rejected before confirmation because the accepted-project memory preview projected clipped or dangling proof-obligation copy.
+
+- Impact: A viable consumer utility prompt fails pre-confirm instead of compiling a transaction, blocking creation without giving the user a usable path.
+
+- Components Affected: odylith
+
+- Environment(s): Installed 0.1.15 seeded discovery matrix, 240-case high-variance campaign.
+
+- Detected By: Fail-fast installed high-variance campaign.
+
+- Failure Signature: generated_copy_quality: accepted-project memory preview leaked clipped or dangling public copy at proof_obligations[0].required_evidence.
+
+- Trigger Path: repair-library-borrow-path from tests/fixtures/greenfield-volume/consumer-creative-community.v1.json.
+
+- Ownership: Artifact plan projector accepted-project projection.
+
+- Timeline: Captured 2026-07-16 through `odylith bug capture`.
+
+- Blast Radius: Any greenfield proposal whose proof obligation is projected with a clipped required_evidence fragment.
+
+- SLO/SLA Impact: Pre-confirm compilation rejects a user request; post-confirm safety remains intact.
+
+- Data Risk: No governed write occurred; no persisted product data affected.
+
+- Security/Compliance: No security or compliance impact.
+
+- Invariant Violated: Pre-confirm package must contain complete, grammatical human-visible copy before confirmation.
+
+- Root Cause: Under investigation; the package-quality gate identified the accepted-project proof-obligation projection as the failing owner.
+
+- Solution: Repair the shared accepted-project projection or its upstream semantic fragment, add the exact regression, replay the failed subset, then resume volume discovery.
+
+- Rollback/Forward Fix: Forward fix only; no accepted transaction or governed records were written.
+
+- Verification: Exact failed-subset installed replay must pass with zero generated-copy findings before resuming the 240-case campaign.
+
+- Prevention: Keep generated-copy quality in the pre-confirm gate and cover the repair-library proof obligation directly.
+
+- Agent Guardrails: Do not downgrade the gate or create post-confirm repair; fix the pre-confirm projection source.
+
+- Preflight Checks: Inspect the staged accepted-project proof obligation and reproduce the package-quality finding.
+
+- Regression Tests Added: The exact failed-subset replay file is persisted at odylith-release-proof-8f66d1777/failed-subset-replay/failed-subset-001.cases.json.
+
+- Monitoring Updates: The campaign failure-response packet records the cluster and failed-subset replay file.
+
+- Version/Build: 0.1.15 installed artifact from source checkpoint 8f66d1777.
+
+- Config/Flags: 240-case discovery, seeded install, four workers, stop after one failure cluster, browser and rescue proof omitted by discovery tier.
+
+- Customer Comms: Internal quality remediation; no user-facing incident because no transaction was confirmed.
+
+- GitHub Status: confirmed
+
+- Public Response: closed
+
+- Code References: - scripts/release/greenfield_preconfirm_matrix.py
+- src/odylith/runtime/artifact_quality/greenfield_package_quality.py
+
+- Follow-Up Failure (2026-07-17): The maintained clean-head installed matrix passed all fourteen standard cases and the synthetic rescue probe, but the real installed structured-rescue proof failed before confirmation after a valid Tribunal semantic patch. The accepted-project memory preview contained malformed terminal punctuation and the Tribunal correctly stopped with `generated_copy_quality`; no transaction or governed write was created.
+
+- Follow-Up Root Cause (2026-07-17): Accepted-project memory normalized action grammar and Markdown emphasis but had no shared normalization for impossible terminal punctuation pairs such as `, .`, `; .`, or `.,`. A host-planned semantic repair can rerender a valid public-memory field with one of those mechanical pairs, leaving the pre-confirm repair loop without an executable plan patch.
+
+- Follow-Up Solution (2026-07-17): Normalize malformed terminal punctuation only in non-structural accepted-memory public prose before the pre-confirm copy gate. Preserve the fail-closed gate, typed semantic repair path, transaction hash boundary, structural IDs, paths, versions, and source evidence unchanged.
+
+- Follow-Up Verification (2026-07-17): Added `tests/unit/runtime/test_greenfield_accepted_project_memory_copy.py`; focused accepted-memory, quality, source-casing, structured-rescue, and generated-copy regression suites passed. A direct installed structured-rescue replay passed after the failed matrix evidence was captured; a fresh packaged matrix replay remains required before release readiness.
+
+- Follow-Up Adversarial Finding (2026-07-17): The first punctuation repair used a private accepted-memory structural-key list that disagreed with generated-copy inspection. It skipped the public project title, so malformed title punctuation could still fail pre-confirm, while rewriting typed component fields such as `owner`, `sources`, `category`, and `product_layer`. The create-transaction compiler fingerprint also omitted both changed memory-copy modules.
+
+- Follow-Up Hardening (2026-07-17): Accepted memory now delegates typed-field custody to the shared structural-copy boundary, treats titles as public copy, and fingerprints the accepted-memory and punctuation modules in ProductCreateTransaction compiler provenance. Regressions prove title cleanup, typed component metadata preservation, and compiler identity coverage.
+
+- Follow-Up Architecture Correction (2026-07-17): Adversarial traces showed that the original `greenfield create` command rehydrated the full pre-confirm package from JSON, which imported quality and copy runtime even though it did not deliberately rerun those checks. The canonical root create route now loads a minimal sealed commit projection: compiler receipt, transaction hash, compiler provenance, intent-authority snapshot, quality-manifest metadata, exact repository write set, and precomputed commit result only. It no longer imports the pre-confirm transaction compiler on the fresh create path.
+
+- Follow-Up Verification (2026-07-17): Added fresh-command proof that canonical `odylith greenfield create` commits the sealed transaction and does not load `greenfield_create_transaction`; added a traced post-confirm regression that every executed Odylith commit-runtime file is receipt-bound. Focused Greenfield runtime suite passed 198 tests. A new packaged natural-rescue and full installed matrix replay remain required before release readiness.
+
+- Follow-Up Installed Verification (2026-07-17): Clean packaged `0.1.15` replay passed all 14 consumer cases at 10/10 with no failures. The real installed structured-patch rescue, synthetic rescue probe, browser confirmation-surface proof, and temporary-workspace cleanup proof all passed. This settles the failed discovery subset and canonical commit path. The matrix remains discovery-tier evidence until its separate source-style/provenance release corpus is available; that is a release-evidence gap, not a transaction or consumer-path failure.
+
+- Final Holdout Reopen (2026-08-04): The exact-revision 24-case holdout exposed the same mechanism in accepted-project diagram custody and rendered Atlas sources. The pre-confirm gate stopped the affected case before confirmation; no governed write occurred. The remaining root cause was distributed length compaction: shared word-boundary clipping removed partial words and dangling connectors, but did not distinguish an incomplete action tail from a valid noun tail. Repair is now owned by the shared Mermaid compactor and runs only after an actual length or line boundary clips the source. It removes unambiguous incomplete tails such as terminal `includes` while preserving complete clauses such as `sees what remains` and nouns such as `patient sample return`. An adversarial review caught and prevented an earlier over-broad `return` deletion. Focused generated-copy and surface tests pass; clean installed replay remains required.

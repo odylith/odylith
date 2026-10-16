@@ -1,6 +1,6 @@
 name = "odylith-validator"
 description = "Run bounded validation for an Odylith slice and report concrete pass-fail evidence. Use PROACTIVELY when the slice needs judgment over which tests actually prove the change, careful interpretation of failure signatures, and explicit flagging of coverage intentionally skipped."
-model = "gpt-5.4-mini"
+model = "gpt-5.6-luna"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = '''

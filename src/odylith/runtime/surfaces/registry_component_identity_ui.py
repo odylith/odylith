@@ -1,0 +1,157 @@
+"""Component identity UI fragments for the Registry dashboard."""
+
+from __future__ import annotations
+
+
+def css() -> str:
+    return """
+.component-btn {
+  min-height: 104px;
+  align-content: start;
+}
+
+.component-card-title,
+.component-meta {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.summary-row {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.summary-artifact-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.artifact-compact {
+  max-width: min(100%, 420px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: normal;
+}
+
+.component-identity {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.component-name {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+""".strip()
+
+
+def runtime_js() -> str:
+    return """
+function componentKind(row) {
+  return humanizeToken(row && row.kind || "").trim();
+}
+
+function componentRawName(row) {
+  return String(row && (row.name || row.component_id) || "").replace(/\\s+/g, " ").trim();
+}
+
+function componentCompactName(row, limit = 64) {
+  const raw = componentRawName(row);
+  if (!raw) return "Component";
+  const kind = componentKind(row);
+  let candidate = raw;
+  if (candidate.length > limit) {
+    const relativeClause = candidate.match(/\\s+(?:that|which|who|where|when|whose)\\s+/i);
+    if (relativeClause && relativeClause.index >= 12) {
+      candidate = candidate.slice(0, relativeClause.index).replace(/[ ,;:-]+$/, "").trim();
+    }
+  }
+  if (
+    kind
+    && candidate
+    && candidate !== raw
+    && raw.toLowerCase().endsWith(` ${kind.toLowerCase()}`)
+    && !candidate.toLowerCase().endsWith(` ${kind.toLowerCase()}`)
+  ) {
+    candidate = `${candidate} ${kind}`;
+  }
+  return clipText(candidate || raw, limit);
+}
+
+function componentFullIdentity(row) {
+  const raw = componentRawName(row);
+  const componentId = String(row && row.component_id || "").trim();
+  if (raw && componentId && raw.toLowerCase() !== componentId.toLowerCase()) {
+    return `${raw} (${componentId})`;
+  }
+  return raw || componentId || "Component";
+}
+
+function compactPathLabel(path, fallback = "Artifact") {
+  const raw = String(path || "").trim();
+  if (!raw) return fallback;
+  if (raw.endsWith("/CURRENT_SPEC.md")) return "Component spec";
+  if (raw.startsWith("src/")) return "Source boundary";
+  return clipText(basenamePath(raw) || raw, 54);
+}
+
+function compactRegistryNarrative(value, row) {
+  const text = String(value || "").trim();
+  const registrationText = text.replace(/`/g, "");
+  if (registrationText === "Logical component registered through odylith component register."
+      || (registrationText.startsWith("Logical component registered through odylith component register with ")
+          && registrationText.endsWith(" as its initial evidence anchor."))) return "";
+  const prefix = `${String(row && row.name || "")} is a proposed logical component. Proposed responsibility: `;
+  const generated = row && row.status === "planned" && row.qualification === "candidate";
+  return generated && text.startsWith(prefix) ? text.slice(prefix.length) : text;
+}
+
+function summaryTextRow(title, body) {
+  const text = String(body || "").trim();
+  return `<p class="summary-row"><strong>${escapeHtml(title)}:</strong> ${escapeHtml(text || "Not documented.")}</p>`;
+}
+
+function summaryArtifactRow(title, path, label) {
+  const token = String(path || "").trim();
+  if (!token) return "";
+  return `
+    <div class="summary-row summary-artifact-row">
+      <strong>${escapeHtml(title)}:</strong>
+      <span class="artifact-list">
+        ${artifactChip(
+          { path: token, href: token },
+          token,
+          "artifact artifact-compact",
+          label || compactPathLabel(token, title),
+        )}
+      </span>
+    </div>
+  `;
+}
+
+function renderComponentListButton(row, selectedId) {
+  const categoryToken = String(row.category || "").trim().toLowerCase();
+  const fullIdentity = componentFullIdentity(row);
+  const metaText = humanizeToken(row.status || "active");
+  return `
+    <li>
+      <button type="button" class="component-btn${row.component_id === selectedId ? " active" : ""}" data-component="${escapeHtml(row.component_id)}" title="${escapeHtml(fullIdentity)}" aria-label="${escapeHtml(fullIdentity)}">
+        <span class="component-card-title">${escapeHtml(componentCompactName(row, 58))}</span>
+        <span class="component-meta" title="${escapeHtml(fullIdentity)}">${escapeHtml(metaText)}</span>
+        <span class="inline">
+          <span class="label ${escapeHtml(toneClassForCategory(categoryToken))}">${escapeHtml(humanizeToken(categoryToken))}</span>
+        </span>
+      </button>
+    </li>
+  `;
+}
+""".strip()

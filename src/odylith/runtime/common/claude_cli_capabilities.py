@@ -362,17 +362,6 @@ _CLAUDE_HOST_LAUNCHER_INVOCATION = (
     f'python3 "{_CLAUDE_PROJECT_DIR_TOKEN}"/.agents/bin/odylith-host-launcher.py'
 )
 _CLAUDE_STATUSLINE_INVOCATION = f'"{_CLAUDE_PROJECT_DIR_TOKEN}"/.claude/statusline.sh'
-_CLAUDE_BASH_GUARD_IF_PATTERNS: tuple[str, ...] = (
-    "Bash(rm *)",
-    "Bash(git reset --hard*)",
-    "Bash(git checkout --*)",
-    "Bash(git push --force*)",
-    "Bash(git clean -fdx*)",
-    "Bash(*shutil.rmtree*)",
-    "Bash(*odylith backlog create*)",
-)
-
-
 def _project_python_hook_command(script_name: str) -> str:
     return (
         f'python3 "{_CLAUDE_PROJECT_DIR_TOKEN}"/.claude/hooks/{script_name} '
@@ -397,11 +386,9 @@ def _bash_guard_hook_entries() -> list[dict[str, Any]]:
     return [
         {
             "type": "command",
-            "if": pattern,
             "command": command,
             "timeout": 10,
         }
-        for pattern in _CLAUDE_BASH_GUARD_IF_PATTERNS
     ]
 
 

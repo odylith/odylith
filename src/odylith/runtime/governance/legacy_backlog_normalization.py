@@ -9,18 +9,13 @@ from typing import Any, Iterable, Mapping
 
 from odylith.install.fs import atomic_write_text
 from odylith.runtime.common.consumer_profile import truth_root_path
+from odylith.runtime.governance import backlog_assessment
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import execution_wave_contract
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance.backlog_topology_contract import validate_topology_contract
 
-_REQUIRED_BULLETS = (
-    "- why now:",
-    "- expected outcome:",
-    "- tradeoff:",
-    "- deferred for now:",
-    "- ranking basis:",
-)
+_ORDERING_BULLETS = ("- ranking basis:",)
 _LEGACY_INDEX_COLS_WITH_LANES: tuple[str, ...] = (
     "rank",
     "idea_id",
@@ -49,6 +44,10 @@ class LegacyBacklogNormalizationResult:
     normalized_table_sections: tuple[str, ...] = ()
 
 
+def _utc_today() -> dt.date:
+    return dt.datetime.now(tz=dt.UTC).date()
+
+
 def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | None = None) -> LegacyBacklogNormalizationResult:
     root = Path(repo_root).expanduser().resolve()
     backlog_index = truth_root_path(repo_root=root, key="radar_source") / "INDEX.md"
@@ -62,7 +61,7 @@ def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | No
             normalized_idea_specs=(),
             normalized_table_sections=(),
         )
-    current_day = today or dt.date.today()
+    current_day = today or _utc_today()
     normalized_idea_specs = _normalize_legacy_idea_specs(idea_root=idea_root)
     ideas, _idea_errors = backlog_contract._validate_idea_specs(idea_root)  # noqa: SLF001
     snapshot = backlog_contract.load_backlog_index_snapshot(backlog_index)
@@ -98,9 +97,10 @@ def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | No
             idea_id=idea_id,
             title=title,
             existing_lines=list(existing.get("lines", [])),
+            ordering_score=backlog_assessment.numeric_value(spec.metadata.get("ordering_score")) if spec else None,
             founder_override=bool(spec.founder_override) if spec is not None else False,
             today=current_day,
-            require_all_bullets=True,
+            require_ordering=True,
         )
         heading = f"{idea_id} (rank {rank})"
         ordered_sections.append((idea_id, heading, normalized_lines))
@@ -119,9 +119,10 @@ def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | No
             idea_id=idea_id,
             title=title,
             existing_lines=list(existing.get("lines", [])),
+            ordering_score=backlog_assessment.numeric_value(spec.metadata.get("ordering_score")) if spec else None,
             founder_override=bool(spec.founder_override) if spec is not None else False,
             today=current_day,
-            require_all_bullets=bool(spec.founder_override) if spec is not None else False,
+            require_ordering=bool(spec.founder_override) if spec is not None else False,
         )
         if not normalized_lines and not existing.get("lines"):
             continue
@@ -132,9 +133,9 @@ def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | No
         elif normalized_lines != list(existing.get("lines", [])):
             changed_keys.append(idea_id)
 
-    content = backlog_index.read_text(encoding="utf-8")
+    original_content = backlog_index.read_text(encoding="utf-8")
     content, normalized_table_sections = _normalize_legacy_backlog_tables(
-        content=content,
+        content=original_content,
         snapshot=snapshot,
     )
     lines = content.splitlines()
@@ -145,18 +146,25 @@ def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | No
         replacement.extend(rationale_lines)
         replacement.append("")
     lines[start:end] = replacement
-    updated = _update_last_updated("\n".join(lines), today=current_day)
-    if not updated.endswith("\n"):
-        updated += "\n"
-    changed = updated != content or bool(normalized_idea_specs) or bool(normalized_table_sections)
-    if changed:
+    normalized_content = "\n".join(lines)
+    if not normalized_content.endswith("\n"):
+        normalized_content += "\n"
+    index_changed = normalized_content != original_content
+    all_normalized_idea_specs = tuple(dict.fromkeys(normalized_idea_specs))
+    changed = (
+        index_changed
+        or bool(all_normalized_idea_specs)
+        or bool(normalized_table_sections)
+    )
+    if index_changed:
+        updated = _update_last_updated(normalized_content, today=current_day)
         atomic_write_text(backlog_index, updated, encoding="utf-8")
     return LegacyBacklogNormalizationResult(
         backlog_index=backlog_index,
         changed=changed,
         added_sections=tuple(added_keys),
         normalized_sections=tuple(sorted(dict.fromkeys((*changed_keys, *added_keys)))),
-        normalized_idea_specs=normalized_idea_specs,
+        normalized_idea_specs=all_normalized_idea_specs,
         normalized_table_sections=normalized_table_sections,
     )
 
@@ -364,22 +372,24 @@ def _normalized_rationale_lines(
     existing_lines: list[str],
     founder_override: bool,
     today: dt.date,
-    require_all_bullets: bool,
+    require_ordering: bool,
+    ordering_score: int | None = None,
 ) -> list[str]:
     defaults = _default_rationale_lines(
         idea_id=idea_id,
         title=title,
         founder_override=founder_override,
         today=today,
+        ordering_score=ordering_score,
     )
     lines = _trim_empty_boundary_lines(existing_lines)
     bullet_indexes = {
         bullet: index
         for index, line in enumerate(lines)
-        for bullet in _REQUIRED_BULLETS
+        for bullet in _ORDERING_BULLETS
         if str(line).strip().lower().startswith(bullet)
     }
-    required = _REQUIRED_BULLETS if require_all_bullets else ("- ranking basis:",) if founder_override else ()
+    required = _ORDERING_BULLETS if founder_override or (require_ordering and not lines) else ()
     for bullet in required:
         default_line = defaults[bullet]
         if bullet not in bullet_indexes:
@@ -390,8 +400,6 @@ def _normalized_rationale_lines(
         if bullet == "- ranking basis:" and founder_override:
             if "no manual priority override" in lowered or backlog_contract._REVIEW_DATE_RE.search(current) is None:  # noqa: SLF001
                 lines[bullet_indexes[bullet]] = default_line
-    if not lines and require_all_bullets:
-        return list(defaults.values())
     return lines
 
 
@@ -410,6 +418,7 @@ def _default_rationale_lines(
     title: str,
     founder_override: bool,
     today: dt.date,
+    ordering_score: int | None,
 ) -> dict[str, str]:
     lines = backlog_authoring._build_rationale_lines(  # noqa: SLF001
         item=backlog_authoring.CreatedBacklogItem(
@@ -418,7 +427,7 @@ def _default_rationale_lines(
             idea_path=Path(
                 f"odylith/radar/source/ideas/{today.isoformat()[:7]}/{today.isoformat()}-{idea_id.lower()}.md"
             ),
-            ordering_score=0,
+            ordering_score=ordering_score,
             founder_override=founder_override,
         ),
         override_note="",
@@ -427,7 +436,7 @@ def _default_rationale_lines(
     return {
         next(
             bullet
-            for bullet in _REQUIRED_BULLETS
+            for bullet in _ORDERING_BULLETS
             if line.lower().startswith(bullet)
         ): line
         for line in lines

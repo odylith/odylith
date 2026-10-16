@@ -1,5 +1,8 @@
 # Odylith Backlog Create
 
+## Governance-Learning Default
+Before acting on a durable error, escaped defect, failed mechanism, failed simulation, bad generated artifact, semantic drift, quality-gate miss, latency breach, architecture decision, validation result, or release-risk learning, search Casebook and related governance truth first. Read prior failed mechanisms, failed fix attempts, rejected approaches, guardrails, and validation history; do not repeat a fix path that already failed. Capture new mechanism-level learning in Casebook or Compass, and update Radar or plans, Registry, and Atlas when the learning changes planned work, component contracts, or flows.
+
 Use this skill only when the user explicitly invokes `$odylith-backlog-create`
 or asks to create one or more Radar backlog workstreams.
 
@@ -8,10 +11,16 @@ or asks to create one or more Radar backlog workstreams.
 2. Gather grounded core detail before authoring: Problem, Customer,
    Opportunity, Product View, and Success Metrics. Do not use title-derived
    boilerplate, `TBD`, `Details.`, or other placeholders.
+   Add other sections only when the evidence supplies useful local facts; do
+   not fill unused headings with generic text.
+   The visible workstream title and body must be simple, easy to understand,
+   legible, grammatically coherent, and clear about the problem being solved,
+   who benefits, what changes, and what evidence would prove success.
    Exception: when the user asks for a new greenfield project from intent
-   only, use `odylith greenfield propose` first. That proposal may draft the
-   missing fields, program waves, and release plan with labeled assumptions,
-   but final backlog writes still require confirmation.
+   only, use `odylith greenfield propose` to compile the typed evidence and
+   staged ProductCreateTransaction for read-only review. No qualified confirmation
+   interface is attached to that preview. Do not append chat decision commands,
+   offer publication, or run create from a chat approval.
 3. Run `./.odylith/bin/odylith backlog create --repo-root .` with `--title`,
    `--problem`, `--customer`, `--opportunity`, `--product-view`, and
    `--success-metrics`.

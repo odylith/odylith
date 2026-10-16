@@ -1,5 +1,8 @@
 # Fail-Closed Code Hygiene
 
+## Governance-Learning Default
+Before acting on a durable error, escaped defect, failed mechanism, failed simulation, bad generated artifact, semantic drift, quality-gate miss, latency breach, architecture decision, validation result, or release-risk learning, search Casebook and related governance truth first. Read prior failed mechanisms, failed fix attempts, rejected approaches, guardrails, and validation history; do not repeat a fix path that already failed. Capture new mechanism-level learning in Casebook or Compass, and update Radar or plans, Registry, and Atlas when the learning changes planned work, component contracts, or flows.
+
 Use this maintainer-only skill when a pass is explicitly about removing AI
 slop, fake modularization, duplicate helper churn, mirror drift, oversized-file
 pressure, or other structural debt in shipped Odylith code.
@@ -61,7 +64,9 @@ No transitional states. Do not replace one slop class with another.
   live source and every shipped mirror in the same change.
 - For maintainer product-surface changes that can affect already-installed
   consumer repos, run `odylith release migration-gate --repo-root .
-  --target-version <version>` and satisfy the exact emitted
+  --target-version <version> --base-ref <published-predecessor-ref>` on a
+  clean, frozen candidate. Verify the predecessor against published release
+  metadata, not local tag ordering. Satisfy the exact emitted
   `migration-observer:<version>:<surface>:<fingerprint>` Radar marker before
   release closeout.
 - Keep that migration-observer rule maintainer-only. Do not mirror it into

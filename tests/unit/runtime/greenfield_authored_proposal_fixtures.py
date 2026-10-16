@@ -1,0 +1,317 @@
+"""Authored Greenfield fixture ownership: custody, three-role receipts, and proposals."""
+
+from __future__ import annotations
+
+from collections.abc import Mapping
+from pathlib import Path
+from typing import Any
+
+from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    HOST_CANDIDATE_CONTRACT_VERSION,
+    HOST_CANDIDATE_RECEIPT_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_RELATION_SET_SHA256_KEY,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GREENFIELD_INTENT_AUTHORING_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    STANDARD_PROFILE_ID,
+    get_greenfield_model_profile,
+)
+from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
+    CANONICAL_CANDIDATE_SHA256_KEY,
+)
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import (
+    PRECONFIRM_ENGINE_VERSION,
+    PRECONFIRM_QUALITY_MANIFEST_VERSION,
+)
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    authored_response,
+    host_candidate_response,
+    materialize_complete_host_candidate,
+)
+
+
+def approved_authored_quality_manifest_fixture(
+    *, intent_authority: Mapping[str, Any] | None = None,
+    proposal: Mapping[str, Any] | None = None, **overrides: Any,
+) -> dict[str, Any]:
+    """Bind native transaction fixtures to their authority; standalone receipts use test hashes."""
+
+    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
+    authority = intent_authority or {}
+    source_duty = proposal["intent"]["authored_semantics"]["source_duty"] if proposal else None
+    ledger_sha256 = (
+        source_duty["ledger_receipt"]["ledger_sha256"] if source_duty else "5" * 64
+    )
+    verifier_task_sha256 = (
+        source_duty["ledger_receipt"]["verifier_task_sha256"] if source_duty else "8" * 64
+    )
+    decision_set_sha256 = (
+        source_duty["ledger_receipt"]["decision_set_sha256"] if source_duty else "7" * 64
+    )
+    binding_sha256 = (
+        source_duty["lifecycle"]["binding_sha256"] if source_duty else "6" * 64
+    )
+    manifest: dict[str, Any] = {
+        "version": PRECONFIRM_QUALITY_MANIFEST_VERSION,
+        "engine": PRECONFIRM_ENGINE_VERSION,
+        "status": "passed",
+        "validation_status": "passed",
+        "issue_count": 0,
+        "hard_blocker": None,
+        "requested_repair_tier": "auto",
+        "repair_tier": profile.repair_tier,
+        "target_seconds": profile.performance_target_seconds,
+        "operational_timeout_seconds": profile.operational_timeout_seconds,
+        "elapsed_seconds": 1.0,
+        "write_transaction": {
+            "status": "not_started",
+            "rollback_guard": "enabled",
+            "prewrite_clean_before_commit": True,
+        },
+        "semantic_compiler": {
+            "version": "odylith.greenfield.authored-semantic-validation.v5",
+            "status": "passed",
+            "semantic_owner": "host_canonical_candidate",
+            "post_candidate_receipt_semantic_calls": 0,
+        },
+        "model_authoring": {
+            "authoring_origin": "host_native",
+            "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
+            "runtime_semantic_model_call_count": 0,
+            "tier": profile.repair_tier,
+            "elapsed_seconds": 0.75,
+            "effective_model_window_seconds": profile.model_timeout_seconds,
+            "host_candidate": {
+                "version": HOST_CANDIDATE_RECEIPT_VERSION,
+                "contract_version": HOST_CANDIDATE_CONTRACT_VERSION,
+                "canonical_version": GREENFIELD_INTENT_AUTHORING_VERSION,
+                "source_sha256": authority.get("markdown_source_sha256", "0" * 64),
+                "raw_candidate_sha256": "4" * 64,
+                "canonical_candidate_sha256": authority.get(
+                    CANONICAL_CANDIDATE_SHA256_KEY, "1" * 64
+                ),
+                "source_duty_ledger_sha256": ledger_sha256,
+                "source_duty_verifier_task_sha256": verifier_task_sha256,
+                "source_duty_decision_set_sha256": decision_set_sha256,
+                "source_duty_binding_sha256": binding_sha256,
+            },
+            "canonical_authority": {
+                "canonical_candidate_sha256": authority.get(
+                    CANONICAL_CANDIDATE_SHA256_KEY, "1" * 64
+                ),
+                "source_sha256": authority.get("markdown_source_sha256", "0" * 64),
+                "product_facts_sha256": authority.get("product_facts_sha256", "2" * 64),
+                AUTHORED_RELATION_SET_SHA256_KEY: authority.get(
+                    AUTHORED_RELATION_SET_SHA256_KEY, "3" * 64
+                ),
+            },
+        },
+    }
+    manifest.update(overrides)
+    return manifest
+
+
+def materialize_typed_intent_fixture(
+    repo_root: Path,
+    *,
+    intent: Mapping[str, Any],
+    first_path_relations: list[Mapping[str, Any]],
+    component_responsibility_owners: list[str],
+    constraint_custody: list[Mapping[str, Any]],
+    authoring_receipt: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Materialize explicit typed fixture data through the shipped custody path."""
+
+    source = ". ".join(
+        str(row)
+        for value in intent.values()
+        for row in (value if isinstance(value, list) else [value])
+        if str(row)
+    )
+    receipt = authoring_receipt if authoring_receipt is not None else {}
+    response = authored_response(
+        intent,
+        evidence_text=source,
+        first_path_relations=first_path_relations,
+        component_responsibility_owners=component_responsibility_owners,
+    )
+    return materialize_complete_host_candidate(
+        prompt=source,
+        repo_root=repo_root,
+        host_candidate=host_candidate_response(response, evidence_text=source),
+        authoring_profile_id=STANDARD_PROFILE_ID,
+        authoring_receipt=receipt,
+    )
+
+
+def canonical_model_authored_intent_fixture(
+    repo_root: Path,
+    *,
+    authoring_receipt: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Return explicit typed Commerce intent authored from exact cited evidence."""
+
+    first_path = (
+        "Shopper opens Storefront and adds one product to the cart. "
+        "Storefront sends the cart to Checkout Orchestrator. "
+        "Checkout Orchestrator requests a sandbox payment from Payment Sandbox. "
+        "Payment Sandbox returns a failed payment response. "
+        "Shopper retries checkout. "
+        "Checkout Orchestrator creates an order draft and shows recovery status."
+    )
+    intent: dict[str, Any] = {
+        "title": "Commerce Launch System",
+        "product_story": (
+            "Commerce Launch System lets a shopper complete a reviewable browse-to-checkout "
+            "journey and recover from a failed sandbox payment."
+        ),
+        "state_object": "order draft",
+        "first_path": first_path,
+        "proof_boundary": (
+            "Verify the failed sandbox payment, retry, idempotent order draft, and visible "
+            "recovery status without claiming production payment readiness."
+        ),
+        "problem": (
+            "Shoppers and commerce builders cannot trust checkout until cart, payment, retry, "
+            "and order-draft evidence stay connected."
+        ),
+        "customer": "Shoppers and commerce builders",
+        "opportunity": "Prove one browse-to-checkout recovery path before production expansion.",
+        "product_view": (
+            "The product keeps browse, checkout recovery, order-draft state, and review evidence "
+            "visible as one journey."
+        ),
+        "success_metrics": [
+            "A shopper sees recovery status after retrying a failed sandbox payment.",
+            "A reviewer can trace the idempotent order draft to the cart and payment evidence.",
+        ],
+        "evidence_requirements": [
+            "Retain the failed payment response with the retry outcome.",
+            "Retain the order draft with its cart and payment evidence.",
+        ],
+        "operational_constraints": [
+            "Keep order creation idempotent under retry.",
+            "Keep production payment readiness outside the first release claim.",
+        ],
+        "component_responsibilities": [
+            "Own browse, cart entry, checkout entry, and user-facing errors.",
+            "Own payment handoff, order draft, idempotency, and recovery boundaries.",
+            "Own product facts, price snapshots, inventory visibility, and merchandising review.",
+        ],
+        "human_actors": ["Shopper"],
+        "external_systems": ["Payment Sandbox"],
+        "internal_systems": ["Storefront", "Checkout Orchestrator", "Catalog Boundary"],
+        "assumptions": [
+            {"applies_to": "general", "statement": "The first release uses a sandbox payment response."},
+        ],
+        "ambiguities": [],
+        "non_goals": [
+            "Do not claim production payment readiness.",
+            "Do not automate merchandising decisions.",
+        ],
+    }
+    relations = [
+        {
+            "actor_kind": "human",
+            "actor_fact_quote": "Shopper",
+            "event_quote": "Shopper opens Storefront and adds one product to the cart",
+            "action_verb_quote": "opens",
+            "target_quote": "Storefront",
+            "visible_result_quote": "",
+        },
+        {
+            "actor_kind": "product",
+            "actor_fact_quote": "Storefront",
+            "owner_system_quote": "Storefront",
+            "event_quote": "Storefront sends the cart to Checkout Orchestrator",
+            "action_verb_quote": "sends",
+            "target_quote": "the cart",
+            "visible_result_quote": "",
+        },
+        {
+            "actor_kind": "product",
+            "actor_fact_quote": "Checkout Orchestrator",
+            "owner_system_quote": "Checkout Orchestrator",
+            "event_quote": (
+                "Checkout Orchestrator requests a sandbox payment from Payment Sandbox"
+            ),
+            "action_verb_quote": "requests",
+            "target_quote": "a sandbox payment",
+            "visible_result_quote": "",
+        },
+        {
+            "actor_kind": "external_system",
+            "actor_fact_quote": "Payment Sandbox",
+            "event_quote": "Payment Sandbox returns a failed payment response",
+            "action_verb_quote": "returns",
+            "target_quote": "a failed payment response",
+            "visible_result_quote": "",
+        },
+        {
+            "actor_kind": "human",
+            "actor_fact_quote": "Shopper",
+            "event_quote": "Shopper retries checkout",
+            "action_verb_quote": "retries",
+            "target_quote": "checkout",
+            "visible_result_quote": "",
+        },
+        {
+            "actor_kind": "product",
+            "actor_fact_quote": "Checkout Orchestrator",
+            "owner_system_quote": "Checkout Orchestrator",
+            "event_quote": (
+                "Checkout Orchestrator creates an order draft and shows recovery status"
+            ),
+            "action_verb_quote": "creates",
+            "target_quote": "an order draft",
+            "visible_result_quote": "recovery status",
+        },
+    ]
+    return materialize_typed_intent_fixture(
+        repo_root,
+        intent=intent,
+        first_path_relations=relations,
+        component_responsibility_owners=[
+            "Storefront",
+            "Checkout Orchestrator",
+            "Catalog Boundary",
+        ],
+        constraint_custody=[
+            {
+                "constraint_index": 1,
+                "kind": "product_owned",
+                "owner_fact": {"field": "internal_systems", "row": 2},
+            },
+            {
+                "constraint_index": 2,
+                "kind": "product_owned",
+                "owner_fact": {"field": "title", "row": 1},
+            },
+        ],
+        authoring_receipt=authoring_receipt,
+    )
+
+
+def _canonical_model_authored_greenfield_fixture(repo_root: Path) -> dict[str, Any]:
+    """Return one explicit typed Commerce proposal with sealed source custody."""
+
+    authoring_receipt: dict[str, Any] = {}
+    candidate = canonical_model_authored_intent_fixture(
+        repo_root,
+        authoring_receipt=authoring_receipt,
+    )
+    source = str(candidate["prompt"])
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=repo_root,
+        prompt=source,
+        release_selector="0.0.1",
+        confirmed_intent=candidate,
+        require_completion_ready=False,
+    )
+    proposal["_test_model_authoring_receipt"] = authoring_receipt
+    return proposal

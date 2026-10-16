@@ -1,5 +1,32 @@
 - Bug ID: CB-116
 
+## Fresh content-bound A proof and publication (2026-10-15)
+
+Frozen source `433f0e38a02372ea46e7b890ba6e3884e1462dfb` completes full report
+`ea0fbd0916ee9690`: 82 scenarios, 328 warm/cold observations and 36 original
+supplemental samples, with provisional pass and all hard/secondary gates clear.
+Before any processing writes, 24 original evidence members are archived and
+read back (SHA-256 `beb64f04e3fd8f21ae183be516219e18ccd003aedf91469b67991eabf8ec2c90`).
+
+Canonical comparison runs before publication, selects completed actual14
+`a9e009b5d75cc51b`, preserves interrupted `4b3ecb8eb493c1fa` unchanged and
+returns nonblocking warn solely for predecessor HOLD. Both the full proof and
+matching diagnostic `b75f850362a680d2` pass strict content-v1 identity before
+the canonical writer generates twelve outputs. Diagnostic HOLD stays visible.
+Its publication archive SHA-256 is
+`fcceea78e529dc0f4772ee0c1e6017706218c3d4e12f3939922cf131558ef01e`.
+All twelve files transfer byte-exactly; README uses those same measurements.
+The existing project test toolchain imports frozen proof source and passes
+all 21 graph checks; the managed proof runtime's missing pytest attempt is
+retained as a no-test tooling outcome. No dependency is installed.
+
+This closes the fresh-A publication boundary for that measured revision only.
+The current source-roster changes, final main H/B, package D and release gates
+remain unqualified. No timestamp restoration, ignored-input deletion, old-report
+reconciliation, waiver or source relabeling occurred. CB-116 stays open until
+normal release closeout.
+
+
 - Type: Product
 
 
@@ -70,3 +97,39 @@
 
 - Code References: - src/odylith/runtime/evaluation/benchmark_compare.py
 - src/odylith/runtime/evaluation/odylith_benchmark_publication.py
+
+## Metadata is not source identity (2026-10-15)
+
+After the first canonical A publication, restoring only its twelve generated
+outputs to the same clean a160 Git commit leaves the original report rejected.
+All non-overlay identity fields match; the overlay fingerprint changes from
+e9a80c8195627e2e46121a31598d890d5413709901ab3007e5fbe213d8b869e1
+to c672642371673b621f7be184faa940545d3acc31d632069841797fafb8c291ea.
+The existing owner uses cache signatures containing modification times rather
+than content. Original reports remain unchanged and the refusal is retained.
+Independent review recommends a benchmark-local, versioned content identity.
+A legacy reconciliation may accept only the same clean commit with every
+consumed overlay input proven tracked and byte/mode-identical. Directory
+prefixes cannot authorize ignored or untracked descendants. Missing, unsafe
+or unresolved inputs must refuse. Keep all other authority checks strict; no
+report edits, timestamp restoration, predicate bypass or source-proof waiver.
+A remains measurement evidence for a160, and final H/B remains required.
+
+The targeted a160 custody check finds 438 ignored descendants beneath the
+consumed src/odylith/runtime directory, chiefly Python bytecode. The historical
+metadata fingerprint does not retain their bytes, so clean Git alone cannot
+recertify this legacy overlay after restoration. Do not add an unused or
+permissive legacy reconciliation path. Preserve exact legacy validation and
+use a versioned content-and-mode fingerprint, including directory inventory
+and missing inputs, for future reports. The original A measurement and first
+publication remain preserved; current regenerated publication needs fresh
+content-bound proof. No quality threshold or semantic release floor changes.
+
+The two-file correction passes 41 identity tests and 210 affected benchmark
+tests. New reports store `content-v1:<sha256>` in the existing fingerprint
+field, which the runner already preserves. Content, modes, explicit absence
+and full directory inventory determine the hash; modification times and
+absolute checkout paths do not. Legacy reports retain their original exact
+metadata check. Unknown markers and unsafe or unreadable inputs refuse.
+Independent review is clear on the exact final bytes; its separate 41-test
+run also passes. Fresh current-source proof remains required.

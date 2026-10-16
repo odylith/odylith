@@ -1,0 +1,860 @@
+"""Precompiled create transactions for confirmed greenfield writes."""
+
+from __future__ import annotations
+
+from collections.abc import Mapping
+from collections.abc import Sequence
+from dataclasses import dataclass
+from dataclasses import field
+from dataclasses import fields
+from dataclasses import is_dataclass
+from dataclasses import replace
+import hashlib
+import json
+import math
+from pathlib import Path
+from typing import Any
+
+from odylith.install.fs import atomic_write_text
+from odylith.runtime.common.value_coercion import mapping_copy
+from odylith.runtime.domain_intelligence import greenfield_compiled_package_contract
+from odylith.runtime.domain_intelligence import greenfield_traceability
+from odylith.runtime.domain_intelligence.greenfield_commit_transaction import (
+    canonical_product_create_transaction_receipt_bytes,
+)
+from odylith.runtime.domain_intelligence.greenfield_commit_transaction import (
+    build_product_create_transaction_compiler_identity,
+)
+from odylith.runtime.domain_intelligence.greenfield_commit_transaction import (
+    require_product_create_transaction_compiler_provenance_payload,
+)
+from odylith.runtime.domain_intelligence.greenfield_create_contract import (
+    PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY,
+)
+from odylith.runtime.domain_intelligence.greenfield_create_contract import PRODUCT_CREATE_TRANSACTION_COMPILER
+from odylith.runtime.domain_intelligence.greenfield_create_contract import (
+    PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_create_contract import (
+    PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_create_contract import (
+    PRODUCT_CREATE_TRANSACTION_REPOSITORY_CONTEXT_POLICY,
+)
+from odylith.runtime.domain_intelligence.greenfield_create_contract import PRODUCT_CREATE_TRANSACTION_VERSION
+from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_ALLOWED_OPERATIONS
+from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_FORBIDDEN_OPERATIONS
+from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_ENGINE_VERSION
+from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_QUALITY_MANIFEST_VERSION
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_RELATION_SET_SHA256_KEY,
+    AUTHORED_SEMANTICS_KEY,
+    AUTHORED_PROJECTION_ORIGIN,
+    require_relation_authority_parity,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_receipt_approval import (
+    greenfield_model_authoring_receipt_approved,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    get_greenfield_model_profile,
+    model_profile_id_for_repair_tier,
+)
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    PRODUCT_INTENT_AUTHORITY_KEY,
+)
+from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
+    CANONICAL_CANDIDATE_SHA256_KEY,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
+    EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+    LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+    SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+    PASSIVE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+    CATALOG_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+    CATALOG_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+    PASSIVE_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    HOST_CANDIDATE_CONTRACT_VERSION,
+    PREVIOUS_HOST_CANDIDATE_CONTRACT_VERSION,
+    PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS,
+)
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_FACTS_HASH_KEY
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_hash
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    require_product_intent_authority,
+)
+from odylith.runtime.governance import validate_backlog_contract as backlog_contract
+
+
+_VOLATILE_HASH_KEYS = {
+    "elapsed_seconds",
+    "whole_project_elapsed_seconds",
+    "create_elapsed_seconds",
+}
+_PRODUCT_CREATE_TRANSACTION_COMPILER_ATTESTATION = object()
+
+@dataclass(frozen=True)
+class ProductCreateTransaction:
+    """Validated package that post-confirm code may only verify and commit."""
+
+    version: str
+    release_selector: str
+    proposal: Mapping[str, Any]
+    validation_gate: Mapping[str, Any]
+    prewrite_package: GreenfieldCompletionPackage
+    backlog_result: Mapping[str, Any]
+    intent_authority: Mapping[str, Any]
+    quality_manifest: Mapping[str, Any]
+    compiler_provenance: Mapping[str, Any]
+    transaction_hash: str
+    _compiler_attestation: object | None = field(default=None, repr=False, compare=False)
+
+    @property
+    def verified(self) -> bool:
+        if self._compiler_attestation is not _PRODUCT_CREATE_TRANSACTION_COMPILER_ATTESTATION:
+            return False
+        try:
+            require_product_create_transaction_hash_verified(self)
+        except ValueError:
+            return False
+        return True
+
+    def summary(self) -> dict[str, Any]:
+        return {
+            "version": self.version,
+            "transaction_hash": self.transaction_hash,
+            "verified": self.verified,
+            **_product_create_transaction_commit_summary(self),
+        }
+
+
+def _product_create_transaction_commit_summary(transaction: ProductCreateTransaction) -> dict[str, Any]:
+    """Return pre-confirm reporting bytes without the transaction hash."""
+
+    write_set = (
+        transaction.prewrite_package.repository_write_set
+        if isinstance(transaction.prewrite_package.repository_write_set, Mapping)
+            else {}
+        )
+    return {
+        "release_selector": transaction.release_selector,
+        "quality_status": str(transaction.quality_manifest.get("status", "")).strip(),
+        "validation_status": str(transaction.quality_manifest.get("validation_status", "")).strip(),
+        "compiler": str(transaction.compiler_provenance.get("compiler", "")).strip(),
+        "compiler_phase": str(transaction.compiler_provenance.get("phase", "")).strip(),
+        "product_facts_sha256": str(transaction.intent_authority.get("product_facts_sha256", "")).strip(),
+        "intent_authority_version": str(transaction.intent_authority.get("version", "")).strip(),
+        "surface_refresh_preview": _json_ready(transaction.prewrite_package.surface_refresh_preview or {}),
+        "repository_write_set_hash": str(write_set.get("write_set_hash", "")).strip(),
+        "repository_write_count": int(write_set.get("write_count", 0) or 0),
+        "repository_delete_count": int(write_set.get("delete_count", 0) or 0),
+        "repository_directory_delete_count": int(write_set.get("directory_delete_count", 0) or 0),
+    }
+
+
+def build_product_create_transaction(
+    *,
+    proposal: Mapping[str, Any],
+    release_selector: str,
+    validation_gate: Mapping[str, Any],
+    prewrite_package: GreenfieldCompletionPackage,
+    backlog_result: Mapping[str, Any],
+    intent_authority: Mapping[str, Any] | None = None,
+    quality_manifest: Mapping[str, Any],
+    repo_root: Path,
+) -> ProductCreateTransaction:
+    """Build a hash-bound transaction from an already validated prewrite package."""
+
+    authority = dict(intent_authority) if isinstance(intent_authority, Mapping) else _authority_from_proposal(proposal)
+    require_product_intent_authority(authority)
+    authored_projection_verified = _require_proposal_intent_authority_binding(
+        proposal,
+        authority,
+    )
+    release_text = str(release_selector or "").strip()
+    greenfield_compiled_package_contract.require_complete_compiled_greenfield_package(
+        prewrite_package,
+        release_selector=release_text,
+    )
+    _require_prewrite_package_proposal_binding(
+        proposal=proposal,
+        prewrite_package=prewrite_package,
+        authority=authority,
+    )
+    require_product_create_transaction_quality_approved(
+        quality_manifest,
+        authored_projection_verified=authored_projection_verified,
+    )
+    if authored_projection_verified:
+        _require_host_candidate_authority_binding(
+            quality_manifest,
+            authority,
+            proposal=proposal,
+        )
+    transaction = ProductCreateTransaction(
+        version=PRODUCT_CREATE_TRANSACTION_VERSION,
+        release_selector=release_text,
+        proposal=proposal,
+        validation_gate=validation_gate,
+        prewrite_package=prewrite_package,
+        backlog_result=backlog_result,
+        intent_authority=authority,
+        quality_manifest=quality_manifest,
+        compiler_provenance=build_product_create_transaction_provenance(
+            quality_manifest=quality_manifest,
+        ),
+        transaction_hash="",
+        _compiler_attestation=_PRODUCT_CREATE_TRANSACTION_COMPILER_ATTESTATION,
+    )
+    return replace(transaction, transaction_hash=product_create_transaction_hash(transaction))
+
+
+def _authority_from_proposal(proposal: Mapping[str, Any]) -> Mapping[str, Any]:
+    authority = proposal.get(PRODUCT_INTENT_AUTHORITY_KEY)
+    if isinstance(authority, Mapping):
+        return dict(authority)
+    raise ValueError("ProductCreateTransaction is missing confirmed Product Intent authority")
+
+
+def _require_prewrite_package_proposal_binding(
+    *,
+    proposal: Mapping[str, Any],
+    prewrite_package: GreenfieldCompletionPackage,
+    authority: Mapping[str, Any],
+) -> None:
+    """Require the compiled package to carry the exact authority-bound proposal."""
+
+    package_proposal = prewrite_package.proposal
+    if not isinstance(package_proposal, Mapping):
+        raise ValueError("ProductCreateTransaction compiled package is missing its proposal")
+    try:
+        proposal_bytes = json.dumps(
+            proposal,
+            ensure_ascii=True,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("ascii")
+        package_bytes = json.dumps(
+            package_proposal,
+            ensure_ascii=True,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("ascii")
+    except (TypeError, ValueError) as exc:
+        raise ValueError("ProductCreateTransaction proposal must be canonical JSON data") from exc
+    if proposal_bytes != package_bytes:
+        raise ValueError(
+            "ProductCreateTransaction compiled package proposal does not match its reviewed proposal"
+        )
+    _require_proposal_intent_authority_binding(package_proposal, authority)
+
+
+def require_product_create_transaction_quality_approved(
+    quality_manifest: Mapping[str, Any],
+    *,
+    authored_projection_verified: bool | None = None,
+) -> None:
+    """Require every product-quality decision before a transaction can be confirmed."""
+
+    manifest = dict(quality_manifest)
+    quality_status = str(manifest.get("status", "")).strip()
+    validation_status = str(manifest.get("validation_status", "")).strip()
+    hard_blocker = manifest.get("hard_blocker")
+    issue_count = int(manifest.get("issue_count", 0) or 0)
+    write_transaction = manifest.get("write_transaction")
+    write_transaction = write_transaction if isinstance(write_transaction, Mapping) else {}
+    pre_confirm_write_sealed = (
+        str(manifest.get("version", "")).strip() == PRECONFIRM_QUALITY_MANIFEST_VERSION
+        and str(manifest.get("engine", "")).strip() == PRECONFIRM_ENGINE_VERSION
+        and str(write_transaction.get("status", "")).strip() == "not_started"
+        and str(write_transaction.get("rollback_guard", "")).strip() == "enabled"
+        and write_transaction.get("prewrite_clean_before_commit") is True
+        and "commit_only" not in write_transaction
+    )
+    requested_tier = str(manifest.get("requested_repair_tier", "")).strip()
+    active_tier = str(manifest.get("repair_tier", "")).strip()
+    try:
+        timing_keys = ("elapsed_seconds", "target_seconds", "operational_timeout_seconds")
+        if any(type(manifest.get(key)) not in (int, float) for key in timing_keys):
+            raise ValueError("Quality timing must be numeric")
+        elapsed_seconds = float(manifest.get("elapsed_seconds"))
+        target_seconds = float(manifest.get("target_seconds"))
+        operational_timeout_seconds = float(manifest.get("operational_timeout_seconds"))
+        selected_profile = get_greenfield_model_profile(
+            model_profile_id_for_repair_tier(requested_tier)
+        )
+    except (TypeError, ValueError, OverflowError):
+        elapsed_seconds = math.inf
+        target_seconds = -1.0
+        operational_timeout_seconds = -1.0
+        selected_profile = None
+    tier_route_approved = bool(
+        selected_profile is not None
+        and active_tier == selected_profile.repair_tier
+    )
+    timing_approved = (
+        tier_route_approved
+        and selected_profile is not None
+        and target_seconds == selected_profile.performance_target_seconds
+        and operational_timeout_seconds == selected_profile.operational_timeout_seconds
+        and all(math.isfinite(value) for value in (
+            elapsed_seconds, target_seconds, operational_timeout_seconds,
+        ))
+        and 0.0 <= elapsed_seconds < operational_timeout_seconds
+    )
+    semantic_compiler = manifest.get("semantic_compiler")
+    semantic_compiler = semantic_compiler if isinstance(semantic_compiler, Mapping) else {}
+    raw_model_authoring = manifest.get("model_authoring")
+    model_authoring = raw_model_authoring if isinstance(raw_model_authoring, Mapping) else {}
+    manifest_claims_authored = str(semantic_compiler.get("semantic_owner", "")).strip() == (
+        "host_canonical_candidate"
+    )
+    authored_projection = (
+        manifest_claims_authored
+        if authored_projection_verified is None
+        else authored_projection_verified
+    )
+    authored_manifest_matches_projection = (
+        manifest_claims_authored == authored_projection
+        and ("model_authoring" in manifest) == authored_projection
+    )
+    model_authoring_approved = not authored_projection or greenfield_model_authoring_receipt_approved(
+        model_authoring=model_authoring, semantic_compiler=semantic_compiler,
+        requested_repair_tier=requested_tier,
+    )
+    if (
+        quality_status == "passed"
+        and validation_status in {"", "passed"}
+        and not hard_blocker
+        and issue_count == 0
+        and pre_confirm_write_sealed
+        and timing_approved
+        and authored_manifest_matches_projection
+        and model_authoring_approved
+    ):
+        return
+    raise ValueError(
+        "pre-confirm ProductCreateTransaction quality manifest is not approved; "
+        "repair or clarify before showing CONFIRM"
+    )
+
+
+def _require_host_candidate_authority_binding(
+    quality_manifest: Mapping[str, Any],
+    authority: Mapping[str, Any],
+    *,
+    proposal: Mapping[str, Any],
+    passive: bool = False,
+) -> None:
+    model_authoring = quality_manifest["model_authoring"]
+    host = model_authoring.get("host_candidate")
+    canonical = model_authoring.get("canonical_authority")
+    if (
+        not isinstance(host, Mapping)
+        or not isinstance(canonical, Mapping)
+        or model_authoring.get("runtime_semantic_model_call_count") != 0
+        or host.get("source_sha256") != authority.get("markdown_source_sha256")
+        or host.get("canonical_candidate_sha256")
+        != authority.get(CANONICAL_CANDIDATE_SHA256_KEY)
+        or canonical.get("canonical_candidate_sha256")
+        != authority.get(CANONICAL_CANDIDATE_SHA256_KEY)
+        or canonical.get("source_sha256")
+        != authority.get("markdown_source_sha256")
+        or canonical.get("product_facts_sha256")
+        != authority.get(PRODUCT_FACTS_HASH_KEY)
+        or canonical.get(AUTHORED_RELATION_SET_SHA256_KEY)
+        != authority.get(AUTHORED_RELATION_SET_SHA256_KEY)
+    ):
+        raise ValueError(
+            "ProductCreateTransaction host candidate does not match its sealed Product Intent authority"
+        )
+
+    intent = proposal.get("intent")
+    authored_semantics = intent.get(AUTHORED_SEMANTICS_KEY) if isinstance(intent, Mapping) else None
+    source_duty = (
+        authored_semantics.get("source_duty")
+        if isinstance(authored_semantics, Mapping) else None
+    )
+    ledger_receipt = source_duty.get("ledger_receipt") if isinstance(source_duty, Mapping) else None
+    lifecycle = source_duty.get("lifecycle") if isinstance(source_duty, Mapping) else None
+    edit_versions = {(EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION, HOST_CANDIDATE_CONTRACT_VERSION)}
+    initial_versions = {(SOURCE_DUTY_LEDGER_RECEIPT_VERSION, HOST_CANDIDATE_CONTRACT_VERSION)}
+    if passive:
+        initial_versions.update((PASSIVE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION, version)
+                                for version in PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS
+                                if version not in {"odylith.greenfield.host-candidate-contract.v64", "odylith.greenfield.host-candidate-contract.v63", "odylith.greenfield.host-candidate-contract.v62", "odylith.greenfield.host-candidate-contract.v61", "odylith.greenfield.host-candidate-contract.v60", "odylith.greenfield.host-candidate-contract.v59", "odylith.greenfield.host-candidate-contract.v58", "odylith.greenfield.host-candidate-contract.v55", "odylith.greenfield.host-candidate-contract.v56", "odylith.greenfield.host-candidate-contract.v57"})
+        edit_versions.update((PASSIVE_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+                              f"odylith.greenfield.host-candidate-contract.v{version}")
+                             for version in (51, 52, 53, 54))
+        edit_versions.add((LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+                           PREVIOUS_HOST_CANDIDATE_CONTRACT_VERSION))
+        initial_versions.add((CATALOG_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+                              "odylith.greenfield.host-candidate-contract.v55"))
+        edit_versions.add((CATALOG_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+                           "odylith.greenfield.host-candidate-contract.v55"))
+        initial_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v12", "odylith.greenfield.host-candidate-contract.v56"))
+        edit_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v13", "odylith.greenfield.host-candidate-contract.v56"))
+        initial_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v16", "odylith.greenfield.host-candidate-contract.v58"))
+        edit_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v17", "odylith.greenfield.host-candidate-contract.v58"))
+        initial_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v14", "odylith.greenfield.host-candidate-contract.v57"))
+        edit_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v15", "odylith.greenfield.host-candidate-contract.v57"))
+        initial_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v22", "odylith.greenfield.host-candidate-contract.v62"))
+        edit_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v23", "odylith.greenfield.host-candidate-contract.v62"))
+        initial_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v26", "odylith.greenfield.host-candidate-contract.v64"))
+        edit_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v27", "odylith.greenfield.host-candidate-contract.v64"))
+        initial_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v24", "odylith.greenfield.host-candidate-contract.v63"))
+        edit_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v25", "odylith.greenfield.host-candidate-contract.v63"))
+        initial_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v20", "odylith.greenfield.host-candidate-contract.v61"))
+        edit_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v21", "odylith.greenfield.host-candidate-contract.v61"))
+        initial_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v18", "odylith.greenfield.host-candidate-contract.v59"))
+        initial_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v18", "odylith.greenfield.host-candidate-contract.v60"))
+        edit_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v19", "odylith.greenfield.host-candidate-contract.v60"))
+        edit_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v19", "odylith.greenfield.host-candidate-contract.v59"))
+    if (
+        not isinstance(ledger_receipt, Mapping)
+        or (not passive and host.get("contract_version") != HOST_CANDIDATE_CONTRACT_VERSION)
+        or not isinstance(lifecycle, Mapping)
+        or ("edit_preservation" not in ledger_receipt
+            and (ledger_receipt.get("version"), host.get("contract_version")) not in initial_versions)
+        or ("edit_preservation" in ledger_receipt and (
+            ledger_receipt.get("version"), host.get("contract_version")) not in edit_versions)
+        or ledger_receipt.get("source_sha256") != authority.get("markdown_source_sha256")
+        or not ledger_receipt.get("ledger_sha256")
+        or not ledger_receipt.get("verifier_task_sha256")
+        or not ledger_receipt.get("decision_set_sha256")
+        or not lifecycle.get("binding_sha256")
+        or host.get("source_duty_ledger_sha256") != ledger_receipt["ledger_sha256"]
+        or host.get("source_duty_verifier_task_sha256")
+        != ledger_receipt["verifier_task_sha256"]
+        or host.get("source_duty_decision_set_sha256")
+        != ledger_receipt["decision_set_sha256"]
+        or host.get("source_duty_binding_sha256") != lifecycle["binding_sha256"]
+    ):
+        raise ValueError(
+            "ProductCreateTransaction host candidate source-duty hashes do not match its reviewed proposal"
+        )
+
+    if host.get("contract_version") in {HOST_CANDIDATE_CONTRACT_VERSION, "odylith.greenfield.host-candidate-contract.v64", "odylith.greenfield.host-candidate-contract.v63", "odylith.greenfield.host-candidate-contract.v62", "odylith.greenfield.host-candidate-contract.v61", "odylith.greenfield.host-candidate-contract.v60", "odylith.greenfield.host-candidate-contract.v59", "odylith.greenfield.host-candidate-contract.v58", "odylith.greenfield.host-candidate-contract.v55", "odylith.greenfield.host-candidate-contract.v56", "odylith.greenfield.host-candidate-contract.v57"}:
+        from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+            validate_component_responsibility_relations, source_event_relations_from_intent,
+        )
+        validate_component_responsibility_relations(
+            authored_semantics["component_responsibility_relations"], intent=intent,
+            first_path_relations=source_event_relations_from_intent(intent), require_verified_duties=True,
+        )
+        from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
+            project_greenfield_source_event_catalog,
+            source_owned_greenfield_actor_facts,
+        )
+        catalog = project_greenfield_source_event_catalog(ledger_receipt, evidence_text=intent["prompt"],
+                    _passive=host["contract_version"] != HOST_CANDIDATE_CONTRACT_VERSION)
+        if ledger_receipt["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}:
+            from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import require_source_evidence_authority
+            # Every projection uses its real refs; a participant link never exempts another link.
+            require_source_evidence_authority(ledger_receipt["ledger"], evidence_text=intent["prompt"],
+                uses=[(link["path"] if link["relation_order"] == 0 else f"{link['path']}#relation:{link['relation_order']}:{link['relation_role']}",
+                       ref["source_start_byte"], ref["source_end_byte"])
+                      for atom in authority["atomic_facts"] for link in atom["projection_links"]
+                      for ref in atom["source_span_refs"]],
+                participant_offsets={field: len(catalog["facts"][field]) for field in ("human_actors", "internal_systems", "external_systems")})
+        if ledger_receipt["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}:
+            from odylith.runtime.domain_intelligence.greenfield_source_run_plan import require_source_run_atomic_custody
+            require_source_run_atomic_custody(ledger_receipt["ledger"], evidence_text=intent["prompt"], atomic_facts=authority["atomic_facts"])
+        owned = list(catalog["performers"])
+        if catalog["independent_product_identity"]:
+            from odylith.runtime.domain_intelligence.greenfield_model_source_citations import canonical_citation_from_host_selection, resolve_source_citation
+            source = intent["prompt"].encode("utf-8")
+            quote, start = resolve_source_citation(source, canonical_citation_from_host_selection(source, catalog["facts"]["title"]))
+            owned.append({"path": "/title", "quote": quote, "source_start_byte": start,
+                          "source_end_byte": start + len(quote.encode("utf-8"))})
+        if ledger_receipt["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}:
+            participant_facts = source_owned_greenfield_actor_facts(catalog, supplemental={}, evidence_text=intent["prompt"], ledger_receipt=ledger_receipt)
+            for field in ("human_actors", "internal_systems", "external_systems"):
+                if intent.get(field, []) != [ref["quote"] for ref in participant_facts[field]]:
+                    raise ValueError("ProductCreateTransaction participants differ from the verified source roster")
+                for index, ref in enumerate(participant_facts[field]):
+                    quote, start = resolve_source_citation(source, canonical_citation_from_host_selection(source, ref, mention_selection="mention_ordinal" in ref))
+                    owned.append({"path": f"/{field}/{index}", "quote": quote, "source_start_byte": start,
+                                  "source_end_byte": start + len(quote.encode("utf-8"))})
+        if ledger_receipt["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v14":
+            customer = ledger_receipt["ledger"]["customer"]
+            if intent.get("customer", "") != (customer["quote"] if customer is not None else ""):
+                raise ValueError("ProductCreateTransaction customer differs from the verified project customer")
+            if customer is None:
+                if any(link["field"] == "customer" for atom in authority["atomic_facts"] for link in atom["projection_links"]):
+                    raise ValueError("ProductCreateTransaction invents an absent project customer")
+            else:
+                quote, start = resolve_source_citation(source, canonical_citation_from_host_selection(source, customer))
+                end = start + len(quote.encode("utf-8"))
+                customer_atoms = [atom for atom in authority["atomic_facts"]
+                                  if any(link["field"] == "customer" for link in atom["projection_links"])]
+                if (len(customer_atoms) != 1 or customer_atoms[0]["normalized_value"] != quote
+                        or {(ref["source_start_byte"], ref["source_end_byte"]) for ref in customer_atoms[0]["source_span_refs"]} != {(start, end)}
+                        or any(link["path"] != "/customer" or link["relation_order"] != 0
+                               for link in customer_atoms[0]["projection_links"] if link["field"] == "customer")):
+                    raise ValueError("ProductCreateTransaction project customer custody differs from its verified source")
+        for actor in owned:
+            if actor.get("performer_role") == "product_wide":
+                orders = {row["event_order"] for row in catalog["events"]
+                          if row["performer_role"] == "product_wide" and row["actor_fact_path"] == actor["path"]
+                          and row["actor_start_byte"] == actor["source_start_byte"]}
+                if any(not any(link.get("relation_order") == order and link.get("relation_role") == "actor_fact_quote"
+                               for atom in authority["atomic_facts"] for link in atom.get("projection_links", ()))
+                       for order in orders):
+                    raise ValueError("ProductCreateTransaction product-wide action custody is missing")
+                continue
+            if not any(
+                atom.get("normalized_value") == actor["quote"]
+                and any(link.get("path") == actor["path"] and link.get("relation_order") == 0
+                        for link in atom.get("projection_links", ()))
+                and any(ref.get("source_start_byte") == actor["source_start_byte"]
+                        and ref.get("source_end_byte") == actor["source_end_byte"]
+                        for ref in atom.get("source_span_refs", ()))
+                for atom in authority["atomic_facts"]
+            ):
+                raise ValueError("ProductCreateTransaction sealed source performer custody differs from its catalog")
+
+
+def require_product_create_transaction_verified(transaction: ProductCreateTransaction) -> None:
+    """Fail closed when a commit request does not match the compiled package hash."""
+
+    if transaction._compiler_attestation is not _PRODUCT_CREATE_TRANSACTION_COMPILER_ATTESTATION:
+        raise ValueError(
+            "ProductCreateTransaction was not accepted by the pre-confirm compiler; "
+            "compile the transaction before committing governed records"
+        )
+    require_product_create_transaction_hash_verified(transaction)
+
+
+def require_product_create_transaction_hash_verified(transaction: ProductCreateTransaction) -> None:
+    """Verify serialized transaction integrity without granting compiler custody."""
+
+    require_product_intent_authority(transaction.intent_authority)
+    authored = _require_proposal_intent_authority_binding(transaction.proposal, transaction.intent_authority)
+    _require_prewrite_package_proposal_binding(
+        proposal=transaction.proposal,
+        prewrite_package=transaction.prewrite_package,
+        authority=transaction.intent_authority,
+    )
+    expected = product_create_transaction_hash(transaction)
+    if transaction.transaction_hash != expected:
+        raise ValueError(
+            "ProductCreateTransaction hash mismatch; rebuild the transaction before committing governed records"
+        )
+    require_product_create_transaction_quality_approved(
+        transaction.quality_manifest, authored_projection_verified=authored,
+    )
+    if authored:
+        _require_host_candidate_authority_binding(
+            transaction.quality_manifest,
+            transaction.intent_authority,
+            proposal=transaction.proposal,
+            passive=True,
+        )
+
+
+def _require_proposal_intent_authority_binding(
+    proposal: Mapping[str, Any],
+    authority: Mapping[str, Any],
+) -> bool:
+    """Require the sealed facts hash to describe the transaction's typed intent."""
+
+    intent = proposal.get("intent") if isinstance(proposal, Mapping) else None
+    if not isinstance(intent, Mapping):
+        raise ValueError("ProductCreateTransaction proposal is missing typed Product Intent")
+    expected = product_facts_hash(intent)
+    actual = str(authority.get(PRODUCT_FACTS_HASH_KEY, "")).strip()
+    if actual != expected:
+        raise ValueError(
+            "ProductCreateTransaction proposal facts do not match its sealed Product Intent authority; "
+            "rebuild the transaction before showing CONFIRM"
+        )
+    relations = require_relation_authority_parity(intent, authority)
+    projection_authored = proposal.get("projection_origin") == AUTHORED_PROJECTION_ORIGIN
+    if bool(relations) != projection_authored:
+        raise ValueError(
+            "ProductCreateTransaction authored projection origin does not match sealed relation authority"
+        )
+    if projection_authored and intent[AUTHORED_SEMANTICS_KEY]["provisional_design"]["version"] == "odylith.greenfield.provisional-design.v7":
+        from odylith.runtime.domain_intelligence.project_intelligence_binding import project_intelligence_binding_issues
+        issues = project_intelligence_binding_issues(proposal)
+        if issues:
+            raise ValueError("ProductCreateTransaction authored artifact binding is invalid: " + "; ".join(issues))
+    return projection_authored
+
+
+def build_product_create_transaction_provenance(
+    *,
+    quality_manifest: Mapping[str, Any],
+) -> dict[str, Any]:
+    return {
+        "compiler": PRODUCT_CREATE_TRANSACTION_COMPILER,
+        "transaction_version": PRODUCT_CREATE_TRANSACTION_VERSION,
+        "phase": "pre_confirm_compile",
+        "commit_policy": PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY,
+        "repository_context_policy": PRODUCT_CREATE_TRANSACTION_REPOSITORY_CONTEXT_POLICY,
+        "quality_manifest_version": str(quality_manifest.get("version", "")).strip(),
+        "quality_manifest_engine": str(quality_manifest.get("engine", "")).strip(),
+        "compiler_identity": product_create_transaction_compiler_identity(),
+        "post_confirm_allowed_operations": list(POST_CONFIRM_ALLOWED_OPERATIONS),
+        "post_confirm_forbidden_operations": list(POST_CONFIRM_FORBIDDEN_OPERATIONS),
+    }
+
+
+def product_create_transaction_compiler_identity() -> dict[str, Any]:
+    return build_product_create_transaction_compiler_identity()
+
+
+def require_product_create_transaction_compiler_provenance(
+    transaction: ProductCreateTransaction,
+) -> None:
+    provenance = transaction.compiler_provenance if isinstance(transaction.compiler_provenance, Mapping) else {}
+    require_product_create_transaction_compiler_provenance_payload(
+        provenance,
+        quality_manifest=transaction.quality_manifest,
+    )
+
+
+def require_product_create_transaction_intent_authority(
+    transaction: ProductCreateTransaction,
+    *,
+    repo_root: Path,
+) -> None:
+    """Verify the typed Product Intent custody sealed inside the transaction.
+
+    The post-confirm commit path must not reread mutable confirmation Markdown
+    or sidecar JSON. Edits after compilation are new evidence for rebuilding a
+    transaction; they are not live authority for an already confirmed hash.
+    """
+
+    _ = repo_root
+    require_product_intent_authority(transaction.intent_authority)
+
+
+def product_create_transaction_to_dict(transaction: ProductCreateTransaction) -> dict[str, Any]:
+    """Return the persisted transaction payload that a commit-only create can trust."""
+
+    payload = _transaction_hash_payload(transaction)
+    payload["quality_manifest"] = _json_ready(transaction.quality_manifest, preserve_timing=True)
+    payload["transaction_hash"] = str(transaction.transaction_hash or "").strip()
+    return payload
+
+
+def product_create_transaction_from_dict(payload: Mapping[str, Any]) -> ProductCreateTransaction:
+    """Rehydrate hash-bound data without granting compiler custody."""
+
+    if not isinstance(payload, Mapping):
+        raise ValueError("ProductCreateTransaction payload must be a JSON object")
+    version = str(payload.get("version", "")).strip()
+    if version != PRODUCT_CREATE_TRANSACTION_VERSION:
+        raise ValueError(
+            f"unsupported ProductCreateTransaction version {version!r}; expected {PRODUCT_CREATE_TRANSACTION_VERSION}"
+        )
+    transaction = ProductCreateTransaction(
+        version=version,
+        release_selector=str(payload.get("release_selector", "")).strip(),
+        proposal=mapping_copy(payload.get("proposal")),
+        validation_gate=mapping_copy(payload.get("validation_gate")),
+        prewrite_package=_completion_package_from_payload(mapping_copy(payload.get("prewrite_package"))),
+        backlog_result=_backlog_result_from_payload(mapping_copy(payload.get("backlog_result"))),
+        intent_authority=mapping_copy(payload.get("intent_authority")),
+        quality_manifest=mapping_copy(payload.get("quality_manifest")),
+        compiler_provenance=mapping_copy(payload.get("compiler_provenance")),
+        transaction_hash=str(payload.get("transaction_hash", "")).strip(),
+    )
+    require_product_create_transaction_hash_verified(transaction)
+    return transaction
+
+
+def product_create_transaction_receipt_path(path: Path) -> Path:
+    target = Path(path).expanduser()
+    return target.with_name(target.name + ".compiler-receipt.v1.json")
+
+
+def write_compiled_product_create_transaction_file(
+    path: Path,
+    transaction: ProductCreateTransaction,
+) -> Path:
+    """Persist a compiled transaction and its detached local-integrity receipt."""
+
+    require_product_create_transaction_verified(transaction)
+    target = Path(path).expanduser()
+    payload_text = json.dumps(product_create_transaction_to_dict(transaction), indent=2, sort_keys=True) + "\n"
+    atomic_write_text(target, payload_text, encoding="utf-8")
+    receipt = {
+        "version": PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION,
+        "transaction_hash": transaction.transaction_hash,
+        "transaction_file_sha256": hashlib.sha256(payload_text.encode("utf-8")).hexdigest(),
+        "post_confirm_runtime_identity": product_create_transaction_compiler_identity(),
+    }
+    atomic_write_text(
+        product_create_transaction_receipt_path(target),
+        canonical_product_create_transaction_receipt_bytes(receipt).decode("utf-8"),
+        encoding="utf-8",
+    )
+    return target
+
+
+def load_compiled_product_create_transaction_file(path: Path) -> ProductCreateTransaction:
+    """Load a transaction whose local receipt still matches its pre-confirm bytes.
+
+    The receipt protects the normal trusted-workspace flow from stale or
+    accidental file drift. It is not authentication against the local machine
+    owner, who can write the repository without invoking Odylith.
+    """
+
+    target = Path(path).expanduser()
+    receipt_path = product_create_transaction_receipt_path(target)
+    if target.is_symlink() or receipt_path.is_symlink():
+        raise ValueError("ProductCreateTransaction file and compiler receipt must not be symlinks")
+    try:
+        payload_bytes = target.read_bytes()
+        receipt_payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise ValueError(
+            "ProductCreateTransaction is missing its pre-confirm compiler receipt; "
+            "rebuild it with greenfield propose"
+        ) from exc
+    except OSError as exc:
+        raise RuntimeError(
+            "environment/IO failure while reading the pre-confirm ProductCreateTransaction; "
+            "no governed records were written"
+        ) from exc
+    if not isinstance(receipt_payload, Mapping):
+        raise ValueError("ProductCreateTransaction compiler receipt must be a JSON object")
+    if str(receipt_payload.get("version", "")).strip() != PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION:
+        raise ValueError("ProductCreateTransaction compiler receipt has an unsupported version")
+    actual_file_hash = hashlib.sha256(payload_bytes).hexdigest()
+    if str(receipt_payload.get("transaction_file_sha256", "")).strip() != actual_file_hash:
+        raise ValueError("ProductCreateTransaction file does not match its pre-confirm compiler receipt")
+    payload = json.loads(payload_bytes.decode("utf-8"))
+    transaction = product_create_transaction_from_dict(payload)
+    if str(receipt_payload.get("transaction_hash", "")).strip() != transaction.transaction_hash:
+        raise ValueError("ProductCreateTransaction hash does not match its pre-confirm compiler receipt")
+    attested = replace(
+        transaction,
+        _compiler_attestation=_PRODUCT_CREATE_TRANSACTION_COMPILER_ATTESTATION,
+    )
+    require_product_create_transaction_verified(attested)
+    return attested
+
+
+def product_create_transaction_hash(transaction: ProductCreateTransaction) -> str:
+    payload = _transaction_hash_payload(transaction)
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _transaction_hash_payload(transaction: ProductCreateTransaction) -> dict[str, Any]:
+    quality_manifest = _json_ready(transaction.quality_manifest)
+    if "model_authoring" in transaction.quality_manifest:
+        # Model observations are sealed; the consumer clock continues through pending staging.
+        quality_manifest["model_authoring"] = _json_ready(
+            transaction.quality_manifest["model_authoring"], preserve_timing=True,
+        )
+    return {
+        "version": transaction.version,
+        "release_selector": transaction.release_selector,
+        "proposal": _json_ready(transaction.proposal),
+        "validation_gate": _json_ready(transaction.validation_gate),
+        "prewrite_package": _json_ready(transaction.prewrite_package),
+        "backlog_result": _json_ready(transaction.backlog_result),
+        "intent_authority": _json_ready(transaction.intent_authority),
+        "quality_manifest": quality_manifest,
+        "compiler_provenance": _json_ready(transaction.compiler_provenance),
+        "commit_summary": _product_create_transaction_commit_summary(transaction),
+    }
+
+
+def _json_ready(value: Any, *, preserve_timing: bool = False) -> Any:
+    if is_dataclass(value) and not isinstance(value, type):
+        return _json_ready({field.name: getattr(value, field.name) for field in fields(value)}, preserve_timing=preserve_timing)
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, Mapping):
+        result: dict[str, Any] = {}
+        for key in sorted(value, key=lambda item: str(item)):
+            key_text = str(key)
+            if key_text in _VOLATILE_HASH_KEYS and not preserve_timing:
+                continue
+            result[key_text] = _json_ready(value[key], preserve_timing=preserve_timing)
+        return result
+    if isinstance(value, set):
+        return sorted(_json_ready(item) for item in value)
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        return [_json_ready(item, preserve_timing=preserve_timing) for item in value]
+    if hasattr(value, "as_dict") and callable(value.as_dict):
+        return _json_ready(value.as_dict(), preserve_timing=preserve_timing)
+    if hasattr(value, "__dict__") and value.__class__.__module__.startswith("odylith."):
+        return _json_ready(vars(value), preserve_timing=preserve_timing)
+    return value
+
+
+def _backlog_result_from_payload(payload: Mapping[str, Any]) -> Mapping[str, Any]:
+    result = dict(payload)
+    candidate_specs = result.get("_candidate_idea_specs")
+    if isinstance(candidate_specs, Mapping):
+        result["_candidate_idea_specs"] = {
+            str(idea_id): _idea_spec_from_payload(spec)
+            for idea_id, spec in candidate_specs.items()
+            if isinstance(spec, Mapping)
+        }
+    return result
+
+
+def _idea_spec_from_payload(payload: Mapping[str, Any]) -> backlog_contract.IdeaSpec:
+    return backlog_contract.IdeaSpec(
+        path=Path(str(payload.get("path", ""))),
+        metadata={str(key): str(value) for key, value in mapping_copy(payload.get("metadata")).items()},
+        sections={str(value) for value in _sequence(payload.get("sections"))},
+        section_bodies={str(key): str(value) for key, value in mapping_copy(payload.get("section_bodies")).items()},
+    )
+
+
+def _sequence(value: Any) -> Sequence[Any]:
+    return value if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)) else ()
+
+
+def _completion_package_from_payload(payload: Mapping[str, Any]) -> GreenfieldCompletionPackage:
+    allowed = {field.name for field in fields(GreenfieldCompletionPackage)}
+    kwargs = {key: payload[key] for key in allowed if key in payload}
+    for tuple_key in (
+        "component_registry_preview",
+        "atlas_diagram_ids",
+        "atlas_catalog_rows",
+        "release_workstream_ids",
+    ):
+        if tuple_key in kwargs and isinstance(kwargs[tuple_key], list):
+            kwargs[tuple_key] = tuple(kwargs[tuple_key])
+    if isinstance(kwargs.get("traceability_plan"), Mapping):
+        kwargs["traceability_plan"] = greenfield_traceability.traceability_plan_from_payload(
+            kwargs["traceability_plan"]
+        )
+    if isinstance(kwargs.get("backlog_result"), Mapping):
+        kwargs["backlog_result"] = _backlog_result_from_payload(kwargs["backlog_result"])
+    return GreenfieldCompletionPackage(**kwargs)
+
+
+__all__ = [
+    "PRODUCT_CREATE_TRANSACTION_VERSION",
+    "PRODUCT_CREATE_TRANSACTION_COMPILER",
+    "PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION",
+    "PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION",
+    "ProductCreateTransaction",
+    "build_product_create_transaction",
+    "build_product_create_transaction_provenance",
+    "greenfield_model_authoring_receipt_approved",
+    "product_create_transaction_compiler_identity",
+    "product_create_transaction_from_dict",
+    "product_create_transaction_receipt_path",
+    "product_create_transaction_hash",
+    "product_create_transaction_to_dict",
+    "require_product_create_transaction_quality_approved",
+    "require_product_create_transaction_compiler_provenance",
+    "require_product_create_transaction_intent_authority",
+    "require_product_create_transaction_verified",
+    "load_compiled_product_create_transaction_file",
+    "write_compiled_product_create_transaction_file",
+]

@@ -1,0 +1,129 @@
+{
+  "version": "odylith.greenfield.prospective-public-source-annotation-custody.v1",
+  "created_on": "2026-10-10",
+  "status": "prospective_source_only",
+  "source_case_file": {
+    "path": "tests/fixtures/greenfield-release-corpus/live-subsets/greenfield-release-public-operating-envelope.v2.json",
+    "sha256": "4606712fcee60cfd99e3e45ece28cadf60e899c8e71d7b8b573f6b3e13e383d2",
+    "case_count": 40
+  },
+  "amendment": {
+    "path": "evidence-amendment.v1.json",
+    "sha256": "07f12a94b2f9142af267dedf0aa5594a5e83ee657d610f521eadf35bbd8833b3",
+    "checkpoint": "5d78dc2c476f7a49da650236cee9ddb7ce9f3590"
+  },
+  "unavailable_historical_annotation": {
+    "path": "/private/tmp/odylith-greenfield-public-v47-source-annotations-20261003/public-source-predeclaration.json",
+    "sha256": "31eefdfa1f6d49f4c49a04525c773ca63fd7dc16b3d4ce8f4a1e5957cfdd6481",
+    "replacement_is_original": false
+  },
+  "files": [
+    {
+      "path": "final-predeclaration.json",
+      "sha256": "34c85354ba7259c5c3e80b00de69f9dacc0007558327dcab0f0501c20924b219",
+      "bytes": 1196160
+    },
+    {
+      "path": "adjudication-report.md",
+      "sha256": "f809f11f9726bc2406e660bbe81d6184a36699bd689cff76068e4b022b8e8b19",
+      "bytes": 12790
+    },
+    {
+      "path": "adjudication.json",
+      "sha256": "4518beddb9d6024ee6b6386f0ecd8b44a7c112ef907848182dab98c0266c1146",
+      "bytes": 274508
+    },
+    {
+      "path": "adjudication-validation.json",
+      "sha256": "fbfb3552bf763fd3c2f6c67f25ec34f6dff821a6bde1d4aca77cf8a04f2d97fd",
+      "bytes": 8871
+    },
+    {
+      "path": "independent-source-census.json",
+      "sha256": "b24cd14f7ba76ebc9c6a865843d78f1960a7e62ad5508398ba44149a1813cf66",
+      "bytes": 272860
+    },
+    {
+      "path": "phase1-complexity.json",
+      "sha256": "e6b961c76d6d70ea9f805a6776f324b318158ce168b2ca96b2c529970e8dbe03",
+      "bytes": 45782
+    },
+    {
+      "path": "source-review-phase1.md",
+      "sha256": "6222e091325f41cda9440705ed7c68d0b653a58b4bdf6828dcb4eb31fac99bab",
+      "bytes": 6845
+    },
+    {
+      "path": "parent-formal-validation.json",
+      "sha256": "b1a2c89acf14712f88758f79067769a9d584194591e94a0900437e2e0b61b40e",
+      "bytes": 1531
+    },
+    {
+      "path": "README.md",
+      "sha256": "5d4f8616ae2d4acecfd489544922572b3d6e1357ba7ad4feb409e69a4dd8b9ad",
+      "bytes": 1375
+    }
+  ],
+  "source_only_input_pack_sha256": "aa6db335c70b18cc6957deb430d0f853db3b106d9932c6d6205899e32cc23047",
+  "retained_original_annotation_pins": {
+    "part-a-annotations.json": "63c88aba3021c8ffbc618cb86618629a4e6d9e7c1c2d9c62e64061e5c1637321",
+    "part-b-annotations.json": "b627836a8ef339227b5bae5186bf049e035922b3b0b61312fa62c99f471b19d5",
+    "draft-predeclaration.json": "22bdc9dd9f7b9fe2df791e1f607decbd62f3e791e13a72ab0d97b54ae178c47d"
+  },
+  "unchanged_quality_floors": {
+    "version": "odylith.greenfield.structural-floors.v4",
+    "atomic_semantic_fidelity": 1.0,
+    "relation_fidelity": 1.0,
+    "clarification_identity": 1.0,
+    "unnecessary_question_rate_ceiling": 0.0,
+    "overall_case_success": 1.0,
+    "worst_slice_success": 1.0,
+    "release_slice_minimum_samples": {
+      "complexity_band": {
+        "bounded": 4,
+        "moderate": 4,
+        "high": 4
+      },
+      "evidence_format": {
+        "operator_prompt": 4,
+        "operator_prompt_with_edit_evidence": 4
+      },
+      "model_profile": {
+        "greenfield-standard-host-candidate-astra-medium-v21": 4
+      }
+    },
+    "statistical_confidence": {
+      "version": "odylith.greenfield.statistical-confidence.v1",
+      "method": "wilson",
+      "confidence_level": 0.95,
+      "atomic_semantic_fidelity": 0.5,
+      "relation_fidelity": 0.5,
+      "clarification_identity": 0.5,
+      "unnecessary_question_rate_ceiling": 0.5,
+      "overall_case_success": 0.5,
+      "worst_slice_success": 0.5
+    }
+  },
+  "expected_outcomes": {
+    "commit": 22,
+    "clarify": 18
+  },
+  "complexity_bands": {
+    "bounded": 32,
+    "moderate": 8,
+    "high": 0
+  },
+  "high_complexity_coverage_satisfied": false,
+  "product_qualification": false,
+  "release_credit": false,
+  "campaign_dispatch_authorized": false,
+  "protected_holdout_unchanged": true,
+  "original_annotation_retention": {
+    "archive": "prospective-public40-source-review.tar.gz",
+    "sha256": "858bdd9dda8d8b69735d515692fa40af79334a651a23239bd2ec424e72b3cec6",
+    "bytes": 455154,
+    "file_count": 19,
+    "local_custody_only": true,
+    "custody_receipt_sha256": "da020e95f674d745f3e1dfb6c8959b8c97a74d4ce3e29e3c060c98741198f996"
+  }
+}

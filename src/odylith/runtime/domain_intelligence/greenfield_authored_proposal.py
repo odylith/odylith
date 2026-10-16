@@ -1,0 +1,802 @@
+"""Project verified model-authored Greenfield meaning without reparsing prose.
+
+The authoring boundary already owns semantic selection and source custody. This
+module only maps that closed contract into existing proposal surfaces. It may
+create stable identifiers and presentation copy, but it never classifies words,
+infers missing product facts, or repairs model-authored meaning.
+"""
+
+from __future__ import annotations
+
+import copy
+from collections.abc import Mapping, Sequence
+from typing import Any
+
+from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence.greenfield_authored_atlas_view import (
+    build_authored_atlas_diagrams,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_checkpoint_text,
+    authored_first_run_relations,
+    authored_first_run_text,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+    AUTHORED_SEMANTICS_KEY,
+    authored_component_relation_facts,
+    component_responsibility_relations_from_intent,
+    first_path_context_relations_from_intent,
+    first_path_relations_from_intent, source_event_relations_from_intent,
+)
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
+    provisional_design_from_intent, project_presentation_name,
+)
+from odylith.runtime.domain_intelligence.greenfield_provisional_package import (
+    build_provisional_backlog,
+    build_provisional_components,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
+    assumption_preview_values,
+    assumption_rows,
+    decision_copy,
+)
+from odylith.runtime.domain_intelligence.project_intelligence_binding import (
+    PROJECT_INTELLIGENCE_BINDING_KEY,
+)
+
+
+_AUTHORED_PROJECTION_FIELDS = (
+    "classification",
+    "greenfield_ux",
+    "assumptions",
+    "open_questions",
+    "risks",
+    "security_compliance",
+    "validation_strategy",
+    "project_brief",
+    "project_intelligence",
+    "release_plan",
+    "backlog",
+    "components",
+    "semantic_model",
+    "diagrams",
+    "apply_commands",
+)
+
+
+def _preserved_source_presentation(intent: Mapping[str, Any]) -> bool:
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import uses_preserved_source_presentation
+    duty = intent[AUTHORED_SEMANTICS_KEY].get("source_duty")
+    return bool(duty) and uses_preserved_source_presentation(duty["ledger_receipt"], evidence_text=intent["prompt"])
+
+
+def build_authored_greenfield_proposal(
+    *,
+    observed_source: Mapping[str, Any],
+    release_selector: str,
+    confirmed_intent: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Return the complete proposal view of one verified authored intent."""
+
+    relations = source_event_relations_from_intent(confirmed_intent)
+    if not relations:
+        raise ValueError("model-authored Greenfield projection requires verified first-path relations")
+    component_responsibility_relations = component_responsibility_relations_from_intent(
+        confirmed_intent
+    )
+    first_path_context_relations = first_path_context_relations_from_intent(confirmed_intent)
+    release = str(release_selector or "").strip() or greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
+    title = _required_text(confirmed_intent, "title")
+    provisional_design = provisional_design_from_intent(confirmed_intent)
+    display_name = project_presentation_name(source_title=title, design=provisional_design)
+    product_slug = slugify(display_name) or "greenfield-project"
+    source_duty = confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_duty"]
+    narrative = bool(source_duty and source_duty["ledger_receipt"]["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"})
+    walkthrough = authored_first_run_text(confirmed_intent)
+    first_path = str(confirmed_intent["first_path"]) if narrative else walkthrough
+    first_run_relations = authored_first_run_relations(confirmed_intent)
+    state_object = _required_text(confirmed_intent, "state_object")
+    proof_boundary = decision_copy(confirmed_intent, "proof_boundary")
+    proof_is_provisional = not bool(confirmed_intent.get("proof_boundary"))
+    product_story = _required_text(confirmed_intent, "product_story")
+    human_actors = _strings(confirmed_intent.get("human_actors"))
+    internal_systems = _strings(confirmed_intent.get("internal_systems"))
+    external_systems = _strings(confirmed_intent.get("external_systems"))
+    non_goals = _strings(confirmed_intent.get("non_goals"))
+    assumptions = assumption_rows(confirmed_intent.get("assumptions", []))
+    operational_constraints = _strings(confirmed_intent.get("operational_constraints"))
+    evidence_requirements = _strings(confirmed_intent.get("evidence_requirements"))
+    success_metrics = _strings(confirmed_intent.get("success_metrics"))
+    risk_posture = copy.deepcopy(provisional_design["risk_posture"])
+    visible_result = authored_checkpoint_text(confirmed_intent)
+    source_components = _source_components(
+        title=title,
+        product_slug=product_slug,
+        internal_systems=internal_systems,
+        relations=relations,
+        component_responsibility_relations=component_responsibility_relations,
+        first_path_context_relations=first_path_context_relations,
+    )
+    components = build_provisional_components(intent=confirmed_intent, product_slug=product_slug)
+    diagram_slugs = {
+        "context": f"{product_slug}-system-context",
+        "sequence": f"{product_slug}-first-run" if narrative else f"{product_slug}-first-path",
+        "component_exchanges": f"{product_slug}-component-exchanges",
+        "delivery_dependencies": f"{product_slug}-delivery-dependencies",
+        "capability_support": f"{product_slug}-capability-support",
+    }
+    backlog = build_provisional_backlog(
+        intent=confirmed_intent,
+        diagram_slugs=diagram_slugs,
+    )
+    semantic_model = _semantic_model(
+        title=title,
+        state_object=state_object,
+        first_path=first_path,
+        visible_result=visible_result,
+        proof_boundary=proof_boundary,
+        proof_is_provisional=proof_is_provisional,
+        human_actors=human_actors,
+        internal_systems=internal_systems,
+        external_systems=external_systems,
+        non_goals=non_goals,
+        operational_constraints=operational_constraints,
+        components=components,
+        backlog=backlog,
+        relations=first_run_relations,
+        declared_path=(first_path_relations_from_intent(confirmed_intent)
+                       if confirmed_intent[AUTHORED_SEMANTICS_KEY]["version"].endswith(".v19") else None),
+        declared_path_text=str(confirmed_intent["first_path"]),
+        provisional_design=provisional_design,
+        source_precedence=confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
+        source_duty=confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_duty"],
+    )
+    diagrams = build_authored_atlas_diagrams(
+        title=title,
+        product_story=product_story,
+        diagram_slugs=diagram_slugs,
+        human_actors=human_actors,
+        external_systems=external_systems,
+        non_goals=non_goals,
+        state_object=state_object,
+        visible_result=visible_result,
+        proof_boundary=proof_boundary,
+        proof_is_provisional=proof_is_provisional,
+        components=source_components,
+        backlog=backlog,
+        relations=relations,
+        provisional_design=provisional_design,
+        diagram_roles=tuple(diagram_slugs),
+        source_precedence=confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
+        operational_constraints=operational_constraints,
+        source_lifecycle=(confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_duty"] or {}).get("lifecycle"),
+        neutral_context=narrative,
+        preserved_source_presentation=_preserved_source_presentation(confirmed_intent),
+    )
+    intent = _intent_copy(confirmed_intent)
+    intent.update(
+        {
+            # Retained untrusted evidence for EDIT, never projection authority.
+            "prompt": str(confirmed_intent.get("prompt") or ""),
+            "project_slug": product_slug,
+            "reasoning_mode": "model_authored_typed_intent",
+            "evidence_tier": "user_intent",
+            "summary": provisional_design["project_summary"] if narrative else product_story,
+            AUTHORED_SEMANTICS_KEY: copy.deepcopy(confirmed_intent[AUTHORED_SEMANTICS_KEY]),
+        }
+    )
+    validation_strategy = _unique([*success_metrics, proof_boundary, *evidence_requirements])
+    proposal = {
+        "schema_version": "odylith.greenfield.proposal.v1",
+        "mode": "host_reasoned_greenfield_proposal",
+        "provider_calls": 0,
+        "host_agnostic": True,
+        "write_policy": "confirmed_intent_before_confirmed_create",
+        "projection_origin": AUTHORED_PROJECTION_ORIGIN,
+        "intent": intent,
+        "observed_source": dict(observed_source),
+        "classification": {
+            "method": "model_authored_typed_intent",
+            "fit_policy": "Keep verified source facts separate from the required provisional design.",
+            "provider_calls": 0,
+        },
+        "greenfield_ux": {
+            "mode": "consumer_greenfield_confirmed_path",
+            "write_guardrail": "No product records are written until CONFIRM publishes the sealed transaction.",
+            "next_best_action": "Review the sealed project package and choose CONFIRM, EDIT, or REJECT.",
+        },
+        "assumptions": _assumption_rows(assumptions),
+        "open_questions": [],
+        "risks": copy.deepcopy(risk_posture["items"]),
+        "security_compliance": {
+            "authority_kind": "provisional_design",
+            "status": risk_posture["status"],
+            "rationale": risk_posture["rationale"],
+            "risk_refs": [
+                f"/authored_semantics/provisional_design/risk_posture/items/{index}"
+                for index, _row in enumerate(risk_posture["items"])
+            ],
+        },
+        "validation_strategy": validation_strategy,
+        "project_brief": _project_brief(
+            title=display_name,
+            product_story=product_story,
+            problem=decision_copy(confirmed_intent, "problem"),
+            product_view=decision_copy(confirmed_intent, "product_view"),
+            first_path=first_path,
+            visible_result=visible_result,
+            proof_boundary=proof_boundary,
+            human_actors=human_actors,
+            internal_systems=internal_systems,
+            external_systems=external_systems,
+            non_goals=non_goals,
+            operational_constraints=operational_constraints,
+            evidence_requirements=evidence_requirements,
+            assumptions=assumptions,
+            provisional_design=provisional_design,
+            summary=provisional_design["project_summary"] if narrative else None,
+            walkthrough=walkthrough if narrative else None,
+        ),
+        "project_intelligence": _project_intelligence(
+            title=display_name,
+            product_story=product_story,
+            problem=_text(confirmed_intent.get("problem")),
+            customer=_text(confirmed_intent.get("customer")),
+            opportunity=_text(confirmed_intent.get("opportunity")),
+            product_view=_text(confirmed_intent.get("product_view")),
+            first_path=first_path,
+            state_object=state_object,
+            visible_result=visible_result,
+            proof_boundary=proof_boundary,
+            relations=relations,
+            internal_systems=internal_systems,
+            external_systems=external_systems,
+            operational_constraints=operational_constraints,
+            evidence_requirements=evidence_requirements,
+            success_metrics=success_metrics,
+            assumptions=assumptions,
+        ),
+        "release_plan": _release_plan(
+            title=display_name,
+            product_slug=product_slug,
+            release=release,
+            proof_boundary=proof_boundary,
+            success_metrics=success_metrics,
+            backlog=backlog,
+        ),
+        "backlog": backlog,
+        "components": components,
+        "semantic_model": semantic_model,
+        "diagrams": diagrams,
+        "apply_commands": [],
+    }
+    return proposal
+
+
+def authored_projection_parity_issues(proposal: Mapping[str, Any]) -> list[str]:
+    """Return exact typed-projection drift without interpreting rendered prose."""
+
+    if proposal.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN:
+        return ["Greenfield proposal is not a model-authored typed projection"]
+    intent = proposal.get("intent")
+    observed_source = proposal.get("observed_source")
+    release_plan = proposal.get("release_plan")
+    if not isinstance(intent, Mapping):
+        return ["model-authored Greenfield proposal is missing typed Product Intent"]
+    if not isinstance(observed_source, Mapping):
+        return ["model-authored Greenfield proposal is missing source-evidence posture"]
+    if not isinstance(release_plan, Mapping):
+        return ["model-authored Greenfield proposal is missing its release projection"]
+    try:
+        expected = build_authored_greenfield_proposal(
+            observed_source=observed_source,
+            release_selector=_text(release_plan.get("selector")),
+            confirmed_intent=intent,
+        )
+    except ValueError as exc:
+        return [str(exc)]
+
+    issues: list[str] = []
+    for field in _AUTHORED_PROJECTION_FIELDS:
+        actual_value = _without_binding(field, proposal.get(field))
+        if actual_value != expected.get(field):
+            issues.append(
+                f"model-authored Greenfield `{field}` projection drifted from sealed typed intent"
+            )
+    return issues
+
+
+def _without_binding(field: str, value: Any) -> Any:
+    value = copy.deepcopy(value)
+    if field == "release_plan" and isinstance(value, dict):
+        value.pop(PROJECT_INTELLIGENCE_BINDING_KEY, None)
+    elif field in {"backlog", "components", "diagrams"} and isinstance(value, list):
+        for row in value:
+            if isinstance(row, dict):
+                row.pop(PROJECT_INTELLIGENCE_BINDING_KEY, None)
+    return value
+
+
+def _source_components(
+    *,
+    title: str,
+    product_slug: str,
+    internal_systems: Sequence[str],
+    relations: Sequence[Mapping[str, Any]],
+    component_responsibility_relations: Sequence[Mapping[str, Any]],
+    first_path_context_relations: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    relation_contracts = authored_component_relation_facts(
+        title=title,
+        internal_systems=internal_systems,
+        relations=relations,
+        component_responsibility_relations=component_responsibility_relations,
+    )
+    context_by_owner = _component_context_by_owner(
+        title=title,
+        internal_systems=internal_systems,
+        relations=relations,
+        component_responsibility_relations=component_responsibility_relations,
+        context_relations=first_path_context_relations,
+    )
+    for contract in relation_contracts:
+        label = str(contract["owner_system"])
+        context = context_by_owner.get(label, _empty_component_context())
+        contract = {**dict(contract), **context}
+        responsibilities = list(contract["responsibility_facts"])
+        responsibility = "; ".join(responsibilities)
+        component_id = _unique_id(slugify(label) or f"{product_slug}-component", rows)
+        rows.append(
+            {
+                "component_id": component_id,
+                "label": label,
+                "kind": "component",
+                "intended_path": f"src/{product_slug}/{component_id}",
+                "responsibility": responsibility,
+                "boundary": "",
+                "dependencies": list(context["external_dependencies"]),
+                "interfaces": [],
+                "validation": list(context["operational_constraints"]),
+                "status": "planned",
+                "qualification": "candidate",
+                "evidence_tier": "user_intent",
+                "release_scope": "first_release",
+                "source_system_description": responsibility,
+                "projection_origin": AUTHORED_PROJECTION_ORIGIN,
+                "component_contract": dict(contract),
+            }
+        )
+    return rows
+
+
+def _component_context_by_owner(
+    *,
+    title: str,
+    internal_systems: Sequence[str],
+    relations: Sequence[Mapping[str, Any]],
+    component_responsibility_relations: Sequence[Mapping[str, Any]],
+    context_relations: Sequence[Mapping[str, Any]],
+) -> dict[str, dict[str, list[str]]]:
+    """Join exact context facts to exact event/component owner relations."""
+
+    owner_by_path = {"/title": title}
+    owner_by_path.update(
+        {f"/internal_systems/{index}": value for index, value in enumerate(internal_systems)}
+    )
+    owner_paths_by_event: dict[int, list[str]] = {}
+    component_owner_paths: list[str] = []
+    for relation in relations:
+        if relation.get("actor_kind") != "product":
+            continue
+        order = relation.get("order")
+        owner_path = str(relation.get("owner_system_path") or "")
+        if isinstance(order, int) and not isinstance(order, bool) and owner_path in owner_by_path:
+            owner_paths_by_event.setdefault(order, []).append(owner_path)
+            if owner_path not in component_owner_paths:
+                component_owner_paths.append(owner_path)
+    for relation in component_responsibility_relations:
+        order = relation.get("first_path_event_order")
+        owner_path = str(relation.get("owner_system_path") or "")
+        if owner_path in owner_by_path and owner_path not in component_owner_paths:
+            component_owner_paths.append(owner_path)
+        if (
+            isinstance(order, int)
+            and not isinstance(order, bool)
+            and order > 0
+            and owner_path in owner_by_path
+        ):
+            owner_paths_by_event.setdefault(order, []).append(owner_path)
+
+    field_by_kind = {
+        "state_object": "state_context",
+        "external_system": "external_dependencies",
+        "operational_constraint": "operational_constraints",
+    }
+    grouped: dict[str, dict[str, list[str]]] = {}
+    for relation in context_relations:
+        order = relation.get("first_path_event_order")
+        field = field_by_kind.get(str(relation.get("context_kind") or ""))
+        quote = str(relation.get("fact_quote") or "")
+        if not field or not quote or not isinstance(order, int) or isinstance(order, bool) or order < 0:
+            continue
+        if order == 0:
+            owner_paths = component_owner_paths if len(component_owner_paths) == 1 else ()
+        else:
+            owner_paths = owner_paths_by_event.get(order, ())
+        for owner_path in dict.fromkeys(owner_paths):
+            owner = owner_by_path[owner_path]
+            target = grouped.setdefault(owner, _empty_component_context())
+            if quote not in target[field]:
+                target[field].append(quote)
+    return grouped
+
+
+def _empty_component_context() -> dict[str, list[str]]:
+    return {
+        "state_context": [],
+        "external_dependencies": [],
+        "operational_constraints": [],
+    }
+
+
+def _semantic_model(
+    *,
+    title: str,
+    state_object: str,
+    first_path: str,
+    visible_result: str,
+    proof_boundary: str,
+    proof_is_provisional: bool,
+    human_actors: Sequence[str],
+    internal_systems: Sequence[str],
+    external_systems: Sequence[str],
+    non_goals: Sequence[str],
+    operational_constraints: Sequence[str],
+    components: Sequence[Mapping[str, Any]],
+    backlog: Sequence[Mapping[str, Any]],
+    relations: Sequence[Mapping[str, Any]],
+    provisional_design: Mapping[str, Any],
+    source_precedence: Sequence[Mapping[str, Any]],
+    source_duty: Mapping[str, Any] | None,
+    declared_path: Sequence[Mapping[str, Any]] | None, declared_path_text: str,
+) -> dict[str, Any]:
+    lifecycle = source_duty.get("lifecycle") if isinstance(source_duty, Mapping) else None
+    events = [
+        {
+            "index": index,
+            "source_event_order": row["order"],
+            "actor": _text(row.get("actor_fact_quote")),
+            "owner_system": _text(row.get("owner_system_quote")),
+            "action": _text(row.get("action_verb_quote")),
+            "target_entity": _text(row.get("target_quote")),
+            "mutation": _text(row.get("event_quote")),
+            "visible_result": bool(_text(row.get("visible_result_quote"))),
+            "text": _text(row.get("event_quote")),
+            "source_kind": "proposed_first_run",
+        }
+        for index, row in enumerate(relations, start=1)
+    ]
+    path_events = ([{**events[0], "index": index, "source_event_order": row["order"],
+                    "actor": row["actor_fact_quote"], "owner_system": row["owner_system_quote"],
+                    "action": row["action_verb_quote"], "target_entity": row["target_quote"],
+                    "mutation": row["event_quote"], "visible_result": bool(row["visible_result_quote"]),
+                    "text": row["event_quote"], "source_kind": "source_grounded"}
+                   for index, row in enumerate(declared_path, 1)] if declared_path is not None else events)
+    first_event = declared_path[0] if declared_path is not None else relations[0]
+    contract_path = declared_path_text if declared_path is not None else first_path
+    component_refs = []
+    for component in components:
+        contract = component.get("component_contract") if isinstance(component.get("component_contract"), Mapping) else {}
+        component_id = str(component.get("component_id") or "")
+        component_refs.append(
+            {
+                "component_id": component_id,
+                "label": str(component.get("label") or ""),
+                "semantic_axis": "provisional_design",
+                "release_scope": str(component.get("release_scope") or "first_release"),
+                "component_contract": copy.deepcopy(contract),
+            }
+        )
+    workstreams = [
+        {
+            "title": str(row.get("title") or ""),
+            "component_ids": _strings(row.get("component_focus")),
+            "local_problem": str(row.get("problem") or ""),
+            "first_slice": str(row.get("recommended_first_slice") or ""),
+            "proof": " ".join(_strings(row.get("validation"))),
+        }
+        for row in backlog
+    ]
+    return {
+        "schema_version": "odylith.greenfield.semantic_model.v5" if declared_path is not None else "odylith.greenfield.semantic_model.v4",
+        "first_path_contract": {
+            "authority_kind": "source_grounded" if declared_path is not None else "provisional_design",
+            "actor": _text(first_event.get("actor_fact_quote")),
+            "action": _text(first_event.get("action_verb_quote")),
+            "entity": state_object,
+            "mutation": "",
+            "required_fields": [],
+            "persistence": "",
+            "visible_result": visible_result,
+            "deferred_scope": [],
+            "capability": contract_path,
+            "raw_path": contract_path,
+            "events": path_events,
+        },
+        "domain_ontology": {
+            "product_title": title,
+            "state_object": state_object,
+            "proof_boundary": "" if proof_is_provisional else proof_boundary,
+            "human_actors": list(human_actors),
+            "internal_systems": list(internal_systems),
+            "external_systems": list(external_systems),
+            "non_goals": list(non_goals),
+            "operational_constraints": list(operational_constraints),
+            "domain_terms": [],
+        },
+        "components": component_refs,
+        "provisional_design": copy.deepcopy(provisional_design),
+        "source_precedence": [dict(row) for row in source_precedence],
+        "source_lifecycle": copy.deepcopy(lifecycle),
+        "workstreams": workstreams,
+        "diagram_event_graph": {
+            "events": events,
+            "state_transitions": copy.deepcopy(lifecycle["off_path_transitions"]) if isinstance(lifecycle, Mapping) else [],
+            "component_sequence": [str(row.get("component_id") or "") for row in components],
+            "proof_checkpoint": proof_boundary,
+        },
+        "proof_obligations": [
+            {"key": key, "claim": claim, "required_evidence": proof_boundary,
+             "authority_kind": "assumption" if proof_is_provisional else "source_grounded"}
+            for key, claim in (("first_path_contract", contract_path), ("release_boundary", proof_boundary))
+        ] + ([{"key": f"source_proof/{row['duty_id']}", "claim": row["must_show"],
+               "required_evidence": row["must_show"], "authority_kind": "source_grounded",
+               "source_refs": copy.deepcopy(row["source_refs"])}
+              for row in lifecycle["proof_duties"]] if declared_path is not None and isinstance(lifecycle, Mapping) else []),
+        "evaluation_semantics": None,
+    }
+
+
+def _project_brief(
+    *,
+    title: str,
+    product_story: str,
+    problem: str,
+    product_view: str,
+    first_path: str,
+    visible_result: str,
+    proof_boundary: str,
+    human_actors: Sequence[str],
+    internal_systems: Sequence[str],
+    external_systems: Sequence[str],
+    non_goals: Sequence[str],
+    operational_constraints: Sequence[str],
+    evidence_requirements: Sequence[str],
+    assumptions: Sequence[Mapping[str, str]],
+    provisional_design: Mapping[str, Any],
+    summary: str | None = None,
+    walkthrough: str | None = None,
+) -> dict[str, Any]:
+    problem_statement = problem
+    assumption_values = assumption_preview_values(assumptions)
+    proof_is_provisional = any(row["applies_to"] == "proof_boundary" for row in assumptions)
+    sections = [
+        _brief_section(
+            "Accepted evidence excerpt",
+            product_story,
+            "Exact accepted user evidence, not an independently authored statement.",
+        ),
+        _brief_section(
+            "User problem",
+            problem_statement,
+            "The source-stated need or an explicitly provisional decision assumption.",
+        ),
+        _brief_section(
+            "Product view",
+            product_view,
+            "The source-stated product experience or an explicitly provisional decision assumption.",
+        ),
+        _brief_section("First path", first_path, "The exact source-declared path." if summary is not None else "One proposed walkthrough constrained by source evidence."),
+        _brief_section(
+            "Proposed walkthrough",
+            ((walkthrough + "\n\n") if walkthrough is not None else "")
+            + _required_text(provisional_design["first_run"], "rationale"),
+            "The model-authored design path that connects the source action to the proposed product stages.",
+        ),
+        *([] if proof_is_provisional else [
+            _brief_section("Visible result", visible_result, "The source result bound to its producing action."),
+        ]),
+        _brief_section(
+            "Proposed proof checkpoint" if proof_is_provisional else "Proof",
+            proof_boundary,
+            "An explicit assumption for review, not an accepted source fact."
+            if proof_is_provisional else "The accepted release proof boundary.",
+        ),
+    ]
+    if evidence_requirements:
+        sections.append(_brief_section(
+            "Required evidence", "\n".join(evidence_requirements),
+            "Source-stated evidence required to establish release proof.",
+        ))
+    if operational_constraints:
+        sections.append(
+            _brief_section("Operational constraints", "\n".join(operational_constraints), "Source-stated operating limits.")
+        )
+    if non_goals:
+        sections.append(_brief_section("Non-goals", "\n".join(non_goals), "Explicitly excluded scope."))
+    if assumption_values:
+        sections.append(
+            _brief_section(
+                "Proposed assumptions",
+                "\n".join(assumption_values),
+                "Advisory and unverified; additional source evidence is required before acceptance.",
+            )
+        )
+    return {
+        "schema_version": "odylith.greenfield.project_brief.v1",
+        **({"summary": summary} if summary is not None else {}),
+        "projection_origin": AUTHORED_PROJECTION_ORIGIN,
+        "operational_constraints": list(operational_constraints),
+        "purpose": problem_statement,
+        "operating_principle": product_story,
+        "project_outcome": visible_result,
+        "blueprint_sections": sections,
+        "customization_options": [],
+        "customization_prompts": [],
+        "pre_coding_checkpoints": [],
+        "coding_readiness_gates": [],
+        "host_independent_paths": [],
+        "actors": list(human_actors),
+        "internal_systems": list(internal_systems),
+        "external_systems": list(external_systems),
+        "project_name": title,
+    }
+
+
+def _project_intelligence(
+    *,
+    title: str,
+    product_story: str,
+    problem: str,
+    customer: str,
+    opportunity: str,
+    product_view: str,
+    first_path: str,
+    state_object: str,
+    visible_result: str,
+    proof_boundary: str,
+    relations: Sequence[Mapping[str, Any]],
+    internal_systems: Sequence[str],
+    external_systems: Sequence[str],
+    operational_constraints: Sequence[str],
+    evidence_requirements: Sequence[str],
+    success_metrics: Sequence[str],
+    assumptions: Sequence[Mapping[str, str]],
+) -> dict[str, Any]:
+    return {
+        "schema_version": "odylith.greenfield.project_intelligence.v1",
+        "projection_origin": AUTHORED_PROJECTION_ORIGIN,
+        "project_name": title,
+        "purpose": f"Accepted evidence excerpt: “{product_story}”",
+        "coding_posture": "",
+        "control_surface_summary": _unique(
+            [problem, customer, opportunity, product_view, first_path, visible_result]
+        ),
+        "customization_flow": [],
+        "intent": _unique(
+            [
+                f"Accepted evidence excerpt: “{product_story}”",
+                problem,
+                customer,
+                opportunity,
+                product_view,
+            ]
+        ),
+        "scope": [first_path],
+        "ontology": _unique([title, state_object, *internal_systems, *external_systems]),
+        "state": [state_object],
+        "operators": _unique([
+            _required_text(row, "actor_fact_quote")
+            for row in relations if row.get("actor_kind") == "human"
+        ]),
+        "constraints": list(operational_constraints),
+        "source_of_truth_map": [],
+        "evidence": _unique([proof_boundary, *evidence_requirements]),
+        "assumptions": assumption_preview_values(assumptions),
+        "topology": _unique([*internal_systems, *external_systems]),
+        "validation_obligations": _unique([proof_boundary, *success_metrics]),
+        "metrics": list(success_metrics),
+    }
+
+
+def _release_plan(
+    *,
+    title: str,
+    product_slug: str,
+    release: str,
+    proof_boundary: str,
+    success_metrics: Sequence[str],
+    backlog: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    titles = [str(row.get("title") or "") for row in backlog]
+    return {
+        "selector": release,
+        "label": f"{title} {release}",
+        "provisional_release_id": f"release-{product_slug}-{slugify(release)}",
+        "strategy": proof_boundary,
+        "target_workstream_titles": titles,
+        "release_stages": [
+            {
+                "stage": "first-path",
+                "label": f"{title} first path",
+                "release_gate": proof_boundary,
+                "workstream_titles": titles,
+            }
+        ],
+        "milestones": [{"name": f"{title} proof accepted", "exit_criteria": proof_boundary}],
+        "promotion_criteria": _unique([*success_metrics, proof_boundary]),
+        "evidence_tier": "user_intent",
+        "projection_origin": AUTHORED_PROJECTION_ORIGIN,
+    }
+
+
+def _assumption_rows(values: Sequence[Mapping[str, str]]) -> list[dict[str, str]]:
+    return [
+        {
+            "id": f"A-{index:03d}",
+            "assumption": value["statement"],
+            "applies_to": value["applies_to"],
+            "impact": "Advisory only; it is not accepted product truth.",
+            "validate_with": "Additional source evidence is required before acceptance.",
+        }
+        for index, value in enumerate(assumption_rows(values), start=1)
+    ]
+
+
+def _brief_section(section: str, value: str, why: str) -> dict[str, str]:
+    return {"section": section, "must_capture": value, "why_it_matters": why}
+
+
+def _intent_copy(intent: Mapping[str, Any]) -> dict[str, Any]:
+    return copy.deepcopy({key: value for key, value in intent.items() if key != AUTHORED_SEMANTICS_KEY})
+
+
+def _required_text(value: Mapping[str, Any], key: str) -> str:
+    text = _text(value.get(key))
+    if not text:
+        raise ValueError(f"model-authored Greenfield intent is missing `{key}`")
+    return text
+
+
+def _text(value: Any) -> str:
+    return value if isinstance(value, str) else ""
+
+
+def _strings(value: Any) -> list[str]:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        return []
+    return [row for row in value if isinstance(row, str) and row]
+
+
+def _unique(values: Sequence[str] | Any) -> list[str]:
+    rows: list[str] = []
+    for value in values:
+        if isinstance(value, str) and value and value not in rows:
+            rows.append(value)
+    return rows
+
+
+def _unique_id(candidate: str, rows: Sequence[Mapping[str, Any]]) -> str:
+    used = {str(row.get("component_id") or "") for row in rows}
+    if candidate not in used:
+        return candidate
+    index = 2
+    while f"{candidate}-{index}" in used:
+        index += 1
+    return f"{candidate}-{index}"
+
+
+__all__ = ["authored_projection_parity_issues", "build_authored_greenfield_proposal"]

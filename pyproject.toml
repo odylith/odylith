@@ -1,6 +1,6 @@
 [project]
 name = "odylith"
-version = "0.1.14"
+version = "0.1.15"
 description = "Odylith public product"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -17,6 +17,7 @@ classifiers = [
 dependencies = [
   "httpx[http2]>=0.27,<1.0",
   "Jinja2>=3.1,<4.0",
+  "markdown-it-py>=3.0,<5.0",
   "sigstore>=3.6,<4.0",
 ]
 
@@ -70,10 +71,16 @@ path = ".venv"
 features = ["context-engine-memory", "watchers"]
 dependencies = [
   "hatch>=1.14,<2.0",
+  "jsonschema==4.26.0",
   "numpy==2.4.3",
   "playwright>=1.53,<2.0",
   "Pygments==2.19.2",
   "pytest>=8.2,<9.0",
   "requests==2.33.0",
   "sigstore>=3.6,<4.0",
+]
+
+[tool.pytest.ini_options]
+markers = [
+  "greenfield_lifecycle: exercises the full Greenfield compiler or commit lifecycle and belongs in checkpoint proof",
 ]

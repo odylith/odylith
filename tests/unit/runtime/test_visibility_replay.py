@@ -1,10 +1,48 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import stream_state
+from odylith.runtime.intervention_engine import visible_delivery_frontier
 from odylith.runtime.intervention_engine import visibility_replay
+
+
+def test_replay_does_not_resurface_an_old_unconfirmed_moment(tmp_path: Path, monkeypatch) -> None:
+    stale_time = (datetime.now(timezone.utc) - timedelta(days=3)).isoformat()
+    stale_rows = [
+        {
+            "kind": "ambient_signal",
+            "session_id": "long-running-session",
+            "host_family": "codex",
+            "turn_phase": "post_bash_checkpoint",
+            "delivery_channel": "assistant_visible_fallback",
+            "delivery_status": "assistant_render_required",
+            "render_surface": "codex_post_bash_checkpoint",
+            "intervention_key": f"stale-{index}",
+            "display_markdown": f"**Odylith Insight:** Old routing note {index}.",
+            "ts_iso": stale_time,
+            "metadata": {"selected_block_set_id": "old-moment"},
+        }
+        for index in range(3)
+    ]
+    monkeypatch.setattr(
+        visibility_replay.stream_state,
+        "load_recent_intervention_events",
+        lambda **_kwargs: stale_rows,
+    )
+
+    assert visibility_replay.replayable_chat_blocks(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="long-running-session",
+    ) == []
+    assert visibility_replay.replayable_chat_markdown(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="long-running-session",
+    ) == ""
 
 
 def test_replay_returns_visible_and_hidden_blocks_until_transcript_confirmation(tmp_path: Path) -> None:
@@ -155,6 +193,40 @@ def test_preferred_replay_prioritizes_history_and_risks_ambient_over_interventio
         "**Odylith Observation:** Replay the primary intervention block first.\n"
         "\n---"
     )
+
+
+def test_legacy_replay_bundle_does_not_depend_on_same_second_timestamp() -> None:
+    rows = [
+        {
+            "kind": "intervention_card",
+            "session_id": "legacy-bundle",
+            "host_family": "codex",
+            "turn_phase": "post_bash_checkpoint",
+            "delivery_channel": "system_message_and_assistant_fallback",
+            "delivery_status": "assistant_render_required",
+            "render_surface": "codex_post_tool_use",
+            "display_markdown": "**Odylith Observation:** Legacy observation.",
+            "ts_iso": "2026-05-08T12:00:00Z",
+        },
+        {
+            "kind": "ambient_signal",
+            "session_id": "legacy-bundle",
+            "host_family": "codex",
+            "turn_phase": "post_bash_checkpoint",
+            "delivery_channel": "system_message_and_assistant_fallback",
+            "delivery_status": "assistant_render_required",
+            "render_surface": "codex_post_tool_use",
+            "display_markdown": "**Odylith Risks:** Legacy risk.",
+            "ts_iso": "2026-05-08T12:00:07Z",
+        },
+    ]
+
+    active = visible_delivery_frontier.active_unconfirmed_rows(rows)
+
+    assert [row["display_markdown"] for row in active] == [
+        "**Odylith Observation:** Legacy observation.",
+        "**Odylith Risks:** Legacy risk.",
+    ]
 
 
 def test_preferred_replay_prioritizes_history_and_risks_over_plain_insight_ambient(tmp_path: Path) -> None:

@@ -127,9 +127,10 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert ".summary-facts {" in html
     assert "grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));" in html
     assert "padding: 10px 12px;" in html
-    assert "-webkit-line-clamp: 2;" in html
+    assert ".bug-row-summary" not in html
     assert "-webkit-line-clamp: 4;" not in html
-    assert "Odylith Agent Learnings" in app_js
+    assert "Lessons and evidence" in app_js
+    assert "Odylith Agent Learnings" not in app_js
     assert '<h2 class="detail-title">${escapeHtml(detail.title || detail.bug_key || "Bug detail")}</h2>' in app_js
     assert '<h1 class="detail-title">' not in app_js
     assert "Human Readout" not in app_js
@@ -139,12 +140,24 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert "font-size: var(--surface-identifier-font-size, 14px);" in html
     assert "font-weight: var(--surface-identifier-font-weight, 500);" in html
     assert "white-space: normal;" in html
+    assert ".bug-row:hover {" in html
+    assert "box-shadow: 0 8px 18px rgba(15, 23, 42, 0.09);" in html
+    assert "transform: translateY(-1px);" in html
+    assert ".bug-row.active {" in html
+    assert "background: linear-gradient(180deg, #ffffff, #f8fbff);" in html
+    assert "box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.22);" in html
     assert ".bug-row-meta .list-chip," in html
     assert ".detail-meta .meta-chip {" in html
     assert "overflow-wrap: anywhere;" in html
     assert ".bug-row-kicker {" in html
     assert ".bug-row-kicker, .detail-kicker {" not in html
     assert "text-transform: uppercase;" in html
+    assert ".panel-head-title {\n  margin: 0;\n  color: var(--ink);\n  font-size: 15px;" in html
+    assert "  line-height: 1.35;\n  letter-spacing: 0em;\n  font-weight: 700;\n  text-transform: none;\n}" in html
+    assert ".panel-head-meta {\n  color: var(--ink-muted);\n  font-size: 13px;" in html
+    assert "  line-height: 1.35;\n  font-weight: 600;\n  letter-spacing: 0em;\n}" in html
+    assert "Visible: 0" not in html
+    assert "0 visible" in html
     assert ".action-chip {" in html
     assert "padding: var(--surface-deep-link-button-padding, 4px 12px);" in html
     assert "font-size: var(--surface-deep-link-button-font-size, 11px);" in html
@@ -183,8 +196,8 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert "Fixed pending release" in app_js
     assert "Operator UX" in app_js
     assert "function displayFactValue(label, value)" in app_js
-    assert 'severity: canonicalizeKnownFilterToken(params.get("severity") || "", "severity_tokens"),' in app_js
-    assert 'status: canonicalizeKnownFilterToken(params.get("status") || "", "status_tokens"),' in app_js
+    assert 'state.severity = canonicalizeKnownFilterToken(state.severity, "severity_tokens");' in app_js
+    assert 'state.status = canonicalizeKnownFilterToken(state.status, "status_tokens");' in app_js
     assert '${escapeHtml(displayTokenLabel(token))}</option>' in app_js
     assert "${escapeHtml(displayTokenLabel(detail.status))}</span>" in app_js
     assert '<p class="summary-fact-value">${escapeHtml(displayFactValue(label, value))}</p>' in app_js
@@ -209,8 +222,9 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert "Loading selected bug…" not in app_js
     assert "No structured detail sections were parsed from this entry." not in app_js
     assert "No bugs match the current filters and search text." not in app_js
-    assert 'data-tooltip="${escapeHtml(intelTooltip)}">Intel</span>' in app_js
-    assert 'Intel ${capturedCount}/${totalFields}' not in app_js
+    assert '>Intel</span>' not in app_js
+    assert '<summary class="disclosure-title">Capture Gaps</summary>' in app_js
+    assert '${capturedCount} of ${totalFields} recommended fields captured' in app_js
 
 
 def test_casebook_payload_dedupes_overlapping_proof_links_from_evidence_refs(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -502,11 +516,16 @@ def test_render_casebook_dashboard_emits_proof_control_panel_contract(tmp_path: 
     assert rc == 0
     app_js = (tmp_path / "odylith" / "casebook" / "casebook-app.v1.js").read_text(encoding="utf-8")
     payload_js = (tmp_path / "odylith" / "casebook" / "casebook-payload.v1.js").read_text(encoding="utf-8")
-    assert "Proof Control Panel" in app_js
-    assert "Pinned blocker, frontier, and proof tier for this bug lane." in app_js
-    assert "No dominant proof lane is resolved for this bug yet." in app_js
+    assert "Proof status" in app_js
+    assert "Technical evidence" in app_js
+    assert "Proof Control Panel" not in app_js
+    assert "Pinned blocker, frontier, and proof tier for this bug lane." not in app_js
+    assert "Verification status is not yet determined." in app_js
     assert "Proof state is ambiguous across multiple blocker lanes" in app_js
-    assert "Deployed vs local truth" in app_js
+    assert "Local HEAD" in app_js
+    assert '<details class="detail-disclosure"><summary class="disclosure-title">Technical evidence</summary>' in app_js
+    assert '"runner_fingerprint": "runner-v3"' in payload_js
+    assert '"failure_fingerprint": "aws:lambda:Permission doesn\'t support update"' in payload_js
     assert "Highest truthful claim" in app_js
     assert '"proof_state"' in payload_js
     assert '"current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke"' in payload_js

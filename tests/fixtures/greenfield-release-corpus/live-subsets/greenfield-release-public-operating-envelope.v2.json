@@ -1,0 +1,1909 @@
+{
+  "annotations": [
+    {
+      "case_id": "release-accessibility-004-topic",
+      "expected_clarification": {
+        "field": "first_path",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?"
+      }
+    },
+    {
+      "case_id": "release-accessibility-006-source",
+      "expected_clarification": {
+        "field": "first_path",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?"
+      }
+    },
+    {
+      "case_id": "release-agriculture-024-topic",
+      "expected_clarification": {
+        "field": "first_path",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?"
+      }
+    },
+    {
+      "case_id": "release-agriculture-030-source",
+      "expected_clarification": {
+        "field": "first_path",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?"
+      }
+    },
+    {
+      "case_id": "release-civic-tech-044-topic",
+      "expected_clarification": {
+        "field": "first_path",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?"
+      }
+    },
+    {
+      "case_id": "release-climate-064-topic",
+      "expected_clarification": {
+        "field": "first_path",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?"
+      }
+    },
+    {
+      "case_id": "release-education-084-topic",
+      "expected_clarification": {
+        "field": "first_path",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?"
+      }
+    },
+    {
+      "case_id": "release-education-086-source",
+      "expected_clarification": {
+        "field": "first_path",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?"
+      }
+    },
+    {
+      "case_id": "release-healthcare-104-topic",
+      "expected_clarification": {
+        "field": "first_path",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?"
+      }
+    },
+    {
+      "case_id": "release-healthcare-108-source",
+      "expected_clarification": {
+        "field": "first_path",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?"
+      }
+    },
+    {
+      "case_id": "release-mobility-124-topic",
+      "expected_clarification": {
+        "field": "first_path",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?"
+      }
+    },
+    {
+      "case_id": "release-mobility-126-source",
+      "expected_clarification": {
+        "field": "first_path",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?"
+      }
+    },
+    {
+      "case_id": "release-open-data-142-topic",
+      "expected_clarification": {
+        "field": "first_path",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?"
+      }
+    },
+    {
+      "case_id": "release-open-data-144-topic",
+      "expected_clarification": {
+        "field": "first_path",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?"
+      }
+    },
+    {
+      "case_id": "release-open-data-150-source",
+      "expected_clarification": {
+        "field": "first_path",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?"
+      }
+    },
+    {
+      "case_id": "release-research-170-source",
+      "expected_clarification": {
+        "field": "first_path",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?"
+      }
+    },
+    {
+      "case_id": "release-security-182-topic",
+      "expected_clarification": {
+        "field": "first_path",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?"
+      }
+    },
+    {
+      "case_id": "release-security-186-source",
+      "expected_clarification": {
+        "field": "first_path",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?"
+      }
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "release-accessibility-004-topic",
+      "expectation": "clarification_required",
+      "input_style": "research_evidence",
+      "leakage_terms": [
+        "radix-ui/primitives"
+      ],
+      "metamorphic_group": "github-repository-273499522-pair",
+      "metamorphic_transform": "topic_evidence",
+      "name": "accessibility source case 4",
+      "prompt": "Create an accessibility product from this research evidence. Source repository: radix-ui/primitives. Source evidence: accessibility. Repository description: Radix Primitives is an open-source UI component library for building high-quality, accessible design systems and web apps. Maintained by @workos.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "ff239ad5a7fa9e10b1fd842ec687f88dd5d711e5707754df7c8ab75687a7d4fc",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/accessibility-02-radix-ui-primitives.json",
+        "source_artifact_sha256": "4c1ddccab9eb5e24f1e443c721f56a20e8b0cc7373572f1b915d31ef48b7daf5",
+        "source_excerpt": "accessibility",
+        "source_excerpt_sha256": "714db89df42bdb7ce4beb63d373d13ea159049419e7d5032748900d46a677550",
+        "source_family": "accessibility",
+        "source_id": "github-repository:273499522",
+        "source_span": "line 30",
+        "source_span_sha256": "5da20e8f38cb83b10cf0077d77406eacd89a6e912fd58f7f477e00e3f439486f",
+        "source_uri": "https://github.com/radix-ui/primitives"
+      },
+      "required_terms": [
+        "accessibility"
+      ],
+      "stressors": [
+        "scientific-casing",
+        "domain-depth-obligations",
+        "latency-pressure"
+      ],
+      "tags": [
+        "release-corpus",
+        "accessibility",
+        "github-metadata",
+        "source-evidence-only"
+      ]
+    },
+    {
+      "case_id": "release-accessibility-005-source",
+      "input_style": "thin_request",
+      "leakage_terms": [
+        "mui/base-ui"
+      ],
+      "name": "accessibility source case 5",
+      "prompt": "Build an accessibility design-system conformance workspace grounded in this public source anchor. Source repository: mui/base-ui. Source evidence: Unstyled UI components for building accessible web apps and design systems. From the creators of Radix, Floating UI, and Material UI. The source is background evidence, not a runtime dependency or certification authority. Human actors are the design-system maintainer, component author, accessibility reviewer, QA engineer, and release manager. The one governed state object is a component conformance record. The five product systems are the component catalog, evidence workspace, review queue, test-results adapter, and release dashboard. First complete path: the component author opens a component conformance record; the design-system maintainer associates the component and intended interaction contract; the QA engineer records keyboard and assistive-technology results; the accessibility reviewer records a conformance disposition; and the release manager verifies the published release status. Safety boundaries: the product must preserve cited evidence without claiming automated accessibility certification; only the accessibility reviewer may record the conformance disposition; and draft evidence must remain private until the release manager publishes the status.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "bounded-source-grounded-product-intent-curation-v1",
+        "derived_prompt_sha256": "cc48cb11c269ca77afdcfc78dbfa77ade3b834fbd317ee912b0a8064d7fcd017",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/accessibility-03-mui-base-ui.json",
+        "source_artifact_sha256": "c73df265d05b53b692d95ce665d7ac4f4235191bf1c67348fae6a0ed3fdf104b",
+        "source_excerpt": "Unstyled UI components for building accessible web apps and design systems. From the creators of Radix, Floating UI, and Material UI.",
+        "source_excerpt_sha256": "43d50c540bfd8a231a220196eefbfac3da300acdaf3dc8b543b6d4a548fc79f2",
+        "source_family": "accessibility",
+        "source_id": "github-repository:762289766",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/mui/base-ui"
+      },
+      "required_terms": [
+        "accessibility",
+        "component conformance record",
+        "assistive-technology results",
+        "conformance disposition",
+        "release status"
+      ],
+      "stressors": [
+        "multi-role-tribunal",
+        "final-memory-pressure",
+        "modal-expert-lens"
+      ],
+      "tags": [
+        "release-corpus",
+        "accessibility",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-accessibility-006-source",
+      "expectation": "clarification_required",
+      "input_style": "direct_request",
+      "leakage_terms": [
+        "radix-ui/themes"
+      ],
+      "name": "accessibility source case 6",
+      "prompt": "Create an accessibility product. Source repository: radix-ui/themes. Source evidence: Radix Themes is an open-source component library optimized for fast development, easy maintenance, and accessibility. Maintained by @workos.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "0ff09d6142e308d429393e1e04d139ba96c8f1519b73c01c0d24a25dcd2fcbe3",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/accessibility-04-radix-ui-themes.json",
+        "source_artifact_sha256": "d6d2cd12b9e94ac9972434927881ac0ad086effb3b6af9e897b41b0d569f1d03",
+        "source_excerpt": "Radix Themes is an open-source component library optimized for fast development, easy maintenance, and accessibility. Maintained by @workos.",
+        "source_excerpt_sha256": "8bf85a0b6cdbf7b11aeeecc4ac048483a2f66132f386c43974d059f32ab30601",
+        "source_family": "accessibility",
+        "source_id": "github-repository:654115547",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/radix-ui/themes"
+      },
+      "required_terms": [
+        "accessibility"
+      ],
+      "stressors": [
+        "long-first-path",
+        "atlas-label-pressure",
+        "path-grant"
+      ],
+      "tags": [
+        "release-corpus",
+        "accessibility",
+        "github-metadata",
+        "source-evidence-only"
+      ]
+    },
+    {
+      "case_id": "release-accessibility-007-source",
+      "confirmed_intent_markdown": "# Accessibility Source Product\n\n## Product Story\nThis product helps accessibility teams carry out the explicitly supplied first path.\n\n## Source Evidence\nRepository: unovue/reka-ui\nAn open-source UI component library for building high-quality, accessible design systems and web apps for Vue. Previously Radix Vue\n\n## First Complete Path\nA case manager creates an eligibility record, routes a service decision, and verifies a resolution notice.\n\n## Proof Boundary\nThe source evidence, decision, and outcome remain traceable.",
+      "input_style": "edited_confirmation",
+      "leakage_terms": [
+        "unovue/reka-ui"
+      ],
+      "name": "accessibility source case 7",
+      "prompt": "Create a reviewed accessibility product. User intent: A case manager creates an eligibility record, routes a service decision, and verifies a resolution notice. Source repository: unovue/reka-ui. Source evidence: An open-source UI component library for building high-quality, accessible design systems and web apps for Vue. Previously Radix Vue",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "30cfc8573c24fc0d13f7f9d45637717e72b66da94f08d4d0acda4aeca8c7e9a9",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/accessibility-05-unovue-reka-ui.json",
+        "source_artifact_sha256": "fd04f85850f264bc9ed914d9d143b8c377918a116ab747ca1b5c8eb6af409b9d",
+        "source_excerpt": "An open-source UI component library for building high-quality, accessible design systems and web apps for Vue. Previously Radix Vue",
+        "source_excerpt_sha256": "b7dbc11bc8a0f2a2796df456da51bb8132a32ee4555e206f76e06b61cb72efe9",
+        "source_family": "accessibility",
+        "source_id": "github-repository:657119460",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/unovue/reka-ui"
+      },
+      "required_terms": [
+        "accessibility",
+        "eligibility record",
+        "service decision",
+        "resolution notice"
+      ],
+      "stressors": [
+        "domain-depth-obligations",
+        "registry-contract-pressure",
+        "noun-verb-homonym"
+      ],
+      "tags": [
+        "release-corpus",
+        "accessibility",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-agriculture-021-description",
+      "input_style": "direct_request",
+      "leakage_terms": [
+        "microsoft/farmvibes-ai"
+      ],
+      "metamorphic_group": "github-repository-533452400-pair",
+      "metamorphic_transform": "description_evidence",
+      "name": "agriculture source case 21",
+      "prompt": "Create an agriculture product. User intent: A service coordinator opens an intake request, assigns a resolution owner, and verifies a decision receipt. Source repository: microsoft/farmvibes-ai. Source evidence: FarmVibes.AI: Multi-Modal GeoSpatial ML Models for Agriculture and Sustainability",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "20b324cdd0766802aa1d1279e6df1f4221c73e63c2e5a0c7ca89279ffbbd7455",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/agriculture-01-microsoft-farmvibes-ai.json",
+        "source_artifact_sha256": "df4d19be342ebca32ea380aba29cba43bf591ebc6d91fc15c8b53f02a1921688",
+        "source_excerpt": "FarmVibes.AI: Multi-Modal GeoSpatial ML Models for Agriculture and Sustainability",
+        "source_excerpt_sha256": "172e6ad747dc4417e9ac85f69fc414ffabf225a3ceb5213acabd99baf7e0e780",
+        "source_family": "agriculture",
+        "source_id": "github-repository:533452400",
+        "source_span": "line 19",
+        "source_span_sha256": "241e96739aa5407949250aa948345acb45d3c83f34f12a7e7b43f6fb54138d73",
+        "source_uri": "https://github.com/microsoft/farmvibes-ai"
+      },
+      "required_terms": [
+        "agriculture",
+        "intake request",
+        "resolution owner",
+        "decision receipt"
+      ],
+      "stressors": [
+        "registry-contract-pressure",
+        "path-grant",
+        "long-first-path"
+      ],
+      "tags": [
+        "release-corpus",
+        "agriculture",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-agriculture-024-topic",
+      "expectation": "clarification_required",
+      "input_style": "research_evidence",
+      "leakage_terms": [
+        "geezacoleman/OpenWeedLocator"
+      ],
+      "metamorphic_group": "github-repository-399194159-pair",
+      "metamorphic_transform": "topic_evidence",
+      "name": "agriculture source case 24",
+      "prompt": "Create an agriculture product from this research evidence. Source repository: geezacoleman/OpenWeedLocator. Source evidence: agriculture. Repository description: An open-source, low-cost, image-based weed detection device for in-crop and fallow scenarios.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "7a08de5a75e9e86d2d5f170ed8fff6e43cc8120b36342dcbf6b77bb4b2fdd79b",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/agriculture-02-geezacoleman-openweedlocator.json",
+        "source_artifact_sha256": "73238eb8ddde55731df43983245888e67c736c3b7875eb6d3c9b70c4da005d5c",
+        "source_excerpt": "agriculture",
+        "source_excerpt_sha256": "3f52a423f8ebd4ccad56c627fa1287d3286e15e20968d590bfbbbb6d53162a1c",
+        "source_family": "agriculture",
+        "source_id": "github-repository:399194159",
+        "source_span": "line 30",
+        "source_span_sha256": "5da20e8f38cb83b10cf0077d77406eacd89a6e912fd58f7f477e00e3f439486f",
+        "source_uri": "https://github.com/geezacoleman/OpenWeedLocator"
+      },
+      "required_terms": [
+        "agriculture"
+      ],
+      "stressors": [
+        "path-grant",
+        "multi-role-tribunal",
+        "atlas-label-pressure"
+      ],
+      "tags": [
+        "release-corpus",
+        "agriculture",
+        "github-metadata",
+        "source-evidence-only"
+      ]
+    },
+    {
+      "case_id": "release-agriculture-037-source",
+      "confirmed_intent_markdown": "# Climate and Agriculture Impact Briefing Workspace\n\n## Product Outcome\nAgriculture teams need a traceable way to assemble a climate-and-crop impact briefing, review the scientific evidence, and publish an approved briefing without presenting provisional analysis as established fact.\n\n## Source Evidence\nRepository: WorldWindLabs/AgroSphere\n\nAn educational web application that visualizes the effects of climate change on agriculture using a large collection of global agriculture and weather station data.\n\nThis repository description is background evidence. It does not authorize code reuse, data access, or a runtime integration.\n\n## Human Actors\n1. An agricultural data steward registers the cited crop and weather datasets.\n2. A crop scientist interprets the crop-impact evidence.\n3. A climate analyst interprets the weather and climate evidence.\n4. A scientific reviewer records the evidence disposition.\n5. A publication manager publishes the approved briefing.\n\n## Governed State\nThe single governed state object is an impact briefing dossier that carries source citations, analysis notes, review disposition, and publication status.\n\n## Product Systems\n1. A dataset catalog records cited crop and weather sources.\n2. A climate-series workspace holds the selected station observations.\n3. A crop-impact analysis workspace records interpretations and visual evidence.\n4. A scientific review queue records questions and dispositions.\n5. A briefing portal publishes only approved dossiers.\n\n## First Complete Path\nThe agricultural data steward opens an impact briefing dossier and attaches cited crop and weather sources. The climate analyst records the climate-series interpretation, the crop scientist records the crop-impact interpretation, the scientific reviewer records an evidence disposition, and the publication manager verifies and publishes the approved briefing.\n\n## Non-Material Ambiguities\nRecord these as non-material ambiguities and use the supplied defaults without asking a question: the default map viewport may begin at the source dataset's broadest shared region; the visualization palette may use the product's accessible default; and exported briefing filenames may use the dossier identifier plus publication date.\n\n## Safety Boundaries\n1. Preserve source citations and observation dates on every published chart.\n2. Do not claim that repository metadata grants code, dataset, or service access.\n3. Keep raw analyst notes private until the scientific reviewer accepts them.\n4. Never present a modeled crop impact as an observed fact.\n5. Never present correlation as causation.\n6. Only the scientific reviewer may record the evidence disposition.\n7. Only the publication manager may publish an approved briefing.\n8. A changed source observation must invalidate the affected review disposition before republication.\n9. Published briefings must retain the dossier revision and evidence lineage needed for audit.\n\n## Proof\nSuccess is a published briefing whose dossier shows the cited datasets, both specialist interpretations, the scientific review disposition, the approving publication action, and the final publication status.",
+      "input_style": "edited_confirmation",
+      "leakage_terms": [
+        "WorldWindLabs/AgroSphere"
+      ],
+      "name": "agriculture source case 37",
+      "prompt": "Create a reviewed climate-and-agriculture impact briefing workspace grounded in WorldWindLabs/AgroSphere. Source evidence: An educational web application that visualizes the effects of climate change on agriculture using a large collection of global agriculture and weather station data. The attached reviewed intent is the operator-authoritative product specification; repository metadata is background evidence only.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "bounded-source-grounded-product-intent-curation-v1",
+        "derived_prompt_sha256": "b8d2a2c42c03a3d0beb0b7079a31ac5b1a55bd392034833e05d62b76700fd114",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/agriculture-15-worldwindlabs-agrosphere.json",
+        "source_artifact_sha256": "54ec7a079574208f6001259f608dc4138c945c997cffc599f7b7473cdbc66e53",
+        "source_excerpt": "An educational web application that visualizes the effects of climate change on agriculture using a large collection of global agriculture and weather station data.",
+        "source_excerpt_sha256": "97ae54da5a3754e5bde62a883a0f644fbb95b1b1ee9526b1782353cace75b394",
+        "source_family": "agriculture",
+        "source_id": "github-repository:95944831",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/WorldWindLabs/AgroSphere"
+      },
+      "required_terms": [
+        "agriculture",
+        "impact briefing dossier",
+        "crop-impact interpretation",
+        "evidence disposition",
+        "publication status"
+      ],
+      "stressors": [
+        "scientific-casing",
+        "domain-depth-obligations",
+        "latency-pressure"
+      ],
+      "tags": [
+        "release-corpus",
+        "agriculture",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-agriculture-030-source",
+      "expectation": "clarification_required",
+      "input_style": "thin_request",
+      "leakage_terms": [
+        "kazulagi/plantFEM"
+      ],
+      "name": "agriculture source case 30",
+      "prompt": "Build an agriculture product. Source repository: kazulagi/plantFEM. Source evidence: This is a plant/farming simulator based on Finite Element Method, which targets crops in fields and soil foundations. This software provides multi-physical simulations of agriculture for canopies, plants, and organs for farmers, breeders, agronomists, and civil engineers. Please try and give us feedback.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "fb8626c975f45fe399413c3bc009a0377faadde0332a19e8f40fae22e0dbf6db",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/agriculture-08-kazulagi-plantfem.json",
+        "source_artifact_sha256": "8d1b92ea356918615e8d22ea4118213a494dbc08cd03596106917d1d8c330242",
+        "source_excerpt": "This is a plant/farming simulator based on Finite Element Method, which targets crops in fields and soil foundations. This software provides multi-physical simulations of agriculture for canopies, plants, and organs for farmers, breeders, agronomists, and civil engineers. Please try and give us feedback.",
+        "source_excerpt_sha256": "f7fcd50902e276792c1da4a91af3c69e4c6bc6d481f7a55721320ac8271581aa",
+        "source_family": "agriculture",
+        "source_id": "github-repository:210179111",
+        "source_span": "line 21",
+        "source_span_sha256": "56d8c3b4efd3b0aced4d96d7c85b9c75fd779a324b3a7794bdf347b09f096f8a",
+        "source_uri": "https://github.com/kazulagi/plantFEM"
+      },
+      "required_terms": [
+        "agriculture"
+      ],
+      "stressors": [
+        "final-memory-pressure",
+        "latency-pressure",
+        "scientific-casing"
+      ],
+      "tags": [
+        "release-corpus",
+        "agriculture",
+        "github-metadata",
+        "source-evidence-only"
+      ]
+    },
+    {
+      "case_id": "release-civic-tech-041-description",
+      "input_style": "direct_request",
+      "leakage_terms": [
+        "civictechindex/CTI-website-frontend"
+      ],
+      "metamorphic_group": "github-repository-241519642-pair",
+      "metamorphic_transform": "description_evidence",
+      "name": "civic-tech source case 41",
+      "prompt": "Create a civic-tech product. User intent: A service coordinator opens an intake request, assigns a resolution owner, and verifies a decision receipt. Source repository: civictechindex/CTI-website-frontend. Source evidence: Join a worldwide movement to catalog every open source civic tech project.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "b6e20ec8abf9b8e8342a70ba7599fb2a3def4f04d65ca2c4c749539a97417978",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/civic-tech-01-civictechindex-cti-website-frontend.json",
+        "source_artifact_sha256": "a994727be3608e9c2b5325d9d0ad0f969ed30a7314d8c64de1c92efde912a4e0",
+        "source_excerpt": "Join a worldwide movement to catalog every open source civic tech project.",
+        "source_excerpt_sha256": "f622003eb62c7b0fe6152ab9364c81240d28856d4999b6557599ade4780b21f6",
+        "source_family": "civic-tech",
+        "source_id": "github-repository:241519642",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/civictechindex/CTI-website-frontend"
+      },
+      "required_terms": [
+        "civic-tech",
+        "intake request",
+        "resolution owner",
+        "decision receipt"
+      ],
+      "stressors": [
+        "final-memory-pressure",
+        "latency-pressure",
+        "scientific-casing"
+      ],
+      "tags": [
+        "release-corpus",
+        "civic-tech",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-civic-tech-044-topic",
+      "expectation": "clarification_required",
+      "input_style": "research_evidence",
+      "leakage_terms": [
+        "codeforamerica/civic-tech-taxonomy"
+      ],
+      "metamorphic_group": "github-repository-72879182-pair",
+      "metamorphic_transform": "topic_evidence",
+      "name": "civic-tech source case 44",
+      "prompt": "Create a civic-tech product from this research evidence. Source repository: codeforamerica/civic-tech-taxonomy. Source evidence: civic-tech. Repository description: Standardized identifiers for categorizing civic technology projects",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "0b27f5dcf6dba5b19b482243f7c2c4a1d82d30bc5cc055b9d2dce6c0c8c0e7fb",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/civic-tech-02-codeforamerica-civic-tech-taxonomy.json",
+        "source_artifact_sha256": "32ac58d1bb32ced99c0234e905d80759688296339f7f7499f208eae55c5eaeb1",
+        "source_excerpt": "civic-tech",
+        "source_excerpt_sha256": "aba7dc464d51939944588fa9673476286b47581b1bb58877710797ba273e6d2b",
+        "source_family": "civic-tech",
+        "source_id": "github-repository:72879182",
+        "source_span": "line 30",
+        "source_span_sha256": "5da20e8f38cb83b10cf0077d77406eacd89a6e912fd58f7f477e00e3f439486f",
+        "source_uri": "https://github.com/codeforamerica/civic-tech-taxonomy"
+      },
+      "required_terms": [
+        "civic-tech"
+      ],
+      "stressors": [
+        "latency-pressure",
+        "noun-verb-homonym",
+        "domain-depth-obligations"
+      ],
+      "tags": [
+        "release-corpus",
+        "civic-tech",
+        "github-metadata",
+        "source-evidence-only"
+      ]
+    },
+    {
+      "case_id": "release-civic-tech-045-source",
+      "input_style": "thin_request",
+      "leakage_terms": [
+        "ChronalLabs/ChronOS"
+      ],
+      "name": "civic-tech source case 45",
+      "prompt": "Build a civic-tech product. User intent: A field operator submits an exception packet, records an approval outcome, and verifies a public status. Source repository: ChronalLabs/ChronOS. Source evidence: ChronalLabs is an open-source civic-technology initiative focused on building practical, scalable tools that solve real-world public challenges. This repository serves as the central coordination hub for our Google Summer of Code (GSoC) project ideas, contributor guidelines, architectural discussions, and long-term civic-tech roadmap.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "0681508f86837a9ee5a875af6eba384d6fa4d9498c8495084a7ec7e8cdb3bea9",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/civic-tech-03-chronallabs-chronos.json",
+        "source_artifact_sha256": "fee634973e573cf2d2b442180f82d1187fb2f56052880a330fabb5167e0cee9b",
+        "source_excerpt": "ChronalLabs is an open-source civic-technology initiative focused on building practical, scalable tools that solve real-world public challenges. This repository serves as the central coordination hub for our Google Summer of Code (GSoC) project ideas, contributor guidelines, architectural discussions, and long-term civic-tech roadmap.",
+        "source_excerpt_sha256": "a002998ab12267e50e6ff9f7be639bdd90cd3c29e4120fc5a7124709d4c43a21",
+        "source_family": "civic-tech",
+        "source_id": "github-repository:1139170409",
+        "source_span": "line 19",
+        "source_span_sha256": "241e96739aa5407949250aa948345acb45d3c83f34f12a7e7b43f6fb54138d73",
+        "source_uri": "https://github.com/ChronalLabs/ChronOS"
+      },
+      "required_terms": [
+        "civic-tech",
+        "exception packet",
+        "approval outcome",
+        "public status"
+      ],
+      "stressors": [
+        "modal-expert-lens",
+        "scientific-casing",
+        "final-memory-pressure"
+      ],
+      "tags": [
+        "release-corpus",
+        "civic-tech",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-civic-tech-057-source",
+      "confirmed_intent_markdown": "# Civic Participation Insights Workspace\n\n## Product Outcome\nA civic participation team needs to collect an opinion submission, review its consent and moderation state, derive a bounded aggregate insight, and publish that insight without exposing contributor identity or claiming government authority.\n\n## Source Evidence\nRepository: NewJerseyStyle/LitePolis\n\nThe package manager of a Customizable e-democracy opinion collection and insight mining system. Built using Python and optimized for scalability and performance.\n\nThis repository description is background evidence. It does not authorize code reuse, data access, or a runtime integration.\n\n## Human Actors\n1. A resident contributor submits an opinion with an explicit publication choice.\n2. A community facilitator defines the participation prompt and audience.\n3. A moderation reviewer records the moderation disposition.\n4. A civic analyst produces an aggregate insight from eligible submissions.\n5. A publication editor publishes the approved insight.\n\n## Governed State\nThe single governed state object is a participation insight dossier carrying the participation prompt, consent state, moderated submissions, aggregate analysis, review disposition, and publication status.\n\n## Product Systems\n1. A contribution portal receives opinion submissions and publication choices.\n2. A consent registry preserves each contributor's choice.\n3. A moderation queue records review dispositions.\n4. An aggregate analysis workspace produces reviewable insight evidence.\n5. A publication portal exposes only approved aggregate insights.\n\n## First Complete Path\nThe community facilitator opens a participation insight dossier and publishes the participation prompt. A resident contributor submits an opinion and publication choice, the moderation reviewer records a disposition, the civic analyst records an aggregate insight using eligible submissions, and the publication editor verifies the review evidence and publishes the approved insight.\n\n## Non-Material Ambiguities\nRecord these as non-material ambiguities and use the supplied defaults without asking a question: contribution cards may use chronological ordering; an aggregate chart may begin with the product's accessible color palette; and the public insight URL may use the dossier identifier.\n\n## Safety Boundaries\n1. Never publish a contributor's identity with an opinion submission.\n2. Exclude submissions without an affirmative publication choice from public evidence.\n3. Preserve the original participation prompt with each aggregate insight.\n4. Do not infer demographic attributes that contributors did not supply for the stated purpose.\n5. Keep moderation notes private.\n6. Only the moderation reviewer may record the moderation disposition.\n7. Only the publication editor may publish an aggregate insight.\n8. Do not represent the product, facilitator, or insight as an official government decision.\n9. A withdrawn publication choice must remove that submission from future aggregates and invalidate affected unpublished analysis.\n\n## Proof\nSuccess is a published aggregate insight whose dossier proves the participation prompt, contributor publication choice, moderation disposition, bounded analysis inputs, editor approval, and final publication status without revealing contributor identity.",
+      "input_style": "edited_confirmation",
+      "leakage_terms": [
+        "NewJerseyStyle/LitePolis"
+      ],
+      "name": "civic-tech source case 57",
+      "prompt": "Create a reviewed civic participation insights workspace grounded in NewJerseyStyle/LitePolis. Source evidence: The package manager of a Customizable e-democracy opinion collection and insight mining system. Built using Python and optimized for scalability and performance. The attached reviewed intent is the operator-authoritative product specification; repository metadata is background evidence only.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "bounded-source-grounded-product-intent-curation-v1",
+        "derived_prompt_sha256": "23e6bcc0b2c567529e4c0f9cc3547a4b8e3bee45f1a065c969379fcd63094856",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/civic-tech-15-newjerseystyle-litepolis.json",
+        "source_artifact_sha256": "7a5211261988a7cfbaa86ad3f4f74c8680d247adb90000ca36d23839ce5a1201",
+        "source_excerpt": "The package manager of a Customizable e-democracy opinion collection and insight mining system. Built using Python and optimized for scalability and performance.",
+        "source_excerpt_sha256": "4f2c5b9aa177f499ee18007e62189a2ec5491992855ba94c6204725eab73ad95",
+        "source_family": "civic-tech",
+        "source_id": "github-repository:789479462",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/NewJerseyStyle/LitePolis"
+      },
+      "required_terms": [
+        "civic participation",
+        "participation insight dossier",
+        "moderation disposition",
+        "aggregate insight",
+        "publication status"
+      ],
+      "stressors": [
+        "path-grant",
+        "multi-role-tribunal",
+        "atlas-label-pressure"
+      ],
+      "tags": [
+        "release-corpus",
+        "civic-tech",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-climate-061-description",
+      "input_style": "direct_request",
+      "leakage_terms": [
+        "meteostat/meteostat"
+      ],
+      "metamorphic_group": "github-repository-285335799-pair",
+      "metamorphic_transform": "description_evidence",
+      "name": "climate source case 61",
+      "prompt": "Create a climate product. User intent: A service coordinator opens an intake request, assigns a resolution owner, and verifies a decision receipt. Source repository: meteostat/meteostat. Source evidence: Access and analyze historical weather and climate data with Python.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "12dcfd977082ee2440489495b5331f22863ada93e365761565a75f462e95aca9",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/climate-01-meteostat-meteostat.json",
+        "source_artifact_sha256": "96171916f966125d48cfc4fc5d157977ae8c17cb4044770c379388dcef6258b5",
+        "source_excerpt": "Access and analyze historical weather and climate data with Python.",
+        "source_excerpt_sha256": "ae1b0a004fcb3acd8af43aba7fc3db98ae4cd68fef875a9deeda43c994871df5",
+        "source_family": "climate",
+        "source_id": "github-repository:285335799",
+        "source_span": "line 19",
+        "source_span_sha256": "241e96739aa5407949250aa948345acb45d3c83f34f12a7e7b43f6fb54138d73",
+        "source_uri": "https://github.com/meteostat/meteostat"
+      },
+      "required_terms": [
+        "climate",
+        "intake request",
+        "resolution owner",
+        "decision receipt"
+      ],
+      "stressors": [
+        "long-first-path",
+        "atlas-label-pressure",
+        "path-grant"
+      ],
+      "tags": [
+        "release-corpus",
+        "climate",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-climate-064-topic",
+      "expectation": "clarification_required",
+      "input_style": "research_evidence",
+      "leakage_terms": [
+        "catalyst-cooperative/pudl"
+      ],
+      "metamorphic_group": "github-repository-80646423-pair",
+      "metamorphic_transform": "topic_evidence",
+      "name": "climate source case 64",
+      "prompt": "Create a climate product from this research evidence. Source repository: catalyst-cooperative/pudl. Source evidence: cems. Repository description: The Public Utility Data Liberation Project provides analysis-ready energy system data to climate advocates, researchers, policymakers, and journalists.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "0063c866eb5b49dcf44df7390f4c06a730fdae985f6aa212e6eed1a8047bccb3",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/climate-02-catalyst-cooperative-pudl.json",
+        "source_artifact_sha256": "dfd7f6dbd88dc4b848656fe5b5d437642f8d33df9de701e49379eb574abcd742",
+        "source_excerpt": "cems",
+        "source_excerpt_sha256": "5f79b2322616892b8215453a990b444b183a60078b51034c7a7074480bfcc743",
+        "source_family": "climate",
+        "source_id": "github-repository:80646423",
+        "source_span": "line 31",
+        "source_span_sha256": "82563f5857630b17d845a7c18275931a98d87a88faf38ad842722edc4c877958",
+        "source_uri": "https://github.com/catalyst-cooperative/pudl"
+      },
+      "required_terms": [
+        "climate"
+      ],
+      "stressors": [
+        "atlas-label-pressure",
+        "modal-expert-lens",
+        "multi-role-tribunal"
+      ],
+      "tags": [
+        "release-corpus",
+        "climate",
+        "github-metadata",
+        "source-evidence-only"
+      ]
+    },
+    {
+      "case_id": "release-climate-073-source",
+      "input_style": "pasted_brief",
+      "leakage_terms": [
+        "heigeo/climata"
+      ],
+      "name": "climate source case 73",
+      "prompt": "Create a climate and streamflow dataset publication workspace grounded in this public source anchor. Source repository: heigeo/climata. Source evidence: Python library for loading and iterating over climate and flow time series data (from ACIS/NOAA RCCs, CoCoRaHS, Hydromet/USBR, CNRFC ESP/NWS, SNOTEL/AWDB/NRCS, and NWIS/USGS). The source is background evidence, not a runtime dependency or scientific authority. Human actors are the data steward, hydrologist, climate analyst, QA reviewer, and publication manager. The one governed state object is a dataset publication dossier. The five product systems are the source catalog, time-series import workspace, validation workspace, review queue, and publication portal. First complete path: the data steward opens a dataset publication dossier and records a cited station series; the hydrologist checks streamflow interpretation; the climate analyst checks climate interpretation; the QA reviewer records a validation disposition; and the publication manager verifies and publishes the approved dataset publication status. Safety boundaries: every series must retain its source agency and observation period; automated loading must not be represented as scientific validation; and only a reviewed dossier may reach the publication portal.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "bounded-source-grounded-product-intent-curation-v1",
+        "derived_prompt_sha256": "5f7a6784cef57d3af9bf19984b635286b4063bd58cdca42e2bef1b130b8248be",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/climate-11-heigeo-climata.json",
+        "source_artifact_sha256": "d12262c21d985372c1e134429c4a92cd6c2c809916818ce2ae757cc9f3b8066f",
+        "source_excerpt": "Python library for loading and iterating over climate and flow time series data (from ACIS/NOAA RCCs, CoCoRaHS, Hydromet/USBR, CNRFC ESP/NWS, SNOTEL/AWDB/NRCS, and NWIS/USGS)",
+        "source_excerpt_sha256": "4a260d3873b145e8a0121fb85452712a7eca5df452eee3e9860a8b51612afb5d",
+        "source_family": "climate",
+        "source_id": "github-repository:13808834",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/heigeo/climata"
+      },
+      "required_terms": [
+        "climate",
+        "dataset publication dossier",
+        "station series",
+        "validation disposition",
+        "publication status"
+      ],
+      "stressors": [
+        "domain-depth-obligations",
+        "registry-contract-pressure",
+        "noun-verb-homonym"
+      ],
+      "tags": [
+        "release-corpus",
+        "climate",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-climate-069-source",
+      "input_style": "research_evidence",
+      "leakage_terms": [
+        "opennem/opennem"
+      ],
+      "name": "climate source case 69",
+      "prompt": "Create a climate product from this research evidence. User intent: A compliance lead opens a review file, confirms an evidence disposition, and verifies a release status. Source repository: opennem/opennem. Source evidence: Australian energy market data platform",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "7ee2cc0ca1f146f1d1bdb1015d088e949fcd5c42365b0242fd7523c0f13ef111",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/climate-07-opennem-opennem.json",
+        "source_artifact_sha256": "6831266e48d8c3f3d123cc2f88d0cca073027b5ef33f467727aff912f0bc8c33",
+        "source_excerpt": "Australian energy market data platform",
+        "source_excerpt_sha256": "29d7b833989d6308efd5eb6b18264e09e0cd88f8649d4944d2afc9019aced62d",
+        "source_family": "climate",
+        "source_id": "github-repository:270910358",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/opennem/opennem"
+      },
+      "required_terms": [
+        "climate",
+        "review file",
+        "evidence disposition",
+        "release status"
+      ],
+      "stressors": [
+        "noun-verb-homonym",
+        "long-first-path",
+        "registry-contract-pressure"
+      ],
+      "tags": [
+        "release-corpus",
+        "climate",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-education-081-description",
+      "input_style": "direct_request",
+      "leakage_terms": [
+        "microsoft/ML-For-Beginners"
+      ],
+      "metamorphic_group": "github-repository-343965132-pair",
+      "metamorphic_transform": "description_evidence",
+      "name": "education source case 81",
+      "prompt": "Create an education product. User intent: A service coordinator opens an intake request, assigns a resolution owner, and verifies a decision receipt. Source repository: microsoft/ML-For-Beginners. Source evidence: 12 weeks, 26 lessons, 52 quizzes, classic Machine Learning for all",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "6cce672b139f65b0dd0ac16c58394a73c1279a7ff1bd4d6c04d9bbff6a5584b7",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/education-01-microsoft-ml-for-beginners.json",
+        "source_artifact_sha256": "8abbe8203228e71a1240dae2950d35818d900859de42530f705a1ab6bf30c306",
+        "source_excerpt": "12 weeks, 26 lessons, 52 quizzes, classic Machine Learning for all",
+        "source_excerpt_sha256": "4a857ebed97a37e1d12c7feb2960e6e2d26551ccba3440dab91ec9e6a5f01f5d",
+        "source_family": "education",
+        "source_id": "github-repository:343965132",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/microsoft/ML-For-Beginners"
+      },
+      "required_terms": [
+        "education",
+        "intake request",
+        "resolution owner",
+        "decision receipt"
+      ],
+      "stressors": [
+        "scientific-casing",
+        "domain-depth-obligations",
+        "latency-pressure"
+      ],
+      "tags": [
+        "release-corpus",
+        "education",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-education-084-topic",
+      "expectation": "clarification_required",
+      "input_style": "research_evidence",
+      "leakage_terms": [
+        "s-matyukevich/raspberry-pi-os"
+      ],
+      "metamorphic_group": "github-repository-95133665-pair",
+      "metamorphic_transform": "topic_evidence",
+      "name": "education source case 84",
+      "prompt": "Create an education product from this research evidence. Source repository: s-matyukevich/raspberry-pi-os. Source evidence: arm. Repository description: Learning operating system development using Linux kernel and Raspberry Pi",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "c1f88fe88390703bdaab80088ac6d98f38e61974120e7bbf0dfcd31064139f6a",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/education-02-s-matyukevich-raspberry-pi-os.json",
+        "source_artifact_sha256": "8e5a82f2007a5b8b337df94f293a583c9ab05c2668379707d7356b46cc437c87",
+        "source_excerpt": "arm",
+        "source_excerpt_sha256": "ddf7ff5ebd9d66ce161466c1c0262430fa04de32b0e420ee3f489e2e2112e386",
+        "source_family": "education",
+        "source_id": "github-repository:95133665",
+        "source_span": "line 30",
+        "source_span_sha256": "5da20e8f38cb83b10cf0077d77406eacd89a6e912fd58f7f477e00e3f439486f",
+        "source_uri": "https://github.com/s-matyukevich/raspberry-pi-os"
+      },
+      "required_terms": [
+        "education"
+      ],
+      "stressors": [
+        "domain-depth-obligations",
+        "registry-contract-pressure",
+        "noun-verb-homonym"
+      ],
+      "tags": [
+        "release-corpus",
+        "education",
+        "github-metadata",
+        "source-evidence-only"
+      ]
+    },
+    {
+      "case_id": "release-education-085-source",
+      "input_style": "thin_request",
+      "leakage_terms": [
+        "mikesprague/udacity-nanodegrees"
+      ],
+      "name": "education source case 85",
+      "prompt": "Build an education product. User intent: A field operator submits an exception packet, records an approval outcome, and verifies a public status. Source repository: mikesprague/udacity-nanodegrees. Source evidence: :mortar_board: List of Udacity Nanodegree programs with links to the free courses in their curricula",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "811ff72845533f5aa13d352c67eed292a5b637c4417880a2701c50ee8389d6d0",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/education-03-mikesprague-udacity-nanodegrees.json",
+        "source_artifact_sha256": "d3a934a91991f9e10ab23bdc3882e7d0ce4f2050ed03146528e52f7ade1a16d7",
+        "source_excerpt": ":mortar_board: List of Udacity Nanodegree programs with links to the free courses in their curricula",
+        "source_excerpt_sha256": "8b27a1c9a0805d29b056bd690b8345c2fa1db50647a72303f9bec8fef7746e1e",
+        "source_family": "education",
+        "source_id": "github-repository:55358122",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/mikesprague/udacity-nanodegrees"
+      },
+      "required_terms": [
+        "education",
+        "exception packet",
+        "approval outcome",
+        "public status"
+      ],
+      "stressors": [
+        "final-memory-pressure",
+        "latency-pressure",
+        "scientific-casing"
+      ],
+      "tags": [
+        "release-corpus",
+        "education",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-education-086-source",
+      "expectation": "clarification_required",
+      "input_style": "direct_request",
+      "leakage_terms": [
+        "PetoiCamp/OpenCat-Quadruped-Robot"
+      ],
+      "name": "education source case 86",
+      "prompt": "Create an education product. Source repository: PetoiCamp/OpenCat-Quadruped-Robot. Source evidence: An open source quadruped robot pet framework for developing Boston Dynamics-style four-legged robots that are perfect for STEM, coding & robotics education, IoT robotics applications, AI-enhanced robotics application services, research, and DIY robotics kit development.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "87f7c29f882e9630f1df9862fb26c0d51227e3a1bb3bf8aefd5a7daf66d1a6b6",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/education-04-petoicamp-opencat-quadruped-robot.json",
+        "source_artifact_sha256": "490ac69f37a86fe5f074e48ac496930a56a5f2e7a47067498eda7e8d3da3dbdd",
+        "source_excerpt": "An open source quadruped robot pet framework for developing Boston Dynamics-style four-legged robots that are perfect for STEM, coding & robotics education, IoT robotics applications, AI-enhanced robotics application services, research, and DIY robotics kit development.",
+        "source_excerpt_sha256": "fd5469768416ce9f706f9b0f2b7af4a929b739aa44b30607512b95e433c42ff5",
+        "source_family": "education",
+        "source_id": "github-repository:326441188",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/PetoiCamp/OpenCat-Quadruped-Robot"
+      },
+      "required_terms": [
+        "education"
+      ],
+      "stressors": [
+        "atlas-label-pressure",
+        "modal-expert-lens",
+        "multi-role-tribunal"
+      ],
+      "tags": [
+        "release-corpus",
+        "education",
+        "github-metadata",
+        "source-evidence-only"
+      ]
+    },
+    {
+      "case_id": "release-healthcare-117-source",
+      "confirmed_intent_markdown": "# Healthcare Evidence Request Workspace\n\n## Product Outcome\nA healthcare evidence team needs to register a bounded clinical evidence question, collect cited public evidence, complete clinical and privacy review, and publish a reviewed evidence brief without turning research material into patient-specific medical advice.\n\n## Source Evidence\nRepository: Cicatriiz/healthcare-mcp-public\n\nA Model Context Protocol (MCP) server providing AI assistants with access to healthcare data and medical information tools, including FDA drug info, PubMed, medRxiv, NCBI Bookshelf, clinical trials, ICD-10, DICOM metadata, and a medical calculator.\n\nThis repository description is background evidence. It does not authorize code reuse, protected-health-data access, or a runtime integration.\n\n## Human Actors\n1. A research coordinator registers the bounded evidence question.\n2. A clinical librarian records cited source material.\n3. A clinician reviewer records the clinical evidence disposition.\n4. A privacy officer records the privacy disposition.\n5. A publication manager publishes the approved evidence brief.\n\n## Governed State\nThe single governed state object is a clinical evidence request dossier carrying the question, source citations, evidence synthesis, clinical disposition, privacy disposition, and publication status.\n\n## Product Systems\n1. An evidence source catalog records cited public sources.\n2. A query workspace records the bounded research question and search trail.\n3. An evidence synthesis workspace records findings and limitations.\n4. A clinical and privacy review queue records both dispositions.\n5. A publication portal exposes only approved evidence briefs.\n\n## First Complete Path\nThe research coordinator opens a clinical evidence request dossier. The clinical librarian records cited public evidence, the clinician reviewer records a clinical evidence disposition, the privacy officer records a privacy disposition, and the publication manager verifies both reviews and publishes the approved evidence brief.\n\n## Non-Material Ambiguities\nRecord these as non-material ambiguities and use the supplied defaults without asking a question: citations may use the product's standard medical bibliography style; evidence tables may default to newest publication first; and the public brief URL may use the dossier identifier.\n\n## Safety Boundaries\n1. Do not ingest or expose patient-identifiable information.\n2. Do not present the evidence brief as patient-specific diagnosis or treatment advice.\n3. Preserve every source citation and access date used in the synthesis.\n4. Distinguish preprints from peer-reviewed publications.\n5. Keep draft synthesis notes private until both reviews are recorded.\n6. Only the clinician reviewer may record the clinical evidence disposition.\n7. Only the privacy officer may record the privacy disposition.\n8. Only the publication manager may publish after both dispositions approve release.\n9. A retracted or materially changed source must invalidate affected unpublished synthesis and flag published briefs for review.\n\n## Proof\nSuccess is a published evidence brief whose dossier proves the bounded question, cited public sources, synthesis limitations, clinical disposition, privacy disposition, approving publication action, and final publication status.",
+      "input_style": "edited_confirmation",
+      "leakage_terms": [
+        "Cicatriiz/healthcare-mcp-public"
+      ],
+      "name": "healthcare source case 117",
+      "prompt": "Create a reviewed healthcare evidence request workspace grounded in Cicatriiz/healthcare-mcp-public. Source evidence: A Model Context Protocol (MCP) server providing AI assistants with access to healthcare data and medical information tools, including FDA drug info, PubMed, medRxiv, NCBI Bookshelf, clinical trials, ICD-10, DICOM metadata, and a medical calculator. The attached reviewed intent is the operator-authoritative product specification; repository metadata is background evidence only.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "bounded-source-grounded-product-intent-curation-v1",
+        "derived_prompt_sha256": "c85881eeb43f8e14b179ae49aa2aad2df48429ff10b681031ba100eaefce9481",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/healthcare-15-cicatriiz-healthcare-mcp-public.json",
+        "source_artifact_sha256": "0116dcda8d1050d8b34fb474efd75765fe154cf7d0b67f126fcf01b2ce170497",
+        "source_excerpt": "A Model Context Protocol (MCP) server providing AI assistants with access to healthcare data and medical information tools, including FDA drug info, PubMed, medRxiv, NCBI Bookshelf, clinical trials, ICD-10, DICOM metadata, and a medical calculator.",
+        "source_excerpt_sha256": "44ceec9e95808663849117a916a4bb4a829fc496fe15587ddae6c41970b8ef45",
+        "source_family": "healthcare",
+        "source_id": "github-repository:953682405",
+        "source_span": "line 20",
+        "source_span_sha256": "98c1b34b173a6b10749f3fbd406209bfd31c42873b94d255e5a5448142dc9880",
+        "source_uri": "https://github.com/Cicatriiz/healthcare-mcp-public"
+      },
+      "required_terms": [
+        "healthcare",
+        "clinical evidence request dossier",
+        "clinical evidence disposition",
+        "privacy disposition",
+        "publication status"
+      ],
+      "stressors": [
+        "domain-depth-obligations",
+        "registry-contract-pressure",
+        "noun-verb-homonym"
+      ],
+      "tags": [
+        "release-corpus",
+        "healthcare",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-healthcare-104-topic",
+      "expectation": "clarification_required",
+      "input_style": "research_evidence",
+      "leakage_terms": [
+        "sunlabuiuc/PyHealth"
+      ],
+      "metamorphic_group": "github-repository-284780206-pair",
+      "metamorphic_transform": "topic_evidence",
+      "name": "healthcare source case 104",
+      "prompt": "Create a healthcare product from this research evidence. Source repository: sunlabuiuc/PyHealth. Source evidence: clinical-data. Repository description: A Deep Learning Python Toolkit for Healthcare Applications.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "f6510cd2ad4689f62f74df9113327f283c049de220ca22d4147026607e81eac2",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/healthcare-02-sunlabuiuc-pyhealth.json",
+        "source_artifact_sha256": "dea6e1e26ca2f0373086d37528807e1372f2fb127182004f5d3fcc81e9ec3aa1",
+        "source_excerpt": "clinical-data",
+        "source_excerpt_sha256": "5490c06140bd564bc3e5e699899bf39a9d8301075024ff3556093618a4c37968",
+        "source_family": "healthcare",
+        "source_id": "github-repository:284780206",
+        "source_span": "line 30",
+        "source_span_sha256": "5da20e8f38cb83b10cf0077d77406eacd89a6e912fd58f7f477e00e3f439486f",
+        "source_uri": "https://github.com/sunlabuiuc/PyHealth"
+      },
+      "required_terms": [
+        "healthcare"
+      ],
+      "stressors": [
+        "multi-role-tribunal",
+        "final-memory-pressure",
+        "modal-expert-lens"
+      ],
+      "tags": [
+        "release-corpus",
+        "healthcare",
+        "github-metadata",
+        "source-evidence-only"
+      ]
+    },
+    {
+      "case_id": "release-healthcare-108-source",
+      "expectation": "clarification_required",
+      "input_style": "pasted_brief",
+      "leakage_terms": [
+        "amberkakkar01/Health-Care-Chatbot"
+      ],
+      "name": "healthcare source case 108",
+      "prompt": "Project brief for a healthcare team. Source repository: amberkakkar01/Health-Care-Chatbot. Source evidence: It is a medical chatbot that will provide quick answers to FAQs by setting up rule-based keyword chatbots.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "3f1d79a86046aa7c05323b46db58a64311b5ebdd3f397e9aba32b77f14a1fd8f",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/healthcare-06-amberkakkar01-health-care-chatbot.json",
+        "source_artifact_sha256": "baa7aa7c8a11a32e4af89673f6253a6dd72807a252b3c67adeb955b6fe22bac0",
+        "source_excerpt": "It is a medical chatbot that will provide quick answers to FAQs by setting up rule-based keyword chatbots.",
+        "source_excerpt_sha256": "a8dc6b67d430ecdfd30b9b85e326bc9f373abd3672848f50a550d7bd907d5b49",
+        "source_family": "healthcare",
+        "source_id": "github-repository:336295638",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/amberkakkar01/Health-Care-Chatbot"
+      },
+      "required_terms": [
+        "healthcare"
+      ],
+      "stressors": [
+        "atlas-label-pressure",
+        "modal-expert-lens",
+        "multi-role-tribunal"
+      ],
+      "tags": [
+        "release-corpus",
+        "healthcare",
+        "github-metadata",
+        "source-evidence-only"
+      ]
+    },
+    {
+      "case_id": "release-healthcare-109-source",
+      "input_style": "research_evidence",
+      "leakage_terms": [
+        "ohcnetwork/care"
+      ],
+      "name": "healthcare source case 109",
+      "prompt": "Create a healthcare product from this research evidence. User intent: A compliance lead opens a review file, confirms an evidence disposition, and verifies a release status. Source repository: ohcnetwork/care. Source evidence: Care is a Digital Public Good enabling Decentralized Administration of Healthcare.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "7b493f0cbf35f4c476d0ddf818ac5c135f8a83b124f708620a4e5a4b1f202a24",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/healthcare-07-ohcnetwork-care.json",
+        "source_artifact_sha256": "4d2f220e7167a40ac854cbaeeb59409b6659a3ba513d7fb130cec5ab29da1cae",
+        "source_excerpt": "Care is a Digital Public Good enabling Decentralized Administration of Healthcare.",
+        "source_excerpt_sha256": "af5b77fdd5297e60c256a3fdefce549e12375f5af501a58884d46760b0a95c32",
+        "source_family": "healthcare",
+        "source_id": "github-repository:247995671",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/ohcnetwork/care"
+      },
+      "required_terms": [
+        "healthcare",
+        "review file",
+        "evidence disposition",
+        "release status"
+      ],
+      "stressors": [
+        "registry-contract-pressure",
+        "path-grant",
+        "long-first-path"
+      ],
+      "tags": [
+        "release-corpus",
+        "healthcare",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-mobility-121-description",
+      "input_style": "direct_request",
+      "leakage_terms": [
+        "conveyal/transitive.js"
+      ],
+      "metamorphic_group": "github-repository-13044127-pair",
+      "metamorphic_transform": "description_evidence",
+      "name": "mobility source case 121",
+      "prompt": "Create a mobility product. User intent: A service coordinator opens an intake request, assigns a resolution owner, and verifies a decision receipt. Source repository: conveyal/transitive.js. Source evidence: Transit data visualization",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "27501828ca930af9667d12c27cd8693d9387049e64f06fa04d9a3db7c00d65fd",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/mobility-01-conveyal-transitive-js.json",
+        "source_artifact_sha256": "98b8dc7afd99c70bf335e0de83b50f3d4a78126deb4cbbf4eca99befa0b565c3",
+        "source_excerpt": "Transit data visualization",
+        "source_excerpt_sha256": "2763d1311cdaa8d2eb59ef5e8cf54fd46e181a1d875054a52db677ae8a6290e6",
+        "source_family": "mobility",
+        "source_id": "github-repository:13044127",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/conveyal/transitive.js"
+      },
+      "required_terms": [
+        "mobility",
+        "intake request",
+        "resolution owner",
+        "decision receipt"
+      ],
+      "stressors": [
+        "latency-pressure",
+        "noun-verb-homonym",
+        "domain-depth-obligations"
+      ],
+      "tags": [
+        "release-corpus",
+        "mobility",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-mobility-124-topic",
+      "expectation": "clarification_required",
+      "input_style": "research_evidence",
+      "leakage_terms": [
+        "TUDelft-CNS-ATM/bluesky"
+      ],
+      "metamorphic_group": "github-repository-33261270-pair",
+      "metamorphic_transform": "topic_evidence",
+      "name": "mobility source case 124",
+      "prompt": "Create a mobility product from this research evidence. Source repository: TUDelft-CNS-ATM/bluesky. Source evidence: air-traffic-control. Repository description: The open source air traffic simulator",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "2b50c226d03481a82a9b757ebcb68ae9b325f2e1b321414750f900e543634054",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/mobility-02-tudelft-cns-atm-bluesky.json",
+        "source_artifact_sha256": "58d64e248d3635f6af527300e7223935503f851cac049cfe0bfb0aef3db6e1c9",
+        "source_excerpt": "air-traffic-control",
+        "source_excerpt_sha256": "076a33c9195228ef8f63159243d900a8efb7cdf296756bb47dcf1154bf6d2aac",
+        "source_family": "mobility",
+        "source_id": "github-repository:33261270",
+        "source_span": "line 30",
+        "source_span_sha256": "5da20e8f38cb83b10cf0077d77406eacd89a6e912fd58f7f477e00e3f439486f",
+        "source_uri": "https://github.com/TUDelft-CNS-ATM/bluesky"
+      },
+      "required_terms": [
+        "mobility"
+      ],
+      "stressors": [
+        "noun-verb-homonym",
+        "long-first-path",
+        "registry-contract-pressure"
+      ],
+      "tags": [
+        "release-corpus",
+        "mobility",
+        "github-metadata",
+        "source-evidence-only"
+      ]
+    },
+    {
+      "case_id": "release-mobility-125-source",
+      "input_style": "thin_request",
+      "leakage_terms": [
+        "conveyal/r5"
+      ],
+      "name": "mobility source case 125",
+      "prompt": "Build a mobility scenario accessibility review workspace grounded in this public source anchor. Source repository: conveyal/r5. Source evidence: Developed to power Conveyal's web-based interface for scenario planning and land-use/transport accessibility analysis, R5 is our routing engine for multimodal (transit/bike/walk/car) networks with a particular focus on public transit. The source is background evidence, not a runtime dependency or routing authority. Human actors are the transit planner, land-use analyst, network data steward, accessibility reviewer, and publication manager. The one governed state object is a scenario analysis dossier. The five product systems are the network catalog, scenario editor, routing-results adapter, accessibility review queue, and results portal. First complete path: the transit planner opens a scenario analysis dossier; the network data steward associates the network snapshot; the land-use analyst records the land-use assumptions; the accessibility reviewer records a scenario disposition; and the publication manager verifies and publishes the approved result status. Safety boundaries: every result must retain the network snapshot and scenario assumptions; modeled accessibility must not be represented as observed service performance; and only a reviewed dossier may reach the results portal.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "bounded-source-grounded-product-intent-curation-v1",
+        "derived_prompt_sha256": "81271aff94ab0fcf6ff3744ec59b42f1dd112917310ee87e71b0cadbc3482bce",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/mobility-03-conveyal-r5.json",
+        "source_artifact_sha256": "a7dad5640177c3a4ab3c8b54e3950e7fe63f32368c925a231f0f7551566c26a6",
+        "source_excerpt": "Developed to power Conveyal's web-based interface for scenario planning and land-use/transport accessibility analysis, R5 is our routing engine for multimodal (transit/bike/walk/car) networks with a particular focus on public transit",
+        "source_excerpt_sha256": "d2fc0ffd21799f5683f724ff2e295babb6321210e2a7bd39b472a27eeb55328d",
+        "source_family": "mobility",
+        "source_id": "github-repository:44746588",
+        "source_span": "line 19",
+        "source_span_sha256": "241e96739aa5407949250aa948345acb45d3c83f34f12a7e7b43f6fb54138d73",
+        "source_uri": "https://github.com/conveyal/r5"
+      },
+      "required_terms": [
+        "mobility",
+        "scenario analysis dossier",
+        "network snapshot",
+        "scenario disposition",
+        "result status"
+      ],
+      "stressors": [
+        "scientific-casing",
+        "domain-depth-obligations",
+        "latency-pressure"
+      ],
+      "tags": [
+        "release-corpus",
+        "mobility",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-mobility-126-source",
+      "expectation": "clarification_required",
+      "input_style": "direct_request",
+      "leakage_terms": [
+        "transitland/transitland-processing-animation"
+      ],
+      "name": "mobility source case 126",
+      "prompt": "Create a mobility product. Source repository: transitland/transitland-processing-animation. Source evidence: Animating scheduled transit trips using the Transitland API and Processing",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "ed08a25ee799a39d16b87f7c9daa2cd7d575544d1379391b60fdb0bbd8e95dfd",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/mobility-04-transitland-transitland-processing-animation.json",
+        "source_artifact_sha256": "06b2d1472d8eb2df0bd354f62ba77f570a509a797dd0aba1591b2db4a89133de",
+        "source_excerpt": "Animating scheduled transit trips using the Transitland API and Processing",
+        "source_excerpt_sha256": "9c5167e6ce7ee7b58f564866e2cd800b4e2caffd43b9cda599aeb68404b76ead",
+        "source_family": "mobility",
+        "source_id": "github-repository:99143543",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/transitland/transitland-processing-animation"
+      },
+      "required_terms": [
+        "mobility"
+      ],
+      "stressors": [
+        "multi-role-tribunal",
+        "final-memory-pressure",
+        "modal-expert-lens"
+      ],
+      "tags": [
+        "release-corpus",
+        "mobility",
+        "github-metadata",
+        "source-evidence-only"
+      ]
+    },
+    {
+      "case_id": "release-open-data-142-topic",
+      "expectation": "clarification_required",
+      "input_style": "edited_confirmation",
+      "leakage_terms": [
+        "mdeff/fma"
+      ],
+      "metamorphic_group": "github-repository-75407467-pair",
+      "metamorphic_transform": "topic_evidence",
+      "name": "open-data source case 142",
+      "prompt": "Create a reviewed open-data product. Source repository: mdeff/fma. Source evidence: dataset. Repository description: FMA: A Dataset For Music Analysis",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "32a2831eb357549e421580448832ce3318b505bc332eb064d6c18163a1aa3f14",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/open-data-01-mdeff-fma.json",
+        "source_artifact_sha256": "48518511472bd7c01b6f0b0fc3cc3aa56c966ec729468b556e481cc0ce7e8ce9",
+        "source_excerpt": "dataset",
+        "source_excerpt_sha256": "b277fd623676a525c29b9eb155afc8c9010681814ceafb2d7627f47b9a232576",
+        "source_family": "open-data",
+        "source_id": "github-repository:75407467",
+        "source_span": "line 30",
+        "source_span_sha256": "5da20e8f38cb83b10cf0077d77406eacd89a6e912fd58f7f477e00e3f439486f",
+        "source_uri": "https://github.com/mdeff/fma"
+      },
+      "required_terms": [
+        "open-data"
+      ],
+      "stressors": [
+        "registry-contract-pressure",
+        "path-grant",
+        "long-first-path"
+      ],
+      "tags": [
+        "release-corpus",
+        "open-data",
+        "github-metadata",
+        "source-evidence-only"
+      ]
+    },
+    {
+      "case_id": "release-open-data-144-topic",
+      "expectation": "clarification_required",
+      "input_style": "research_evidence",
+      "leakage_terms": [
+        "datagouv/datagouv-mcp"
+      ],
+      "metamorphic_group": "github-repository-1103742564-pair",
+      "metamorphic_transform": "topic_evidence",
+      "name": "open-data source case 144",
+      "prompt": "Create an open-data product from this research evidence. Source repository: datagouv/datagouv-mcp. Source evidence: mcp. Repository description: Official data.gouv.fr Model Context Protocol (MCP) server that allows AI chatbots to search, explore, and analyze datasets from the French national Open Data platform, directly through conversation.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "87856acc48bdd40f7064890a36f6ce2ad92112e59973668b9c7be80c3c2243ed",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/open-data-02-datagouv-datagouv-mcp.json",
+        "source_artifact_sha256": "db90e59eacd7cbb4528f58974895bada8c8bbd418d4200406180f096521f9b74",
+        "source_excerpt": "mcp",
+        "source_excerpt_sha256": "10182ab855ff772753c05b2fea333666b5f312835d32936b6b03e08ef2cbd6d3",
+        "source_family": "open-data",
+        "source_id": "github-repository:1103742564",
+        "source_span": "line 31",
+        "source_span_sha256": "82563f5857630b17d845a7c18275931a98d87a88faf38ad842722edc4c877958",
+        "source_uri": "https://github.com/datagouv/datagouv-mcp"
+      },
+      "required_terms": [
+        "open-data"
+      ],
+      "stressors": [
+        "modal-expert-lens",
+        "scientific-casing",
+        "final-memory-pressure"
+      ],
+      "tags": [
+        "release-corpus",
+        "open-data",
+        "github-metadata",
+        "source-evidence-only"
+      ]
+    },
+    {
+      "case_id": "release-open-data-157-source",
+      "confirmed_intent_markdown": "# Open-Data Extract Publication Workspace\n\n## Product Outcome\nAn open-data team needs a traceable way to request a CKAN-backed extract, review its query and disclosure boundaries, and publish an approved data product with its source lineage intact.\n\n## Source Evidence\nRepository: ondata/ckan-mcp-server\n\nMCP server for querying CKAN open data portals (package search, DataStore SQL, organizations, groups, tags).\n\nThis repository description is background evidence. It does not authorize code reuse, portal credentials, data access, or a runtime integration.\n\n## Human Actors\n1. A data requester states the bounded extract purpose.\n2. A portal steward records the CKAN dataset and access conditions.\n3. A data analyst records the query and validates the result shape.\n4. A disclosure reviewer records the publication disposition.\n5. A publication manager publishes the approved extract.\n\n## Governed State\nThe single governed state object is a data extract dossier carrying purpose, dataset lineage, query text, result summary, disclosure disposition, and publication status.\n\n## Product Systems\n1. A dataset catalog records CKAN package and resource identity.\n2. A query workspace records the bounded DataStore query.\n3. A result validation workspace records schema and row-count evidence.\n4. A disclosure review queue records the publication disposition.\n5. A publication portal exposes only approved extracts and lineage.\n\n## First Complete Path\nThe data requester opens a data extract dossier and states the purpose. The portal steward associates the CKAN dataset and access conditions, the data analyst records and validates the query result, the disclosure reviewer records a publication disposition, and the publication manager verifies the evidence and publishes the approved extract.\n\n## Non-Material Ambiguities\nRecord these as non-material ambiguities and use the supplied defaults without asking a question: result previews may show the first 25 rows; downloadable filenames may use the dossier identifier plus publication date; and the public dataset card may use the portal's existing organization label.\n\n## Safety Boundaries\n1. Preserve CKAN package, resource, and portal identity with every extract.\n2. Do not claim that repository metadata grants portal access or credentials.\n3. Keep credentials and private portal responses outside the dossier and publication surface.\n4. Reject query text that attempts writes or administrative operations.\n5. Record the exact read-only query used for the published extract.\n6. Do not publish fields the disclosure reviewer marks restricted.\n7. Only the disclosure reviewer may record the publication disposition.\n8. Only the publication manager may publish an approved extract.\n9. A changed source resource or query must invalidate the prior result validation before republication.\n\n## Proof\nSuccess is a published extract whose dossier proves its bounded purpose, CKAN source identity, exact read-only query, result validation, disclosure disposition, approving publication action, and final publication status.",
+      "input_style": "edited_confirmation",
+      "leakage_terms": [
+        "ondata/ckan-mcp-server"
+      ],
+      "name": "open-data source case 157",
+      "prompt": "Create a reviewed open-data extract publication workspace grounded in ondata/ckan-mcp-server. Source evidence: MCP server for querying CKAN open data portals (package search, DataStore SQL, organizations, groups, tags). The attached reviewed intent is the operator-authoritative product specification; repository metadata is background evidence only.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "bounded-source-grounded-product-intent-curation-v1",
+        "derived_prompt_sha256": "0197d319cf7613aedeb1d69afb4a227c7c645d25e629fce0b0ba326fa084f95b",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/open-data-15-ondata-ckan-mcp-server.json",
+        "source_artifact_sha256": "ad5784141754f40beca1e99675ca8ed180332895047f29a17cf652c5f70326b0",
+        "source_excerpt": "MCP server for querying CKAN open data portals (package search, DataStore SQL, organizations, groups, tags)",
+        "source_excerpt_sha256": "03f0504a65594abe78c663c34febd526c66b2be8d2a2f344b3c6c003c257e4e0",
+        "source_family": "open-data",
+        "source_id": "github-repository:1129756504",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/ondata/ckan-mcp-server"
+      },
+      "required_terms": [
+        "open-data",
+        "data extract dossier",
+        "DataStore query",
+        "publication disposition",
+        "publication status"
+      ],
+      "stressors": [
+        "noun-verb-homonym",
+        "long-first-path",
+        "registry-contract-pressure"
+      ],
+      "tags": [
+        "release-corpus",
+        "open-data",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-open-data-150-source",
+      "expectation": "clarification_required",
+      "input_style": "thin_request",
+      "leakage_terms": [
+        "ip-tools/uspto-opendata-python"
+      ],
+      "name": "open-data source case 150",
+      "prompt": "Build an open-data product. Source repository: ip-tools/uspto-opendata-python. Source evidence: A client library for accessing the USPTO Open Data APIs, written in Python.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "903007227f0038ddbeb3ac0dc01852aef8b4196db67b885461ce51ae09b52efe",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/open-data-08-ip-tools-uspto-opendata-python.json",
+        "source_artifact_sha256": "e6a1f1f719dd9ae76175afe55658cea4fb3f5881b069e9e801461bf575eee4c7",
+        "source_excerpt": "A client library for accessing the USPTO Open Data APIs, written in Python.",
+        "source_excerpt_sha256": "742db21da4a8c522c65f9fa5f46a44012555aeb1bf46c94b26045978ad702ac1",
+        "source_family": "open-data",
+        "source_id": "github-repository:107711435",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/ip-tools/uspto-opendata-python"
+      },
+      "required_terms": [
+        "open-data"
+      ],
+      "stressors": [
+        "domain-depth-obligations",
+        "registry-contract-pressure",
+        "noun-verb-homonym"
+      ],
+      "tags": [
+        "release-corpus",
+        "open-data",
+        "github-metadata",
+        "source-evidence-only"
+      ]
+    },
+    {
+      "case_id": "release-research-161-description",
+      "input_style": "direct_request",
+      "leakage_terms": [
+        "mvanhorn/last30days-skill"
+      ],
+      "metamorphic_group": "github-repository-1140843380-pair",
+      "metamorphic_transform": "description_evidence",
+      "name": "research source case 161",
+      "prompt": "Create a research product. User intent: A service coordinator opens an intake request, assigns a resolution owner, and verifies a decision receipt. Source repository: mvanhorn/last30days-skill. Source evidence: AI agent skill that researches any topic across Reddit, X, YouTube, HN, Polymarket, and the web - then synthesizes a grounded summary",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "a3fb766d352a7999ae02529cb18d736964b2fc8948a092c7d8f7bd4b8b97687a",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/research-01-mvanhorn-last30days-skill.json",
+        "source_artifact_sha256": "c5d18127e6453236d1a9cabb4ff57be8dd5af0b570e78819c6a55e48603b1407",
+        "source_excerpt": "AI agent skill that researches any topic across Reddit, X, YouTube, HN, Polymarket, and the web - then synthesizes a grounded summary",
+        "source_excerpt_sha256": "ee626e3e638bfc9b115b0442a83ead012f6badde53d386204b1a4293d461479a",
+        "source_family": "research",
+        "source_id": "github-repository:1140843380",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/mvanhorn/last30days-skill"
+      },
+      "required_terms": [
+        "research",
+        "intake request",
+        "resolution owner",
+        "decision receipt"
+      ],
+      "stressors": [
+        "domain-depth-obligations",
+        "registry-contract-pressure",
+        "noun-verb-homonym"
+      ],
+      "tags": [
+        "release-corpus",
+        "research",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-research-163-description",
+      "input_style": "pasted_brief",
+      "leakage_terms": [
+        "microsoft/qlib"
+      ],
+      "metamorphic_group": "github-repository-287463830-pair",
+      "metamorphic_transform": "description_evidence",
+      "name": "research source case 163",
+      "prompt": "Project brief for a research team. User intent: A program lead registers a readiness dossier, selects a review disposition, and verifies a publication status. Source repository: microsoft/qlib. Source evidence: Qlib is an AI-oriented Quant investment platform that aims to use AI tech to empower Quant Research, from exploring ideas to implementing productions. Qlib supports diverse ML modeling paradigms, including supervised learning, market dynamics modeling, and RL, and is now equipped with https://github.com/microsoft/RD-Agent to automate R&D process.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "a44e0c3231077e4f4bcdb337685d7aa2cf6d048987fbfb40368dbb3015de1a58",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/research-02-microsoft-qlib.json",
+        "source_artifact_sha256": "f7ddbf4665bb5e15cdc5d6bac9af2c5b799a3cee9459e93f44aaef32431f41d3",
+        "source_excerpt": "Qlib is an AI-oriented Quant investment platform that aims to use AI tech to empower Quant Research, from exploring ideas to implementing productions. Qlib supports diverse ML modeling paradigms, including supervised learning, market dynamics modeling, and RL, and is now equipped with https://github.com/microsoft/RD-Agent to automate R&D process.",
+        "source_excerpt_sha256": "5b401a1791000b4a020709043879bf4669c21b92569d8d77e6f3ded3f04cc654",
+        "source_family": "research",
+        "source_id": "github-repository:287463830",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/microsoft/qlib"
+      },
+      "required_terms": [
+        "research",
+        "readiness dossier",
+        "review disposition",
+        "publication status"
+      ],
+      "stressors": [
+        "atlas-label-pressure",
+        "modal-expert-lens",
+        "multi-role-tribunal"
+      ],
+      "tags": [
+        "release-corpus",
+        "research",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-research-170-source",
+      "expectation": "clarification_required",
+      "input_style": "thin_request",
+      "leakage_terms": [
+        "Weizhena/Deep-Research-skills"
+      ],
+      "name": "research source case 170",
+      "prompt": "Build a research product. Source repository: Weizhena/Deep-Research-skills. Source evidence: Structured deep research skill for Claude Code/Open Code/Codex with human-in-the-loop control",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "0ba7334da22fae4bd5f655487540a631686f95767c4371f28cb692833dcb775c",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/research-08-weizhena-deep-research-skills.json",
+        "source_artifact_sha256": "486f3c9a7c1365d654504550379903503673b5273ee232ae1560f14c2239c2e9",
+        "source_excerpt": "Structured deep research skill for Claude Code/Open Code/Codex with human-in-the-loop control",
+        "source_excerpt_sha256": "977e0d47db7aab843427d13eef8933269e56d7cc053698395979dbf4dbad0be1",
+        "source_family": "research",
+        "source_id": "github-repository:1124477911",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/Weizhena/Deep-Research-skills"
+      },
+      "required_terms": [
+        "research"
+      ],
+      "stressors": [
+        "multi-role-tribunal",
+        "final-memory-pressure",
+        "modal-expert-lens"
+      ],
+      "tags": [
+        "release-corpus",
+        "research",
+        "github-metadata",
+        "source-evidence-only"
+      ]
+    },
+    {
+      "case_id": "release-research-171-source",
+      "input_style": "direct_request",
+      "leakage_terms": [
+        "jspsych/jsPsych"
+      ],
+      "name": "research source case 171",
+      "prompt": "Create a behavioral experiment readiness workspace grounded in this public source anchor. Source repository: jspsych/jsPsych. Source evidence: Create behavioral experiments in a browser using JavaScript. The source is background evidence, not a runtime dependency or research approval authority. Human actors are the principal investigator, experiment designer, participant-safety reviewer, data steward, and study coordinator. The one governed state object is an experiment readiness dossier. The five product systems are the protocol workspace, browser-experiment build adapter, consent-material registry, readiness review queue, and study launch console. First complete path: the principal investigator opens an experiment readiness dossier; the experiment designer associates the browser experiment and protocol; the data steward records the collection and retention plan; the participant-safety reviewer records a readiness disposition; and the study coordinator verifies the approved dossier and records the launch status. Safety boundaries: the product must not imply ethics-board approval; participant-facing consent material must remain version-bound to the experiment; and the launch console must remain unavailable until the readiness disposition is approved.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "bounded-source-grounded-product-intent-curation-v1",
+        "derived_prompt_sha256": "75e77db08407cbe4ed595c22101496c118195adcb023488fc04ccb9bc4fe8485",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/research-09-jspsych-jspsych.json",
+        "source_artifact_sha256": "9cc3f3a509dc5232b619695a274960f70bf7979ec063be196780fd199269453a",
+        "source_excerpt": "Create behavioral experiments in a browser using JavaScript",
+        "source_excerpt_sha256": "07789aa49a28b87376c573bed4e06b5b6d42c6b3ef2068e75a77ff45754a6df5",
+        "source_family": "research",
+        "source_id": "github-repository:4340323",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/jspsych/jsPsych"
+      },
+      "required_terms": [
+        "research",
+        "experiment readiness dossier",
+        "consent material",
+        "readiness disposition",
+        "launch status"
+      ],
+      "stressors": [
+        "long-first-path",
+        "atlas-label-pressure",
+        "path-grant"
+      ],
+      "tags": [
+        "release-corpus",
+        "research",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-security-182-topic",
+      "expectation": "clarification_required",
+      "input_style": "edited_confirmation",
+      "leakage_terms": [
+        "swisskyrepo/PayloadsAllTheThings"
+      ],
+      "metamorphic_group": "github-repository-71220757-pair",
+      "metamorphic_transform": "topic_evidence",
+      "name": "security source case 182",
+      "prompt": "Create a reviewed security product. Source repository: swisskyrepo/PayloadsAllTheThings. Source evidence: bounty. Repository description: A list of useful payloads and bypass for Web Application Security and Pentest/CTF",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "b247882c147797e44489b8a2f38f4b879c5120b0ca5673b6db78985838b6d62f",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/security-01-swisskyrepo-payloadsallthethings.json",
+        "source_artifact_sha256": "f047931964dcea3d8a4a02f60df46c5a854399f1556f08d8d6fe75a02bc90c90",
+        "source_excerpt": "bounty",
+        "source_excerpt_sha256": "721152d9d7ea07f8d55b35ff2d6e7eb6b471d8ac2be01262bca7dceb13ec8a76",
+        "source_family": "security",
+        "source_id": "github-repository:71220757",
+        "source_span": "line 30",
+        "source_span_sha256": "5da20e8f38cb83b10cf0077d77406eacd89a6e912fd58f7f477e00e3f439486f",
+        "source_uri": "https://github.com/swisskyrepo/PayloadsAllTheThings"
+      },
+      "required_terms": [
+        "security"
+      ],
+      "stressors": [
+        "long-first-path",
+        "atlas-label-pressure",
+        "path-grant"
+      ],
+      "tags": [
+        "release-corpus",
+        "security",
+        "github-metadata",
+        "source-evidence-only"
+      ]
+    },
+    {
+      "case_id": "release-security-183-description",
+      "input_style": "pasted_brief",
+      "leakage_terms": [
+        "projectdiscovery/nuclei"
+      ],
+      "metamorphic_group": "github-repository-252813491-pair",
+      "metamorphic_transform": "description_evidence",
+      "name": "security source case 183",
+      "prompt": "Project brief for a security team. User intent: A program lead registers a readiness dossier, selects a review disposition, and verifies a publication status. Source repository: projectdiscovery/nuclei. Source evidence: Nuclei is a fast, customizable vulnerability scanner powered by the global security community and built on a simple YAML-based DSL, enabling collaboration to tackle trending vulnerabilities on the internet. It helps you find vulnerabilities in your applications, APIs, networks, DNS, and cloud configurations.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "15147cf670da419a57a5fde40d20da12e840389eef3ebe2e22d09619d2eb9ed7",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/security-02-projectdiscovery-nuclei.json",
+        "source_artifact_sha256": "ac14d04644009228f64d6377ef98a854d5e97de4bbb54408d88463626b3dd245",
+        "source_excerpt": "Nuclei is a fast, customizable vulnerability scanner powered by the global security community and built on a simple YAML-based DSL, enabling collaboration to tackle trending vulnerabilities on the internet. It helps you find vulnerabilities in your applications, APIs, networks, DNS, and cloud configurations.",
+        "source_excerpt_sha256": "c1f26b8d616966a8512b31b65898b38d8ff9b1e130188304eeb0ce811096a7a9",
+        "source_family": "security",
+        "source_id": "github-repository:252813491",
+        "source_span": "line 19",
+        "source_span_sha256": "241e96739aa5407949250aa948345acb45d3c83f34f12a7e7b43f6fb54138d73",
+        "source_uri": "https://github.com/projectdiscovery/nuclei"
+      },
+      "required_terms": [
+        "security",
+        "readiness dossier",
+        "review disposition",
+        "publication status"
+      ],
+      "stressors": [
+        "domain-depth-obligations",
+        "registry-contract-pressure",
+        "noun-verb-homonym"
+      ],
+      "tags": [
+        "release-corpus",
+        "security",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    },
+    {
+      "case_id": "release-security-186-source",
+      "expectation": "clarification_required",
+      "input_style": "direct_request",
+      "leakage_terms": [
+        "shieldfy/API-Security-Checklist"
+      ],
+      "name": "security source case 186",
+      "prompt": "Create a security product. Source repository: shieldfy/API-Security-Checklist. Source evidence: Checklist of the most important security countermeasures when designing, testing, and releasing your API",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "af1ae17141cc8b904465226a3f9aa8d6075a3c52b027608884fae0bf26d0ff68",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/security-04-shieldfy-api-security-checklist.json",
+        "source_artifact_sha256": "6a9dc7b840f96ee7770a3538ae336b3ec5330bbae8a4475001ecbc9c156bc051",
+        "source_excerpt": "Checklist of the most important security countermeasures when designing, testing, and releasing your API",
+        "source_excerpt_sha256": "0e6372c23d6650a5acd06210e499c4f8c0a2b309d0055d0d6b92bfbd68f4fff2",
+        "source_family": "security",
+        "source_id": "github-repository:96641209",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/shieldfy/API-Security-Checklist"
+      },
+      "required_terms": [
+        "security"
+      ],
+      "stressors": [
+        "registry-contract-pressure",
+        "path-grant",
+        "long-first-path"
+      ],
+      "tags": [
+        "release-corpus",
+        "security",
+        "github-metadata",
+        "source-evidence-only"
+      ]
+    },
+    {
+      "case_id": "release-security-195-source",
+      "input_style": "thin_request",
+      "leakage_terms": [
+        "drduh/YubiKey-Guide"
+      ],
+      "name": "security source case 195",
+      "prompt": "Build a security product. User intent: A field operator submits an exception packet, records an approval outcome, and verifies a public status. Source repository: drduh/YubiKey-Guide. Source evidence: Community guide to using YubiKey for GnuPG and SSH - protect secrets with hardware crypto.",
+      "provenance": {
+        "corpus_tier": "source_provenanced",
+        "derivation_author": "freedom-research",
+        "derivation_method": "deterministic-github-metadata-product-intent-v1",
+        "derived_prompt_sha256": "12a8436205f2c7c9c1b6a2ae03a1b0cb8aa1893422dcd2685d82bc5c15aafd83",
+        "license_or_consent": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+        "retrieved_on": "2026-07-18",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_artifact_path": "tests/fixtures/greenfield-release-corpus/sources/security-13-drduh-yubikey-guide.json",
+        "source_artifact_sha256": "aa57d23acadb6ca73ecc2ea491fca22d9d904f23b40f5b63a775c16d792911f7",
+        "source_excerpt": "Community guide to using YubiKey for GnuPG and SSH - protect secrets with hardware crypto.",
+        "source_excerpt_sha256": "81ccfa08f2d675ef02196c142a7884dc1626f26693c8a0d4bc35ac930ea9d508",
+        "source_family": "security",
+        "source_id": "github-repository:50806714",
+        "source_span": "line 18",
+        "source_span_sha256": "489b9bd12a16457f19d78ac8568127cc4cd498a12b5e68588dae7ea0fcf28975",
+        "source_uri": "https://github.com/drduh/YubiKey-Guide"
+      },
+      "required_terms": [
+        "security",
+        "exception packet",
+        "approval outcome",
+        "public status"
+      ],
+      "stressors": [
+        "final-memory-pressure",
+        "latency-pressure",
+        "scientific-casing"
+      ],
+      "tags": [
+        "release-corpus",
+        "security",
+        "github-metadata",
+        "explicit-user-intent"
+      ]
+    }
+  ],
+  "claim_class": "disclosed-public-live-subset",
+  "parent_corpus": "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v4.json",
+  "source_case_count": 40,
+  "version": "odylith.greenfield.matrix.case-file.v1"
+}

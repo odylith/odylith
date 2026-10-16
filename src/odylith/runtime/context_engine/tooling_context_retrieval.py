@@ -5,6 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.context_engine import memory_record_policy
+from odylith.runtime.common import derivation_provenance
+from odylith.runtime.memory import odylith_projection_bundle
 from odylith.runtime.common.value_coercion import dedupe_strings as _dedupe_strings
 from odylith.runtime.common.value_coercion import int_value as _int_value
 from odylith.runtime.common.value_coercion import string_rows as _string_list
@@ -174,6 +177,14 @@ def _guidance_actionability(row: Mapping[str, Any]) -> dict[str, Any]:
     risk_class = str(row.get("risk_class", "")).strip()
     if risk_class:
         signals.append("risk_guardrail")
+    if isinstance(row.get("memory_record"), Mapping):
+        admission = row.get("memory_usefulness", {})
+        if not isinstance(admission, Mapping) or not admission.get("current_authority"):
+            return {
+                "actionable": False, "direct": False,
+                "read_path": canonical_source or chunk_path,
+                "signals": ["read_source"] if canonical_source or chunk_path else [],
+            }
     return {
         "actionable": bool(signals),
         "direct": evidence_summary["match_tier"] in {"direct_path", "anchored_context"},
@@ -185,6 +196,9 @@ def _guidance_actionability(row: Mapping[str, Any]) -> dict[str, Any]:
 def _decorate_guidance_row(row: Mapping[str, Any]) -> dict[str, Any]:
     decorated = dict(row)
     decorated["evidence_summary"] = _compact_guidance_evidence(decorated)
+    if isinstance(decorated.get("memory_record"), Mapping):
+        memory = decorated["memory_record"]
+        decorated["memory_usefulness"] = memory_record_policy.assess(memory)
     decorated["actionability"] = _guidance_actionability(decorated)
     return decorated
 
@@ -326,6 +340,7 @@ def _note_selected_guidance_chunks(
                     "task_families": _string_list(note.get("task_families"))
                     or _string_list(metadata.get("task_families")),
                     "source_modes": ["note"],
+                    **({"memory_record": memory_record_policy.record({"memory_record": note.get("memory_record") or metadata.get("memory_record")})} if note.get("memory_record") or metadata.get("memory_record") else {}),
                     "relevance": relevance,
                 }
             )
@@ -408,6 +423,7 @@ def _score_catalog_chunk(
         "risk_class": str(chunk.get("risk_class", "")).strip(),
         "task_families": chunk_task_families,
         "source_modes": ["catalog"],
+        **({"memory_record": memory_record_policy.record(chunk)} if chunk.get("memory_record") else {}),
         "relevance": {
             "score": score,
             "matched_by": matched_by,
@@ -469,6 +485,7 @@ def selected_guidance_chunks(
     components: Sequence[Mapping[str, Any]] = (),
     selected_workstreams: Sequence[Mapping[str, Any]] = (),
     limit: int = 8,
+    expected_provenance: Mapping[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     """Return compact guidance-chunk rows selected into the packet."""
 
@@ -523,6 +540,13 @@ def selected_guidance_chunks(
             rows_by_id[chunk_id] = _decorate_guidance_row(note_row)
     ranked = list(rows_by_id.values())
     ranked.sort(key=_guidance_rank_key)
+    if any(row.get("memory_record") for row in ranked):
+        ranked = memory_record_policy.rank_records([
+            {**row, "score": _int_value(dict(row.get("relevance", {})).get("score"))}
+            for row in ranked
+        ], expected_provenance=expected_provenance)
+        for row in ranked:
+            row["actionability"] = _guidance_actionability(row)
     return ranked[: max(1, int(limit))]
 
 
@@ -550,6 +574,8 @@ def compact_guidance_brief(
                 "summary": str(item.get("summary", "")).strip(),
                 "canonical_source": str(item.get("canonical_source", "")).strip(),
                 "risk_class": str(item.get("risk_class", "")).strip(),
+                **({"memory_record": dict(item["memory_record"])} if isinstance(item.get("memory_record"), Mapping) else {}),
+                **({"memory_usefulness": dict(item["memory_usefulness"])} if isinstance(item.get("memory_usefulness"), Mapping) else {}),
                 "match_tier": str(evidence_summary.get("match_tier", "")).strip(),
                 "matched_by": _string_list(evidence_summary.get("matched_by", []))[:3],
                 "matched_paths": _string_list(evidence_summary.get("matched_paths", []))[:2],
@@ -710,8 +736,8 @@ def build_working_memory_tiers(
         "odylith/casebook/bugs/INDEX.md",
     ]
     warm_docs = [canonical_truth_token(str(token).strip(), repo_root=repo_root) for token in docs[:6] if str(token).strip()]
-    warm_components = _compact_mapping_list(components, key="entity_id", extra_fields=("title",), limit=4)
-    warm_workstreams = _compact_mapping_list(selected_workstreams, key="entity_id", extra_fields=("title",), limit=4)
+    warm_components = _compact_mapping_list(components, key="entity_id", extra_fields=("title", "memory_record"), limit=4)
+    warm_workstreams = _compact_mapping_list(selected_workstreams, key="entity_id", extra_fields=("title", "memory_record"), limit=4)
     hot_tests = _compact_mapping_list(recommended_tests, key="path", extra_fields=("nodeid", "reason"), limit=4)
     return {
         "cold": {
@@ -776,6 +802,7 @@ def compact_retrieval_bundle(
         docs=docs,
         components=components,
         selected_workstreams=selected_workstreams,
+        expected_provenance=derivation_provenance.extract_provenance(odylith_projection_bundle.load_bundle_manifest(repo_root=repo_root)) if repo_root is not None else None,
     )
     return {
         "selected_guidance_chunks": guidance_chunks,

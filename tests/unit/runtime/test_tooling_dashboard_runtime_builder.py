@@ -64,6 +64,8 @@ def test_build_runtime_payload_preserves_release_note_urls_and_surface_hrefs(tmp
         self_host_payload={"repo_role": "product_repo"},
         brand_payload={"brand_head_html": "<meta />"},
         shell_version_label="v1.2.3",
+        version_state_href="../.odylith/runtime/odylith-version-state.v1.js",
+        version_state_global_name="__ODYLITH_VERSION_STATE__",
     )
 
     assert result.runtime_payload["radar_href"].startswith("radar/radar.html?v=")
@@ -76,6 +78,8 @@ def test_build_runtime_payload_preserves_release_note_urls_and_surface_hrefs(tmp
     )
     assert "benchmark_story" not in result.runtime_payload
     assert result.runtime_payload["shell_version_label"] == "v1.2.3"
+    assert result.runtime_payload["version_state_href"] == "../.odylith/runtime/odylith-version-state.v1.js"
+    assert result.runtime_payload["version_state_global_name"] == "__ODYLITH_VERSION_STATE__"
     assert result.runtime_payload["case_queue"] == []
     assert result.runtime_payload["components"] == {}
     assert result.runtime_payload["diagrams"] == {}

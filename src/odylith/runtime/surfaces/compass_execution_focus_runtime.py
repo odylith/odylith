@@ -71,13 +71,18 @@ def _build_execution_focus_payload(
         )
         risk_signal_count = sum(int(kind_counts.get(kind, 0) or 0) for kind in risk_kinds)
         context = str(row.get("context", "")).strip()
+        explicit_governance_only = bool(events) and all(
+            str(event.get("work_category", "")).strip().lower() == "governance"
+            for event in events
+        )
         has_implementation_signal = False
-        if implementation_signal_count > 0:
-            has_implementation_signal = True
-        elif source_files and change_signal_count > 0:
-            has_implementation_signal = True
-        elif context and source_files and activity_signal_count > 0:
-            has_implementation_signal = True
+        if not explicit_governance_only:
+            if implementation_signal_count > 0:
+                has_implementation_signal = True
+            elif source_files and change_signal_count > 0:
+                has_implementation_signal = True
+            elif context and source_files and activity_signal_count > 0:
+                has_implementation_signal = True
 
         generated_only_batch = not source_files and bool(generated_files)
         generated_count = len(generated_files)

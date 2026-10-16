@@ -1,0 +1,99 @@
+{
+  "slug": "harbor-desk-context",
+  "title": "System Context View",
+  "kind": "flowchart",
+  "summary": "Who owns the source-stated work in Harbor Desk.",
+  "read_guide": "People are source-stated participants, not necessarily product users. First-run performers connect to their selected source events. Other named participants remain context only. Human and external-system action groups connect to the candidate product through a non-owning first-path interaction boundary; dotted participant-context links assign no action. The first-run view shows one proposed walkthrough, not source-list chronology. Registry links identify proposed support, not replacement of source ownership.",
+  "owner": "repo",
+  "status": "draft",
+  "link_state": "atlas_first_draft",
+  "components": [
+    {
+      "name": "Berth map",
+      "description": "Record berth occupancy"
+    }
+  ],
+  "related_workstream_titles": [
+    "Deliver vessel intake",
+    "Deliver occupancy recording",
+    "Deliver the placement view",
+    "Deliver placement evidence"
+  ],
+  "related_components": [
+    "vessel-intake",
+    "occupancy-record",
+    "placement-view",
+    "placement-evidence"
+  ],
+  "watch_paths": [],
+  "evidence_tier": "user_intent",
+  "authority_kind": "source_grounded",
+  "projection_origin": "model_authored_typed_intent",
+  "mermaid_source": "flowchart LR\n  subgraph people[\"People in product context\"]\n    actor1[\"Dock attendant Ivo\"]\n  end\n  subgraph product[\"Harbor Desk\"]\n    component1[\"Berth map\"]\n  end\n  subgraph external_systems[\"Accepted external systems\"]\n    external1[\"Harbor Ledger\"]\n  end\n  actor1_actions[\"• Dock attendant Ivo enters a vessel tag\"]\n  actor1 -->|\"performs\"| actor1_actions\n  actor1_actions ---|\"first-path interaction\"| product\n  component1_actions[\"• the product records berth occupancy<br/><br/>• the berth map shows the placement\"]\n  component1 -->|\"performs\"| component1_actions\n  external1 -.-> component1\n  classDef personStyle fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;\n  classDef service fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;\n  classDef external fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1px;\n",
+  "diagram_boxes": [
+    {
+      "node_id": "people",
+      "label": "People in product context",
+      "role": "Container",
+      "description": "Source-stated people, including participants without a first-path action."
+    },
+    {
+      "node_id": "actor1",
+      "label": "Dock attendant Ivo",
+      "role": "First-path actor",
+      "description": "Performs source-stated first-path actions: Dock attendant Ivo"
+    },
+    {
+      "node_id": "product",
+      "label": "Harbor Desk",
+      "role": "Product boundary",
+      "description": "Contains the candidate product-owned components for Harbor Desk."
+    },
+    {
+      "node_id": "component1",
+      "label": "Berth map",
+      "role": "Product-owned component",
+      "description": "Accepted responsibility: Record berth occupancy"
+    },
+    {
+      "node_id": "external_systems",
+      "label": "Accepted external systems",
+      "role": "Container",
+      "description": "Groups accepted systems that remain outside product ownership."
+    },
+    {
+      "node_id": "external1",
+      "label": "Harbor Ledger",
+      "role": "External system",
+      "description": "Accepted external system outside product ownership: Harbor Ledger"
+    },
+    {
+      "node_id": "actor1_actions",
+      "label": "Dock attendant Ivo enters a vessel tag",
+      "role": "Grouped first-path actions",
+      "description": "Exact source events performed by Dock attendant Ivo. Listing order does not establish execution order."
+    },
+    {
+      "node_id": "component1_actions",
+      "label": "the product records berth occupancy\nthe berth map shows the placement",
+      "role": "Grouped first-path actions",
+      "description": "Exact source events performed by Berth map. Listing order does not establish execution order."
+    }
+  ],
+  "authored_atlas_view_authority": {
+    "version": "odylith.greenfield.authored-atlas-view.v3",
+    "projection_origin": "model_authored_typed_intent",
+    "source_sha256": "d770104fe24a93c0e76366959e25e7b353dd24e2e5022ae9256ca480a9f97b1d",
+    "surface_sha256": "fa50c2a875f91fc6f34124a2b14bb94f3ad9baadb16041eb8a9175085ddb1798",
+    "node_order": [
+      "people",
+      "actor1",
+      "product",
+      "component1",
+      "external_systems",
+      "external1",
+      "actor1_actions",
+      "component1_actions"
+    ]
+  }
+}

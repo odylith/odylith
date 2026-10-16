@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 from typing import Sequence
 
+from odylith.runtime.governance import artifact_tribunal
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.surfaces import surface_path_helpers
 
@@ -25,6 +26,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--kind", required=True, help="Mermaid kind (flowchart, sequence, ...)")
     parser.add_argument("--owner", required=True, help="Owning team/role")
     parser.add_argument("--summary", required=True, help="One-paragraph summary")
+    parser.add_argument(
+        "--read-guide",
+        default="",
+        help="Optional diagram-specific reader guidance shown in the Atlas detail pane.",
+    )
     parser.add_argument("--component", action="append", default=[], help="Component in format 'Name::Description' (repeatable)")
     parser.add_argument("--backlog", action="append", default=[], help="Related backlog path (repeatable)")
     parser.add_argument("--plan", action="append", default=[], help="Related plan path (repeatable)")
@@ -54,7 +60,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _parse_components(tokens: list[str]) -> list[dict[str, str]]:
+def parse_components(tokens: list[str]) -> list[dict[str, str]]:
+    """Parse repeated Atlas component arguments into catalog rows."""
+
     components: list[dict[str, str]] = []
     for token in tokens:
         raw = str(token or "").strip()
@@ -69,12 +77,7 @@ def _parse_components(tokens: list[str]) -> list[dict[str, str]]:
             raise ValueError(f"invalid component `{raw}`; name/description must be non-empty")
         components.append({"name": name, "description": description})
     if not components:
-        components = [
-            {
-                "name": "Component Placeholder",
-                "description": "Replace with concrete behavior component mapping.",
-            }
-        ]
+        raise ValueError("atlas scaffold requires at least one concrete --component Name::Description")
     return components
 
 
@@ -127,7 +130,7 @@ def _starter_source(
     related_docs: list[str],
 ) -> str:
     lines = [
-        "%% Atlas visual contract: colored lanes group ownership/phase; node classes mark semantic role; labels stay wrapped.",
+        "%% Atlas visual contract: neutral containers organize structure; semantic node classes carry state; labels stay wrapped.",
         "flowchart TB",
         '    subgraph intent_lane["Intent lane"]',
         "      direction TB",
@@ -179,30 +182,118 @@ def _starter_source(
     lines.extend(
         [
             "",
-            "    classDef anchor fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b,stroke-width:1px;",
-            "    classDef component fill:#eaf3ff,stroke:#77a9ef,color:#102f5f,stroke-width:1px;",
-            "    classDef evidence fill:#ffece7,stroke:#df8f7d,color:#5c2418,stroke-width:1px;",
-            "    classDef followup fill:#f5f8fb,stroke:#b7c7d9,color:#1f2937,stroke-width:1px;",
-            "    class diagram,owner anchor;",
+            "    classDef neutral fill:#FBFDFF,stroke:#D8E5F4,color:#17233A,stroke-width:1px;",
+            "    classDef primary fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
+            "    classDef execution fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;",
+            "    classDef governance fill:#F5F3FF,stroke:#DDD6FE,color:#17233A,stroke-width:1px;",
+            "    classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#17233A,stroke-width:1px;",
+            "    classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#17233A,stroke-width:1px;",
+            "    class diagram,owner primary;",
         ]
     )
     if component_ids:
-        lines.append(f"    class {','.join(component_ids)} component;")
+        lines.append(f"    class {','.join(component_ids)} execution;")
     if evidence_ids:
         watch_ids = [value for value in evidence_ids if value != "followup"]
         if watch_ids:
-            lines.append(f"    class {','.join(watch_ids)} evidence;")
+            lines.append(f"    class {','.join(watch_ids)} execution;")
         if "followup" in evidence_ids:
-            lines.append("    class followup followup;")
+            lines.append("    class followup constraint;")
     lines.extend(
         [
-            "    style intent_lane fill:#effcf9,stroke:#9bd8cf,stroke-width:1px,color:#062f2b",
-            "    style component_lane fill:#f1f7ff,stroke:#a8c7f7,stroke-width:1px,color:#102f5f",
-            "    style evidence_lane fill:#fff3f0,stroke:#efb3a4,stroke-width:1px,color:#5c2418",
-            "    linkStyle default stroke:#647d96,stroke-width:1.4px",
+            "    style intent_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155",
+            "    style component_lane fill:#FBFDFF,stroke:#A7E9E3,stroke-width:1px,color:#334155",
+            "    style evidence_lane fill:#FBFDFF,stroke:#A7E9E3,stroke-width:1px,color:#334155",
+            "    linkStyle default stroke:#B9C7D8,stroke-width:1.25px",
         ]
     )
     return "\n".join(lines) + "\n"
+
+
+def _default_read_guide(*, title: str, kind: str, components: list[dict[str, str]]) -> str:
+    component_names = [
+        str(component.get("name", "")).strip()
+        for component in components[:3]
+        if str(component.get("name", "")).strip()
+    ]
+    component_hint = ""
+    if component_names:
+        component_hint = f" Key owned boundaries: {', '.join(component_names)}."
+    kind_token = str(kind or "").strip().lower()
+    title_token = str(title or "").strip() or "this diagram"
+    if "sequence" in kind_token:
+        return (
+            f"Read {title_token} as a first-path rehearsal. Start with the user or trigger, follow each handoff, "
+            "and stop at proof, blocker, or recovery notes because those marks define what must be true before trust increases."
+            f"{component_hint}"
+        )
+    if "state" in kind_token:
+        return (
+            f"Read {title_token} as the allowed lifecycle. States describe what can be true; arrows describe permitted movement; "
+            f"blocked or rejected states mark conditions that need proof or owner action before advancement.{component_hint}"
+        )
+    return (
+        f"Read {title_token} as a boundary map. Start with the people, inputs, or trigger, then follow the path into "
+        f"product-owned responsibilities; outside boxes are dependencies, not first-release capabilities.{component_hint}"
+    )
+
+
+def build_catalog_entry(
+    *,
+    diagram_id: str,
+    slug: str,
+    title: str,
+    kind: str,
+    owner: str,
+    summary: str,
+    read_guide: str,
+    components: list[dict[str, str]],
+    related_backlog: list[str],
+    related_plans: list[str],
+    related_docs: list[str],
+    related_code: list[str],
+    watch_paths: list[str],
+    review_date: str,
+) -> dict[str, object]:
+    """Return the canonical Atlas catalog row for a Mermaid diagram."""
+
+    source_mmd = f"odylith/atlas/source/{str(slug).strip()}.mmd"
+    source_svg = f"odylith/atlas/source/{str(slug).strip()}.svg"
+    source_png = f"odylith/atlas/source/{str(slug).strip()}.png"
+    related_backlog = _unique(related_backlog)
+    related_plans = _unique(related_plans)
+    related_docs = _unique(related_docs)
+    related_code = _unique(related_code)
+    has_governance_links = bool(related_backlog and related_plans and related_docs)
+    watch_paths = _unique(watch_paths)
+    if not watch_paths:
+        watch_paths = _unique(related_docs + related_plans + related_code)
+    if not watch_paths:
+        watch_paths = [source_mmd]
+    entry: dict[str, object] = {
+        "diagram_id": str(diagram_id).strip(),
+        "slug": str(slug).strip(),
+        "title": str(title).strip(),
+        "kind": str(kind).strip(),
+        "status": "active" if has_governance_links else "draft",
+        "owner": str(owner).strip(),
+        "last_reviewed_utc": str(review_date).strip(),
+        "source_mmd": source_mmd,
+        "source_svg": source_svg,
+        "source_png": source_png,
+        "change_watch_paths": watch_paths,
+        "summary": str(summary).strip(),
+        "read_guide": str(read_guide).strip()
+        or _default_read_guide(title=str(title).strip(), kind=str(kind).strip(), components=components),
+        "components": components,
+        "related_backlog": related_backlog,
+        "related_plans": related_plans,
+        "related_docs": related_docs,
+        "related_code": related_code,
+    }
+    if not has_governance_links:
+        entry["link_state"] = "atlas_first_draft"
+    return entry
 
 
 def scaffold_diagram(
@@ -215,6 +306,7 @@ def scaffold_diagram(
     kind: str,
     owner: str,
     summary: str,
+    read_guide: str,
     components: list[dict[str, str]],
     related_backlog: list[str],
     related_plans: list[str],
@@ -224,6 +316,7 @@ def scaffold_diagram(
     review_date: str,
     require_links: bool = False,
     starter_source: str | None = None,
+    refresh: bool = True,
 ) -> tuple[int, list[str]]:
     """Create one Atlas catalog entry and starter Mermaid source."""
 
@@ -247,53 +340,58 @@ def scaffold_diagram(
         if str(item.get("slug", "")).strip() == slug:
             return 2, [f"FAILED: slug already exists: {slug}"]
 
-    source_mmd = f"odylith/atlas/source/{slug}.mmd"
-    source_svg = f"odylith/atlas/source/{slug}.svg"
-    source_png = f"odylith/atlas/source/{slug}.png"
-
-    related_backlog = _unique(related_backlog)
-    related_plans = _unique(related_plans)
-    related_docs = _unique(related_docs)
-    related_code = _unique(related_code)
-
-    has_governance_links = bool(related_backlog and related_plans and related_docs)
-    if require_links and not has_governance_links:
+    entry = build_catalog_entry(
+        diagram_id=diagram_id,
+        slug=slug,
+        title=title,
+        kind=kind,
+        owner=owner,
+        summary=summary,
+        read_guide=read_guide,
+        components=components,
+        related_backlog=related_backlog,
+        related_plans=related_plans,
+        related_docs=related_docs,
+        related_code=related_code,
+        watch_paths=watch_paths,
+        review_date=review_date,
+    )
+    if require_links and str(entry.get("status", "")).strip() != "active":
         return 2, ["FAILED: radar, technical-plan, and doc links are required (at least one each)"]
-
-    watch_paths = _unique(watch_paths)
-    if not watch_paths:
-        watch_paths = _unique(related_docs + related_plans + related_code)
-    if not watch_paths:
-        watch_paths = [source_mmd]
-    if not watch_paths:
-        return 2, ["FAILED: change_watch_paths resolved empty; provide --watch or related links"]
-
-    entry = {
-        "diagram_id": diagram_id,
-        "slug": slug,
-        "title": str(title).strip(),
-        "kind": str(kind).strip(),
-        "status": "active" if has_governance_links else "draft",
-        "owner": str(owner).strip(),
-        "last_reviewed_utc": str(review_date).strip(),
-        "source_mmd": source_mmd,
-        "source_svg": source_svg,
-        "source_png": source_png,
-        "change_watch_paths": watch_paths,
-        "summary": str(summary).strip(),
-        "components": components,
-        "related_backlog": related_backlog,
-        "related_plans": related_plans,
-        "related_docs": related_docs,
-        "related_code": related_code,
-    }
-    if not has_governance_links:
-        entry["link_state"] = "atlas_first_draft"
+    source_mmd = str(entry["source_mmd"])
+    watch_paths = [str(item) for item in entry.get("change_watch_paths", []) if str(item).strip()]
+    related_backlog = [str(item) for item in entry.get("related_backlog", []) if str(item).strip()]
+    related_plans = [str(item) for item in entry.get("related_plans", []) if str(item).strip()]
+    related_docs = [str(item) for item in entry.get("related_docs", []) if str(item).strip()]
+    related_code = [str(item) for item in entry.get("related_code", []) if str(item).strip()]
+    tribunal = artifact_tribunal.run_governed_artifact_tribunal(
+        artifact_kind="atlas_diagram",
+        payload={
+            "diagram_id": diagram_id,
+            "slug": slug,
+            "title": title,
+            "kind": kind,
+            "owner": owner,
+            "summary": summary,
+            "read_guide": str(read_guide).strip(),
+            "components": components,
+            "related_backlog": related_backlog,
+            "related_plans": related_plans,
+            "related_docs": related_docs,
+            "related_code": related_code,
+            "watch_paths": watch_paths,
+        },
+    )
+    try:
+        artifact_tribunal.raise_for_failed_artifact_tribunal(tribunal)
+    except ValueError as exc:
+        return 2, [f"FAILED: {exc}"]
     diagrams.append(entry)
 
     catalog_path.write_text(f"{json.dumps(payload, indent=2)}\n", encoding="utf-8")
     logs.append(f"catalog updated: {catalog_path}")
-    logs.append(f"added: {diagram_id} ({slug})")
+    logs.append(f"added diagram: {diagram_id} / {slug}")
+    logs.append(f"validation gate: {tribunal.status}")
 
     source_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=source_mmd)
     if source_path.exists():
@@ -315,15 +413,17 @@ def scaffold_diagram(
             )
         source_path.write_text(source_text, encoding="utf-8")
         logs.append(f"source created: {source_path}")
-    try:
-        owned_surface_refresh.raise_for_failed_refresh(
-            repo_root=repo_root,
-            surface="atlas",
-            operation_label="Atlas scaffold",
-        )
-    except RuntimeError as exc:
-        logs.append(str(exc))
-        return 1, logs
+    if refresh:
+        try:
+            owned_surface_refresh.raise_for_failed_refresh(
+                repo_root=repo_root,
+                surface="atlas",
+                operation_label="Atlas scaffold",
+                atlas_diagram_ids=(diagram_id,),
+            )
+        except RuntimeError as exc:
+            logs.append(str(exc))
+            return 1, logs
 
     return 0, logs
 
@@ -331,25 +431,30 @@ def scaffold_diagram(
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(args.repo_root).resolve()
-    components = _parse_components(args.component)
-    rc, logs = scaffold_diagram(
-        repo_root=repo_root,
-        catalog=str(args.catalog),
-        diagram_id=str(args.diagram_id),
-        slug=str(args.slug),
-        title=str(args.title),
-        kind=str(args.kind),
-        owner=str(args.owner),
-        summary=str(args.summary),
-        components=components,
-        related_backlog=list(args.backlog),
-        related_plans=list(args.plan),
-        related_docs=list(args.doc),
-        related_code=list(args.code),
-        watch_paths=list(args.watch),
-        review_date=str(args.review_date),
-        require_links=bool(args.require_links),
-    )
+    try:
+        components = parse_components(args.component)
+        rc, logs = scaffold_diagram(
+            repo_root=repo_root,
+            catalog=str(args.catalog),
+            diagram_id=str(args.diagram_id),
+            slug=str(args.slug),
+            title=str(args.title),
+            kind=str(args.kind),
+            owner=str(args.owner),
+            summary=str(args.summary),
+            read_guide=str(args.read_guide),
+            components=components,
+            related_backlog=list(args.backlog),
+            related_plans=list(args.plan),
+            related_docs=list(args.doc),
+            related_code=list(args.code),
+            watch_paths=list(args.watch),
+            review_date=str(args.review_date),
+            require_links=bool(args.require_links),
+        )
+    except ValueError as exc:
+        print(str(exc))
+        return 2
     for line in logs:
         print(line)
     if rc != 0:

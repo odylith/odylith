@@ -16,4 +16,11 @@ odylith sync --repo-root . --check-only --check-clean
 ## Rules
 
 - Keep investigation grounded in local repo truth and linked historical evidence.
+- Governance-learning: if investigation exposes a new durable failure signature or invalidates the
+  current diagnosis, update the Casebook record before moving to code changes
+  or closeout. Read prior failed mechanisms, failed fix attempts, and
+  guardrails first, do not repeat a fix path that already failed, capture new
+  mechanism-level learning, and mirror planned work, component-contract
+  changes, changed topology, and proof checkpoints into Radar/plans,
+  Registry, Atlas, and Compass as applicable.
 - Prefer bounded packet assistance over broad repo scans only after the evidence cone is grounded.

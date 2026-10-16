@@ -146,7 +146,13 @@ def _component_ids(
         _append_component_tokens(tokens, source)
         _append_component_tokens(tokens, source.get("execution_engine"))
         _append_target_resolution_component_tokens(tokens, source.get("target_resolution"))
+        _append_related_entity_component_tokens(tokens, source.get("related_entity_ids"))
         _append_related_entity_component_tokens(tokens, source.get("related_entities"))
+        dossier = _mapping(source.get("workstream_context"))
+        if dossier.get("resolved") is True:
+            _append_component_tokens(tokens, dossier)
+            _append_related_entity_component_tokens(tokens, dossier.get("related_entity_ids"))
+            _append_related_entity_component_tokens(tokens, dossier.get("related_entities"))
     return tokens
 
 
@@ -254,7 +260,7 @@ def normalize_execution_engine_handshake(
         "canonical_component_id": CANONICAL_EXECUTION_ENGINE_COMPONENT_ID,
         "identity_status": identity_status,
         "target_component_id": target_component_ids[0] if target_component_ids else "",
-        "target_component_ids": target_component_ids[:4],
+        "target_component_ids": target_component_ids,
         "target_component_status": target_component_status,
         "packet_kind": packet_kind,
         "packet_state": packet_state,
@@ -379,7 +385,7 @@ def _fail_closed_handshake_from_snapshot(
     target_component_ids = _noncanonical_targets_first(_component_ids(snapshot, {}, {}))
     if target_component_ids:
         compact_handshake["target_component_id"] = target_component_ids[0]
-        compact_handshake["target_component_ids"] = target_component_ids[:4]
+        compact_handshake["target_component_ids"] = target_component_ids
     compact_handshake["identity_status"] = "blocked_noncanonical_target"
     compact_handshake["target_component_status"] = "blocked_noncanonical_execution_engine"
     return compact_handshake

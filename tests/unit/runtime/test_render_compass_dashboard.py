@@ -21,6 +21,20 @@ def _runtime_paths(runtime_dir: Path) -> tuple[Path, Path, Path, Path, Path]:
     )
 
 
+def test_compass_surface_hrefs_do_not_retain_distinct_staging_roots(tmp_path: Path) -> None:
+    output = tmp_path / "simulation-root" / "repo" / "odylith" / "compass" / "compass.html"
+    target = tmp_path / "prewrite-root" / "repo" / "odylith" / "radar" / "traceability-graph.v1.json"
+    target.parent.mkdir(parents=True)
+    target.write_text("{}\n", encoding="utf-8")
+
+    href = render_compass_dashboard._versioned_href(output_path=output, target=target)  # noqa: SLF001
+
+    assert href.startswith("../radar/traceability-graph.v1.json?v=")
+    assert str(tmp_path) not in href
+    assert "simulation-root" not in href
+    assert "prewrite-root" not in href
+
+
 def _refresh_kwargs(repo_root: Path, runtime_dir: Path) -> dict[str, object]:
     return {
         "repo_root": repo_root,
@@ -311,7 +325,7 @@ def test_refresh_runtime_artifacts_reuses_initial_input_fingerprint_for_fresh_bu
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        render_compass_dashboard.compass_standup_brief_maintenance,
+        render_compass_dashboard.compass_standup_brief_maintenance_worker,
         "maybe_spawn_background",
         lambda **_kwargs: None,
     )
@@ -407,7 +421,7 @@ def test_render_compass_dashboard_emits_proof_resolution_ui_text(tmp_path: Path,
 
     assert rc == 0
     workstreams_js = (repo_root / "odylith" / "compass" / "compass-workstreams.v1.js").read_text(encoding="utf-8")
-    assert "No dominant proof lane is resolved for this workstream yet." in workstreams_js
+    assert "Verification status is not yet determined." in workstreams_js
     assert "Ambiguous across" in workstreams_js
 
 
@@ -443,10 +457,15 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert 'rows.push(["Next Release"' not in summary_js
     assert 'class="stat${cardClass ? ` ${cardClass}` : ""}"' in summary_js
     assert "function releaseHeroLabel(release)" in summary_js
-    assert 'const nameLabel = String(releaseRow.name || "").trim();' in summary_js
+    assert "function compactReleaseTargetLabel(value)" in summary_js
     assert 'const versionLabel = String(releaseRow.version || "").trim();' in summary_js
     assert 'const tagLabel = String(releaseRow.tag || "").trim();' in summary_js
-    assert 'return /^v\\d/.test(tagLabel) ? tagLabel.slice(1) : tagLabel;' in summary_js
+    assert "if (versionLabel) return compactReleaseTargetLabel(versionLabel);" in summary_js
+    assert "if (tagLabel) return compactReleaseTargetLabel(tagLabel);" in summary_js
+    assert 'const nameLabel = String(releaseRow.name || "").trim();' in summary_js
+    assert "if (nameLabel) return compactReleaseTargetLabel(nameLabel);" in summary_js
+    assert '<p class="kpi-value" title="${escapeHtml(value)}">${escapeHtml(value)}</p>' in summary_js
+    assert 'return /^v\\d/.test(tagLabel) ? tagLabel.slice(1) : tagLabel;' not in summary_js
     assert 'return versionLabel.startsWith("v") ? versionLabel : `v${versionLabel}`;' not in summary_js
     assert "function renderReleaseGroups(payload, state)" in releases_js
     assert "Release Targets" in releases_js
@@ -457,6 +476,7 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert "Targeted Workstreams" in releases_js
     assert "Completed Workstreams" in releases_js
     assert "hasAliasedRelease" in releases_js
+    assert "if (Number(group.members && group.members.length || 0) > 0) return true;" in releases_js
     assert "return Boolean(group.is_current) || Boolean(group.is_next);" in releases_js
     assert 'status === "planned"' in releases_js
     assert 'status === "draft"' in releases_js
@@ -465,6 +485,9 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert 'return visibleGroups;' in releases_js
     assert 'const currentOnlyGroups = currentReleaseId' not in releases_js
     assert 'Target Release</span>' in releases_js
+    assert "function compactCompassReleaseTargetLabel(value)" in releases_js
+    assert "const displayLabel = compassReleaseDisplayName(group);" in releases_js
+    assert '<span class="execution-wave-section-title">${escapeHtml(displayLabel)}</span>' in releases_js
     assert "No targeted workstreams." in releases_js
     assert "execution-wave-focus-title" not in releases_js
     assert '<span class="execution-wave-section-title-row">' in releases_js
@@ -473,12 +496,14 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert '<div class="execution-wave-member-title-chips">' in releases_js
     assert '<article class="${cardClassNames.join(" ")}" data-workstream-id="${escapeHtml(ideaId)}">' in releases_js
     assert '${renderMemberChip(ideaId, { selected: ideaId === scopedWorkstream })}' in releases_js
-    assert '<a class="execution-wave-title execution-wave-card-link"' in releases_js
+    assert '<a class="execution-wave-title execution-wave-card-link"' not in releases_js
+    assert '<div class="execution-wave-title">${escapeHtml(title)}</div>' in releases_js
     assert '<div class="execution-wave-title-row">' not in releases_js
     assert "Release-owned targeted workstreams for this release." not in releases_js
     assert "Release-owned targeted workstreams for this selection." not in releases_js
     assert "function compassReleaseDisplayName(release)" in releases_js
-    assert "row.name || row.version || row.tag || row.display_label || row.effective_name" in releases_js
+    assert "compactCompassReleaseTargetLabel(row.version)" in releases_js
+    assert "compactCompassReleaseTargetLabel(row.name)" in releases_js
     assert "resolveCompassDisclosureOpen(" in releases_js
     assert 'data-compass-disclosure-key="${escapeHtml(disclosureKey)}"' in releases_js
     assert 'bindCompassDisclosurePersistence(target, disclosureGroup, state);' in releases_js
@@ -490,12 +515,18 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert 'group.is_current || groups.length === 1' not in releases_js
     assert "function compassWorkstreamReleaseLabel(release)" in workstreams_js
     assert "function compassGovernanceRepresentedWorkstreamIds(payload)" in workstreams_js
-    assert "row.name || row.version || row.tag || row.display_label || row.effective_name" in workstreams_js
+    assert "function compactCompassWorkstreamReleaseTargetLabel(value)" in workstreams_js
+    assert "compactCompassWorkstreamReleaseTargetLabel(row.version)" in workstreams_js
+    assert "compactCompassWorkstreamReleaseTargetLabel(row.name)" in workstreams_js
     assert "Release: ${escapeHtml(selected.releaseLabel)}" not in workstreams_js
     assert "Release ${item.releaseLabel}" not in workstreams_js
     assert "<strong>Release history:</strong>" in workstreams_js
     assert "No active workstreams yet. Create or open one from Radar, then Compass will summarize it here." in workstreams_js
-    assert "No additional current workstreams. Program and release lanes already cover the active work." in workstreams_js
+    assert "No additional current workstreams. Program and release lanes already cover the active work." not in workstreams_js
+    assert "already organize these active workstreams" not in workstreams_js
+    assert "Direct Radar links live in" not in workstreams_js
+    assert 'Showing ${renderRows.length} of ${scopedRows.length} covered active workstreams.' in workstreams_js
+    assert '"Wave" : "Plan"' in workstreams_js
     assert "All current workstreams are already represented in Programs or Release Targets." not in workstreams_js
     assert "No active workstreams in this scope." in workstreams_js
     assert "const rows = scopedRows;" not in workstreams_js
@@ -1145,7 +1176,7 @@ def test_refresh_runtime_artifacts_shell_safe_stamps_and_spawns_narration_mainte
         _apply_terminal_state,
     )
     monkeypatch.setattr(
-        render_compass_dashboard.compass_standup_brief_maintenance,
+        render_compass_dashboard.compass_standup_brief_maintenance_worker,
         "maybe_spawn_background",
         lambda **kwargs: spawned.append(Path(kwargs["repo_root"]).resolve()) or 4321,
     )

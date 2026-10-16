@@ -1,5 +1,10 @@
 # Technical Plans AGENTS
 
+## Governance-Learning
+- Before changing or validating this surface for a durable error, escaped defect, failed mechanism, failed simulation, bad generated artifact, semantic drift, quality-gate miss, latency breach, architecture decision, validation result, or release-risk learning, search Casebook and related governance truth first.
+- Read prior failed mechanisms, failed fix attempts, rejected approaches, guardrails, and validation history; do not repeat a fix path that already failed.
+- Capture new mechanism-level learning in Casebook or Compass, and update Radar or plans, Registry, and Atlas when the learning changes planned work, component contracts, or flows.
+
 Scope: applies to all files under `odylith/technical-plans/`.
 
 ## Purpose
@@ -23,3 +28,7 @@ Scope: applies to all files under `odylith/technical-plans/`.
   --help` is a read-only command guide, not a plan writer. Use
   `odylith governance ...` and `odylith validate plan-* ...` for
   technical-plan maintenance and validation.
+- Human-visible plan copy must be simple, grammatical, and directly useful for
+  starting or reviewing implementation: name the slice, target files or
+  modules, proof gates, validation commands, blockers, and stop conditions
+  without clipped titles or boilerplate.

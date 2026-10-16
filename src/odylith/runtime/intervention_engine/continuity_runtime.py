@@ -9,7 +9,9 @@ from typing import Sequence
 from odylith.runtime.intervention_engine import stream_state
 from odylith.runtime.intervention_engine import visibility_contract
 
-_CONTINUITY_CACHE: dict[tuple[tuple[str, int, int], str, str, str, int], dict[str, Any]] = {}
+_CONTINUITY_CACHE: dict[
+    tuple[tuple[tuple[str, int, int], tuple[str, int, int, int]], str, str, str, int], dict[str, Any]
+] = {}
 _VISIBLE_DELIVERY_STATUSES = {
     "assistant_chat_confirmed",
     "best_effort_visible",

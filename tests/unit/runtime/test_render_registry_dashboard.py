@@ -10,6 +10,25 @@ from odylith.runtime.evaluation import odylith_ablation
 from odylith.runtime.surfaces import dashboard_time
 from odylith.runtime.surfaces import render_registry_dashboard as renderer
 
+ROOT = Path(__file__).resolve().parents[3]
+
+
+def test_public_feature_history_omits_internal_resolved_paths() -> None:
+    rows = renderer._public_feature_history(  # noqa: SLF001
+        [{
+            "date": "2026-09-27",
+            "summary": "Linked work",
+            "plan_refs": [{
+                "workstream_id": "B-001",
+                "repo_path": "odylith/radar/radar.html?view=plan&workstream=B-001",
+                "resolved_path": "/private/tmp/prewrite/odylith/radar/radar.html",
+                "valid": True,
+            }],
+        }]
+    )
+
+    assert "resolved_path" not in rows[0]["plan_refs"][0]
+
 
 def _extract_generated_utc(payload_js: str) -> str:
     match = re.search(r'"generated_utc"\s*:\s*"([^"]+)"', payload_js)
@@ -42,6 +61,47 @@ def _bundle_registry_text(root: Path) -> str:
     for path in sorted((root / "odylith" / "registry").glob("registry-detail-shard-*.v1.js")):
         parts.append(path.read_text(encoding="utf-8"))
     return "\n".join(parts)
+
+
+def test_registry_typography_is_centralized_outside_layout_renderers() -> None:
+    renderer_paths = (
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "render_registry_dashboard.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "registry_forensic_evidence_ui.py",
+    )
+    banned_tokens = ("font-size:", "font-weight:", "letter-spacing:", "font-family:")
+    for path in renderer_paths:
+        text = path.read_text(encoding="utf-8")
+        for token in banned_tokens:
+            assert token not in text, f"Registry typography belongs in registry_typography_ui.py: {path}"
+
+    typography_text = (
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "registry_typography_ui.py"
+    ).read_text(encoding="utf-8")
+    assert ".component-card-title" in typography_text
+    assert ".forensic-stat-label" in typography_text
+
+
+def test_registry_surface_theme_is_centralized_for_selection_and_evidence_cards() -> None:
+    renderer_text = (ROOT / "src" / "odylith" / "runtime" / "surfaces" / "render_registry_dashboard.py").read_text(
+        encoding="utf-8"
+    )
+    forensic_text = (
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "registry_forensic_evidence_ui.py"
+    ).read_text(encoding="utf-8")
+    theme_text = (
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "governance_surface_theme.py"
+    ).read_text(encoding="utf-8")
+
+    assert "governance_surface_theme.selection_card_surface_css" in renderer_text
+    assert "governance_surface_theme.narrative_stack_surface_css" in renderer_text
+    assert "governance_surface_theme.evidence_note_surface_css" in forensic_text
+    assert "governance_surface_theme.evidence_list_row_surface_css" in forensic_text
+    assert "governance_surface_theme.metric_strip_surface_css" in forensic_text
+    assert "governance_surface_theme.metric_strip_item_css" in forensic_text
+    assert "def selection_card_surface_css" in theme_text
+    assert "def evidence_note_surface_css" in theme_text
+    assert "def evidence_list_row_surface_css" in theme_text
+    assert "def metric_strip_item_css" in theme_text
 
 
 def _seed_repo(tmp_path: Path) -> None:
@@ -393,7 +453,8 @@ def test_render_registry_dashboard_happy_path(tmp_path: Path) -> None:
     assert "registry-hero" in html
     assert "registry-filters-shell" in html
     assert "Component Ownership and Evidence Map" in html
-    assert "See what exists, who owns it, and which specs, workstreams, and diagrams back it." in html
+    assert "Components and responsibilities" in html
+    assert "See what exists" not in html
     assert "No components match current search or filters." not in html
     assert "No component selected." not in html
     assert "Loading component detail…" not in html
@@ -408,7 +469,11 @@ def test_render_registry_dashboard_happy_path(tmp_path: Path) -> None:
     assert re.search(r"\.component-name\s*\{[^}]*font-size:\s*24px;[^}]*line-height:\s*1\.15;", html, flags=re.S)
     assert re.search(r"\.workspace\s*\{[^}]*grid-template-columns:\s*minmax\(330px,\s*420px\) minmax\(0,\s*1fr\);[^}]*gap:\s*12px;[^}]*align-items:\s*start;", html, flags=re.S)
     assert re.search(r"\.kpi-label\s*\{[^}]*font-size:\s*12px;[^}]*line-height:\s*1\.15;[^}]*letter-spacing:\s*0\.06em;", html, flags=re.S)
-    assert re.search(r"\.kpi-value\s*\{[^}]*font-size:\s*23px;[^}]*line-height:\s*1;[^}]*letter-spacing:\s*-0\.01em;", html, flags=re.S)
+    assert re.search(r"\.kpi-value\s*\{[^}]*font-size:\s*23px;[^}]*line-height:\s*1;[^}]*letter-spacing:\s*0em;", html, flags=re.S)
+    assert "function componentCompactName(row, limit = 64)" in html
+    assert "function summaryArtifactRow(title, path, label)" in html
+    assert 'class="component-identity"' in html
+    assert "artifact-compact" in html
     assert "Triggers:" in html
     assert "Trigger Tiers:" not in html
     assert "structured baseline/deep" not in html
@@ -462,8 +527,22 @@ def test_render_registry_dashboard_happy_path(tmp_path: Path) -> None:
     assert ".detail-chip-label.tone-gov {" not in html
     assert re.search(r"\.action-chip\.active\s*\{[^}]*border-color:\s*#1d4a8f;[^}]*background:\s*#deebff;[^}]*color:\s*#1d4ed8;", html, flags=re.S)
     assert not re.search(r"\.action-chip\.active\s*\{[^}]*box-shadow:", html, flags=re.S)
-    assert re.search(r"\.component-btn\.active\s*\{[^}]*border-color:\s*var\(--line-strong\);[^}]*background:\s*#eaf3ff;", html, flags=re.S)
-    assert not re.search(r"\.component-btn\.active\s*\{[^}]*box-shadow:", html, flags=re.S)
+    assert re.search(
+        r"\.component-btn:hover\s*\{[^}]*border-color:\s*#93c5fd;[^}]*box-shadow:\s*0 8px 18px rgba\(15,\s*23,\s*42,\s*0\.09\);[^}]*transform:\s*translateY\(-1px\);",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.component-btn\.active\s*\{[^}]*border-color:\s*#1d4ed8;[^}]*background:\s*linear-gradient\(180deg,\s*#ffffff,\s*#f8fbff\);[^}]*box-shadow:\s*0 0 0 2px rgba\(59,\s*130,\s*246,\s*0\.22\);",
+        html,
+        flags=re.S,
+    )
+    assert not re.search(r"\.component-btn\.active\s*\{[^}]*background:\s*#eaf3ff;", html, flags=re.S)
+    assert re.search(
+        r"\.summary-strip\s*\{[^}]*border:\s*0;[^}]*border-radius:\s*0;[^}]*background:\s*transparent;[^}]*padding:\s*0;",
+        html,
+        flags=re.S,
+    )
     assert re.search(r"html,\s*body\s*\{[^}]*min-height:\s*100%;", html, flags=re.S)
     assert not re.search(r"html,\s*body\s*\{[^}]*overflow:\s*hidden;", html, flags=re.S)
     assert re.search(r"\.list-panel\s*\{[^}]*max-height:\s*calc\(100vh\s*-\s*188px\);", html, flags=re.S)
@@ -475,6 +554,58 @@ def test_render_registry_dashboard_happy_path(tmp_path: Path) -> None:
     assert component_button_html
 
 
+def test_render_registry_dashboard_reuses_compass_runtime_summary(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    _seed_repo(tmp_path)
+    current_path = tmp_path / "odylith" / "compass" / "runtime" / "current.v1.json"
+    current_path.parent.mkdir(parents=True, exist_ok=True)
+    current_path.write_text(
+        json.dumps({"odylith_runtime": {"advisory_depth": "cached", "yield_state": "ready"}}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        renderer.odylith_runtime_surface_summary,
+        "load_runtime_surface_summary",
+        lambda **_: (_ for _ in ()).throw(AssertionError("runtime summary should reuse Compass cache")),
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/registry/registry.html"])
+
+    assert rc == 0
+    payload = _load_registry_payload(tmp_path)
+    assert payload["odylith_runtime"] == {"advisory_depth": "cached", "yield_state": "ready"}
+
+
+def test_render_registry_dashboard_standalone_uses_source_manifest_not_runtime_snapshot(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    _seed_repo(tmp_path)
+
+    def _boom(**_kwargs):  # noqa: ANN202
+        raise AssertionError("standalone registry render must not load a stale runtime snapshot")
+
+    monkeypatch.setattr(renderer.odylith_context_engine_store, "load_component_registry_snapshot", _boom)
+
+    rc = renderer.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--output",
+            "odylith/registry/registry.html",
+            "--runtime-mode",
+            "standalone",
+        ]
+    )
+
+    assert rc == 0
+    payload = _load_registry_payload(tmp_path)
+    component_ids = {str(row.get("component_id", "")) for row in payload["components"]}
+    assert {"odylith", "radar"}.issubset(component_ids)
+
+
 def test_render_registry_dashboard_forensic_evidence_uses_digest_first_contract(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
     stream_path = tmp_path / "odylith" / "compass" / "runtime" / "agent-stream.v1.jsonl"
@@ -484,7 +615,7 @@ def test_render_registry_dashboard_forensic_evidence_uses_digest_first_contract(
                 "version": "v1",
                 "kind": "intervention_card",
                 "summary": "Radar already has a governed slice for B-901.",
-                "ts_iso": "2026-04-01T00:00:00Z",
+                "ts_iso": "2026-04-02T00:00:00Z",
                 "workstreams": ["B-901", "B-902", "B-903", "B-904", "B-905", "B-906"],
                 "artifacts": [
                     "src/odylith/runtime/surfaces/render_backlog_ui.py",
@@ -498,6 +629,41 @@ def test_render_registry_dashboard_forensic_evidence_uses_digest_first_contract(
         + "\n",
         encoding="utf-8",
     )
+    with stream_path.open("a", encoding="utf-8") as handle:
+        handle.write(
+            json.dumps(
+                {
+                    "version": "v1",
+                    "kind": "intervention_card",
+                    "summary": "Radar already has a governed slice for B-901.",
+                    "ts_iso": "2026-04-02T00:00:00Z",
+                    "workstreams": ["B-901", "B-902", "B-903", "B-904", "B-905", "B-906"],
+                    "artifacts": [
+                        "src/odylith/runtime/surfaces/render_backlog_ui.py",
+                        "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+                        "odylith/technical-plans/in-progress/2026-03-04-example.md",
+                    ],
+                    "components": ["radar"],
+                    "confidence": "high",
+                }
+            )
+            + "\n"
+        )
+        handle.write(
+            json.dumps(
+                {
+                    "version": "v1",
+                    "kind": "implementation",
+                    "summary": "Updated Radar rendering behavior.",
+                    "ts_iso": "2026-04-01T00:00:00Z",
+                    "workstreams": ["B-901"],
+                    "artifacts": ["src/odylith/runtime/surfaces/render_backlog_ui.py"],
+                    "components": ["radar"],
+                    "confidence": "high",
+                }
+            )
+            + "\n"
+        )
 
     rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/registry/registry.html"])
     assert rc == 0
@@ -511,21 +677,39 @@ def test_render_registry_dashboard_forensic_evidence_uses_digest_first_contract(
     assert len(raw_event["artifacts"]) == 3
 
     html = _bundle_registry_text(tmp_path)
+    assert '<details id="chronology-anchor" class="forensic-evidence-disclosure">' in html
+    assert '<summary class="timeline-head forensic-evidence-head">' in html
+    assert '<span>Evidence</span>' in html
     assert '<section id="timeline" class="timeline" aria-live="polite"></section>' in html
     assert "const FORENSIC_DIGEST_WORKSTREAM_LIMIT = 4;" in html
     assert "const FORENSIC_DIGEST_ARTIFACT_LIMIT = 2;" in html
+    assert "const FORENSIC_DIGEST_GROUP_LIMIT = 4;" in html
     assert "function forensicNewestEvent(events)" in html
-    assert "const latestEvent = forensicNewestEvent(events);" in html
+    assert "function forensicUniqueEvents(events)" in html
+    assert "function forensicIsDiagnosticEvent(event)" in html
+    assert "function forensicEvidenceChannel(event)" in html
+    assert "function forensicMaterialEvents(events)" in html
+    assert "function forensicEvidenceHealthSummary(events, forensicCoverage)" in html
+    assert "function renderForensicHealth(events, forensicCoverage)" in html
+    assert "const rawEvents = forensicEvidenceEvents(row);" in html
+    assert "const events = forensicUniqueEvents(rawEvents);" in html
+    assert "const materialEvents = forensicMaterialEvents(events);" in html
+    assert "const headlineEvents = materialEvents.length ? materialEvents : events;" in html
+    assert "const latestEvent = forensicNewestEvent(headlineEvents);" in html
+    assert "renderForensicLatestEvent(latestEvent, { diagnosticOnly })" in html
     assert "function forensicLimitedWorkstreams(workstreams, limit = FORENSIC_DIGEST_WORKSTREAM_LIMIT)" in html
     assert "function forensicLimitedArtifacts(artifacts, limit = FORENSIC_DIGEST_ARTIFACT_LIMIT)" in html
+    assert "function forensicArtifactDisclosure(rows, count)" in html
+    assert "html: forensicArtifactDisclosure(rows, rows.length)" in html
+    assert "forensicArtifactDisclosure(hidden, hidden.length)" in html
     assert 'forensicOverflowLabel(overflow, "workstream")' in html
-    assert "function forensicArtifactOverflowDisclosure(items, overflow)" in html
-    assert "forensicArtifactOverflowDisclosure(hidden, overflow)" in html
+    assert "function forensicArtifactOverflowDisclosure(items, overflow)" not in html
+    assert "forensicArtifactOverflowDisclosure(hidden, overflow)" not in html
     assert "forensic-token-link" not in html
     assert "forensic-overflow" not in html
     assert '<a class="forensic-workstream-chip"' in html
     assert re.search(
-        r"\.forensic-workstream-chip\s*\{[^}]*--chip-link-border:\s*#b9c7db;[^}]*--chip-link-bg:\s*#f3f6fb;[^}]*--chip-link-text:\s*#334155;",
+        r"\.forensic-workstream-chip\s*\{[^}]*--chip-link-border:\s*#93c5fd;[^}]*--chip-link-bg:\s*#eff6ff;[^}]*--chip-link-text:\s*#1e3a8a;",
         html,
         flags=re.S,
     )
@@ -539,9 +723,9 @@ def test_render_registry_dashboard_forensic_evidence_uses_digest_first_contract(
         html,
         flags=re.S,
     )
-    assert not re.search(r"\.forensic-workstream-chip\s*\{[^}]*#8cb8f4", html, flags=re.S)
-    assert not re.search(r"\.forensic-workstream-chip\s*\{[^}]*#eaf3ff", html, flags=re.S)
-    assert not re.search(r"\.forensic-workstream-chip\s*\{[^}]*#1f4795", html, flags=re.S)
+    assert not re.search(r"\.forensic-workstream-chip\s*\{[^}]*#b9c7db", html, flags=re.S)
+    assert not re.search(r"\.forensic-workstream-chip\s*\{[^}]*#f3f6fb", html, flags=re.S)
+    assert not re.search(r"\.forensic-workstream-chip\s*\{[^}]*#334155", html, flags=re.S)
     assert re.search(
         r"\.artifact\s*\{[^}]*--chip-link-border:\s*#cbd5e1;[^}]*--chip-link-bg:\s*#f8fafc;[^}]*--chip-link-text:\s*#334155;",
         html,
@@ -557,58 +741,92 @@ def test_render_registry_dashboard_forensic_evidence_uses_digest_first_contract(
         html,
         flags=re.S,
     )
-    assert '<details class="forensic-artifact-disclosure">' in html
-    assert '<summary class="forensic-artifact-overflow-summary"' in html
-    assert '<div class="forensic-artifact-disclosure-panel artifact-list">' in html
-    assert re.search(
-        r"\.forensic-artifact-overflow-summary\s*\{[^}]*--chip-link-border:\s*#cbd5e1;[^}]*--chip-link-bg:\s*#f8fafc;[^}]*--chip-link-text:\s*#334155;",
-        html,
-        flags=re.S,
-    )
-    assert re.search(
-        r"\.forensic-artifact-overflow-summary\s*\{[^}]*padding:\s*var\(--surface-deep-link-button-padding,\s*4px 12px\);",
-        html,
-        flags=re.S,
-    )
-    assert re.search(
-        r"\.forensic-artifact-overflow-summary\s*\{[^}]*font-size:\s*var\(--surface-deep-link-button-font-size,\s*11px\);[^}]*font-weight:\s*var\(--surface-deep-link-button-font-weight,\s*700\);",
-        html,
-        flags=re.S,
-    )
-    assert re.search(
-        r"\.forensic-artifact-disclosure:not\(\[open\]\)\s*\.forensic-artifact-disclosure-panel\s*\{[^}]*display:\s*none;",
-        html,
-        flags=re.S,
-    )
-    assert re.search(
-        r"\.forensic-artifact-disclosure\[open\]\s*\.forensic-artifact-disclosure-panel\s*\{[^}]*display:\s*flex;",
-        html,
-        flags=re.S,
-    )
+    assert "forensic-artifact-disclosure" in html
+    assert "forensic-artifact-overflow-summary" in html
+    assert "forensic-artifact-disclosure-panel" in html
     assert not re.search(r"\.artifact\s*\{[^}]*border:\s*1px solid #d4e2f7;", html, flags=re.S)
     assert re.search(
-        r"\.forensic-coverage-strip\s*\{[^}]*grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(150px,\s*1fr\)\);",
+        r"\.forensic-health-card\s*\{[^}]*border:\s*1px solid #d9e6fa;[^}]*border-radius:\s*12px;",
         html,
         flags=re.S,
     )
     assert re.search(
-        r"\.forensic-stat\s*\{[^}]*border:\s*1px solid #dbeafe;[^}]*border-radius:\s*12px;[^}]*background:\s*#ffffff;[^}]*grid-template-rows:\s*2\.35em auto;",
+        r"\.forensic-coverage-strip\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\);[^}]*border:\s*1px solid #dbeafe;[^}]*border-radius:\s*12px;",
         html,
         flags=re.S,
     )
     assert re.search(
-        r"\.forensic-stat-label\s*\{[^}]*font-size:\s*12px;[^}]*text-transform:\s*uppercase;",
+        r"\.forensic-stat\s*\{[^}]*border:\s*0;[^}]*border-radius:\s*0;[^}]*background:\s*transparent;[^}]*min-height:\s*58px;[^}]*padding:\s*14px 16px;[^}]*display:\s*flex;[^}]*align-items:\s*center;",
         html,
         flags=re.S,
     )
     assert re.search(
-        r"\.forensic-stat-value\s*\{[^}]*font-size:\s*23px;[^}]*font-weight:\s*700;",
+        r"\.forensic-stat \+ \.forensic-stat\s*\{[^}]*border-left:\s*1px solid #e5eefb;",
+        html,
+        flags=re.S,
+    )
+    forensic_stat_label_bodies = re.findall(r"\.forensic-stat-label\s*\{(?P<body>[^}]*)\}", html, flags=re.S)
+    assert any(
+        "font-size: 10px;" in body
+        and "font-weight: 800;" in body
+        and "text-transform: uppercase;" in body
+        for body in forensic_stat_label_bodies
+    )
+    assert re.search(
+        r"\.forensic-stat-value\s*\{[^}]*font-size:\s*15px;[^}]*font-weight:\s*800;",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.forensic-health-title,\s*\.forensic-eyebrow\s*\{[^}]*color:\s*#22496f;[^}]*font-size:\s*15px;[^}]*line-height:\s*1\.3;[^}]*letter-spacing:\s*0em;[^}]*font-weight:\s*700;[^}]*text-transform:\s*none;",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.forensic-group-disclosure\s*\{[^}]*border:\s*1px solid #dbeafe;[^}]*border-radius:\s*12px;",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.forensic-evidence-list\s*\{[^}]*display:\s*grid;[^}]*gap:\s*0;[^}]*padding:\s*0;",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.forensic-group-row\s*\{[^}]*border:\s*0;[^}]*border-radius:\s*0;[^}]*background:\s*transparent;[^}]*padding:\s*12px;[^}]*display:\s*grid;",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.forensic-group-row \+ \.forensic-group-row\s*\{[^}]*border-top:\s*1px solid #e5eefb;",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.forensic-group-row\s*\{[^}]*--surface-workstream-button-padding:\s*1px 8px;[^}]*--surface-deep-link-button-padding:\s*2px 9px;",
         html,
         flags=re.S,
     )
     assert not re.search(r"\.forensic-stat\s*\{[^}]*border:\s*1px solid #d7e4f6;", html, flags=re.S)
-    assert not re.search(r"\.forensic-stat\s*\{[^}]*background:\s*#f8fbff;", html, flags=re.S)
+    assert not re.search(r"\.forensic-stat\s*\{[^}]*border-radius:\s*999px;", html, flags=re.S)
+    assert not re.search(r"\.forensic-stat\s*\{[^}]*display:\s*inline-flex;", html, flags=re.S)
+    assert not re.search(r"\.forensic-stat\s*\{[^}]*grid-template-rows:", html, flags=re.S)
     assert not re.search(r"\.forensic-stat\s*\{[^}]*padding:\s*8px 9px;", html, flags=re.S)
+    assert "Evidence health" in html
+    assert "Latest material signal" in html
+    assert "Latest diagnostic signal" in html
+    assert "forensic-meta-row" in html
+    assert 'Object.prototype.hasOwnProperty.call(options, "artifactLimit")' in html
+    assert 'renderForensicTokenRow(event.workstreams, event.artifacts, { artifactLimit: 0 })' in html
+    assert "Component-link confidence for this event.\">confidence ${escapeHtml(event.confidence || \"none\")}" in html
+    assert "Grouped evidence" in html
+    assert "forensic-group-meta" in html
+    assert "forensic-group-channel" in html
+    assert '<span class="label">${escapeHtml(group.channel)}</span>' not in html
+    assert '<span class="label">${escapeHtml(forensicEventCountLabel(group.count))}</span>' not in html
+    assert "Diagnostic/internal signals are kept in grouped details." in html
+    assert "Only diagnostic/internal signals are attached." in html
+    assert "Diagnostic signal" in html
     assert "renderForensicRawEvent" not in html
     assert "renderForensicRawLog" not in html
     assert "forensic-raw-log" not in html
@@ -620,7 +838,7 @@ def test_render_registry_dashboard_forensic_evidence_uses_digest_first_contract(
     assert "event-top" not in html
 
     latest_match = re.search(
-        r"function renderForensicLatestEvent\(event\)(?P<body>.*?)function renderForensicGroups",
+        r"function renderForensicLatestEvent\(event, options = \{\}\)(?P<body>.*?)function renderForensicGroups",
         html,
         flags=re.S,
     )
@@ -628,6 +846,11 @@ def test_render_registry_dashboard_forensic_evidence_uses_digest_first_contract(
     latest_body = latest_match.group("body")
     assert "No scope" not in latest_body
     assert "No artifacts" not in latest_body
+    assert 'if (!event) return "";' in latest_body
+    assert "No mapped forensic evidence is attached yet." not in latest_body
+    assert "function forensicDisplaySummary(event)" in html
+    assert 'return String(event && event.summary || "(no summary)");' in html
+    assert "maxLength = 260" not in html
 
     groups_match = re.search(
         r"function renderForensicGroups\(events\)(?P<body>.*?)function renderTimeline",
@@ -638,16 +861,15 @@ def test_render_registry_dashboard_forensic_evidence_uses_digest_first_contract(
     groups_body = groups_match.group("body")
     assert "No scope" not in groups_body
     assert "No artifacts" not in groups_body
+    assert "renderForensicTokenRow(group.workstreams, group.artifacts)" not in groups_body
+    assert "renderForensicTokenRow(group.workstreams, group.artifacts, { artifactLimit: 0 })" in groups_body
 
     assert re.search(
-        r"\.forensic-latest,\s*\.forensic-group-row\s*\{[^}]*border-radius:\s*8px;",
+        r"\.forensic-latest\s*\{[^}]*border:\s*1px solid #dbeafe;[^}]*border-left:\s*3px solid #bfdbfe;[^}]*border-radius:\s*12px;[^}]*background:\s*#fbfdff;",
         html,
         flags=re.S,
     )
-    assert not re.search(
-        r"\.forensic-(?:latest|group-row)[^{]*\{[^}]*border-radius:\s*(?:9|1[0-9]|[2-9][0-9])px",
-        html,
-    )
+    assert not re.search(r"\.forensic-latest,\s*\.forensic-group-row", html)
 
 
 def test_render_registry_dashboard_uses_consumer_registry_truth_root_when_profile_overrides_manifest(tmp_path: Path) -> None:

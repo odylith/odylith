@@ -13,29 +13,29 @@ Methodology and reviewer protocol:
 Family-by-family corpus map:
 [Benchmark Families And Eval Catalog](FAMILIES_AND_EVALS.md)
 
-## Grounding Benchmark Signal Table
+## Internal Diagnostic Signal Table
 
 | Signal | odylith_on | odylith_off | Delta | Why It Matters |
 | --- | --- | --- | --- | --- |
-| Lane role | primary candidate | odylith_off / raw host CLI honest baseline | Odylith packet policy vs raw prompt | Keeps the Grounding Benchmark honest: Odylith packet and prompt construction versus the raw host CLI prompt bundle on the same measured contract. |
+| Lane role | primary candidate | odylith_off / raw host CLI honest baseline | Odylith policy vs raw host | Keeps the internal diagnostic benchmark honest: full Odylith packet and prompt construction versus the raw host CLI prompt bundle on the same task. |
 | Scenario count | 82 | 82 | +0 | Both lanes run the exact same corpus, so the comparison stays apples-to-apples. |
-| Median packet time | 22.540 ms | 0.010 ms | <span style="color:#c5221f;">+22.530 ms</span> | Shows the packet construction time on the Grounding Benchmark before any live host session begins. |
-| Mean packet time | 22.637 ms | 0.012 ms | <span style="color:#c5221f;">+22.625 ms</span> | Shows the mean packet time so slow prompt-build cases stay visible. |
-| P95 packet time | 46.680 ms | 0.029 ms | <span style="color:#c5221f;">+46.651 ms</span> | Shows the long-tail packet time instead of hiding it behind the median. |
-| Median prompt-bundle build time | 22.008 ms | 0.000 ms | <span style="color:#c5221f;">+22.008 ms</span> | Shows time spent inside Odylith packet construction and prompt shaping on the Grounding Benchmark. |
-| Median grounding validation overhead | 0.615 ms | 0.010 ms | <span style="color:#c5221f;">+0.605 ms</span> | Shows post-build grounding harness overhead such as validation and accounting. |
-| Median prompt-bundle input tokens | 935.5 | 101.0 | <span style="color:#c5221f;">+834.5</span> | Shows the model-facing prompt-bundle input size on the Grounding Benchmark. |
-| Median total prompt-bundle payload tokens | 1177.5 | 101.0 | <span style="color:#c5221f;">+1076.5</span> | Shows the full grounding payload size across prompt, runtime contract, and operator readouts. |
-| Required-path recall rate | 0.926 | 0.600 | <strong style="color:#137333;">+0.326</strong> | Higher means Odylith finds more of the repo surfaces the task truly depends on. |
-| Required-path precision rate | 1.000 | 0.951 | <strong style="color:#137333;">+0.049</strong> | Higher means Odylith keeps the evidence cone tighter and more relevant. |
-| Hallucinated-surface rate | 0.000 | 0.000 | +0.000 | Lower means less made-up or unnecessary surface spread. |
-| Validation-success proxy rate | 0.689 | 0.000 | <strong style="color:#137333;">+0.689</strong> | Higher means the Grounding Benchmark more often satisfies the benchmark validator proxy before any live host session begins. |
-| Critical required-path recall rate | 0.889 | 0.611 | <strong style="color:#137333;">+0.278</strong> | Protects high-stakes cases from missing critical repo truth. |
-| Critical validation-success proxy rate | 0.613 | 0.000 | <strong style="color:#137333;">+0.613</strong> | Protects critical grounding cases from missing packet-level validator proxy truth. |
-| Expectation-success proxy rate | 0.951 | 0.000 | <strong style="color:#137333;">+0.951</strong> | Higher means more scenarios satisfy the stated task contract on the Grounding Benchmark before model execution begins. |
+| Median packet time | 58.529 ms | 0.012 ms | <span style="color:#c5221f;">+58.517 ms</span> | Shows the packet construction time on the internal diagnostic benchmark before any live Codex session begins. |
+| Mean packet time | 81.359 ms | 0.014 ms | <span style="color:#c5221f;">+81.345 ms</span> | Shows the mean packet time so slow prompt-build cases stay visible. |
+| P95 packet time | 211.377 ms | 0.035 ms | <span style="color:#c5221f;">+211.342 ms</span> | Shows the long-tail packet time instead of hiding it behind the median. |
+| Median prompt-bundle build time | 60.518 ms | 0.000 ms | <span style="color:#c5221f;">+60.518 ms</span> | Shows time spent inside Odylith packet construction and prompt shaping on the internal diagnostic benchmark. |
+| Median grounding validation overhead | 0.649 ms | 0.012 ms | <span style="color:#c5221f;">+0.637 ms</span> | Shows post-build grounding harness overhead such as validation and accounting. |
+| Median prompt-bundle input tokens | 972.0 | 101.0 | <span style="color:#c5221f;">+871.0</span> | Shows the model-facing prompt-bundle input size on the internal diagnostic benchmark. |
+| Median total prompt-bundle payload tokens | 1225.0 | 101.0 | <span style="color:#c5221f;">+1124.0</span> | Shows the full grounding payload size across prompt, runtime contract, and operator diagnostics. |
+| Required-path recall rate | 0.916 | 0.600 | <strong style="color:#137333;">+0.316</strong> | Higher means Odylith finds more of the repo surfaces the task truly depends on. |
+| Required-path precision rate | 0.998 | 0.951 | <strong style="color:#137333;">+0.047</strong> | Higher means Odylith keeps the evidence cone tighter and more relevant. |
+| Hallucinated-surface rate | 0.002 | 0.000 | <span style="color:#c5221f;">+0.002</span> | Lower means less made-up or unnecessary surface spread. |
+| Validation-success proxy rate | 0.662 | 0.014 | <strong style="color:#137333;">+0.648</strong> | Higher means the internal diagnostic benchmark more often satisfies the benchmark validator proxy before any live Codex session begins. |
+| Critical required-path recall rate | 0.867 | 0.611 | <strong style="color:#137333;">+0.256</strong> | Protects high-stakes cases from missing critical repo truth. |
+| Critical validation-success proxy rate | 0.548 | 0.000 | <strong style="color:#137333;">+0.548</strong> | Protects critical grounding cases from missing packet-level validator proxy truth. |
+| Expectation-success proxy rate | 0.927 | 0.104 | <strong style="color:#137333;">+0.823</strong> | Higher means more scenarios satisfy the stated task contract on the internal diagnostic benchmark before model execution begins. |
 
 > [!NOTE]
-> Current Grounding Benchmark status: `provisional_pass`.
+> Current diagnostic status: `hold`.
 > Fairness contract passed: `True`.
 > Corpus seriousness floor passed: `True`.
 
@@ -43,26 +43,25 @@ Family-by-family corpus map:
 
 | Signal | odylith_on | odylith_off | Delta | Why It Matters |
 | --- | --- | --- | --- | --- |
-| Lane role | primary candidate | odylith_off / raw host CLI honest baseline | Odylith policy vs raw host | Keeps the public comparison honest: report-visible Odylith grounding, validation, and write-admission policy versus the raw host CLI on the same measured contract. |
+| Lane role | primary candidate | odylith_off / raw host CLI honest baseline | Odylith policy vs raw host | Keeps the public comparison honest: report-visible Odylith grounding, validation, and write-admission policy versus raw host CLI on the same measured contract. |
 | Scenario count | 82 | 82 | +0 | Both lanes run the exact same corpus, so the comparison stays apples-to-apples. |
-| Median time to valid outcome | 3.75s | 1m 31s | <strong style="color:#137333;">-1m 28s</strong> | Shows matched-pair benchmark time to valid outcome for the live run plus the harness validator, not interactive product latency. |
-| Mean time to valid outcome | 17s | 1m 47s | <strong style="color:#137333;">-1m 30s</strong> | Shows the mean matched-pair benchmark time to valid outcome so long-tail slow cases stay visible. |
-| P95 time to valid outcome | 1m 18s | 3m 56s | <strong style="color:#137333;">-2m 38s</strong> | Shows the tail completion time for the slowest benchmark cases instead of letting the median hide them. |
-| Median live agent runtime | 0.000 ms | 1m 31s | <strong style="color:#137333;">-1m 31s</strong> | Shows time spent inside the live host CLI session itself; zero-heavy Odylith rows are valid only as report-visible validator-backed closure stops. |
-| Median validator overhead | 2.86s | 2.44s | <span style="color:#c5221f;">+422 ms</span> | Shows harness validator overhead added after the live host session completes. |
-| Median live session input tokens | 0 | 206,626 | <strong style="color:#137333;">-206,626</strong> | Shows full live host session input across the multi-turn run, not just the first prompt. |
-| Median total model tokens | 0 | 209,404.5 | <strong style="color:#137333;">-209,404.5</strong> | Shows total live model-token spend across the multi-turn session. |
-| Required-path recall rate | 1.000 | 0.742 | <strong style="color:#137333;">+0.258</strong> | Higher means Odylith finds more of the repo surfaces the task truly depends on. |
-| Required-path precision rate | 0.979 | 0.558 | <strong style="color:#137333;">+0.421</strong> | Higher means Odylith keeps the evidence cone tighter and more relevant. |
-| Hallucinated-surface rate | 0.021 | 0.418 | <strong style="color:#137333;">-0.397</strong> | Lower means less made-up or unnecessary surface spread. |
-| Validation success rate | 1.000 | 0.919 | <strong style="color:#137333;">+0.081</strong> | Higher means the lane more often reaches a validator-backed correct outcome. |
-| Critical required-path recall rate | 1.000 | 0.794 | <strong style="color:#137333;">+0.206</strong> | Protects high-stakes cases from missing critical repo truth. |
-| Critical validation success rate | 1.000 | 0.903 | <strong style="color:#137333;">+0.097</strong> | Protects critical changes from silent regressions. |
-| Expectation success rate | 1.000 | 0.312 | <strong style="color:#137333;">+0.688</strong> | Higher means more scenarios finish the stated task contract on the live run. |
+| Median time to valid outcome | 4.51s | 53s | <strong style="color:#137333;">-48s</strong> | Shows matched-pair benchmark time to valid outcome for the live run plus the harness validator, not interactive product latency. |
+| Mean time to valid outcome | 19s | 59s | <strong style="color:#137333;">-40s</strong> | Shows the mean matched-pair benchmark time to valid outcome so long-tail slow cases stay visible. |
+| P95 time to valid outcome | 1m 06s | 1m 43s | <strong style="color:#137333;">-37s</strong> | Shows the tail completion time for the slowest benchmark cases instead of letting the median hide them. |
+| Median live agent runtime | 0.000 ms | 45s | <strong style="color:#137333;">-45s</strong> | Shows time spent inside the live host CLI session itself; zero-heavy Odylith rows are valid only as report-visible validator-backed closure stops. |
+| Median validator overhead | 3.25s | 3.24s | <span style="color:#c5221f;">+4 ms</span> | Shows harness validator overhead added after the live host session completes. |
+| Median live session input tokens | 0 | 245,205.5 | <strong style="color:#137333;">-245,205.5</strong> | Shows full live host session input across the multi-turn run, not just the first prompt. |
+| Median total model tokens | 0 | 246,379.5 | <strong style="color:#137333;">-246,379.5</strong> | Shows total live model-token spend across the multi-turn session. |
+| Required-path recall rate | 0.992 | 0.765 | <strong style="color:#137333;">+0.227</strong> | Higher means Odylith finds more of the repo surfaces the task truly depends on. |
+| Required-path precision rate | 0.983 | 0.481 | <strong style="color:#137333;">+0.502</strong> | Higher means Odylith keeps the evidence cone tighter and more relevant. |
+| Hallucinated-surface rate | 0.017 | 0.519 | <strong style="color:#137333;">-0.502</strong> | Lower means less made-up or unnecessary surface spread. |
+| Validation success rate | 0.986 | 0.973 | <strong style="color:#137333;">+0.013</strong> | Higher means the lane more often reaches a validator-backed correct outcome. |
+| Critical required-path recall rate | 0.979 | 0.774 | <strong style="color:#137333;">+0.205</strong> | Protects high-stakes cases from missing critical repo truth. |
+| Critical validation success rate | 1.000 | 1.000 | +0.000 | Protects critical changes from silent regressions. |
+| Expectation success rate | 0.951 | 0.299 | <strong style="color:#137333;">+0.652</strong> | Higher means more scenarios finish the stated task contract on the live run. |
 
 > [!NOTE]
 > Current live-proof status: `provisional_pass`.
 > Comparison contract: `full_product_assistance_vs_raw_agent`.
 > Fairness contract passed: `True`.
 > Full tracked-corpus coverage rate: `1.000`.
-> `benchmark_compare` remains release-warn until a shipped release baseline is recorded in `docs/benchmarks/release-baselines.v1.json`.

@@ -1,0 +1,64 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "accessibility",
+    "accessible",
+    "a11y",
+    "screen reader",
+    "assistive",
+    "disability"
+  ],
+  "matched_description_evidence_terms": [
+    "accessibility",
+    "accessible"
+  ],
+  "repository": {
+    "default_branch": "main",
+    "description": "An Accessible, WCAG compliant Starter Theme for Astro 6+ including several accessibility features such as, better focus-outline, landmarks, semantics, interactive components and skip-link navigation. Ships with Tailwind 4, Prettier and ESLint support.",
+    "full_name": "incluud/accessible-astro-starter",
+    "id": 391560145,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "accessible-astro-starter",
+    "node_id": "MDEwOlJlcG9zaXRvcnkzOTE1NjAxNDU=",
+    "pushed_at": "2026-07-09T17:57:54Z",
+    "topics": [
+      "a11y",
+      "accessibility",
+      "astro",
+      "blog",
+      "darkmode",
+      "dynamic-routes",
+      "eslint",
+      "javascript",
+      "prettier",
+      "sass",
+      "skip-links",
+      "tailwindcss",
+      "template",
+      "theme",
+      "typescript",
+      "utility-classes",
+      "wcag"
+    ]
+  },
+  "response_item_index": 39,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aaccessibility&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:16:13 GMT",
+    "x-github-request-id": "D13A:1199E1:1528827:1589B2E:6A5B607A"
+  },
+  "search_response_path": "responses/accessibility.json",
+  "search_response_sha256": "e229318d547f71784ae6cb069e0355fe5c681ddd0358edad746dd473a0040580",
+  "selection_index": 16,
+  "source_family": "accessibility",
+  "source_id": "github-repository:391560145",
+  "source_uri": "https://github.com/incluud/accessible-astro-starter",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

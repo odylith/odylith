@@ -6,10 +6,8 @@
   copy or claim completion beyond fresh proof.
 - Odylith Discipline signals may inform closeout only after proof, benchmark, or
   visible-intervention evidence supports the statement.
-Last updated: 2026-05-03
+Last updated: 2026-10-05
 
-
-Last updated (UTC): 2026-04-17
 
 ## Purpose
 Odylith Chatter is Odylith's cross-posture narration contract. It governs how
@@ -39,6 +37,11 @@ end-of-work outcomes instead of canned self-promotion.
   and runtime explanation templates.
 - Cross-surface mirror alignment across source, bundle, and generated Registry
   surfaces for this narration policy.
+- Governance-learning guidance across maintainer, dogfood, consumer, Codex,
+  Claude, and shipped bundle surfaces: durable errors, failed mechanisms,
+  failed fix attempts, and proof checkpoints must route into Casebook,
+  Radar/plans, Registry, Atlas, and Compass instead of remaining in chat
+  memory.
 - Structured `presentation_policy` carry-through from packets so task-first
   narration, routing-receipt suppression, and surface-fast-lane behavior stay
   driven by explicit runtime policy instead of prose heuristics.
@@ -291,26 +294,26 @@ end-of-work outcomes instead of canned self-promotion.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-05-03 · Implementation:** CB-149 consumer start latency update: installed v0.1.13 measured 25.40s in a real consumer repo; source fix now returns expected fallback in 2.55s with fast start preflight and hot-path bootstrap.
-  - Scope: B-141
-  - Evidence: odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md, src/odylith/cli.py +3 more
-- **2026-05-02 · Implementation:** B-141 now enforces serial Odylith startup before context/search across host guidance, skills, and installed bundle assets, with Casebook index-only migration guard proof.
-  - Scope: B-141
-  - Evidence: AGENTS.md, agents/skills/odylith-start/SKILL.md +2 more
-- **2026-04-27 · Implementation:** v0.1.12 hardening: extracted upgrade reporting from CLI into install-owned helpers, added recursive lock hygiene with doctor repair, improved Sigstore warning summaries, and compacted 13715 stale zero-byte lock placeholders in this product repo.
-  - Scope: B-030
-  - Evidence: src/odylith/install/lock_hygiene.py, src/odylith/install/manager.py +2 more
-- **2026-04-27 · Implementation:** v0.1.12 / CB-133: hardened upgrade lifecycle UX with exact dry-run target metadata, idempotent current-target planning, upgrade JSON/report persistence, clearer installed-local version wording, doctor trust/upgrade observability, OS metadata dirty-path filtering, and rollback scope closeout.
-  - Evidence: src/odylith/cli.py, src/odylith/install/manager.py +2 more
-- **2026-04-17 · Implementation:** B-110 Odylith Discipline hardening centralized signal/law policy, ranked open-world affordances, suppressed ephemeral practice refs, tagged Discipline benchmark scenarios to B-110, and proved zero-credit validators plus quick benchmark families with advisory widening at 0.0.
-  - Scope: B-110
-  - Evidence: odylith/runtime/source/optimization-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md
-- **2026-04-07 · Implementation:** Tightened the chatter hot path so one conversation-bundle pass reuses request metrics and context-artifact scans across ambient and closeout composition.
-  - Scope: B-031
-  - Evidence: odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md, odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md +2 more
+- **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `src/odylith/install/agents.py`, `tests/integration/runtime/test_greenfield_hiit_preconfirm_quality.py`
+- **2026-08-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-145
+  - Evidence: `sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9`, `odylith/casebook/bugs/2026-08-01-fresh-install-compact-guidance-omitted-greenfield-commit-only-boundary.md`, `src/odylith/install/agents.py`, `tests/unit/install/test_agents.py`
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 7 verifiable artifact references.
+  - Evidence: `sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9`, `odylith/AGENTS.md`, `odylith/README.md`, `src/odylith/bundle/assets/odylith/README.md`, plus 3 more
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 5 verifiable artifact references.
+  - Evidence: `odylith/skills/odylith-greenfield-governance/SKILL.md`, `src/odylith/install/agents.py`, `src/odylith/runtime/domain_intelligence/greenfield_compiled_readback.py`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`, plus 1 more
+- **2026-07-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-05-07-release-smoke-omitted-greenfield-create-journey.md`, `src/odylith/install/agents.py`
+- **2026-06-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 7 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `bin/greenfield-post-confirm-matrix`, `odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md`, `odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md`, `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, plus 3 more
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-07-12: Made explicit intervention-feedback cadence a host-neutral session preference. Codex and Claude now carry the preference through substantive continuation, progress, proof, and risk prompts, suppress stale replay before it can eclipse a fresh Assist, and resolve the same synthetic session when a host omits an ID. Bare acknowledgements remain quiet. Source proof covered 91 focused shared-host tests plus exact Codex and Claude visible-intervention continuation probes. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
 - 2026-03-31: Promoted Odylith chatter into a first-class Registry component so the task-first, final-only, evidence-backed narration contract is governed across consumer, maintainer, dogfood, and sim-facing surfaces. (Plan: [B-031](odylith/radar/radar.html?view=plan&workstream=B-031))
 - 2026-04-06: Expanded the chatter contract from a closeout-only note into ambient conversation intelligence with rare labeled `Odylith Insight:`, `Odylith History:`, and `Odylith Risks:` beats plus capitalized `Odylith Assist:` closeout lines that link updated governance ids inline when they were actually changed. (Plan: [B-031](odylith/radar/radar.html?view=plan&workstream=B-031))
 - 2026-04-07: Tightened the runtime contract so closeout narration suppresses overlapping assist/supplement beats and avoids leaning on one small set of stock delta phrases across unrelated governed slices. (Plan: [B-031](odylith/radar/radar.html?view=plan&workstream=B-031))

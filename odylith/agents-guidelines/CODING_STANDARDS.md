@@ -20,6 +20,14 @@
   primitives over copy-paste or near-duplicate logic.
 - If equivalent behavior already exists, reuse it or consolidate toward one
   canonical implementation instead of growing a parallel fork.
+- Governance-learning must move with the code change. Escaped defects
+  and failed simulations belong in Casebook, planned work in Radar or
+  technical plans, component-contract changes in Registry, changed flows or
+  topology in Atlas, and durable decisions or proof checkpoints in Compass
+  before closeout, commit, build, or release claims. Before fixing a bug,
+  search Casebook and related governance truth, read prior failed mechanisms,
+  failed fix attempts, and guardrails, do not repeat a fix path that already
+  failed, and record new mechanism-level learning.
 - When behavior changes would otherwise stop being obvious to the next
   maintainer, update the governing doc, spec, or nearest high-signal code
   comment in the same change.

@@ -7,10 +7,8 @@
 - Tribunal may promote a pattern into doctrine, tool affordance, skill
   guidance, benchmark case, or Casebook bug. It is not the hot path and must
   not run provider reasoning for ordinary Odylith Discipline decisions.
-Last updated: 2026-04-17
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-17
 
 ## Purpose
 Tribunal is Odylith's diagnosis engine. It converts delivery scopes into
@@ -169,6 +167,18 @@ Tribunal only accepts provider refinement for a limited field set:
 - `discriminating_next_check`
 - `maintainer_brief`
 
+Structured repair planning is a separate Tribunal contract from narrative
+enrichment. When a caller already has typed findings, source-map targets,
+semantic-node IDs, projection IDs, and a formal patch request, Tribunal may ask
+the configured provider for a schema-constrained patch plan. That output is not
+trusted prose. It is admissible only when it returns bounded operations against
+the caller's existing target paths, includes a typed replacement-fact envelope,
+rejected interpretation, closed-schema decision ledger, closed-schema
+proof-obligation delta, and confidence, and passes deterministic schema and
+custody checks before the caller applies it. Tribunal owns the strict
+model-facing patch-plan schema; callers own materializing validated replacement
+facts into their semantic or plan IR and rerunning their own gates.
+
 ### When provider use is allowed
 Provider use depends on:
 - provider availability
@@ -275,6 +285,11 @@ checkpoint, Stop, or visibility-status hot paths.
   update candidate selection, queue-row generation, and systemic brief logic.
 - New provider contract:
   update the allowed provider fields and validation logic together.
+- New structured repair-planning contract:
+  update the provider schema, validation/admissibility logic, caller adapter,
+  cache/fingerprint metadata, and tests together. The change must stay
+  general-purpose Tribunal infrastructure; domain-specific or surface-specific
+  repair semantics belong in the caller adapter.
 - New case payload field:
   update cache reuse and case serialization, not just the surface renderer.
 
@@ -290,14 +305,16 @@ checkpoint, Stop, or visibility-status hot paths.
 
 ## Validation Playbook
 ### Diagnosis
-- `pytest -q tests/unit/runtime/test_tribunal_engine.py tests/unit/runtime/test_odylith_reasoning.py`
+- `pytest -q tests/unit/runtime/test_tribunal_engine.py tests/unit/runtime/test_tribunal_patch_planner.py tests/unit/runtime/test_odylith_reasoning.py`
 - `odylith benchmark --repo-root . --help`
 
 ## Requirements Trace
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- No synchronized requirement or contract signals yet.
+- **2026-06-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/atlas/source/domain-intelligence-greenfield-governance.mmd`, `odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/registry/source/components/tribunal/CURRENT_SPEC.md`, plus 1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -307,3 +324,9 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-09: Clarified the product boundary that Tribunal diagnoses why a posture exists, while Execution Engine decides whether the next move is admissible. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
 - 2026-04-17: Documented the Guidance Behavior runtime's Tribunal-ready signal as precomputed downstream evidence for the intervention engine, not a live Tribunal invocation or provider-backed hot-path dependency. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-17: Clarified that the Guidance Behavior Tribunal-ready signal now travels with the platform end-to-end contract, letting downstream evidence reference benchmark/eval and host-lane proof posture without invoking Tribunal or expanding context on the live path. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
+- 2026-06-26: Extended Tribunal's governed contract to include schema-constrained structured repair planning as a general-purpose provider use case, separate from narrative enrichment. Callers such as greenfield post-confirm rescue may submit typed findings and patch requests, but Tribunal must return only custody-checked operations that deterministic caller-owned executors apply. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)
+- 2026-06-26: Wired the structured repair-planning contract into the greenfield rescue seam without moving greenfield semantics into Tribunal. The new `runtime/reasoning/tribunal_patch_planner.py` provider schema preserves the caller's operation id, target layer, target path, and semantic-node id; lets the provider fill only replacement facts, decision-ledger entries, proof-obligation deltas, rejected interpretations, and confidence; rejects invented or moved targets; and returns a merged PatchSet request for caller-owned semantic or artifact-plan executors. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)
+- 2026-06-26: Hardened live structured patch planning against provider-path failed mechanisms. The Codex CLI adapter now uses an explicit structured-repair model when config is blank under ignored user config, the legacy Spark alias maps to a live CLI token, the automatic cheap ladder avoids the unsupported Codex rung, and `tribunal_patch_planner.py` exposes closed-schema decision ledger, proof-delta, and replacement-fact envelopes that pass strict structured output before caller-owned materialization. Focused reasoning and planner tests passed, and a live Codex CLI `gpt-5.4` planner call returned a validated semantic patch operation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+- 2026-06-30: Clarified structured patch custody for idempotent semantic facts. Tribunal still returns only schema-checked replacement facts and decision ledgers; caller-owned executors may record the decision ledger when the provider-confirmed fact already matches canonical semantic state, so release proof can distinguish real host adjudication from deterministic rescue wiring without forcing a fake value change. A live Codex structured-planner probe returned a valid external-boundary patch in 12.692s, and focused semantic rescue tests passed. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-208`, `CB-209`)
+- 2026-06-30: Distinguished missing replacement facts from intentional typed list clears in structured patch planning. `tribunal_patch_planner.py` now materializes `value_kind=list` envelopes for list-valued semantic fields even when `list_values` is empty, validates that as an explicit semantic fact when the requested operation targets a list field, and exposes the same missing-fact decision to greenfield rescue planning. Blank text, absent facts, invented operation IDs, moved targets, artifact-plan empty values, and non-list semantic empties still fail closed. Focused Tribunal, PatchSet, semantic executor, engine, and structured-rescue tests passed, and the installed release matrix proved a provider-backed natural structured rescue with a planned clear operation and no rejections. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-211`; Diagram: D-043)
+- 2026-06-30: Added safe ledger projection to the structured repair-planning contract after an installed natural-rescue proof failed on raw host rationale prose. `tribunal_patch_planner.py` now normalizes decision summaries, decision-ledger entries, proof-obligation deltas, and rejected interpretations into safe plain ledger text before merging provider output back into PatchSet custody, while preserving replacement facts unchanged for caller-owned semantic or artifact-plan executors. This keeps provider reasoning useful without letting explanatory prose bypass final quality gates. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`; Diagram: D-043)

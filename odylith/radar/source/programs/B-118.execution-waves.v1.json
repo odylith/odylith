@@ -1,0 +1,109 @@
+{
+  "umbrella_id": "B-118",
+  "version": "v1",
+  "waves": [
+    {
+      "wave_id": "W1",
+      "label": "Benchmark baseline proof",
+      "status": "planned",
+      "summary": "Define the live benchmark matrix and baseline proof before implementation claims.",
+      "depends_on": [],
+      "primary_workstreams": [
+        "B-119"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": []
+    },
+    {
+      "wave_id": "W2",
+      "label": "Harness manifest contract",
+      "status": "planned",
+      "summary": "Define the governed-harness manifest and public payload contract.",
+      "depends_on": [
+        "W1"
+      ],
+      "primary_workstreams": [
+        "B-120"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": []
+    },
+    {
+      "wave_id": "W3",
+      "label": "Admissibility guardrails",
+      "status": "planned",
+      "summary": "Define approval, deny, ask, defer, and rewrite policy for tool and action gates.",
+      "depends_on": [
+        "W2"
+      ],
+      "primary_workstreams": [
+        "B-121"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": []
+    },
+    {
+      "wave_id": "W4",
+      "label": "Receipts and tracing",
+      "status": "planned",
+      "summary": "Bind harness receipts, tracing fields, and resumable proof across hosts.",
+      "depends_on": [
+        "W3"
+      ],
+      "primary_workstreams": [
+        "B-122"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": []
+    },
+    {
+      "wave_id": "W5",
+      "label": "Generic SDK adapter",
+      "status": "planned",
+      "summary": "Implement the host-neutral adapter contract with managed SDK early-exit support where possible.",
+      "depends_on": [
+        "W4"
+      ],
+      "primary_workstreams": [
+        "B-123"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": []
+    },
+    {
+      "wave_id": "W6",
+      "label": "Cross-host ablations",
+      "status": "planned",
+      "summary": "Run cross-host ablations through the product Turn Gate without benchmark-private shortcuts.",
+      "depends_on": [
+        "W5"
+      ],
+      "primary_workstreams": [
+        "B-124"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": []
+    },
+    {
+      "wave_id": "W7",
+      "label": "Docs and release closure",
+      "status": "planned",
+      "summary": "Close public docs, release notes, and benchmark proof for the governed-harness lane.",
+      "depends_on": [
+        "W6"
+      ],
+      "primary_workstreams": [
+        "B-125"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": []
+    }
+  ]
+}

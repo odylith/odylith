@@ -313,7 +313,7 @@ def temporary_workspace_checkout(
         workspace_root = (temp_root / "workspace").resolve()
         validator_truth_root = (temp_root / "validator-truth").resolve()
         subprocess.run(
-            ["git", "clone", "--quiet", "--local", "--no-checkout", str(root), str(workspace_root)],
+            ["git", "clone", "--quiet", "--local", "--no-hardlinks", "--no-checkout", str(root), str(workspace_root)],
             cwd=str(root),
             text=True,
             capture_output=True,
@@ -407,11 +407,31 @@ def scenario_workspace_self_reference_strip_paths(
 def workspace_strip_paths(*, repo_root: Path, preserve_paths: Sequence[str] = ()) -> list[Path]:
     root = Path(repo_root).resolve()
     preserved = _normalized_preserve_paths(preserve_paths)
-    rows = [
-        path.relative_to(root)
-        for pattern in ("AGENTS.md", "AGENTS.override.md", "CLAUDE.md", "CLAUDE.local.md", ".cursorrules", ".windsurfrules")
-        for path in root.rglob(pattern)
-    ]
+    instruction_names = {"AGENTS.md", "AGENTS.override.md", "CLAUDE.md", "CLAUDE.local.md", ".cursorrules", ".windsurfrules"}
+    runtime_roots: list[Path] = []
+    for relative in sorted(
+        {Path(".odylith/bin"), *(Path(token) for token in preserved)},
+        key=lambda path: (len(path.parts), path.as_posix()),
+    ):
+        if relative.is_absolute() or ".." in relative.parts or relative.parts[:1] != (".odylith",):
+            continue
+        path = root / relative
+        if not path.is_dir() or not path.resolve().is_relative_to(root):
+            continue
+        if not any(path.is_relative_to(parent) for parent in runtime_roots):
+            runtime_roots.append(path)
+    rows: list[Path] = []
+    # Runtime replay copies bin and explicit snapshots, not retained generations.
+    for scan_root in (root, *runtime_roots):
+        for directory, directories, files in os.walk(scan_root, followlinks=False):
+            current = Path(directory)
+            if current == root:
+                directories[:] = [name for name in directories if name not in {".git", ".odylith"}]
+            rows.extend(
+                (current / name).relative_to(root)
+                for name in (*directories, *files)
+                if name in instruction_names
+            )
     for name in (".cursor", ".windsurf", ".codex"):
         path = (root / name).resolve()
         if path.is_dir():

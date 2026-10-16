@@ -50,7 +50,27 @@
 
 - Solution: Created the 0.1.12 `migration-runtime` component, routed the v0.1.11 value-engine migration and legacy Odyssey root migration through its registry, separated live repo-state classification from historical migration range, accepted installer-returned staged runtime verification as migration-plan evidence, exposed scenario and migration_plan in upgrade dry-run/json, wrote durable migration ledgers, added doctor migration observability, and added `release migration-gate` validation for registered migration coverage and lifecycle bypasses.
 
+- Solution Update: A 2026-06-28 broad install-suite pass exposed a scenario
+  ordering regression in the same migration-runtime custody boundary:
+  consumer repos whose active runtime and pin already matched the target could
+  be classified as `already_current_consumer` before the planner considered
+  missing runtime verification or a `migration_required=true` release
+  transition. The forward fix makes missing runtime verification outrank
+  already-current classification, lets verified same-version reinstalls remain
+  no-op, and passes `previous_version` into scenario classification so a
+  release transition with `migration_required=true` still reaches the
+  registered-migration blocker when no migration covers the concrete target.
+  Failed mechanism recorded: do not let convenience no-op scenarios preempt
+  fail-closed verification or manifest-custody states.
+
 - Verification: `PYTHONPATH=src python3 -m pytest -q` passed with 3195 tests and 1 skipped; focused migration/CLI rerun passed with 304 tests; install manager, lifecycle simulator, and bundle integration passed with 91 tests; source `upgrade --dry-run --json`, `doctor`, and `release migration-gate --json` passed; `git diff --check`, `py_compile` on touched runtime/install/test files, Casebook validate, and component-registry validate passed.
+
+- Verification Update: `tests/unit/install` passed with 383 tests after the
+  ordering fix, including the three critical edges: verified same-version
+  consumer reinstall stays `already_current_consumer`, same-version consumer
+  runtime without verification blocks as
+  `runtime_artifact_verification_missing`, and `migration_required=true`
+  without a registered target migration blocks instead of no-oping.
 
 - Prevention: Make migration-runtime validation a required 0.1.12 release gate so future migration_required releases cannot ship without registered definitions, fixture coverage, and dry-run/apply parity.
 

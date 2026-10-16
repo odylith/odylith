@@ -79,7 +79,6 @@ _PROCESS_ARCHITECTURE_SOURCE_HASH_CACHE: dict[str, tuple[dict[str, Any], str]] =
 _PROCESS_ARCHITECTURE_TRACEABILITY_INDEX_CACHE: dict[str, dict[str, Any]] = {}
 _PROCESS_ARCHITECTURE_WORKSTREAM_INDEX_CACHE: dict[str, dict[str, Any]] = {}
 
-
 def _elapsed_ms(started_at: float) -> float:
     return round((time.perf_counter() - started_at) * 1000.0, 3)
 
@@ -359,6 +358,8 @@ def _normalize_diagrams(
                 "diagram_id": diagram_id,
                 "title": str(row.get("title", "")).strip() or str(metadata.get("title", "")).strip(),
                 "summary": str(row.get("summary", "")).strip() or str(metadata.get("summary", "")).strip(),
+                "read_guide": str(metadata.get("read_guide", "")).strip(),
+                "diagram_boxes": metadata.get("diagram_boxes", []) if isinstance(metadata.get("diagram_boxes"), list) else [],
                 "owner": str(row.get("owner", "")).strip() or str(metadata.get("owner", "")).strip(),
                 "path": source_mmd,
                 "source_mmd": source_mmd,
@@ -3274,7 +3275,6 @@ def build_architecture_dossier(
     compacted = _compact_architecture_dossier(payload, detail_level=detail)
     compacted["_stage_timings"] = dict(stage_timings)
     return compacted
-
 
 __all__ = [
     "ARCHITECTURE_BUNDLE_FILENAME",

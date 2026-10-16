@@ -25,6 +25,19 @@
 - Treat fake seams, duplicate helpers, giant phase-mixed functions, mirror
   drift, and filler documentation as the same failure class even when the host
   repo is not Python.
+- Human-visible generated content has a minimum clarity floor across every
+  lane and host. Before any live narration, brand voice, humor, or stylistic
+  flourish is added, the content must be simple, easy to understand, legible,
+  grammatically coherent, and clear about the thing it describes.
+- Treat broken grammar, clipped titles, malformed Markdown, repeated generic
+  copy, filler prose, vague labels, unexplained IDs, internal-control-plane
+  leakage, and text that forces the reader to reconstruct the product or work
+  as AI slop. This applies to dashboards, Radar, Registry, Atlas, Compass,
+  Casebook, technical plans, prompts, hooks, CLI messages, docs, templates,
+  and generated artifacts.
+- Live narration is only valid on top of that floor. If a sentence is vivid
+  but unclear, clever but ungrammatical, or polished but empty, rewrite it in
+  plain language before adding voice.
 - In Python, common slop signals include `_host()` shims, `bind(host)` or
   globals injection, duplicated `_normalize_*` helpers, and giant payload or
   router functions.
@@ -124,6 +137,13 @@
   modes, boundary assumptions, or non-obvious state transitions.
 - Delete comments that merely restate syntax, variable assignment, or obvious
   control flow.
+- Human-facing documentation and generated prose must pass the same clarity
+  floor: every visible title, summary, card, section, diagram explanation,
+  workstream description, component spec, prompt, and operator message should
+  be readable as plain English before it tries to be expressive.
+- Do not accept "technically true" copy if the grammar is broken, the reader
+  cannot tell what problem is being solved, or the next action or evidence
+  boundary is hidden behind product-internal shorthand.
 
 ## Proof Obligations
 - Every anti-slop cleanup must add or update enforcement tests.
@@ -145,6 +165,9 @@
   the claimed scope. One does not substitute for the other.
 - Guidance-only hardening without updated tests, validators, or mirror-content
   checks is incomplete.
+- When a change strengthens human-visible content rules, update the shared
+  guidance, scoped surface contracts, installed guidance generators, relevant
+  skills, shipped mirrors, and mirror-content tests in the same pass.
 - In consumer repos, prove consumer-owned code with the consumer repo's own
   language toolchain, tests, linters, build checks, and formatter or type
   checks where applicable. Odylith narrows the slice; the consumer repo still

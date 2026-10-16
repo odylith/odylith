@@ -10,9 +10,14 @@ Atlas/Casebook visibility in sync without widening into full governance sync.
 from __future__ import annotations
 
 import contextlib
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 import io
+import os
 from pathlib import Path
+import sys
+import tempfile
+from typing import Any
 
 from odylith.runtime.common.command_surface import display_command
 from odylith.runtime.surfaces import dashboard_shell_links
@@ -48,39 +53,159 @@ _OWNED_SURFACE_REFRESH_POLICIES: dict[str, OwnedSurfaceRefreshPolicy] = {
         surface="compass",
         retry_command=("compass", "refresh", "--repo-root", ".", "--wait"),
     ),
+    "tooling_shell": OwnedSurfaceRefreshPolicy(
+        surface="tooling_shell",
+        retry_command=("dashboard", "refresh", "--repo-root", ".", "--surfaces", "shell"),
+    ),
 }
 
 
 def refresh_owned_surface(*, repo_root: Path, surface: str) -> int:
+    return refresh_owned_surfaces(repo_root=repo_root, surfaces=(surface,))
+
+
+def refresh_owned_surfaces(
+    *, repo_root: Path, surfaces: tuple[str, ...] | list[str],
+    on_results: Callable[[Sequence[Mapping[str, Any]]], None] | None = None,
+    atlas_diagram_ids: Sequence[str] = (),
+) -> int:
     from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
     from odylith.runtime.governance import sync_workstream_artifacts
 
-    policy = _policy_for_surface(surface)
+    policies = _policies_for_surfaces(surfaces)
     root = Path(repo_root).resolve()
     odylith_context_engine_projection_search_runtime.clear_runtime_process_caches(repo_root=root)
     return sync_workstream_artifacts.refresh_dashboard_surfaces(
         repo_root=root,
-        surfaces=(policy.surface,),
-        runtime_mode=policy.runtime_mode,
-        atlas_sync=policy.atlas_sync,
+        surfaces=tuple(policy.surface for policy in policies),
+        runtime_mode="auto",
+        atlas_sync=any(policy.atlas_sync for policy in policies),
+        **({"atlas_diagram_ids": tuple(atlas_diagram_ids)} if atlas_diagram_ids else {}),
+        **({"on_results": on_results} if on_results is not None else {}),
     )
 
 
-def raise_for_failed_refresh(*, repo_root: Path, surface: str, operation_label: str, detail: str = "") -> None:
-    policy = _policy_for_surface(surface)
-    captured_output = io.StringIO()
-    with contextlib.redirect_stdout(captured_output):
-        refresh_rc = refresh_owned_surface(repo_root=repo_root, surface=policy.surface)
+def raise_for_failed_refresh(
+    *, repo_root: Path, surface: str, operation_label: str, detail: str = "", retry_command: tuple[str, ...] = (),
+    on_results: Callable[[Sequence[Mapping[str, Any]]], None] | None = None,
+    atlas_diagram_ids: Sequence[str] = (),
+) -> None:
+    raise_for_failed_refreshes(
+        repo_root=repo_root,
+        surfaces=(surface,),
+        operation_label=operation_label,
+        detail=detail,
+        retry_command=retry_command,
+        **({"atlas_diagram_ids": tuple(atlas_diagram_ids)} if atlas_diagram_ids else {}),
+        **({"on_results": on_results} if on_results is not None else {}),
+    )
+
+
+def raise_for_failed_refreshes(
+    *,
+    repo_root: Path,
+    surfaces: tuple[str, ...] | list[str],
+    operation_label: str,
+    detail: str = "",
+    retry_command: tuple[str, ...] = (),
+    on_results: Callable[[Sequence[Mapping[str, Any]]], None] | None = None,
+    atlas_diagram_ids: Sequence[str] = (),
+) -> None:
+    policies = _policies_for_surfaces(surfaces)
+    refresh_rc, refresh_output = _run_owned_surface_refresh_captured(
+        repo_root=repo_root, policies=policies,
+        **({"atlas_diagram_ids": tuple(atlas_diagram_ids)} if atlas_diagram_ids else {}),
+        **({"on_results": on_results} if on_results is not None else {}),
+    )
     if refresh_rc == 0:
         return
-    refresh_detail = " ".join(captured_output.getvalue().split())
+    refresh_detail = _compact_refresh_detail(refresh_output)
     suffix = f" {detail.strip()}" if str(detail).strip() else ""
     output_suffix = f" Refresh output: {refresh_detail}" if refresh_detail else ""
-    retry_command = display_command(*policy.retry_command)
+    surface_names = ", ".join(policy.surface for policy in policies)
+    if atlas_diagram_ids and not retry_command:
+        from odylith.runtime.governance import sync_workstream_artifacts
+
+        retry_commands = "; ".join(
+            sync_workstream_artifacts._owned_surface_refresh_command(
+                surface=policy.surface, atlas_sync=policy.atlas_sync, atlas_diagram_ids=atlas_diagram_ids,
+            ) for policy in policies
+        )
+    else:
+        retry_commands = (display_command(*retry_command) if retry_command
+                          else "; ".join(display_command(*policy.retry_command) for policy in policies))
     raise RuntimeError(
-        f"{operation_label.strip()} succeeded, but the {policy.surface} surface refresh failed; "
-        f"retry with `{retry_command}`.{suffix}{output_suffix}"
+        f"{operation_label.strip()} succeeded, but the {surface_names} surface refresh did not fully complete; "
+        f"retry with `{retry_commands}`.{suffix}{output_suffix}"
     )
+
+
+def _compact_refresh_detail(value: str, *, limit: int = 900) -> str:
+    detail = " ".join(str(value or "").split())
+    if not detail:
+        return ""
+    selected: list[str] = []
+    for marker in ("atlas auto-update failed", "dashboard refresh completed"):
+        index = detail.rfind(marker)
+        if index >= 0:
+            selected.append(detail[index:])
+    if selected:
+        detail = " ".join(selected)
+    if len(detail) <= limit:
+        return detail
+    return f"{detail[: max(0, limit - 20)].rstrip()} ... [truncated]"
+
+
+def _run_owned_surface_refresh_captured(
+    *,
+    repo_root: Path,
+    policies: tuple[OwnedSurfaceRefreshPolicy, ...],
+    on_results: Callable[[Sequence[Mapping[str, Any]]], None] | None = None,
+    atlas_diagram_ids: Sequence[str] = (),
+) -> tuple[int, str]:
+    """Run refresh with Python and subprocess stdout/stderr hidden from operator chat."""
+
+    stdout_fd = 1
+    stderr_fd = 2
+    result_options: dict[str, Any] = {"on_results": on_results} if on_results is not None else {}
+    if atlas_diagram_ids:
+        result_options["atlas_diagram_ids"] = tuple(atlas_diagram_ids)
+    refresh_started = False
+    try:
+        with tempfile.TemporaryFile(mode="w+t", encoding="utf-8") as captured:
+            sys.stdout.flush()
+            sys.stderr.flush()
+            saved_stdout = os.dup(stdout_fd)
+            saved_stderr = os.dup(stderr_fd)
+            try:
+                os.dup2(captured.fileno(), stdout_fd)
+                os.dup2(captured.fileno(), stderr_fd)
+                with contextlib.redirect_stdout(captured), contextlib.redirect_stderr(captured):
+                    refresh_started = True
+                    refresh_rc = refresh_owned_surfaces(
+                        repo_root=repo_root,
+                        surfaces=tuple(policy.surface for policy in policies),
+                        **result_options,
+                    )
+                    captured.flush()
+            finally:
+                os.dup2(saved_stdout, stdout_fd)
+                os.dup2(saved_stderr, stderr_fd)
+                os.close(saved_stdout)
+                os.close(saved_stderr)
+            captured.seek(0)
+            return refresh_rc, captured.read()
+    except OSError:
+        if refresh_started:
+            raise
+        captured_output = io.StringIO()
+        with contextlib.redirect_stdout(captured_output), contextlib.redirect_stderr(captured_output):
+            refresh_rc = refresh_owned_surfaces(
+                repo_root=repo_root,
+                surfaces=tuple(policy.surface for policy in policies),
+                **result_options,
+            )
+        return refresh_rc, captured_output.getvalue()
 
 
 def dashboard_handoff(
@@ -123,7 +248,7 @@ def print_dashboard_handoff(
         diagram=diagram,
         bug=bug,
     )
-    print(f"view: {route} (refresh if already open)")
+    print(f"view: {route} (reload browser tab if already open)")
 
 
 def _policy_for_surface(surface: str) -> OwnedSurfaceRefreshPolicy:
@@ -134,10 +259,26 @@ def _policy_for_surface(surface: str) -> OwnedSurfaceRefreshPolicy:
     return policy
 
 
+def _policies_for_surfaces(surfaces: tuple[str, ...] | list[str]) -> tuple[OwnedSurfaceRefreshPolicy, ...]:
+    policies: list[OwnedSurfaceRefreshPolicy] = []
+    seen: set[str] = set()
+    for surface in surfaces:
+        policy = _policy_for_surface(surface)
+        if policy.surface in seen:
+            continue
+        policies.append(policy)
+        seen.add(policy.surface)
+    if not policies:
+        raise ValueError("owned surface refresh requires at least one surface")
+    return tuple(policies)
+
+
 __all__ = [
     "OwnedSurfaceRefreshPolicy",
     "dashboard_handoff",
     "print_dashboard_handoff",
     "raise_for_failed_refresh",
+    "raise_for_failed_refreshes",
     "refresh_owned_surface",
+    "refresh_owned_surfaces",
 ]

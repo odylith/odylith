@@ -1,0 +1,66 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "health",
+    "medical",
+    "clinical",
+    "patient",
+    "hospital",
+    "disease"
+  ],
+  "matched_description_evidence_terms": [
+    "health",
+    "medical",
+    "clinical"
+  ],
+  "repository": {
+    "default_branch": "main",
+    "description": "A Model Context Protocol (MCP) server providing AI assistants with access to healthcare data and medical information tools, including FDA drug info, PubMed, medRxiv, NCBI Bookshelf, clinical trials, ICD-10, DICOM metadata, and a medical calculator.",
+    "full_name": "Cicatriiz/healthcare-mcp-public",
+    "id": 953682405,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "healthcare-mcp-public",
+    "node_id": "R_kgDOONgJ5Q",
+    "pushed_at": "2025-08-16T18:14:06Z",
+    "topics": [
+      "ai",
+      "claude",
+      "claude-desktop",
+      "desktop-extensions",
+      "dicom",
+      "dxt",
+      "fastapi",
+      "health-data",
+      "healthcare",
+      "icd-10",
+      "javascript",
+      "mcp",
+      "mcp-server",
+      "medical",
+      "medrxiv",
+      "modelcontextprotocol",
+      "nodejs",
+      "python"
+    ]
+  },
+  "response_item_index": 31,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Ahealthcare&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:15:54 GMT",
+    "x-github-request-id": "D121:271456:14FD971:155F8BF:6A5B6067"
+  },
+  "search_response_path": "responses/healthcare.json",
+  "search_response_sha256": "dd9a346780606538891bd660e3dd48ae99e49bfda96e908fd0b34d8ef03f34a0",
+  "selection_index": 15,
+  "source_family": "healthcare",
+  "source_id": "github-repository:953682405",
+  "source_uri": "https://github.com/Cicatriiz/healthcare-mcp-public",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

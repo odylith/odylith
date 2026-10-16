@@ -256,7 +256,7 @@ def assess_request(request: router.RouteRequest) -> router.TaskAssessment:
         accuracy_bias += 2
         requested_depth = signal_summary._clamp_score(requested_depth + 1)
         feature_reasons.setdefault("requested_depth", []).append(
-            "feature implementation leans toward stronger coding-optimized or GPT-5.4 profiles"
+            "feature implementation leans toward stronger writing or frontier profiles"
         )
     elif task_kind == "implementation":
         accuracy_bias += 1

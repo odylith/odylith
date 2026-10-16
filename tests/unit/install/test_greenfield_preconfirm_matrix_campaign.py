@@ -1,0 +1,887 @@
+from __future__ import annotations
+
+import hashlib
+import importlib.util
+import json
+import os
+import subprocess
+import sys
+from dataclasses import replace
+from pathlib import Path
+
+import pytest
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (HOST_NATIVE_ARGV_ARGUMENT_COUNT)
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (HOST_NATIVE_ARGV_RECEIPT_VERSION)
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (HOST_NATIVE_ARGV_SHAPE_SHA256)
+from odylith.runtime.domain_intelligence.greenfield_host_flow import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
+
+def _load_module(path: Path, name: str):
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _module():
+    return _load_module(
+        SCRIPTS_ROOT / "greenfield_preconfirm_matrix.py",
+        "greenfield_preconfirm_matrix_campaign_test",
+    )
+
+
+def _write(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+
+
+def _host_candidate_argv(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[str, ...]:
+    executable = tmp_path / "trusted/bin/codex"
+    _write(executable, "#!/bin/sh\nexit 97\n")
+    executable.chmod(0o755)
+    monkeypatch.setenv("PATH", str(executable.parent) + os.pathsep + os.environ.get("PATH", ""))
+    monkeypatch.delenv("ODYLITH_REASONING_CODEX_BIN", raising=False)
+    template = sys.modules[
+        "odylith.runtime.domain_intelligence.greenfield_host_transport"
+    ].canonical_host_candidate_argv_template()
+    return (str(executable.resolve()), *template[1:])
+
+
+def _case(module, name: str, *, stressors: tuple[str, ...] = ()):
+    return module.GreenfieldMatrixCase(
+        name=name,
+        prompt=f"Create a greenfield proposal for {name} evidence review.",
+        required_terms=tuple(name.split()[:1]) or ("case",),
+        leakage_terms=(f"{name} sentinel",),
+        stressors=stressors,
+    )
+
+
+def _result(module, *, name: str, passed: bool = True):
+    score = 10 if passed else 0
+    profile_id = module.model_profile_id_for_repair_tier("standard")
+    profile = module.get_greenfield_model_profile(profile_id)
+    return module.GreenfieldMatrixResult(
+        name=name,
+        status="passed" if passed else "failed",
+        proposal_seconds=18.0,
+        create_seconds=18.0,
+        counts=module.GreenfieldArtifactCounts(),
+        quality=module.GreenfieldQualityVerdict(
+            passed=passed,
+            issues=() if passed else ("commit-only create did not write records",),
+            lenses={
+                "product_manager": passed,
+                "architect": passed,
+                "engineer": passed,
+                "domain_expert": passed,
+            },
+            scores={dimension: score for dimension in module.QUALITY_SCORE_DIMENSIONS},
+            score=score,
+            score_explanation=("campaign test verdict",),
+        ),
+        evidence={
+            "case": {"id": name, "expectation": "transaction_committed"},
+            "model_profile": {
+                "profile_id": profile_id,
+                "status": "passed",
+                "issues": [],
+                "observed": {
+                    "profile_id": profile_id,
+                    "provider": profile.provider,
+                    "model": profile.model,
+                    "reasoning_effort": profile.reasoning_effort,
+                    "effective_timeout_seconds": profile.model_timeout_seconds,
+                    "authoring_tier": profile.repair_tier,
+                },
+            },
+        },
+    )
+
+
+def test_run_matrix_rejects_missing_host_native_argv_before_product_execution(
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    product_execution: list[str] = []
+
+    with pytest.raises(RuntimeError, match="explicit exact host-candidate argv"):
+        module.run_matrix(
+            dist_dir=tmp_path / "dist",
+            version="0.1.15",
+            temp_parent=tmp_path,
+            cases=(_case(module, "discovery gate"),),
+            proof_tier="discovery",
+            before_product_execution=lambda: product_execution.append("started"),
+        )
+
+    assert product_execution == []
+
+
+def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+    published_evidence = tmp_path / "published-evidence"
+    observations: dict[str, object] = {}
+
+    monkeypatch.setattr(module, "matrix_preflight_failures", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_platform_baseline_required_terms", lambda **_kwargs: ())
+    monkeypatch.setattr(
+        module,
+        "_serve_directory",
+        lambda _release_dir: (_Server(), "http://127.0.0.1:8123"),
+    )
+    monkeypatch.setattr(
+        module,
+        "write_retained_evidence_manifest",
+        lambda **_kwargs: pytest.fail("discovery must not publish retained release evidence"),
+    )
+
+    def fake_run_case(**kwargs):
+        retained_case = kwargs["retained_case"]
+        observations["retained_case"] = retained_case
+        case = kwargs["case"]
+        profile_id = module.case_model_profile(case)
+        profile = module.get_greenfield_model_profile(profile_id)
+        source = module.prepare_model_authoring_evidence(
+            prompt=case.prompt,
+            edit_evidence=str(case.confirmed_intent_markdown or ""),
+        ).evidence_source
+        source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
+        observed = {}
+        stage = {
+            "version": HOST_NATIVE_MATRIX_OBSERVATION_VERSION,
+            "status": "passed",
+            "host_invocations": 1,
+            "authority_gate_host_invocations": 1,
+            "source_ledger_host_invocations": 0,
+            "source_duty_verifier_host_invocations": 0,
+            "candidate_host_invocations": 0,
+            "contract_command_invocations": 1,
+            "authority_check_command_invocations": 1,
+            "source_ledger_check_command_invocations": 0,
+            "proposal_command_invocations": 0,
+            "runtime_semantic_model_call_count": 0,
+            "post_receipt_provider_invocations": 0,
+            "model_profile_id": profile_id,
+            "model_window_seconds": profile.model_timeout_seconds,
+            "operational_timeout_seconds": profile.operational_timeout_seconds,
+            "whole_journey_diagnostic_cap_seconds": 660.0,
+            "candidate_completion_reserve_seconds": 15.0,
+            "whole_journey_route": "odylith-greenfield-prepare.v1",
+        "whole_journey_supervision": {"version": "odylith.greenfield.journey-supervision.v1", "guardian_pid": 12345, "cancellation_grace_seconds": 2.0},
+        "whole_journey_bound_status": "diagnostic_unqualified",
+            "whole_journey_elapsed_scope": "through_guardian_completion_record_and_final_clock_check_before_receipt_delivery",
+            "whole_journey_deadline_status": "within",
+            "source_ledger_diagnostic_cap_seconds": 300.0,
+            "source_duty_verifier_diagnostic_cap_seconds": 120.0,
+            "authority_gate_request": {
+                "version": HOST_NATIVE_ARGV_RECEIPT_VERSION,
+                "executable_sha256": "1" * 64,
+                "argument_count": HOST_NATIVE_ARGV_ARGUMENT_COUNT,
+                "model": profile.model,
+                "reasoning_effort": profile.reasoning_effort,
+                "output_schema_present": True,
+                "argv_shape_sha256": HOST_NATIVE_ARGV_SHAPE_SHA256,
+            },
+            "candidate_temp_cleaned": True,
+            "authority_gate_temp_cleaned": True,
+            "source_ledger_temp_cleaned": True,
+            "source_duty_decision_temp_cleaned": True,
+            "host_workspace_cleaned": True,
+            "stage": "propose",
+            "contract_returncode": 0,
+            "contract_sha256": "2" * 64,
+            "source_sha256": source_sha256,
+            "authority_gate_schema_sha256": "a" * 64,
+            "authority_gate_returncode": 0,
+            "authority_gate_output_sha256": "b" * 64,
+            "authority_gate_output_bytes": 500,
+            "authority_gate_decision": "clarify",
+            "authority_gate_temp_outside_repo": True,
+            "authority_check_returncode": 0,
+            "authority_check_stdout_sha256": "c" * 64,
+            "authority_check_stderr_sha256": "d" * 64,
+            "response_kind": "clarification_required",
+            "proposal_mode": "clarification_required",
+            "elapsed_seconds": 18.0,
+            "proposal_phase_elapsed_seconds": 18.0,
+            "whole_journey_seconds": 18.0,
+        }
+        module.record_retained_case_json(
+            retained_case,
+            "semantic/host-authoring-observation.v1.json",
+            stage,
+        )
+        module.record_retained_case_json(
+            retained_case,
+            "semantic/host-authority-gate.raw.v1.json",
+            {
+                "decision": "clarify",
+                "required_fields": ["first_path"],
+                "owner_quote": "",
+                "task_quote": "",
+                "result_quote": "",
+                "question": "Who uses this product first, and what result do they see?",
+            },
+        )
+        observations["stage"] = module._retained_model_stage_observation(retained_case)
+        observations["raw_candidate"] = module._retained_raw_host_candidate(retained_case)
+        profile_evidence = module.model_profile_evidence(
+            profile_id,
+            module.model_profile_environment(profile_id, {}),
+            observed=observed,
+            stage_observation=observations["stage"],
+            raw_candidate=observations["raw_candidate"],
+            expected_source=source,
+        )
+        observations["profile_evidence"] = profile_evidence
+        return _result(module, name=kwargs["case"].name)
+
+    monkeypatch.setattr(module, "_run_case", fake_run_case)
+
+    results = module.run_matrix(
+        dist_dir=dist_dir,
+        version="0.1.15",
+        temp_parent=tmp_path,
+        cases=(_case(module, "discovery proof capture"),),
+        proof_tier="discovery",
+        host_candidate_argv=_host_candidate_argv(tmp_path, monkeypatch),
+    )
+
+    retained_case = observations["retained_case"]
+    assert retained_case is not None
+    assert retained_case.staging_root.parent.name == "private-proof"
+    assert retained_case.staging_root.parent.parent.name.startswith("odylith-greenfield-matrix-")
+    assert "profile_evidence" in observations, results[0]
+    assert observations["profile_evidence"]["status"] == "passed", observations["profile_evidence"]["issues"]
+    assert observations["profile_evidence"]["host_semantic_model_calls"] == 1
+    assert (
+        observations["profile_evidence"][
+            "runtime_semantic_model_calls_after_candidate_receipt"
+        ]
+        == 0
+    )
+    hash_summary = observations["profile_evidence"]["stage_observation_summary"][
+        "retained_candidate_hash_summary"
+    ]
+    assert hash_summary["status"] == "not_applicable"
+    assert hash_summary["canonical_projection_verified"] is False
+    assert observations["raw_candidate"] == {}
+    serialized_profile = json.dumps(observations["profile_evidence"])
+    assert "candidate_" + "review" not in serialized_profile
+    assert "reviewed_" + "candidate_sha256" not in serialized_profile
+    assert results[0].status == "passed"
+    assert not retained_case.staging_root.exists()
+    assert not published_evidence.exists()
+
+
+def test_run_case_invokes_only_host_candidate_runner_with_process_evidence(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    repo_root = tmp_path / "repo"
+    _write(repo_root / ".odylith/bin/odylith", "")
+    completed = subprocess.CompletedProcess(
+        args=("host",), returncode=0, stdout='{"status":"ready"}', stderr="",
+    )
+    calls: list[str] = []
+    proposal_results: list[subprocess.CompletedProcess[str]] = []
+
+    def run_proposal(runner: str):
+        calls.append(runner)
+        return completed
+
+    def run_journey(**kwargs):
+        proposal_results.append(kwargs["invoke_propose"](87))
+        raise RuntimeError("stop after proposal selection")
+
+    monkeypatch.setattr(module, "_local_release_env", lambda **_kwargs: {})
+    monkeypatch.setattr(
+        module, "_run_greenfield_propose",
+        lambda **_kwargs: (_ for _ in ()).throw(
+            AssertionError("direct proposal runner must not be selected")
+        ),
+    )
+    monkeypatch.setattr(
+        module, "_run_host_candidate_propose",
+        lambda **_kwargs: run_proposal("host"),
+    )
+    monkeypatch.setattr(module, "run_compiled_greenfield_journey", run_journey)
+
+    with pytest.raises(RuntimeError, match="stop after proposal selection"):
+        module._run_case(  # noqa: SLF001
+            case=_case(module, "proposal runner selection"),
+            repo_root=repo_root,
+            install_script=tmp_path / "install.sh",
+            base_url="http://127.0.0.1",
+            version="0.0.0",
+            skip_install=True,
+            host_candidate_argv=("codex", "exec"),
+        )
+
+    assert proposal_results == [completed]
+    assert proposal_results[0].returncode == 0
+    assert proposal_results[0].stdout
+    assert proposal_results[0].stderr == ""
+    assert calls == ["host"]
+
+
+def test_direct_propose_requires_candidate_file_before_command_execution(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    monkeypatch.setattr(
+        module,
+        "_run",
+        lambda **_kwargs: pytest.fail("proposal command must not run without candidate custody"),
+    )
+
+    with pytest.raises(RuntimeError, match="requires a candidate file"):
+        module._run_greenfield_propose(  # noqa: SLF001
+            repo_root=tmp_path,
+            env={},
+            prompt="Create a source-grounded product.",
+            timeout=90,
+            candidate_file="",
+            gate_file=str(tmp_path / "authority-gate.json"),
+            ledger_file=str(tmp_path / "source-ledger.json"),
+        )
+
+
+class _Server:
+    def shutdown(self) -> None:
+        return None
+
+    def server_close(self) -> None:
+        return None
+
+
+def test_run_matrix_writes_incremental_telemetry_and_stops_on_failure_threshold(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+    calls: list[str] = []
+
+    monkeypatch.setattr(module, "matrix_preflight_failures", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_platform_baseline_required_terms", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_serve_directory", lambda _release_dir: (_Server(), "http://127.0.0.1:8123"))
+    monkeypatch.setattr(module, "_with_platform_leakage_issues", lambda **kwargs: tuple(kwargs["results"]))
+
+    def fake_run_case(**kwargs):
+        case = kwargs["case"]
+        calls.append(case.name)
+        return _result(module, name=case.name, passed=False)
+
+    monkeypatch.setattr(module, "_run_case", fake_run_case)
+    telemetry_path = tmp_path / "telemetry" / "progress.jsonl"
+    incremental_output = tmp_path / "matrix" / "partial.json"
+
+    results = module.run_matrix(
+        dist_dir=dist_dir,
+        version="0.1.15",
+        temp_parent=tmp_path,
+        cases=(
+            _case(module, "alpha review", stressors=("modal-expert-lens",)),
+            _case(module, "beta review", stressors=("latency-pressure",)),
+        ),
+        include_browser_proof=False,
+        install_mode="full",
+        telemetry_jsonl=telemetry_path,
+        campaign_phase="failed-subset",
+        proof_tier="discovery",
+        stop_after_failures=1,
+        required_stressors=("modal-expert-lens",),
+        incremental_output_json=incremental_output,
+        host_candidate_argv=_host_candidate_argv(tmp_path, monkeypatch),
+    )
+
+    rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
+    incremental_payload = json.loads(incremental_output.read_text(encoding="utf-8"))
+    assert calls == ["alpha review"]
+    assert len(results) == 1
+    assert [row["event"] for row in rows] == [
+        "run_started",
+        "case_started",
+        "case_completed",
+        "run_stopped",
+        "run_finished",
+    ]
+    assert rows[0]["phase"] == "failed-subset"
+    assert rows[2]["failure_cluster"] == "commit.only.create.did.not.write.records"
+    assert rows[3]["reason"] == "failure-threshold:1"
+
+
+def test_run_matrix_emits_redacted_process_lifecycle_events(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+    secret_prompt = "--customer-private launch narrative"
+
+    monkeypatch.setattr(module, "matrix_preflight_failures", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_platform_baseline_required_terms", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_serve_directory", lambda _release_dir: (_Server(), "http://127.0.0.1:8123"))
+    monkeypatch.setattr(module, "_with_platform_leakage_issues", lambda **kwargs: tuple(kwargs["results"]))
+
+    def fake_run_case(**kwargs):
+        kwargs["repo_root"].mkdir(parents=True, exist_ok=True)
+        completed = module._run(
+            cwd=kwargs["repo_root"],
+            env={},
+            command=[sys.executable, "-c", "print('ok')", "--prompt", secret_prompt],
+            timeout=5,
+        )
+        assert completed.returncode == 0
+        return _result(module, name=kwargs["case"].name)
+
+    monkeypatch.setattr(module, "_run_case", fake_run_case)
+    telemetry_path = tmp_path / "telemetry" / "progress.jsonl"
+
+    results = module.run_matrix(
+        dist_dir=dist_dir,
+        version="0.1.15",
+        temp_parent=tmp_path,
+        cases=(_case(module, "alpha review"),),
+        install_mode="full",
+        telemetry_jsonl=telemetry_path,
+        proof_tier="discovery",
+        host_candidate_argv=_host_candidate_argv(tmp_path, monkeypatch),
+    )
+
+    rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
+    command_rows = [row for row in rows if row["event"].startswith("command_")]
+    serialized = json.dumps(command_rows, sort_keys=True)
+    assert results[0].status == "passed"
+    assert [row["event"] for row in command_rows] == ["command_started", "command_completed"]
+    assert command_rows[0]["option_count"] == 2
+    assert command_rows[1]["returncode"] == 0
+    assert secret_prompt not in serialized
+    assert "print('ok')" not in serialized
+
+
+def test_seeded_matrix_emits_lifecycle_events_for_prepare_and_clone_subprocesses(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+
+    monkeypatch.setattr(module, "matrix_preflight_failures", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_platform_baseline_required_terms", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_serve_directory", lambda _release_dir: (_Server(), "http://127.0.0.1:8123"))
+    monkeypatch.setattr(module, "_with_platform_leakage_issues", lambda **kwargs: tuple(kwargs["results"]))
+
+    def fake_prepare_seed_repo(*, seed_repo, **_kwargs):
+        seed_repo.mkdir(parents=True)
+        module._run(cwd=seed_repo, env={}, command=[sys.executable, "-c", ""], timeout=5)
+        return subprocess.CompletedProcess(["bash", "install.sh"], 0, stdout="", stderr="")
+
+    def fake_clone_seed_repo(*, repo_root, **_kwargs):
+        repo_root.mkdir(parents=True)
+        module._run(cwd=repo_root, env={}, command=[sys.executable, "-c", ""], timeout=5)
+
+    monkeypatch.setattr(module, "_prepare_seed_repo", fake_prepare_seed_repo)
+    monkeypatch.setattr(module, "_clone_seed_repo", fake_clone_seed_repo)
+    monkeypatch.setattr(module, "_run_case", lambda **kwargs: _result(module, name=kwargs["case"].name))
+    telemetry_path = tmp_path / "telemetry" / "progress.jsonl"
+
+    results = module.run_matrix(
+        dist_dir=dist_dir,
+        version="0.1.15",
+        temp_parent=tmp_path,
+        cases=(_case(module, "alpha review"),),
+        install_mode="seeded",
+        telemetry_jsonl=telemetry_path,
+        proof_tier="discovery",
+        host_candidate_argv=_host_candidate_argv(tmp_path, monkeypatch),
+    )
+
+    rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
+    command_rows = [row for row in rows if row["event"].startswith("command_")]
+    assert results[0].status == "passed"
+    assert [row["event"] for row in command_rows] == [
+        "command_started",
+        "command_completed",
+        "command_started",
+        "command_completed",
+    ]
+
+
+def test_run_matrix_reports_terminal_telemetry_failure_without_mislabeling_the_command(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+    original_emit = module.MatrixTelemetryWriter.emit
+
+    monkeypatch.setattr(module, "matrix_preflight_failures", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_platform_baseline_required_terms", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_serve_directory", lambda _release_dir: (_Server(), "http://127.0.0.1:8123"))
+    monkeypatch.setattr(module, "_with_platform_leakage_issues", lambda **kwargs: tuple(kwargs["results"]))
+
+    def fail_after_terminal_event(self, event, payload):  # noqa: ANN001
+        original_emit(self, event, payload)
+        if event == "command_completed":
+            raise OSError("fsync unavailable")
+
+    def fake_run_case(**kwargs):
+        kwargs["repo_root"].mkdir(parents=True, exist_ok=True)
+        module._run(cwd=kwargs["repo_root"], env={}, command=[sys.executable, "-c", "pass"], timeout=5)
+        return _result(module, name=kwargs["case"].name)
+
+    monkeypatch.setattr(module.MatrixTelemetryWriter, "emit", fail_after_terminal_event)
+    monkeypatch.setattr(module, "_run_case", fake_run_case)
+    telemetry_path = tmp_path / "telemetry" / "progress.jsonl"
+
+    results = module.run_matrix(
+        dist_dir=dist_dir,
+        version="0.1.15",
+        temp_parent=tmp_path,
+        cases=(_case(module, "alpha review"),),
+        install_mode="full",
+        telemetry_jsonl=telemetry_path,
+        proof_tier="discovery",
+        host_candidate_argv=_host_candidate_argv(tmp_path, monkeypatch),
+    )
+
+    assert results[0].status == "command-lifecycle-telemetry-failed"
+    assert "terminal_state=completed" in results[0].quality.issues[0]
+    assert "returncode=0" not in results[0].quality.issues[0]
+
+
+def test_run_matrix_emits_failed_case_completion_when_run_case_raises(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+
+    monkeypatch.setattr(module, "matrix_preflight_failures", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_platform_baseline_required_terms", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_serve_directory", lambda _release_dir: (_Server(), "http://127.0.0.1:8123"))
+
+    def fake_run_case(**_kwargs):  # noqa: ANN001
+        raise RuntimeError("forced matrix case explosion")
+
+    monkeypatch.setattr(module, "_run_case", fake_run_case)
+    telemetry_path = tmp_path / "telemetry" / "progress.jsonl"
+    incremental_output = tmp_path / "matrix" / "partial.json"
+
+    results = module.run_matrix(
+        dist_dir=dist_dir,
+        version="0.1.15",
+        temp_parent=tmp_path,
+        cases=(_case(module, "alpha review"),),
+        include_browser_proof=False,
+        install_mode="full",
+        telemetry_jsonl=telemetry_path,
+        campaign_phase="volume-discovery",
+        proof_tier="discovery",
+        incremental_output_json=incremental_output,
+        host_candidate_argv=_host_candidate_argv(tmp_path, monkeypatch),
+    )
+
+    rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
+    incremental_payload = json.loads(incremental_output.read_text(encoding="utf-8"))
+    assert [row["event"] for row in rows] == [
+        "run_started",
+        "case_started",
+        "case_completed",
+        "run_stopped",
+        "run_finished",
+    ]
+    assert results[0].status == "case-execution-exception"
+    assert rows[2]["failure_cluster"] == "forced.matrix.case.explosion"
+    assert rows[3]["reason"] == "case-execution-exception"
+    assert incremental_payload["status"] == "failed"
+    assert incremental_payload["campaign"]["failed_case_count"] == 1
+    assert "forced matrix case explosion" in incremental_payload["results"][0]["failure_detail"]
+    assert rows[4]["summary"]["completed_case_count"] == 1
+    assert rows[4]["summary"]["stopped_early"] is False
+    assert incremental_payload["incremental"] is True
+    assert incremental_payload["status"] == "failed"
+    assert incremental_payload["results"][0]["name"] == "alpha review"
+    assert incremental_payload["campaign"]["completed_case_count"] == 1
+
+
+def test_run_matrix_applies_platform_leakage_before_live_stop(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+    calls: list[str] = []
+
+    monkeypatch.setattr(module, "matrix_preflight_failures", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_platform_baseline_required_terms", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_serve_directory", lambda _release_dir: (_Server(), "http://127.0.0.1:8123"))
+
+    def fake_run_case(**kwargs):
+        case = kwargs["case"]
+        calls.append(case.name)
+        return replace(_result(module, name=case.name), platform_leakage_terms=("zephyr sentinel",))
+
+    def fake_leakage(**kwargs):
+        result = tuple(kwargs["results"])[0]
+        quality = replace(
+            result.quality,
+            passed=False,
+            issues=("platform domain leakage after generated artifact readback: src/x.py:1 leaked `zephyr sentinel`",),
+            score=0,
+        )
+        return (replace(result, status="failed", quality=quality, platform_leakage_issues=quality.issues),)
+
+    monkeypatch.setattr(module, "_run_case", fake_run_case)
+    monkeypatch.setattr(module, "_with_platform_leakage_issues", fake_leakage)
+    telemetry_path = tmp_path / "telemetry" / "progress.jsonl"
+    incremental_output = tmp_path / "matrix" / "partial.json"
+
+    results = module.run_matrix(
+        dist_dir=dist_dir,
+        version="0.1.15",
+        temp_parent=tmp_path,
+        cases=(
+            _case(module, "alpha review", stressors=("modal-expert-lens",)),
+            _case(module, "beta review", stressors=("latency-pressure",)),
+        ),
+        include_browser_proof=False,
+        install_mode="full",
+        telemetry_jsonl=telemetry_path,
+        campaign_phase="volume-discovery",
+        proof_tier="discovery",
+        stop_after_failures=1,
+        incremental_output_json=incremental_output,
+        host_candidate_argv=_host_candidate_argv(tmp_path, monkeypatch),
+    )
+
+    rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
+    incremental_payload = json.loads(incremental_output.read_text(encoding="utf-8"))
+    assert calls == ["alpha review"]
+    assert len(results) == 1
+    assert results[0].platform_leakage_issues
+    assert rows[2]["event"] == "case_completed"
+    assert rows[2]["result"]["quality_passed"] is False
+    assert rows[3]["reason"] == "failure-threshold:1"
+    assert incremental_payload["status"] == "failed"
+    assert incremental_payload["results"][0]["platform_leakage_issues"]
+    assert incremental_payload["campaign"]["failed_case_count"] == 1
+
+
+def test_run_matrix_flushes_failed_incremental_payload_before_cleanup_abort(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+
+    monkeypatch.setattr(module, "matrix_preflight_failures", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_platform_baseline_required_terms", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_serve_directory", lambda _release_dir: (_Server(), "http://127.0.0.1:8123"))
+    monkeypatch.setattr(module, "_with_platform_leakage_issues", lambda **kwargs: tuple(kwargs["results"]))
+    monkeypatch.setattr(module, "_run_case", lambda **kwargs: _result(module, name=kwargs["case"].name))
+    monkeypatch.setattr(
+        module,
+        "_cleanup_repo_before_next",
+        lambda _repo_root: (_ for _ in ()).throw(RuntimeError("forced cleanup failure")),
+    )
+    telemetry_path = tmp_path / "telemetry" / "progress.jsonl"
+    incremental_output = tmp_path / "matrix" / "partial.json"
+
+    results = module.run_matrix(
+        dist_dir=dist_dir,
+        version="0.1.15",
+        temp_parent=tmp_path,
+        cases=(_case(module, "alpha review"),),
+        include_browser_proof=False,
+        install_mode="full",
+        telemetry_jsonl=telemetry_path,
+        campaign_phase="failed-subset",
+        proof_tier="discovery",
+        incremental_output_json=incremental_output,
+        host_candidate_argv=_host_candidate_argv(tmp_path, monkeypatch),
+    )
+
+    rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
+    incremental_payload = json.loads(incremental_output.read_text(encoding="utf-8"))
+    assert results[0].status == "failed"
+    assert "temp cleanup failed" in results[0].quality.issues[0]
+    assert rows[2]["event"] == "case_completed"
+    assert rows[2]["result"]["quality_passed"] is False
+    assert rows[3]["reason"] == "temp-cleanup-failed"
+    assert incremental_payload["status"] == "failed"
+    assert incremental_payload["campaign"]["stop_reason"] == "temp-cleanup-failed"
+    assert "forced cleanup failure" in incremental_payload["results"][0]["failure_detail"]
+
+
+@pytest.mark.parametrize("profile_status, expected_exit", [("passed", 0), ("failed", 1)])
+def test_main_persists_campaign_summary_for_discovery_runs(
+    tmp_path: Path, monkeypatch, capsys, profile_status: str, expected_exit: int,
+) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+    matrix_kwargs: dict[str, object] = {}
+    execution_order: list[str] = []
+    telemetry_path = tmp_path / "progress.jsonl"
+    matrix_result = _result(module, name="matrix case")
+    profile_calls: list[tuple[object, bool]] = []
+
+    def fake_run_matrix(**kwargs):
+        execution_order.append("matrix")
+        matrix_kwargs.update(kwargs)
+        return (matrix_result,)
+
+    def fake_profile_proof(results, *, require_complete, composed_public_evidence):
+        assert composed_public_evidence is None
+        profile_calls.append((results, require_complete))
+        return {"status": profile_status, "issues": [] if profile_status == "passed" else ["unproven"]}
+
+    monkeypatch.setattr(module, "run_matrix", fake_run_matrix)
+    monkeypatch.setattr(module, "model_profile_release_proof", fake_profile_proof)
+    def fake_commit_recovery(**kwargs):
+        execution_order.append("commit_recovery")
+        module._run(
+            cwd=kwargs["temp_parent"],
+            env={},
+            command=[sys.executable, "-c", "pass"],
+            timeout=5,
+        )
+        return module.GreenfieldInstalledCommitRecoveryProof(status="passed", issues=())
+
+    monkeypatch.setattr(module, "run_installed_commit_recovery_proof", fake_commit_recovery)
+    exit_code = module.main(
+        [
+            "--dist-dir",
+            str(dist_dir),
+            "--version",
+            "0.1.15",
+            "--temp-parent",
+            str(tmp_path / "fixtures"),
+            "--evidence-output-dir",
+            str(tmp_path / "evidence"),
+            "--proof-tier",
+            "discovery",
+            "--campaign-phase",
+            "60-case-regression",
+            "--telemetry-jsonl",
+            str(telemetry_path),
+            "--stop-after-failures",
+            "2",
+            "--include-commit-recovery-proof",
+            "--allow-skipped-browser-proof",
+            *(
+                f"--host-candidate-arg={argument}"
+                for argument in _host_candidate_argv(tmp_path, monkeypatch)
+            ),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == expected_exit
+    assert profile_calls == [((matrix_result,), False)]
+    assert payload["model_profile_proof"]["status"] == profile_status
+    assert matrix_kwargs["proof_tier"] == "discovery"
+    assert matrix_kwargs["campaign_phase"] == "60-case-regression"
+    assert matrix_kwargs["stop_after_failures"] == 2
+    assert execution_order[:2] == ["matrix", "commit_recovery"]
+    assert payload["proof_scope"]["commit_recovery_path"] == module.COMMIT_RECOVERY_PROOF_SCOPE
+    assert payload["commit_recovery_proof"]["status"] == "passed"
+    assert payload["campaign"]["phase"] == "60-case-regression"
+    assert payload["campaign"]["proof_tier"] == "discovery"
+    assert payload["campaign"]["release_readiness_boundary"].startswith("discovery proof may skip browser")
+    telemetry_rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
+    assert [row["event"] for row in telemetry_rows if row["event"].startswith("command_")] == [
+        "command_started",
+        "command_completed",
+    ]
+
+
+def test_main_rejects_release_policy_without_browser_proof(tmp_path: Path) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+
+    try:
+        module.main(
+            [
+                "--dist-dir",
+                str(dist_dir),
+                "--version",
+                "0.1.15",
+                "--temp-parent",
+                str(tmp_path),
+                "--proof-tier",
+                "release",
+            ]
+        )
+    except RuntimeError as exc:
+        assert "release proof must include browser proof" in str(exc)
+    else:
+        raise AssertionError("release proof without browser proof should be rejected")
+
+
+def test_main_release_policy_does_not_require_retired_rescue_proofs(tmp_path: Path) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+
+    try:
+        module.main(
+            [
+                "--dist-dir",
+                str(dist_dir),
+                "--version",
+                "0.1.15",
+                "--temp-parent",
+                str(tmp_path),
+                "--proof-tier",
+                "release",
+                "--include-browser-proof",
+            ]
+        )
+    except RuntimeError as exc:
+        assert "release proof must include installed commit recovery proof" in str(exc)
+    else:
+        raise AssertionError("release proof without commit recovery proof should be rejected")
+
+
+def test_main_rejects_release_policy_without_installed_commit_recovery_proof(tmp_path: Path) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+
+    try:
+        module.main(
+            [
+                "--dist-dir",
+                str(dist_dir),
+                "--version",
+                "0.1.15",
+                "--temp-parent",
+                str(tmp_path),
+                "--proof-tier",
+                "release",
+                "--include-browser-proof",
+            ]
+        )
+    except RuntimeError as exc:
+        assert "release proof must include installed commit recovery proof" in str(exc)
+    else:
+        raise AssertionError("release proof without installed commit recovery proof should be rejected")

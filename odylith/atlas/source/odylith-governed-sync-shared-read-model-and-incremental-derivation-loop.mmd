@@ -10,6 +10,7 @@ flowchart TB
         atlas["Atlas catalog and diagram sources"]
         compass["Compass runtime and agent stream"]
         code["Renderer and validator source"]
+        guidance["Consumer-safe shared guidance<br/>AGENTS, README, SECURITY_POSTURE<br/>and owned guidance directories"]
     end
 
     subgraph session["Shared SyncSession"]
@@ -57,6 +58,7 @@ flowchart TB
         compare{"Rendered bytes changed?"}
         stable["Keep tracked outputs untouched"]
         write["Write governed outputs once"]
+        mirrors["Existing source bundle mirror owner<br/>Exact root documents and owned directories<br/>Copy source bytes; no prose transformation"]
     end
 
     changed --> plan
@@ -71,6 +73,7 @@ flowchart TB
     root --> budget
     code --> validators
     code --> renderers
+    guidance --> mirrors --> compare
     atlas --> renderers
     root --> profile
     root --> generation

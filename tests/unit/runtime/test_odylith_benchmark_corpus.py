@@ -326,6 +326,25 @@ def test_guidance_behavior_family_is_curated_low_latency_and_taxonomized() -> No
             profile="quick",
             selected_families=["execution_engine"],
         )
+        is False
+    )
+    assert runner._cache_profiles_for_selection(  # noqa: SLF001
+        profile="quick",
+        selected_families=["execution_engine"],
+        cache_profiles=["warm"],
+        explicit_cache_profile_selection=False,
+    ) == ["cold"]
+    assert runner._cache_profiles_for_selection(  # noqa: SLF001
+        profile="quick",
+        selected_families=["execution_engine"],
+        cache_profiles=["warm"],
+        explicit_cache_profile_selection=True,
+    ) == ["warm"]
+    assert (
+        runner._profile_uses_live_public_modes_for_selection(  # noqa: SLF001
+            profile="quick",
+            selected_families=["cli_contract_regression"],
+        )
         is True
     )
     assert runner._cache_profiles_for_selection(  # noqa: SLF001

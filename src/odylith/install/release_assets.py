@@ -146,7 +146,7 @@ def _release_highlights(*, explicit: Any = None, body: str = "", limit: int = 3)
     highlights: list[str] = []
     if isinstance(explicit, (list, tuple)):
         for item in explicit:
-            token = normalize_release_text(item, limit=180, strip_html=False)
+            token = normalize_release_text(item, strip_html=False)
             if token and token not in highlights:
                 highlights.append(token)
             if len(highlights) >= limit:
@@ -164,7 +164,7 @@ def _release_highlights(*, explicit: Any = None, body: str = "", limit: int = 3)
             numbered = re.match(r"^\d+\.\s+(?P<text>.+)$", line)
             if numbered:
                 line = str(numbered.group("text") or "").strip()
-        token = normalize_release_text(line, limit=180, strip_html=False)
+        token = normalize_release_text(line, strip_html=False)
         if token and token not in highlights:
             highlights.append(token)
         if len(highlights) >= limit:
@@ -173,7 +173,7 @@ def _release_highlights(*, explicit: Any = None, body: str = "", limit: int = 3)
         return tuple(highlights[:limit])
     paragraphs = [segment.strip() for segment in re.split(r"\n\s*\n", body_text) if segment.strip()]
     for paragraph in paragraphs:
-        token = normalize_release_text(paragraph, limit=180, strip_html=False)
+        token = normalize_release_text(paragraph, strip_html=False)
         if token and token not in highlights:
             highlights.append(token)
         if len(highlights) >= limit:

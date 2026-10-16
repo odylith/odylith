@@ -64,11 +64,14 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     runtime_truth_js = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-runtime-truth.v1.js")
     summary_js = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-summary.v1.js")
     state_js = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-state.v1.js")
+    base_template = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-style-base.v1.css")
 
     assert "const scopedWorkstream = WORKSTREAM_RE.test(" in shared_js
     assert "const hasScopedSelection = Boolean(scopedWorkstream);" in shared_js
     assert 'if (hasScopedSelection && scopedReady) return scopedReady;' in shared_js
     assert "function scopedFallbackToGlobalBrief(globalBrief, workstreamId, message, reason, globalWindow)" in shared_js
+    assert "function globalFallbackToReadyBrief(globalReady, failedBrief, requestedWindow, fallbackWindow)" in shared_js
+    assert "function globalBriefShouldStayUnavailableForWarmPoll(brief)" in shared_js
     assert "function scopedLiveBriefFallbackMessage(workstreamId, diagnostics, requestedWindow, fallbackWindow)" in shared_js
     assert 'if (reason === "scoped_window_inactive") {' in shared_js
     assert "return scopedBrief;" in shared_js
@@ -80,7 +83,8 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert 'is waiting on narration provider budget' in shared_js
     assert 'got a scoped provider reply, but the brief was not usable yet' in shared_js
     assert 'still needs its own ${requested} brief' in shared_js
-    assert 'if (globalBrief && String(globalBrief.status || "").trim() !== "ready") return globalBrief;' in shared_js
+    assert "&& !globalBriefShouldStayUnavailableForWarmPoll(globalBrief)" in shared_js
+    assert 'return globalFallbackToReadyBrief(globalReady, globalBrief, key, globalReadyWindow || key);' in shared_js
     assert 'if (globalReady && (globalReadySource === "provider" || globalReadySource === "cache")) return globalReady;' in shared_js
     assert 'if (globalReady) return globalReady;' in shared_js
     assert 'if (hasScopedSelection && scopedBrief) {' in shared_js
@@ -90,6 +94,7 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert "function legacyDigestToBrief" not in shared_js
     assert 'return legacyDigestToBrief(legacyLines, payload && payload.generated_utc);' not in shared_js
     assert "function radarWorkstreamHref(workstreamId, options = {})" in shared_js
+    assert shared_js.count("function radarWorkstreamHref(") == 1
     assert 'const view = String(options && options.view ? options.view : "").trim().toLowerCase();' in shared_js
     assert 'if (WORKSTREAM_RE.test(token)) params.set("workstream", token);' in shared_js
     assert 'if (view) params.set("view", view);' in shared_js
@@ -104,6 +109,9 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert "const historyDates = knownHistoryDateTokens(payload);" in state_js
     assert "const minDate = historyDates.length" in state_js
     assert "? historyDates[historyDates.length - 1]" in state_js
+    assert "async function augmentLiveStandupBriefFallback(payload, state)" in state_js
+    assert "async function latestReadyHistoryStandupBrief(payload, state, failedBrief)" in state_js
+    assert 'mode: "runtime_history"' in state_js
     assert "legacyDigestLinesForState(payload, state)" not in state_js
     assert 'source === "provider" || source === "cache"' in summary_js
     assert "AI narrative · provider" not in summary_js
@@ -111,16 +119,34 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert "last known good cache" not in summary_js
     assert "Deterministic local brief" not in summary_js
     assert "No critical blended risks in current payload." not in summary_js
+    assert "function bugRequiresActiveRiskAttention(row)" in summary_js
+    assert 'ACTIVE_CRITICAL_RISK_STATUS_TOKENS.has(compactStatusToken(row.status))' in summary_js
+    assert "function displayRiskStatus" not in summary_js
+    assert "status: row.status" not in summary_js
+    assert '<strong class="risk-severity">${escapeHtml(severity || "warning")}</strong>' in summary_js
+    assert '<div class="risk-copy">' in summary_js
+    assert '<div class="risk-line">' not in summary_js
+    assert 'Fixed pending release' not in summary_js
+    assert '<strong>${escapeHtml(row.severity)}</strong> ${escapeHtml(row.title)} (${escapeHtml(row.status)})' not in summary_js
     assert "No validated AI-authored standup brief is available for this view." not in summary_js
     assert "No validated narrative bullets available for this section." not in summary_js
     assert "No standup brief available for this view." not in summary_js
     assert "function briefHasRenderableNarrative(brief)" in summary_js
+    assert 'reason.includes("_showing_previous")' in summary_js
+    assert "function compactPreviousBriefReason(message, reason)" in summary_js
+    assert "showing last ready brief until retry succeeds." in summary_js
+    assert 'message = "Reused last validated brief.";' in summary_js
+    assert 'const retryUtc = String(notice.next_retry_utc || "").trim();' not in summary_js
     assert "function briefIsScopedGlobalFallback(brief)" not in summary_js
     assert "function briefAllowsCopy(brief)" not in summary_js
     assert 'card.classList.toggle("standup-brief-card--compact", !hasNarrative);' in summary_js
     assert 'copyButton.classList.toggle("hidden", !hasNarrative);' in summary_js
-    assert 'const retryUtc = String(diagnostics.next_retry_utc || "").trim();' in summary_js
+    assert "Object.entries(diagnostics)" in summary_js
+    assert '.filter(([key, value]) => !["fallback_digest", "title", "message"].includes(key)' in summary_js
+    assert 'const fallbackDigest = Array.isArray(diagnostics.fallback_digest)' in summary_js
+    assert "brief-fallback-digest" in summary_js
     assert 'brief-status-card--compact' in summary_js
+    assert ".brief-fallback-digest {" in base_template
     assert "function renderScopedFallbackBrief(brief, linkContext)" not in summary_js
     assert 'Show the global live brief while ${escapeHtml(workstream)} warms' not in summary_js
     assert 'return String(value ?? "")' in shared_js
@@ -153,17 +179,28 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert 'const sectionClassName = ["execution-wave-section", String(options.sectionClassName || "").trim()]' in shared_js
     assert '<details class="${escapeHtml(sectionClassName)}"' in shared_js
     assert 'execution-wave-card-shell execution-wave-card-shell-full-copy' in shared_js
-    assert 'const radarHref = radarWorkstreamHref(item.ideaId);' in workstreams_js
-    assert '<td class="ws-col-id"><div class="ws-id-stack"><a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"' in workstreams_js
+    assert "const radarHref = radarWorkstreamHref(item.ideaId);" in workstreams_js
+    assert 'const idMarkup = rowsAreProgramCovered' in workstreams_js
+    assert '<a class="ws-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-ws-id="${escapeHtml(item.ideaId)}"' in workstreams_js
+    assert '<a class="chip-link ws-covered-id-btn" href="${escapeHtml(radarHref)}" target="_top" data-covered-ws-id="${escapeHtml(item.ideaId)}"' in workstreams_js
+    assert 'data-covered-ws-id' in workstreams_js
+    assert 'Open radar for ${item.ideaId}; also covered by program and release lanes' in workstreams_js
+    assert 'Open radar for ${item.ideaId}; also covered by a release target' in workstreams_js
+    assert '<span class="chip execution-wave-chip-link" data-ws-id="${escapeHtml(item.ideaId)}"' not in workstreams_js
     assert 'workstreamTooltipAttrs(item.ideaId, workstreamTitles, `Open radar for ${item.ideaId}`)' in workstreams_js
     assert 'const componentHref = `../index.html?tab=registry&component=${encodeURIComponent(item.component_id)}`;' in workstreams_js
     assert '<strong>Registry components:</strong> ${registryComponentLinks}' in workstreams_js
     assert '<a class="chip chip-link" href="${escapeHtml(componentHref)}" target="_top"${registryComponentTooltipAttrs(item, `Open registry for ${item.component_id}`)}>${escapeHtml(item.component_id)}</a>' in workstreams_js
     assert 'registryComponents.map((item) => `${item.name} (${item.component_id})`).join(", ")' not in workstreams_js
     assert '<div class="ws-links">' not in workstreams_js
-    assert '<div class="ws-id-stack"><a class="ws-id-btn"' in workstreams_js
+    assert '<td class="ws-col-id"><div class="ws-id-stack">${idMarkup}' in workstreams_js
     assert "function compassWorkstreamReleaseLabel(release)" in workstreams_js
+    assert "function compactCompassWorkstreamReleaseTargetLabel(value)" in workstreams_js
+    assert "compactCompassWorkstreamReleaseTargetLabel(row.version)" in workstreams_js
+    assert "compactCompassWorkstreamReleaseTargetLabel(row.name)" in workstreams_js
     assert "function compassGovernanceRepresentedWorkstreamIds(payload)" in workstreams_js
+    assert 'event.target.closest("a, button, input, select, textarea, summary")' in workstreams_js
+    assert "if (interactive) return;" in workstreams_js
     assert "executionWavePrograms(payload).forEach((program) => {" in workstreams_js
     assert "addWorkstreamRefList(release && release.active_workstreams);" in workstreams_js
     assert "addWorkstreamRefList(release && release.completed_workstreams);" in workstreams_js
@@ -171,6 +208,13 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert 'if (WORKSTREAM_RE.test(ideaId) && status === "finished" && releaseHistorySummary === removedSummary)' in workstreams_js
     assert 'scopedRows.filter((row) => !representedIds.has(String(row && row.idea_id ? row.idea_id : "").trim()))' in workstreams_js
     assert "const rows = scopedRows;" not in workstreams_js
+    assert "const representedPreviewLimit = 6;" in workstreams_js
+    assert "represented-workstreams-note" not in workstreams_js
+    assert "already organize these active workstreams" not in workstreams_js
+    assert "Direct Radar links live in" not in workstreams_js
+    assert 'Showing ${renderRows.length} of ${scopedRows.length} covered active workstreams.' in workstreams_js
+    assert '"Wave" : "Plan"' in workstreams_js
+    assert "Covered workstreams below are a compact detail preview" not in workstreams_js
     assert "function numericProgressOrNull(value)" in workstreams_js
     assert '${item.releaseLabel ? `<span class="chip subtle">${escapeHtml(item.releaseLabel)}</span>` : ""}' in workstreams_js
     assert 'Release ${item.releaseLabel}' not in workstreams_js
@@ -215,36 +259,54 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert 'Object.prototype.hasOwnProperty.call(plan, "display_progress_ratio")' in waves_js
     assert '${renderMemberChip(ideaId, { selected: ideaId === scopedWorkstream })}' in releases_js
     assert '<article class="${cardClassNames.join(" ")}" data-workstream-id="${escapeHtml(ideaId)}">' in releases_js
-    assert '<a class="execution-wave-title execution-wave-card-link"' in releases_js
-    assert 'data-workstream-id="${escapeHtml(ideaId)}"' in releases_js
-    assert 'aria-label="${escapeHtml(cardLabel)}"' in releases_js
+    assert '<a class="execution-wave-title execution-wave-card-link"' not in releases_js
+    assert 'const workstreamHref = radarWorkstreamHref(ideaId);' not in releases_js
+    assert 'aria-label="${escapeHtml(cardLabel)}"' not in releases_js
+    assert '<div class="execution-wave-title">${escapeHtml(title)}</div>' in releases_js
     assert '${titleChips.join("")}' in releases_js
     assert '<div class="execution-wave-member-head">' in releases_js
     assert '<div class="execution-wave-member-title-chips">' in releases_js
     assert '<div class="execution-wave-title-row">' not in releases_js
     assert 'Target Release</span>' in releases_js
     assert "function compassReleaseGroupVisibleByDefault(group, hasAliasedRelease)" in releases_js
+    assert "if (Number(group.members && group.members.length || 0) > 0) return true;" in releases_js
     assert "return compassReleaseGroupVisibleByDefault(group, hasAliasedRelease);" in releases_js
     assert 'const metaChips = [' in releases_js
     assert "Release-owned targeted workstreams for this release." not in releases_js
     assert "Release-owned targeted workstreams for this selection." not in releases_js
     assert "execution-wave-focus-grid" not in releases_js
     assert 'progressLabel ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(progressLabel)}</span>` : ""' in releases_js
-    assert releases_js.index('${titleChips.join("")}') < releases_js.index('<a class="execution-wave-title execution-wave-card-link"')
+    assert releases_js.index('${titleChips.join("")}') < releases_js.index('<div class="execution-wave-title">${escapeHtml(title)}</div>')
     assert releases_js.index('const metaChips = [') < releases_js.index('progressLabel ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(progressLabel)}</span>` : ""')
     assert "execution-wave-focus-title" not in releases_js
     assert "`Open radar for ${token}`" in releases_js
     assert 'href="${escapeHtml(radarWorkstreamHref(token))}"' in releases_js
+    assert 'const summaryClass = options && options.summary ? " ws-id-btn" : "";' not in releases_js
+    assert 'const representativeMember = visibleMembers' not in releases_js
+    assert 'renderMemberChip(representativeMember, {' not in releases_js
     assert "compassScopeHref(token, state)" not in releases_js
     assert "`Scope to ${token}`" not in releases_js
     assert "const progressKnown = progressRatio !== null;" in workstreams_js
     assert 'const progressLabel = String(plan && plan.display_progress_label ? plan.display_progress_label : "").trim();' in workstreams_js
     assert 'const progressCellLabel = progressKnown ? `${progressPct}%` : (progressLabel || "n/a");' in workstreams_js
+    assert "<colgroup>" in workstreams_js
+    assert '<col class="ws-col-progress" />' in workstreams_js
+    assert ".ws-table .ws-col-progress {\n      width: 128px;" in base_template
+    assert "box-sizing: border-box;" in base_template
+    assert ".ws-table th.ws-col-progress" in base_template
+    assert "padding-right: 10px;" in base_template
+    assert "letter-spacing: 0.04em;" in base_template
+    assert ".ws-table td.ws-col-progress" in base_template
+    assert "text-align: right;" in base_template
+    assert "font-variant-numeric: tabular-nums;" in base_template
     assert "No active workstreams yet. Create or open one from Radar, then Compass will summarize it here." in workstreams_js
-    assert "No additional current workstreams. Program and release lanes already cover the active work." in workstreams_js
+    assert "No additional current workstreams. Program and release lanes already cover the active work." not in workstreams_js
+    assert "const representedPreviewNote = rowsAreProgramCovered && scopedRows.length > renderRows.length" in workstreams_js
     assert "All current workstreams are already represented in Programs or Release Targets." not in workstreams_js
     assert "No active workstreams in this scope." in workstreams_js
     assert "`Open radar for ${token}`" in waves_js
+    assert "const representativeProgramWorkstreamId = (program) => {" in waves_js
+    assert "sectionChips.push(renderMemberChip(representativeId, { summary: true" in waves_js
     assert 'href="${escapeHtml(radarWorkstreamHref(token))}"' in waves_js
     assert "compassScopeHref(token, state)" not in waves_js
     assert "`Scope to ${token}`" not in waves_js
@@ -253,6 +315,7 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert 'sectionChips.push(`<span class="label execution-wave-label wave-status-active">${escapeHtml(`${sectionActiveCount} active`)}</span>`);' in waves_js
     execution_wave_css = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-style-execution-waves.v1.css")
     base_css = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-style-base.v1.css")
+    surface_css = compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-style-surface.v1.css")
     expected_stats_grid_css = dashboard_ui_primitives.kpi_grid_layout_css(container_selector=".stats")
     expected_stat_card_css = dashboard_ui_primitives.kpi_card_surface_css(card_selector=".stat")
     expected_stat_typography_css = dashboard_ui_primitives.governance_kpi_label_value_css(
@@ -277,14 +340,25 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert ".stat .kpi-label {" not in base_template
     assert ".card {\n  border: 1px solid #dbeafe;" not in base_template
     assert ".ws-id-stack {" in base_css
-    assert "width: 240px;" in base_css
+    assert ".ws-table .ws-col-id {\n      width: 136px;" in base_css
+    assert ".ws-table .ws-col-id {\n        width: 150px;" in base_css
+    assert "@media (min-width: 960px)" in base_css
     assert "__ODYLITH_COMPASS_KPI_GRID_CONTRACT__" not in base_css
     assert "__ODYLITH_COMPASS_KPI_CARD_CONTRACT__" not in base_css
     assert "__ODYLITH_COMPASS_KPI_TYPOGRAPHY_CONTRACT__" not in base_css
     assert "__ODYLITH_COMPASS_CARD_SURFACE_CONTRACT__" not in base_css
+    assert ".risk {\n      border-left: 3px solid var(--danger);" in surface_css
+    assert "padding: 6px 0 6px 10px;" in surface_css
+    assert "margin-bottom: 4px;" in surface_css
+    assert "grid-template-columns: max-content minmax(0, 1fr);" in surface_css
+    assert "gap: 4px 6px;" in surface_css
+    assert ".risk-copy {" in surface_css
+    assert ".risk-line {" not in surface_css
     assert expected_stats_grid_css in base_css
     assert expected_stat_card_css in base_css
     assert expected_stat_typography_css in base_css
+    assert "text-overflow: ellipsis;" in expected_stat_typography_css
+    assert "white-space: nowrap;" in expected_stat_typography_css
     assert expected_card_surface_css in base_css
     assert ".card.release-groups-card .execution-wave-board {" not in base_css
     assert ".stat.stat-release-only {" not in base_css
@@ -317,9 +391,15 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
         f"{dashboard_ui_primitives.STANDARD_SURFACE_DEEP_LINK_BUTTON_FONT_WEIGHT};"
     ) in base_css
     assert ".pill, .ws-id-btn, .chip-link {" not in base_css
-    assert ".pill, .chip-link:not(.workstream-id-chip):not(.execution-wave-chip-link) {" in base_css
-    assert ".ws-id-btn {" in base_css
-    assert ".ws-id-btn, .workstream-id-chip {" in base_css
+    assert (
+        ".pill, .chip-link:not(.workstream-id-chip):not(.ws-covered-id-btn):not(.execution-wave-chip-link) {"
+        in base_css
+    )
+    assert ".ws-id-btn {\n      --chip-link-border:" not in base_css
+    assert ".ws-id-btn, .ws-covered-id-btn, .workstream-id-chip {" in base_css
+    assert f"--chip-link-border: {dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_BORDER_COLOR};" in base_css
+    assert f"--chip-link-bg: {dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_BACKGROUND};" in base_css
+    assert f"--chip-link-text: {dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_COLOR};" in base_css
     assert (
         "padding: "
         f"var({dashboard_ui_primitives.SURFACE_DEEP_LINK_BUTTON_PADDING_CSS_VAR}, "
@@ -374,8 +454,8 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert "border-color: #e2ece5;" in execution_wave_css
     assert "font-size: 14px;" in execution_wave_css
     assert ".execution-wave-program-stack-release .execution-wave-title {" in execution_wave_css
-    assert ".execution-wave-card-link {" in execution_wave_css
-    assert ".execution-wave-card-link:focus-visible {" in execution_wave_css
+    assert ".execution-wave-card-link {" not in execution_wave_css
+    assert ".execution-wave-card-link:focus-visible {" not in execution_wave_css
     assert "font-size: 12px;" in execution_wave_css
     assert ".execution-wave-program-stack-release .execution-wave-member-head {" in execution_wave_css
     assert ".execution-wave-program-stack-release .execution-wave-member-title-chips {" in execution_wave_css
@@ -414,16 +494,23 @@ def test_summary_and_timeline_assets_preserve_risk_and_component_spec_context() 
     assert 'rows.push(["Active Waves"' not in summary_js
     assert 'rows.push(["Next Release", nextReleaseLabel]);' not in summary_js
     assert 'rows.push([null, currentReleaseLabel, "stat-release-only"])' not in summary_js
-    assert 'const nameLabel = String(releaseRow.name || "").trim();' in summary_js
+    assert "function compactReleaseTargetLabel(value)" in summary_js
     assert 'const versionLabel = String(releaseRow.version || "").trim();' in summary_js
     assert 'const tagLabel = String(releaseRow.tag || "").trim();' in summary_js
-    assert 'return /^v\\d/.test(tagLabel) ? tagLabel.slice(1) : tagLabel;' in summary_js
+    assert "if (versionLabel) return compactReleaseTargetLabel(versionLabel);" in summary_js
+    assert "if (tagLabel) return compactReleaseTargetLabel(tagLabel);" in summary_js
+    assert 'const nameLabel = String(releaseRow.name || "").trim();' in summary_js
+    assert "if (nameLabel) return compactReleaseTargetLabel(nameLabel);" in summary_js
+    assert '<p class="kpi-value" title="${escapeHtml(value)}">${escapeHtml(value)}</p>' in summary_js
+    assert 'return /^v\\d/.test(tagLabel) ? tagLabel.slice(1) : tagLabel;' not in summary_js
     assert 'return versionLabel.startsWith("v") ? versionLabel : `v${versionLabel}`;' not in summary_js
     assert 'consumerTruthRoots().component_specs' in timeline_js
     assert 'consumerTruthRoots().runbooks' in timeline_js
     assert 'file.startsWith("odylith/registry/source/components/") && file.endsWith("/CURRENT_SPEC.md")' in timeline_js
-    assert 'return `Why now: ${toSentence(clipFocusText(whyText, 220))}`;' in timeline_js
-    assert 'return `Target outcome: ${toSentence(clipFocusText(proposedSolution, 230))}`;' in timeline_js
+    assert 'return `Why now: ${toSentence(whyText)}`;' in timeline_js
+    assert 'return `Target outcome: ${toSentence(proposedSolution)}`;' in timeline_js
+    assert "clipFocusText" not in timeline_js
+    assert "clipFocusText" not in compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-workstreams.v1.js")
     assert 'return "Target outcome: make the expanded Timeline Audit card explain intent, the change summary, and implementation evidence in a stable order.";' in timeline_js
     assert 'return "Reordered and relabeled the expanded audit card so it opens with Intent, then Summary of Change, then Implemented.";' in timeline_js
     assert 'return "Reordered and relabeled the expanded audit card so it now reads Intent, Summary of Change, Implemented, and then Files.";' in timeline_js
@@ -434,7 +521,9 @@ def test_summary_and_timeline_assets_preserve_risk_and_component_spec_context() 
     assert 'sections.push({ title: "Intent", items: intentItems });' in timeline_js
     assert 'sections.push({ title: "Summary of Change", items: summarySectionItems });' in timeline_js
     assert 'sections.push({ title: "Context", items: contextItems });' not in timeline_js
+    assert "function timelineSummaryGovernanceOnly(transaction)" in timeline_js
+    assert 'title: timelineSummaryGovernanceOnly(transaction) ? "Governance decision" : "Implemented"' in timeline_js
     intent_idx = timeline_js.index('sections.push({ title: "Intent", items: intentItems });')
     summary_idx = timeline_js.index('sections.push({ title: "Summary of Change", items: summarySectionItems });')
-    implemented_idx = timeline_js.index('sections.push({ title: "Implemented", items: implementedItems });')
+    implemented_idx = timeline_js.index('title: timelineSummaryGovernanceOnly(transaction) ? "Governance decision" : "Implemented"')
     assert intent_idx < summary_idx < implemented_idx

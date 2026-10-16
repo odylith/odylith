@@ -9,6 +9,7 @@ import pytest
 from odylith import cli
 from odylith.runtime.common import command_surface
 from odylith.runtime.evaluation import benchmark_compare as _real_benchmark_compare
+from odylith.runtime.governance import restore_published_files as _real_restore_published_files
 
 
 _FAKE_CLI_UX_LEAKS = (
@@ -206,11 +207,65 @@ _HANDLER_CASES = [
         and list(getattr(args, "forwarded", [])) == ["--json"],
     },
     {
+        "path": ("greenfield", "prepare"),
+        "argv": lambda root: ["greenfield", "prepare", f"--repo-root={root}", "--prompt", "Build a lab notebook"],
+        "handler": "_cmd_greenfield",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "greenfield_command", "") == "prepare"
+        and list(getattr(args, "forwarded", [])) == ["--prompt", "Build a lab notebook"],
+    },
+    {
+        "path": ("greenfield", "candidate-contract"),
+        "argv": lambda root: ["greenfield", "candidate-contract", f"--repo-root={root}", "--prompt", "Build a lab notebook"],
+        "handler": "_cmd_greenfield",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "greenfield_command", "") == "candidate-contract"
+        and list(getattr(args, "forwarded", [])) == ["--prompt", "Build a lab notebook"],
+    },
+    {
+        "path": ("greenfield", "authority-check"),
+        "argv": lambda root: ["greenfield", "authority-check", f"--repo-root={root}", "--prompt", "Build a lab notebook", "--gate-file", str(root.parent / "gate.json")],
+        "handler": "_cmd_greenfield",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "greenfield_command", "") == "authority-check"
+        and list(getattr(args, "forwarded", [])) == ["--prompt", "Build a lab notebook", "--gate-file", str(root.parent / "gate.json")],
+    },
+    {
+        "path": ("greenfield", "source-ledger-check"),
+        "argv": lambda root: ["greenfield", "source-ledger-check", f"--repo-root={root}", "--prompt", "Build a lab notebook", "--ledger-file", str(root.parent / "ledger.json")],
+        "handler": "_cmd_greenfield",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "greenfield_command", "") == "source-ledger-check"
+        and list(getattr(args, "forwarded", [])) == ["--prompt", "Build a lab notebook", "--ledger-file", str(root.parent / "ledger.json")],
+    },
+    {
+        "path": ("greenfield", "decide"),
+        "argv": lambda root: ["greenfield", "decide", f"--repo-root={root}", "CONFIRM", "a" * 64, "--completion-receipt", str(root.parent / "completion-receipt.json")],
+        "handler": "_cmd_greenfield",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "greenfield_command", "") == "decide"
+        and list(getattr(args, "forwarded", [])) == ["CONFIRM", "a" * 64, "--completion-receipt", str(root.parent / "completion-receipt.json")],
+    },
+    {
         "path": ("greenfield", "propose"),
         "argv": lambda root: ["greenfield", "propose", f"--repo-root={root}", "--prompt", "Build a lab notebook"],
         "handler": "_cmd_greenfield",
         "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
         and getattr(args, "greenfield_command", "") == "propose"
+        and list(getattr(args, "forwarded", [])) == ["--prompt", "Build a lab notebook"],
+    },
+    {
+        "path": ("greenfield", "compile-transaction"),
+        "argv": lambda root: [
+            "greenfield",
+            "compile-transaction",
+            f"--repo-root={root}",
+            "--prompt",
+            "Build a lab notebook",
+        ],
+        "handler": "_cmd_greenfield",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "greenfield_command", "") == "compile-transaction"
         and list(getattr(args, "forwarded", [])) == ["--prompt", "Build a lab notebook"],
     },
     {
@@ -222,12 +277,49 @@ _HANDLER_CASES = [
         and list(getattr(args, "forwarded", [])) == ["--proposal-file", "proposal.json"],
     },
     {
+        "path": ("greenfield", "create"),
+        "argv": lambda root: [
+            "greenfield",
+            "create",
+            f"--repo-root={root}",
+            "--transaction-file",
+            "transaction.json",
+            "--transaction-hash",
+            "fixture-hash",
+            "--completion-receipt",
+            str(root.parent / "completion-receipt.json"),
+            "--confirm",
+        ],
+        "handler": "_cmd_greenfield",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "greenfield_command", "") == "create"
+        and list(getattr(args, "forwarded", []))
+        == ["--transaction-file", "transaction.json", "--transaction-hash", "fixture-hash", "--completion-receipt", str(root.parent / "completion-receipt.json"), "--confirm"],
+    },
+    {
         "path": ("component", "register"),
         "argv": lambda root: ["component", "register", f"--repo-root={root}", "--id", "registry-refresh"],
         "handler": "_cmd_component",
         "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
         and getattr(args, "component_command", "") == "register"
         and list(getattr(args, "forwarded", [])) == ["--id", "registry-refresh"],
+    },
+    {
+        "path": ("component", "update-description"),
+        "argv": lambda root: [
+            "component",
+            "update-description",
+            f"--repo-root={root}",
+            "--id",
+            "registry-refresh",
+            "--what-it-is",
+            "Current description.",
+        ],
+        "handler": "_cmd_component",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "component_command", "") == "update-description"
+        and list(getattr(args, "forwarded", []))
+        == ["--id", "registry-refresh", "--what-it-is", "Current description."],
     },
     {
         "path": ("bug", "capture"),
@@ -317,9 +409,10 @@ _HANDLER_CASES = [
     },
     {
         "path": ("compass", "log"),
-        "argv": lambda root: ["compass", "log", f"--repo-root={root}"],
+        "argv": lambda root: ["compass", "log", f"--repo-root={root}", "--kind", "decision", "--summary", "Dispatch audit"],
         "handler": "_cmd_compass_log",
-        "check": lambda args, root: getattr(args, "repo_root", "") == str(root),
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and list(getattr(args, "forwarded", [])) == ["--kind", "decision", "--summary", "Dispatch audit"],
     },
     {
         "path": ("compass", "update"),
@@ -358,12 +451,31 @@ _HANDLER_CASES = [
         "check": lambda args, root: getattr(args, "repo_root", "") == str(root),
     },
     {
+        "path": ("atlas", "update"),
+        "argv": lambda root: ["atlas", "update", f"--repo-root={root}"],
+        "handler": "_cmd_atlas_update",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root),
+    },
+    {
         "path": ("atlas", "install-autosync-hook"),
         "argv": lambda root: ["atlas", "install-autosync-hook", f"--repo-root={root}"],
         "handler": "_cmd_atlas_install_autosync_hook",
         "check": lambda args, root: getattr(args, "repo_root", "") == str(root),
     },
 ]
+
+_HANDLER_CASES.append(
+    {
+        "path": ("governance", "restore-published-files"),
+        "argv": lambda root: ["governance", "restore-published-files", f"--repo-root={root}", "--preview", "--path", "odylith/index.html", "--json"],
+        "target_obj": _real_restore_published_files,
+        "handler": "run",
+        "check": lambda args, root: args.repo_root == str(root)
+        and args.preview is True and args.apply is None
+        and args.path == ["odylith/index.html"] and args.as_json is True,
+    }
+)
+
 
 for governance_command in (
     "normalize-plan-risk-mitigation",
@@ -392,6 +504,7 @@ for governance_command in (
 for program_command in (
     "create",
     "update",
+    "adopt",
     "list",
     "show",
     "status",
@@ -400,7 +513,11 @@ for program_command in (
     _HANDLER_CASES.append(
         {
             "path": ("program", program_command),
-            "argv": lambda root, command=program_command: ["program", command, f"--repo-root={root}"],
+            "argv": lambda root, command=program_command: (
+                ["program", command, "B-001", "B-002", f"--repo-root={root}"]
+                if command == "adopt"
+                else ["program", command, f"--repo-root={root}"]
+            ),
             "handler": "_cmd_program",
             "check": lambda args, root, command=program_command: getattr(args, "repo_root", "") == str(root)
             and getattr(args, "program_command", "") == command,
@@ -504,13 +621,41 @@ def test_cli_handler_dispatch_matrix(monkeypatch, tmp_path: Path, case: dict[str
         captured["args"] = args
         return 91
 
-    monkeypatch.setattr(cli, str(case["handler"]), fake_handler)
+    monkeypatch.setattr(case.get("target_obj", cli), str(case["handler"]), fake_handler)
 
     rc = cli.main(case["argv"](tmp_path))
 
     assert rc == 91
     assert "args" in captured
     assert case["check"](captured["args"], tmp_path)
+
+
+def test_greenfield_propose_dispatches_the_public_cli_adapter(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_module_main(module: str, argv: list[str]) -> int:
+        captured["module"] = module
+        captured["argv"] = argv
+        return 92
+
+    monkeypatch.setattr(cli, "_run_module_main", fake_module_main)
+    args = argparse.Namespace(
+        greenfield_command="propose",
+        repo_root=str(tmp_path),
+        forwarded=["--prompt", "Build a lab notebook"],
+    )
+
+    rc = cli._cmd_greenfield(args)  # noqa: SLF001
+
+    assert rc == 92
+    assert captured["module"] == "odylith.runtime.domain_intelligence.greenfield_cli"
+    assert captured["argv"] == [
+        "propose",
+        "--repo-root",
+        str(tmp_path),
+        "--prompt",
+        "Build a lab notebook",
+    ]
 
 
 @pytest.mark.parametrize("case", _OWNED_SURFACE_REFRESH_CASES, ids=lambda case: " ".join(case["path"]))
@@ -702,6 +847,13 @@ _DOWNSTREAM_ARGV_CASES = [
         "path": ("validate", "guidance-portability"),
         "argv": lambda root: ["validate", "guidance-portability", f"--repo-root={root}"],
         "target_obj": cli.validate_guidance_portability,
+        "target_attr": "main",
+        "expected_argv": lambda root: ["--repo-root", str(root)],
+    },
+    {
+        "path": ("validate", "engine-integrity"),
+        "argv": lambda root: ["validate", "engine-integrity", f"--repo-root={root}"],
+        "target_obj": cli.engine_integrity,
         "target_attr": "main",
         "expected_argv": lambda root: ["--repo-root", str(root)],
     },

@@ -158,6 +158,35 @@ Prompt-submit and stop hooks stay under a documented local latency budget on war
   coupling: the Context Engine diagnostic benchmark now defaults to cold cache
   unless warm memory proof is explicitly requested, and Context Engine JSON
   output exits cleanly when a downstream pipe closes early. Tracked by CB-163.
+- 2026-05-04 dashboard-version trust proof captured CB-168 and closed the
+  shell drift path: upgrade now writes a runtime version-state sidecar, forces
+  the default shell-facing dashboard refresh, the open shell warns when
+  generated payload version lags `odylith version`, and `odylith sync --force`
+  recovery is now a real explicit selected-plan dirty-overlap acknowledgement.
+  The non-force path still blocks broad overlap before tracked Radar
+  normalization and recommends the narrow
+  `odylith dashboard refresh --repo-root . --force` recovery for shell-only
+  drift. The real consumer post-upgrade evidence also hardened managed-runtime
+  health so locked ignored metadata such as `.DS_Store` cannot crash
+  `odylith version`.
+- 2026-05-04 sync-force latency proof keeps the engine stack active while
+  removing additive dashboard render cost: full sync warms Compass first,
+  renders Radar/Registry/Casebook as child surfaces in a bounded batch, and
+  renders the shell last. Registry also reuses Compass's current runtime
+  summary during the same sync pass instead of rebuilding the architecture
+  summary it only needs for payload continuity. Source-local validation on this branch proved
+  `odylith sync --repo-root . --force --runtime-mode auto` succeeds against a
+  dirty governed worktree; warmed wall clock settled at `real 10.42s` with a
+  `6.8s` dashboard surface batch versus the prior warmed baseline of about
+  `real 15.97s`.
+- 2026-05-08 startup target-recognition proof keeps `odylith start` accurate
+  when the operator names existing source files or planned new source files in
+  unquoted intent text. Existing path repro for CB-183 now returns bootstrap
+  with two writable targets and no needs-target status; planned new-file intent
+  such as `src/odylith/runtime/context_engine/new_startup_probe.py` now returns
+  bootstrap and prints a compact `target` line. The extractor remains bounded
+  to known repo roots and trusted source/config/doc/test suffixes so random
+  prose does not become write scope.
 
 ## Rollout
 - Execute through the bound v0.1.14 technical plan and keep the implementation
@@ -200,11 +229,22 @@ Claude, Codex, and future host adapters should get the same grounded value witho
   migrations own Casebook status/type normalization and Atlas render-surface
   polish, and migration ledgers must prove the generated browser surfaces were
   refreshed from source truth.
+- v0.1.14 post-release dashboard drift hardening remains backward compatible:
+  the new `.odylith/runtime/odylith-version-state.v1.{json,js}` sidecar is
+  mutable runtime state, not source truth; upgraded repos rerender shell-facing
+  assets with `--force`; and existing dirty worktrees get a pre-mutation sync
+  block plus narrow dashboard-refresh recovery instead of a broad sync override.
 
 ## Test Strategy
 - Unit tests cover generic low-signal Claude and Codex prompt hooks skipping conversation-bundle and substrate construction, Odylith-directed quiet prompts keeping substrate evidence, Claude prompt-bundle route locks and visible teaser preservation, SessionStart using substrate state by default without duplicate hook stdout, direct show/help/capability route locks, launcher bootstrap fallback preference, legacy launcher-health parser compatibility, Codex dirty-event settlement, Claude exact non-governed Bash checkpoint skips, context-engine warm-daemon env defaults, and direct host-hook launcher dispatch.
 - Integration tests cover 0.1.10 -> 0.1.13, 0.1.11 -> 0.1.13, and 0.1.12 -> 0.1.13 upgrade activation, plus 0.1.10/0.1.11/0.1.12/0.1.13 -> 0.1.14 upgrade activation, migration-plan state, migration-result state, pin adoption, runtime pointer convergence, Casebook browser refresh, Atlas render refresh, and topology-spine migration evidence.
 - Integration tests also cover governed sync/operator latency, no-provider credit burn, dashboard all-surface refresh behavior, and parallel multi-surface dashboard execution.
+- Focused v0.1.14 post-release tests cover compact `odylith start` output,
+  forced dashboard refresh after upgrade, dashboard stale-version sidecar
+  payload and warning copy, non-force sync dirty-overlap blocking before Radar
+  normalization, force sync dirty-overlap acknowledgement, sync surface batch
+  ordering, Registry runtime-summary reuse, and locked managed-runtime metadata
+  tolerance.
 - Guidance tests cover serial start/context ordering across root guidance,
   install-generated guidance, Claude project assets, Codex/Claude skill shims,
   and source/bundle skill mirrors.

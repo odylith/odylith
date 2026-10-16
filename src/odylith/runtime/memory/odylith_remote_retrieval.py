@@ -144,8 +144,12 @@ def _vespa_kind_filter_yql(kinds: Sequence[str] | None) -> str:
     allowed = [str(kind).strip().lower() for kind in (kinds or []) if str(kind).strip()]
     if not allowed:
         return ""
-    clauses = [f'kind contains "{token.replace(chr(34), r"\\\"")}"' for token in allowed]
+    clauses = [f'kind contains "{_escape_yql_string_token(token)}"' for token in allowed]
     return " and (" + " or ".join(clauses) + ")"
+
+
+def _escape_yql_string_token(value: str) -> str:
+    return str(value).replace('"', r"\"")
 
 
 def _document_sync_fingerprint(documents: Sequence[Mapping[str, Any]]) -> str:

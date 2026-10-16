@@ -1,0 +1,369 @@
+"""Validate Greenfield implementation handoffs before transaction sealing.
+
+This owner validates Project dashboard prompts and operator next steps. The
+model-authored path compares typed bindings directly; legacy packages retain
+their existing presentation checks without becoming semantic authority.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Mapping, Sequence
+from typing import Any
+
+from odylith.runtime.common.value_coercion import normalize_string as clean_text
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_checkpoint_text,
+    authored_first_run_relations,
+    authored_first_path_text,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
+    decision_copy,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+    AUTHORED_SEMANTICS_KEY,
+    authored_projection_relations,
+    authored_visible_result,
+    component_responsibility_relations_from_intent,
+    first_path_context_relations_from_intent, source_event_relations_from_intent,
+)
+from odylith.runtime.domain_intelligence.greenfield_completion_types import (
+    GreenfieldCompletionPackage,
+)
+from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
+    PROJECT_HANDOFF_STEP_SEQUENCE,
+    coding_readiness_contract_issues,
+    project_handoff_step_contract_issues,
+    render_project_handoff_scope,
+    render_selected_workstream_scope,
+)
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import provisional_design_from_intent, project_presentation_name
+from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
+from odylith.runtime.domain_intelligence.greenfield_traceability import first_executable_workstream
+from odylith.runtime.domain_intelligence.greenfield_scalar_values import (
+    nested_text_values as text_values,
+)
+from odylith.runtime.project_intelligence.greenfield_authored_dashboard import (
+    authored_actor_rows,
+    authored_component_capabilities,
+    authored_product_boundary,
+)
+
+
+def project_dashboard_preview_issues(
+    package: GreenfieldCompletionPackage,
+    project_dashboard_preview: Mapping[str, Any],
+    *,
+    model_authored: bool,
+) -> list[str]:
+    """Validate dashboard handoffs without recovering authored meaning from prose."""
+
+    issues: list[str] = []
+    prompts = mapping_rows(project_dashboard_preview.get("host_handoff_prompts"))
+    if len(prompts) < 5:
+        issues.append("Project dashboard preview must include all source-launch implementation prompts")
+    if model_authored:
+        issues.extend(
+            _authored_project_dashboard_contract_issues(
+                package,
+                project_dashboard_preview,
+                prompts,
+            )
+        )
+    return issues
+
+
+def _authored_project_dashboard_contract_issues(
+    package: GreenfieldCompletionPackage,
+    project_dashboard_preview: Mapping[str, Any],
+    prompts: Sequence[Mapping[str, Any]],
+) -> list[str]:
+    proposal = package.proposal
+    relations = authored_projection_relations(proposal)
+    if not relations:
+        return ["model-authored Project dashboard is missing its typed semantic authority"]
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    projection = (
+        project_dashboard_preview.get("projection")
+        if isinstance(project_dashboard_preview.get("projection"), Mapping)
+        else {}
+    )
+    facts = (
+        project_dashboard_preview.get("authored_facts")
+        if isinstance(project_dashboard_preview.get("authored_facts"), Mapping)
+        else {}
+    )
+    issues: list[str] = []
+    if projection.get("origin") != AUTHORED_PROJECTION_ORIGIN:
+        issues.append("model-authored Project dashboard lost its projection origin")
+    expected_scalars = {
+        "title": intent.get("title"),
+        "product_story": intent.get("product_story"),
+        "first_path": intent.get("first_path"),
+        "proof_boundary": str(intent.get("proof_boundary") or ""),
+        "visible_result": (authored_checkpoint_text(intent) if (intent.get(AUTHORED_SEMANTICS_KEY, {}).get("source_duty") or {}).get("ledger_receipt", {}).get("ledger", {}).get("version") in {"odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"} else authored_visible_result(relations)),
+    }
+    for key, expected in expected_scalars.items():
+        if facts.get(key) != expected:
+            issues.append(f"model-authored Project dashboard drifted from intent.{key}")
+    if [dict(row) for row in mapping_rows(facts.get("assumptions"))] != [
+        dict(row) for row in mapping_rows(intent.get("assumptions"))
+    ]:
+        issues.append("model-authored Project dashboard drifted from intent.assumptions")
+    for key in (
+        "human_actors",
+        "internal_systems",
+        "external_systems",
+        "non_goals",
+        "operational_constraints",
+        "evidence_requirements",
+        "success_metrics",
+    ):
+        if _exact_rows(facts.get(key)) != _exact_rows(intent.get(key)):
+            issues.append(f"model-authored Project dashboard drifted from intent.{key}")
+    if [dict(row) for row in mapping_rows(facts.get("first_path_relations"))] != [
+        dict(row) for row in (relations if intent[AUTHORED_SEMANTICS_KEY]["version"].endswith(".v19") else source_event_relations_from_intent(intent))
+    ]:
+        issues.append("model-authored Project dashboard drifted from typed first-path relations")
+    if intent[AUTHORED_SEMANTICS_KEY]["version"].endswith(".v19") and facts.get("source_event_relations") != list(source_event_relations_from_intent(intent)):
+        issues.append("model-authored Project dashboard drifted from the complete source-event graph")
+    if facts.get("source_precedence") != intent[AUTHORED_SEMANTICS_KEY]["source_precedence"]:
+        issues.append("model-authored Project dashboard drifted from source prerequisites")
+    source_duty = intent[AUTHORED_SEMANTICS_KEY].get("source_duty")
+    lifecycle = source_duty.get("lifecycle") if isinstance(source_duty, Mapping) else None
+    if facts.get("source_lifecycle") != lifecycle:
+        issues.append("model-authored Project dashboard drifted from source lifecycle")
+    context_relations = first_path_context_relations_from_intent(intent)
+    if [dict(row) for row in mapping_rows(facts.get("first_path_context_relations"))] != [
+        dict(row) for row in context_relations
+    ]:
+        issues.append("model-authored Project dashboard drifted from typed path-context relations")
+    component_relations = component_responsibility_relations_from_intent(intent)
+    if [dict(row) for row in mapping_rows(facts.get("component_responsibility_relations"))] != [
+        dict(row) for row in component_relations
+    ]:
+        issues.append("model-authored Project dashboard drifted from typed component relations")
+    components = mapping_rows(proposal.get("components"))
+    story = (
+        project_dashboard_preview.get("product_story")
+        if isinstance(project_dashboard_preview.get("product_story"), Mapping)
+        else {}
+    )
+    display_name = project_presentation_name(source_title=intent["title"], design=provisional_design_from_intent(intent))
+    if project_dashboard_preview.get("title") != display_name or story.get("headline") != display_name:
+        issues.append("model-authored Project dashboard drifted from the proposed project name")
+    cards = {
+        str(row.get("semantic_slot") or ""): str(row.get("body") or "")
+        for row in mapping_rows(story.get("release_contract"))
+    }
+    expected_cards = {
+        "first_path": authored_first_path_text(intent),
+        "proof": decision_copy(intent, "proof_boundary"),
+        "product_boundary": authored_product_boundary(
+            components=components,
+            internal_systems=_exact_rows(intent.get("internal_systems")),
+            external_systems=_exact_rows(intent.get("external_systems")),
+            non_goals=_exact_rows(intent.get("non_goals")),
+        ),
+        "owned_capabilities": "\n".join(authored_component_capabilities(components)),
+    }
+    for slot, expected in expected_cards.items():
+        if cards.get(slot) != expected:
+            issues.append(f"model-authored Project dashboard drifted from typed {slot}")
+    expected_actor_cards = [
+        {"role": "human", "title": actor, "body": body}
+        for _role, actor, body in authored_actor_rows(
+            human_actors=_exact_rows(intent.get("human_actors")),
+            relations=authored_first_run_relations(intent),
+        )
+    ]
+    if [dict(row) for row in mapping_rows(story.get("actors"))] != expected_actor_cards:
+        issues.append("model-authored Project dashboard drifted from typed actor identities")
+    if len(prompts) != len(PROJECT_HANDOFF_STEP_SEQUENCE):
+        issues.append("model-authored Project dashboard must carry the exact five-step handoff")
+        return issues
+
+    created_ids = {
+        clean_text(row.get("idea_id") or row.get("workstream_id") or row.get("id")).upper()
+        for row in mapping_rows((package.backlog_result or {}).get("created"))
+        if clean_text(row.get("idea_id") or row.get("workstream_id") or row.get("id"))
+    }
+    next_steps = package.next_steps_preview if isinstance(package.next_steps_preview, Mapping) else {}
+    start_id = clean_text(next_steps.get("start_workstream_id")).upper()
+    expected_components = tuple(
+        clean_text(row.get("component_id") or row.get("id"))
+        for row in mapping_rows(proposal.get("components"))
+        if clean_text(row.get("component_id") or row.get("id"))
+    )
+    expected_commands = _exact_rows(next_steps.get("verification_commands"))
+    expected_constraints = _exact_rows(intent.get("operational_constraints"))
+    expected_excluded_scope = _exact_rows(intent.get("non_goals"))
+    expected_scope_copy = render_project_handoff_scope(
+        operational_constraints=expected_constraints, excluded_scope=expected_excluded_scope,
+    )
+    try:
+        expected_target = _canonical_implementation_target(package)
+    except ValueError as exc:
+        return [*issues, f"model-authored Project handoff has invalid canonical implementation target: {exc}"]
+    for index, (prompt, expected_step_id) in enumerate(
+        zip(prompts, PROJECT_HANDOFF_STEP_SEQUENCE, strict=True),
+        start=1,
+    ):
+        contract = prompt.get("contract")
+        for issue in project_handoff_step_contract_issues(
+            contract,
+            expected_step_id=expected_step_id,
+        ):
+            issues.append(f"model-authored Project handoff step {index} {issue}")
+        if not isinstance(contract, Mapping):
+            continue
+        bindings = contract.get("fact_bindings")
+        if not isinstance(bindings, Mapping):
+            continue
+        if bindings.get("project_title") != intent.get("title"):
+            issues.append(f"model-authored Project handoff step {index} drifted from intent.title")
+        if not _implementation_target_matches(bindings.get("implementation_target"), expected_target):
+            issues.append(f"model-authored Project handoff step {index} drifted from canonical implementation target")
+        if not isinstance(prompt.get("prompt"), str) or prompt["prompt"].count(render_selected_workstream_scope(expected_target)) != 1:
+            issues.append(f"model-authored Project handoff step {index} lost its exact selected implementation scope copy")
+        if bindings.get("accepted_first_path") != authored_first_path_text(intent):
+            issues.append(f"model-authored Project handoff step {index} drifted from the proposed first run")
+        if bindings.get("proof_boundary") != decision_copy(intent, "proof_boundary"):
+            issues.append(
+                f"model-authored Project handoff step {index} drifted from the source-or-assumption proof"
+            )
+        if bindings.get("visible_result") != authored_checkpoint_text(intent):
+            issues.append(
+                f"model-authored Project handoff step {index} drifted from the source-or-assumption checkpoint"
+            )
+        if _exact_rows(bindings.get("excluded_scope")) != expected_excluded_scope:
+            issues.append(f"model-authored Project handoff step {index} drifted from excluded scope")
+        if _exact_rows(bindings.get("operational_constraints")) != expected_constraints:
+            issues.append(f"model-authored Project handoff step {index} drifted from operational constraints")
+        if not isinstance(prompt.get("prompt"), str) or not prompt["prompt"].endswith(expected_scope_copy):
+            issues.append(f"model-authored Project handoff step {index} lost its exact scope copy")
+        if _exact_rows(bindings.get("component_refs")) != expected_components:
+            issues.append(f"model-authored Project handoff step {index} drifted from component ids")
+        if _exact_rows(bindings.get("verification_commands")) != expected_commands:
+            issues.append(f"model-authored Project handoff step {index} drifted from verification commands")
+        workstream_refs = _exact_rows(bindings.get("first_release_workstream_refs"))
+        if workstream_refs != tuple(package.release_workstream_ids):
+            issues.append(f"model-authored Project handoff step {index} drifted from exact release membership")
+        if expected_step_id != "choose_language":
+            if start_id not in workstream_refs:
+                issues.append(f"model-authored Project handoff step {index} lost its start workstream")
+            if created_ids and not set(workstream_refs).issubset(created_ids):
+                issues.append(f"model-authored Project handoff step {index} contains an unallocated workstream")
+    return issues
+
+
+def next_steps_preview_issues(
+    package: GreenfieldCompletionPackage,
+    next_steps_preview: Mapping[str, Any],
+    *,
+    semantic_checks: bool = True,
+) -> list[str]:
+    """Validate the next-step surface with typed checks for authored packages."""
+
+    issues: list[str] = []
+    created_ids = {
+        clean_text(row.get("idea_id")).upper()
+        for row in mapping_rows((package.backlog_result or {}).get("created"))
+        if clean_text(row.get("idea_id"))
+    }
+    start_id = clean_text(next_steps_preview.get("start_workstream_id")).upper()
+    if not start_id:
+        issues.append("operator next-steps preview must identify the first implementation workstream")
+    elif created_ids and start_id not in created_ids:
+        issues.append("operator next-steps preview start workstream drifted from Radar prewrite output")
+    if not semantic_checks:
+        try:
+            expected_target = _canonical_implementation_target(package)
+            if (
+                not _implementation_target_matches(next_steps_preview.get("implementation_target"), expected_target)
+                or start_id != expected_target["workstream_id"]
+                or next_steps_preview.get("start_workstream_title") != expected_target["workstream_title"]
+            ):
+                issues.append("operator next-steps preview drifted from canonical implementation target")
+            visible_prompt = next_steps_preview.get("implementation_prompt")
+            if not isinstance(visible_prompt, str) or visible_prompt.count(render_selected_workstream_scope(expected_target)) != 1:
+                issues.append("operator next-steps preview lost its exact selected implementation scope copy")
+        except ValueError as exc:
+            issues.append(f"operator next-steps preview has invalid canonical implementation target: {exc}")
+        if _exact_rows(next_steps_preview.get("first_release_workstream_ids")) != tuple(package.release_workstream_ids):
+            issues.append("operator next-steps preview drifted from exact release membership")
+    if clean_text(next_steps_preview.get("release_selector")) != clean_text(package.release_selector):
+        issues.append("operator next-steps preview release selector drifted from requested release")
+    _require_preview_text(
+        next_steps_preview,
+        "implementation_prompt",
+        issues,
+        "operator next-steps preview must include an implementation prompt",
+        min_words=18,
+    )
+    prompt = clean_text(next_steps_preview.get("implementation_prompt"))
+    if start_id and start_id not in prompt.upper():
+        issues.append("operator next-steps implementation prompt must name the first implementation workstream")
+    operator_sequence = text_values(next_steps_preview.get("operator_sequence"))
+    if len(operator_sequence) < 3:
+        issues.append("operator next-steps preview must include an actionable operator sequence")
+    gates = text_values(next_steps_preview.get("coding_readiness_gates"))
+    if not gates:
+        issues.append("operator next-steps preview must show coding-readiness gates")
+    if semantic_checks and len(gates) < 4:
+        issues.append("operator next-steps preview must carry coding-readiness gates")
+    if not semantic_checks:
+        issues.extend(
+            coding_readiness_contract_issues(
+                next_steps_preview.get("coding_readiness_contract"),
+                expected_workstream_id=start_id,
+            )
+        )
+    commands = text_values(next_steps_preview.get("verification_commands"))
+    if len(commands) < 2:
+        issues.append("operator next-steps preview must include multiple verification commands")
+    if semantic_checks:
+        issues.append("operator next-steps preview requires the authored coding-readiness contract")
+    return issues
+
+
+def _canonical_implementation_target(package: GreenfieldCompletionPackage) -> dict[str, Any]:
+    selected = first_executable_workstream(
+        proposal=package.proposal,
+        created_backlog=mapping_rows((package.backlog_result or {}).get("created")),
+        first_release_workstreams=package.release_workstream_ids,
+    )
+    design = selected.row["provisional_workstream_contract"]["provisional_workstream"]
+    return {
+        "workstream_id": selected.idea_id, "workstream_title": design["title"],
+        "deliverable": design["deliverable"], "verification": design["verification"],
+        "component_refs": tuple(design["component_keys"]),
+    }
+
+
+def _implementation_target_matches(value: Any, expected: Mapping[str, Any]) -> bool:
+    return isinstance(value, Mapping) and set(value) == set(expected) and all(
+        _exact_rows(value[key]) == expected[key] if key == "component_refs" else value[key] == expected[key]
+        for key in expected
+    )
+
+
+def _require_preview_text(
+    value: Mapping[str, Any],
+    key: str,
+    issues: list[str],
+    message: str,
+    *,
+    min_words: int,
+) -> None:
+    text = clean_text(value.get(key))
+    if not text or len([part for part in text.replace("/", " ").split() if part.strip()]) < min_words:
+        issues.append(message)
+
+
+def _exact_rows(value: Any) -> tuple[str, ...]:
+    rows = value if isinstance(value, Sequence) and not isinstance(value, (str, bytes)) else (value,)
+    return tuple(row for row in rows if isinstance(row, str) and row)
+
+
+__all__ = ["next_steps_preview_issues", "project_dashboard_preview_issues"]

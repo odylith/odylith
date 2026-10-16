@@ -298,36 +298,21 @@ Related Bugs:
 - [x] [test_subagent_reasoning_ladder.py](/Users/freedom/code/odylith/tests/unit/runtime/test_subagent_reasoning_ladder.py)
 
 ## Risks & Mitigations
-- [ ] Risk: the GitHub committer exception stays convenient enough that nobody
-      actually removes it.
-  - [ ] Mitigation: make the `v0.1.10` release lane fail on lingering
-        exception-only ancestry instead of documenting the problem after ship.
+
+- [ ] Risk: the GitHub committer exception stays convenient enough that nobody actually removes it.
+  - [ ] Mitigation: make the `v0.1.10` release lane fail on lingering exception-only ancestry instead of documenting the problem after ship.
 - [ ] Risk: benchmark proof returns in a weak or partial form.
-  - [ ] Mitigation: tie `v0.1.10` release proof to the full benchmark audit and
-        publication contract, not just a smoke benchmark.
-- [ ] Risk: fixing the first-install shell wobble by broadening sync too early
-      slows the consumer lane.
-  - [ ] Mitigation: make the first refresh surface-safe without turning every
-        upgrade into a full expensive governance pass by default.
-- [ ] Risk: post-publish cleanliness is "solved" by teaching maintainers to
-      ignore generated drift.
-  - [ ] Mitigation: either keep the active checkout clean or make the dirty
-        output live only in an isolated proof workspace.
-- [ ] Risk: sync UX hardening broadens noise or latency instead of making the
-      path clearer.
-  - [ ] Mitigation: keep heartbeat output thresholded, keep overlap gating
-        explicit and bounded, and point warning-heavy passes at durable report
-        artifacts instead of dumping more terminal text.
-- [ ] Risk: the Compass refresh fix stops at wrapper tuning and still leaves
-      operators without one trustworthy refresh command or truthful queue
-      state.
-  - [ ] Mitigation: keep `odylith compass refresh` as the single public
-        contract, record request state locally, stamp the live payload on every
-        failed refresh, and refuse duplicate retry loops after timeout.
-- [ ] Risk: audit-fidelity fixes accidentally rotate timestamps on every no-op
-      run.
-  - [ ] Mitigation: preserve stable `generated_utc` behavior and stop rewriting
-        semantic no-op JSON payloads instead of forcing timestamp churn.
+  - [ ] Mitigation: tie `v0.1.10` release proof to the full benchmark audit and publication contract, not just a smoke benchmark.
+- [ ] Risk: fixing the first-install shell wobble by broadening sync too early slows the consumer lane.
+  - [ ] Mitigation: make the first refresh surface-safe without turning every upgrade into a full expensive governance pass by default.
+- [ ] Risk: post-publish cleanliness is "solved" by teaching maintainers to ignore generated drift.
+  - [ ] Mitigation: either keep the active checkout clean or make the dirty output live only in an isolated proof workspace.
+- [ ] Risk: sync UX hardening broadens noise or latency instead of making the path clearer.
+  - [ ] Mitigation: keep heartbeat output thresholded, keep overlap gating explicit and bounded, and point warning-heavy passes at durable report artifacts instead of dumping more terminal text.
+- [ ] Risk: the Compass refresh fix stops at wrapper tuning and still leaves operators without one trustworthy refresh command or truthful queue state.
+  - [ ] Mitigation: keep `odylith compass refresh` as the single public contract, record request state locally, stamp the live payload on every failed refresh, and refuse duplicate retry loops after timeout.
+- [ ] Risk: audit-fidelity fixes accidentally rotate timestamps on every no-op run.
+  - [ ] Mitigation: preserve stable `generated_utc` behavior and stop rewriting semantic no-op JSON payloads instead of forcing timestamp churn.
 
 ## Validation/Test Plan
 - [ ] `make release-preflight VERSION=0.1.10`
@@ -447,3 +432,20 @@ Related Bugs:
       (`116 passed`) plus targeted compile proof for
       `src/odylith/install/manager.py`, `src/odylith/cli.py`, and
       `src/odylith/runtime/common/dirty_overlap.py`.
+
+## Traceability
+
+Release feedback, proof exceptions, benchmark interpretation, and consumer release assets.
+
+### Runbooks
+
+- `odylith/MAINTAINER_RELEASE_RUNBOOK.md`
+
+### Developer Docs
+
+- `docs/benchmarks/REVIEWER_GUIDE.md`
+
+### Code References
+
+- `.github/workflows/release.yml`
+- `src/odylith/install/release_assets.py`

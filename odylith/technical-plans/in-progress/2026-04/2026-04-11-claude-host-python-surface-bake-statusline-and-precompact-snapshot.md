@@ -265,3 +265,20 @@ behind the live `.claude/` wiring.
 - [ ] `src/odylith/cli.py` gains only a dispatcher scaffold; the red-zone
       file-size posture does not get worse, and the decomposition
       workstream for `cli.py` remains open and untouched.
+
+## Traceability
+
+Installed asset maintenance supports statusline/PreCompact bakes; detailed behavior remains in the host contract and these owners.
+
+### Runbooks
+
+- `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
+
+### Developer Docs
+
+- `odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md`
+
+### Code References
+
+- `src/odylith/runtime/surfaces/claude_host_statusline.py`
+- `src/odylith/runtime/surfaces/claude_host_precompact_snapshot.py`

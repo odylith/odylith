@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+from odylith.runtime.context_engine import memory_record_policy
+
 import time
 from typing import Any
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import casebook_metadata
+from odylith.runtime.common import derivation_provenance
 from odylith.runtime.common.casebook_bug_ids import BUG_ID_FIELD, resolve_casebook_bug_id
 from odylith.runtime.context_engine import odylith_context_engine_process_state
 from odylith.runtime.context_engine import projection_repo_state_runtime
@@ -15,6 +18,7 @@ from odylith.runtime.context_engine import runtime_read_session
 from odylith.runtime.context_engine import odylith_context_engine_runtime_support
 from odylith.runtime.memory import odylith_memory_backend
 from odylith.runtime.memory import odylith_projection_snapshot
+from odylith.runtime.memory import odylith_projection_bundle
 from odylith.runtime.memory import odylith_remote_retrieval
 
 
@@ -29,6 +33,13 @@ record_runtime_timing = odylith_context_engine_runtime_support.record_runtime_ti
 
 def projection_snapshot_path(*, repo_root: Path) -> Path:
     return context_engine_store.projection_snapshot_path(repo_root=context_engine_store.Path(repo_root).resolve())
+
+
+def compiled_record_provenance(*, repo_root: Path) -> dict[str, Any]:
+    manifest = odylith_projection_bundle.load_bundle_manifest(repo_root=repo_root)
+    if not manifest:
+        manifest = odylith_projection_snapshot.load_snapshot(repo_root=repo_root)
+    return derivation_provenance.extract_provenance(manifest)
 
 
 def _odylith_ablation_active(*, repo_root: Path) -> bool:
@@ -95,7 +106,7 @@ def _path_fingerprint(path: Path, *, repo_root: Path | None = None, glob: str = 
     if repo_root is not None:
         root = context_engine_store.Path(repo_root).resolve()
         state_token = projection_repo_state_runtime.projection_repo_state_token(repo_root=root)
-        cache_key = f"{target.resolve()}::{glob}"
+        cache_key = f"{root}:{target.resolve()}::{glob}"
         if read_session is not None and read_session.matches_repo(root):
             cached = read_session.get_or_compute(
                 namespace="path_fingerprint_lookup",
@@ -120,7 +131,7 @@ def _shallow_glob_fingerprint(path: Path, *, repo_root: Path, glob: str) -> str:
     target = context_engine_store.Path(path)
     root = context_engine_store.Path(repo_root).resolve()
     state_token = projection_repo_state_runtime.projection_repo_state_token(repo_root=root)
-    cache_key = f"{target.resolve()}::{glob}::shallow"
+    cache_key = f"{root}:{target.resolve()}::{glob}::shallow"
     read_session = runtime_read_session.active_runtime_read_session()
     if read_session is not None and read_session.matches_repo(root):
         cached = read_session.get_or_compute(
@@ -206,7 +217,9 @@ def _atlas_catalog_path(*, repo_root: Path) -> Path:
     return _product_root(repo_root=repo_root) / "atlas" / "source" / "catalog" / "diagrams.v1.json"
 
 def _compass_stream_path(*, repo_root: Path) -> Path:
-    return agent_runtime_contract.resolve_agent_stream_path(repo_root=_product_root(repo_root=repo_root))
+    return agent_runtime_contract.published_agent_stream_path(
+        repo_root=repo_root, stream_path=agent_runtime_contract.resolve_agent_stream_path(repo_root=repo_root),
+    )
 
 def _traceability_graph_path(*, repo_root: Path) -> Path:
     return _product_root(repo_root=repo_root) / "radar" / "traceability-graph.v1.json"
@@ -360,13 +373,23 @@ def _compute_projected_input_fingerprints(*, repo_root: Path, scope: str = "defa
                 "history": _test_history_report_inputs(repo_root=repo_root),
             }
         )
-    return fingerprints
+    from odylith.runtime.context_engine import odylith_context_engine_projection_compiler_runtime as compiler
+
+    memory_version = compiler.compiler_code_version()
+    return {
+        name: context_engine_store.odylith_context_cache.fingerprint_payload(
+            {"inputs": fingerprint, "compiler_code_version": memory_version}
+        )
+        for name, fingerprint in fingerprints.items()
+    }
 
 
 def _projected_input_fingerprints(*, repo_root: Path, scope: str = "default") -> dict[str, str]:
     root = context_engine_store.Path(repo_root).resolve()
     scope_token = str(scope or "default").strip().lower() or "default"
-    state_token = projection_repo_state_runtime.projection_repo_state_token(repo_root=root)
+    from odylith.runtime.context_engine import odylith_context_engine_projection_compiler_runtime as compiler
+
+    state_token = (projection_repo_state_runtime.projection_repo_state_token(repo_root=root), compiler.compiler_code_version())
     cache_key = f"{root}:{scope_token}"
     read_session = runtime_read_session.active_runtime_read_session()
     if read_session is not None and read_session.matches_repo(root):
@@ -389,7 +412,9 @@ def projection_input_fingerprint(*, repo_root: Path, scope: str = "default") -> 
 
     root = context_engine_store.Path(repo_root).resolve()
     scope_token = str(scope or "default").strip().lower() or "default"
-    state_token = projection_repo_state_runtime.projection_repo_state_token(repo_root=root)
+    from odylith.runtime.context_engine import odylith_context_engine_projection_compiler_runtime as compiler
+
+    state_token = (projection_repo_state_runtime.projection_repo_state_token(repo_root=root), compiler.compiler_code_version())
     cache_key = f"{root}:{scope_token}"
     read_session = runtime_read_session.active_runtime_read_session()
     if read_session is not None and read_session.matches_repo(root):
@@ -478,24 +503,42 @@ def _looks_like_repo_path(token: str) -> bool:
     value = str(token or "").strip()
     if not value or "://" in value:
         return False
+    if any(char.isspace() for char in value):
+        return False
+    if len(value) > 512 or any(len(part) > 240 for part in context_engine_store.Path(value).parts):
+        return False
     if value.startswith("Plan: [") or value.startswith("["):
         return False
     return "/" in value or value.endswith((".py", ".md", ".json", ".jsonl", ".mmd", ".mk", ".yml", ".yaml", ".svg", ".png"))
 
+
+def _path_ref_candidate_tokens(token: str) -> list[str]:
+    value = str(token or "").strip()
+    if not value:
+        return []
+    compact = value.rstrip(".,;)]}\"'")
+    compact = context_engine_store.re.sub(r":\d+(?::\d+)?$", "", compact)
+    compact = compact.rstrip(":")
+    if compact and compact != value:
+        return [compact]
+    return [value]
+
+
+def _add_path_ref(refs: set[str], *, token: str, repo_root: Path) -> None:
+    for raw_candidate in _path_ref_candidate_tokens(token):
+        candidate = context_engine_store._normalize_repo_token(str(raw_candidate), repo_root=repo_root)
+        if candidate and _looks_like_repo_path(candidate):
+            refs.add(candidate)
+
+
 def _extract_path_refs(*, text: str, repo_root: Path) -> list[str]:
     refs: set[str] = set()
     for match in context_engine_store._MARKDOWN_CODE_REF_RE.findall(str(text or "")):
-        candidate = context_engine_store._normalize_repo_token(str(match), repo_root=repo_root)
-        if candidate and _looks_like_repo_path(candidate):
-            refs.add(candidate)
+        _add_path_ref(refs, token=str(match), repo_root=repo_root)
     for match in context_engine_store._RAW_PATH_TOKEN_RE.findall(str(text or "")):
-        candidate = context_engine_store._normalize_repo_token(str(match), repo_root=repo_root)
-        if candidate and _looks_like_repo_path(candidate):
-            refs.add(candidate)
+        _add_path_ref(refs, token=str(match), repo_root=repo_root)
     for match in context_engine_store._CONTRACT_REF_RE.findall(str(text or "")):
-        candidate = context_engine_store._normalize_repo_token(str(match), repo_root=repo_root)
-        if candidate:
-            refs.add(candidate)
+        _add_path_ref(refs, token=str(match), repo_root=repo_root)
     return sorted(refs)
 
 def _extract_workstream_refs(text: str) -> list[str]:
@@ -1211,6 +1254,11 @@ def _warm_runtime_can_reuse_snapshot(
     scope_token = str(scope or "default").strip().lower() or "default"
     if not projection_snapshot_path(repo_root=root).is_file():
         return False
+    generation, require_generation, _ = derivation_provenance.active_sync_generation(repo_root=root)
+    if require_generation:
+        manifest = odylith_projection_snapshot.load_snapshot(repo_root=root)
+        if derivation_provenance.extract_provenance(manifest).get("sync_generation") != generation:
+            return False
     runtime_state = read_runtime_state(repo_root=root)
     matched_scope, matched_fingerprint = _matched_runtime_projection(
         repo_root=root,
@@ -1340,6 +1388,16 @@ def _warm_runtime_uncached(
     cached_until = _PROCESS_WARM_CACHE.get(cache_key)
     cached_fingerprint = _PROCESS_WARM_CACHE_FINGERPRINTS.get(cache_key, "")
     requested_fingerprint = projection_input_fingerprint(repo_root=root, scope=scope_token)
+    generation, require_generation, _ = derivation_provenance.active_sync_generation(repo_root=root)
+    generation_matches = not require_generation or (
+        derivation_provenance.extract_provenance(
+            read_runtime_state(repo_root=root).get("odylith_compiler", {})
+        ).get("sync_generation") == generation
+    )
+    if not generation_matches:
+        _PROCESS_WARM_CACHE.pop(cache_key, None)
+        _PROCESS_WARM_CACHE_FINGERPRINTS.pop(cache_key, None)
+        cached_until, cached_fingerprint = None, ""
     if cached_until is not None and cached_until > now and cached_fingerprint == requested_fingerprint:
         return True
     if cached_fingerprint and cached_fingerprint != requested_fingerprint:
@@ -1633,6 +1691,7 @@ def _merge_search_results(
     local_rows: Sequence[Mapping[str, Any]],
     remote_rows: Sequence[Mapping[str, Any]],
     limit: int,
+    expected_provenance: Mapping[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     merged: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str]] = set()
@@ -1651,9 +1710,7 @@ def _merge_search_results(
             payload = dict(row)
             payload.setdefault("source", source)
             merged.append(payload)
-            if len(merged) >= max(1, int(limit)):
-                return merged
-    return merged
+    return memory_record_policy.rank_records(merged, expected_provenance=expected_provenance)[:max(1, int(limit))]
 
 def _repair_odylith_backend(
     connection: Any,
@@ -1712,6 +1769,7 @@ def _search_row_from_entity(entity: Mapping[str, Any], *, score: float = 0.0) ->
         "title": str(entity.get("title", "")).strip(),
         "path": str(entity.get("path", "")).strip(),
         "score": float(score),
+        **({"memory_record": dict(entity["memory_record"])} if isinstance(entity.get("memory_record"), context_engine_store.Mapping) else {}),
     }
 
 def search_entities_payload(
@@ -1838,6 +1896,7 @@ def search_entities_payload(
     if odylith_ablation_active:
         exact_results = context_engine_store._filter_odylith_search_results(repo_root=root, results=exact_results)
     if exact_results:
+        exact_results = memory_record_policy.rank_records(exact_results, expected_provenance=compiled_record_provenance(repo_root=root))
         record_runtime_timing(
             repo_root=root,
             category="reasoning",
@@ -1935,6 +1994,7 @@ def search_entities_payload(
         local_rows=[] if use_remote_only else local_results,
         remote_rows=remote_results,
         limit=max(1, int(limit)),
+        expected_provenance=compiled_record_provenance(repo_root=root),
     )
     if use_remote_only:
         retrieval_mode = "vespa_remote"
@@ -1980,6 +2040,7 @@ def search_entities_payload(
     if fallback_scan and isinstance(fallback_scan, dict):
         fallback_scan["reason"] = full_scan_reason
         fallback_scan["reason_message"] = context_engine_store._full_scan_reason_message(full_scan_reason)
+    results = memory_record_policy.rank_records(results, expected_provenance=compiled_record_provenance(repo_root=root))
     record_runtime_timing(
         repo_root=root,
         category="reasoning",

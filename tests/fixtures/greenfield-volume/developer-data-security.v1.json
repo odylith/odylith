@@ -1,0 +1,324 @@
+{
+  "cases": [
+    {
+      "name": "cli-extension-release-notes",
+      "prompt": "Our developer-experience group needs a product for extension publishers to assemble release notes from approved changelog fragments, breaking-change notices, and compatibility windows. Support engineers and publisher maintainers need the same review view before a release is announced. The first release boundary is one workspace per extension, a review queue, and an exportable release brief; marketplace publishing, telemetry, and code scanning are outside this release.",
+      "required_terms": ["extension publishers", "changelog fragments", "compatibility windows", "review queue"],
+      "leakage_terms": ["marketplace publishing", "telemetry", "code scanning"],
+      "tags": ["developer-tools", "release-management"],
+      "stressors": ["modal-expert-lens", "long-first-path", "registry-contract-pressure"]
+    },
+    {
+      "name": "on-call-handoff-ledger",
+      "prompt": "Create a focused incident-operations workspace for on-call engineers handing an active service incident to the next shift. Each handoff records incident timeline, current customer impact, mitigation owner, and unresolved decision. The first release boundary is shift handoff for a single incident with an acknowledgement trail; paging, automated remediation, and status-page publication remain outside the initial product.",
+      "required_terms": ["on-call engineers", "incident timeline", "customer impact", "acknowledgement trail"],
+      "leakage_terms": ["paging", "automated remediation", "status-page publication"],
+      "tags": ["incident-operations", "reliability"],
+      "stressors": ["multi-role-tribunal", "final-memory-pressure", "latency-pressure"]
+    },
+    {
+      "name": "cloud-cost-exception-review",
+      "prompt": "A cloud platform team wants a governed intake for unusual cloud cost exceptions requested by product owners during launches. Finance partners need cost center, forecast variance, expiry date, and accountable service owner in each request. The first release boundary is a monthly exception register with approval decisions and expiry reminders; purchasing workflows, invoice reconciliation, and resource provisioning are not part of this release.",
+      "required_terms": ["cloud cost exceptions", "cost center", "forecast variance", "expiry reminders"],
+      "leakage_terms": ["purchasing workflows", "invoice reconciliation", "resource provisioning"],
+      "tags": ["cloud-platform", "finops"],
+      "stressors": ["path-grant", "noun-verb-homonym", "registry-contract-pressure"]
+    },
+    {
+      "name": "data-retention-attestation",
+      "prompt": "Design a data-governance service where dataset stewards attest to retention schedule, legal hold status, sensitivity tier, and downstream consumers for a named data asset. Privacy counsel and analytics leads need a shared decision record. The first release boundary is quarterly attestation for registered datasets and overdue reporting; deletion execution, policy authoring, and catalog harvesting are excluded.",
+      "required_terms": ["dataset stewards", "retention schedule", "legal hold status", "sensitivity tier"],
+      "leakage_terms": ["deletion execution", "policy authoring", "catalog harvesting"],
+      "tags": ["data-governance", "privacy"],
+      "stressors": ["domain-depth-obligations", "multi-role-tribunal", "atlas-label-pressure"]
+    },
+    {
+      "name": "synthetic-monitor-coverage",
+      "prompt": "We need an observability planning surface for reliability engineers to track synthetic monitor coverage across customer-critical journeys. Product managers can nominate a journey, while service owners record probe region, expected response, alert owner, and last review date. The first release boundary is coverage inventory and review reminders; monitor execution, alert routing, and dashboard rendering are outside scope.",
+      "required_terms": ["synthetic monitor coverage", "customer-critical journeys", "probe region", "alert owner"],
+      "leakage_terms": ["monitor execution", "alert routing", "dashboard rendering"],
+      "tags": ["observability", "reliability"],
+      "stressors": ["long-first-path", "atlas-label-pressure", "latency-pressure"]
+    },
+    {
+      "name": "security-exception-council",
+      "prompt": "Security coordination needs a casebook for time-bounded security exceptions requested by engineering teams. A request must make risk statement, compensating control, system boundary, expiration date, and security approver visible to the risk council. The first release boundary is an exception docket and decision history for one organization; vulnerability scanning, ticket synchronization, and access enforcement remain outside the first release.",
+      "required_terms": ["security exceptions", "compensating control", "system boundary", "risk council"],
+      "leakage_terms": ["vulnerability scanning", "ticket synchronization", "access enforcement"],
+      "tags": ["security", "governance"],
+      "stressors": ["multi-role-tribunal", "final-memory-pressure", "registry-contract-pressure"]
+    },
+    {
+      "name": "model-evaluation-readiness",
+      "prompt": "An AI operations team needs a release-readiness register for candidate language models used in customer support. Model owners, evaluation leads, and safety reviewers record evaluation dataset, known failure mode, approval state, and rollback contact. The first release boundary is readiness review for a model version; model serving, prompt management, and evaluator automation are deliberately outside this release.",
+      "required_terms": ["candidate language models", "evaluation dataset", "known failure mode", "rollback contact"],
+      "leakage_terms": ["model serving", "prompt management", "evaluator automation"],
+      "tags": ["ai-ml-operations", "model-governance"],
+      "stressors": ["domain-depth-obligations", "multi-role-tribunal", "scientific-casing"]
+    },
+    {
+      "name": "metric-definition-arbitration",
+      "prompt": "Analytics leadership is asking for a shared forum to settle contested metric definitions before quarterly reporting. Data analysts submit a metric name, business question, grain, source system, and named decision makers. Finance and product teams need durable context when assumptions change. The first release boundary is proposal review and a published definition record; semantic-layer changes, report generation, and warehouse query execution are not included.",
+      "required_terms": ["metric definitions", "business question", "source system", "published definition record"],
+      "leakage_terms": ["semantic-layer changes", "report generation", "warehouse query execution"],
+      "tags": ["analytics", "data-governance"],
+      "stressors": ["noun-verb-homonym", "multi-role-tribunal", "atlas-label-pressure"]
+    },
+    {
+      "name": "privileged-account-review",
+      "prompt": "Identity administrators need a compact quarterly process for reviewing privileged account assignments across production systems. Each review captures account holder, entitlement bundle, business justification, reviewer, and recertification outcome. Security leadership needs an auditable view of exceptional standing access. The first release boundary is an assignment register with reviewer attestations; identity provisioning, single sign-on configuration, and automated revocation are out of scope.",
+      "required_terms": ["privileged account assignments", "entitlement bundle", "business justification", "reviewer attestations"],
+      "leakage_terms": ["identity provisioning", "single sign-on configuration", "automated revocation"],
+      "tags": ["identity-administration", "security"],
+      "stressors": ["path-grant", "final-memory-pressure", "registry-contract-pressure"]
+    },
+    {
+      "name": "biobank-sample-access-review",
+      "prompt": "A research data platform needs an access-review workspace for controlled biobank sample metadata. Principal investigators, data access committees, and repository curators need to inspect study protocol, consent restriction, sample cohort, and access duration together. The first release boundary is review decisions for metadata access requests; specimen shipment, laboratory information management, and genomic analysis are outside the product.",
+      "required_terms": ["biobank sample metadata", "study protocol", "consent restriction", "data access committees"],
+      "leakage_terms": ["specimen shipment", "laboratory information management", "genomic analysis"],
+      "tags": ["research-data", "data-governance"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "domain-depth-obligations"]
+    },
+    {
+      "name": "build-cache-quota-appeals",
+      "prompt": "Platform developers want an intake for teams appealing build cache quotas that block release pipelines. A request names repository, cache class, observed eviction, requested capacity, and owning platform contact. Release coordinators need decisions that explain temporary capacity tradeoffs. The first release boundary is an appeal queue with quota decisions and expiration dates; cache allocation, pipeline execution, and source-control administration are excluded.",
+      "required_terms": ["build cache quotas", "release pipelines", "observed eviction", "appeal queue"],
+      "leakage_terms": ["cache allocation", "pipeline execution", "source-control administration"],
+      "tags": ["developer-tools", "cloud-platform"],
+      "stressors": ["noun-verb-homonym", "long-first-path", "latency-pressure"]
+    },
+    {
+      "name": "incident-command-briefing",
+      "prompt": "During high-severity events, incident commanders need a repeatable briefing record that joins service lead, communications lead, and customer support liaison. The record contains incident commander, affected region, decision log, next update time, and verified recovery signal. The first release boundary is one live briefing per incident and a handoff archive; chat integration, automated diagnostics, and customer messaging delivery are outside scope.",
+      "required_terms": ["incident commanders", "affected region", "decision log", "verified recovery signal"],
+      "leakage_terms": ["chat integration", "automated diagnostics", "customer messaging delivery"],
+      "tags": ["incident-operations", "communications"],
+      "stressors": ["multi-role-tribunal", "long-first-path", "final-memory-pressure"]
+    },
+    {
+      "name": "kubernetes-upgrade-readiness",
+      "prompt": "A cloud platform group needs an upgrade readiness ledger for Kubernetes clusters approaching a supported-version deadline. Cluster operators record cluster name, workload criticality, maintenance window, compatibility concern, and accountable team. Portfolio leaders need a concise view of blocked business services. The first release boundary is readiness tracking and exception review for managed clusters; cluster upgrades, node replacement, and deployment rollout controls are not included.",
+      "required_terms": ["Kubernetes clusters", "supported-version deadline", "maintenance window", "compatibility concern"],
+      "leakage_terms": ["cluster upgrades", "node replacement", "deployment rollout controls"],
+      "tags": ["cloud-platform", "operations"],
+      "stressors": ["scientific-casing", "path-grant", "registry-contract-pressure"]
+    },
+    {
+      "name": "data-contract-change-notice",
+      "prompt": "Data producers and data consumers need a notice register for proposed data contract changes that could alter downstream reports. Each notice captures data contract, field meaning, effective date, affected consumer, and acceptance decision. The first release boundary is notice publication and consumer acknowledgement; schema deployment, pipeline backfills, and lineage extraction remain outside the first release.",
+      "required_terms": ["data contract changes", "field meaning", "affected consumer", "consumer acknowledgement"],
+      "leakage_terms": ["schema deployment", "pipeline backfills", "lineage extraction"],
+      "tags": ["data-governance", "analytics"],
+      "stressors": ["noun-verb-homonym", "path-grant", "atlas-label-pressure"]
+    },
+    {
+      "name": "log-retention-exception-review",
+      "prompt": "Observability and privacy teams need a shared review queue for log retention exceptions affecting production telemetry. Service owners submit log source, retention period, personal-data exposure, business rationale, and expiry date. Compliance partners need decisions that remain clear after ownership changes. The first release boundary is decision tracking for exceptions with quarterly review; log storage, redaction processing, and data deletion jobs are excluded.",
+      "required_terms": ["log retention exceptions", "production telemetry", "personal-data exposure", "quarterly review"],
+      "leakage_terms": ["log storage", "redaction processing", "data deletion jobs"],
+      "tags": ["observability", "privacy"],
+      "stressors": ["domain-depth-obligations", "multi-role-tribunal", "latency-pressure"]
+    },
+    {
+      "name": "third-party-access-coordination",
+      "prompt": "Security coordinators need one place to assess vendor access to internal systems before a time-limited engagement begins. Procurement, system owners, and security reviewers capture vendor name, access purpose, data classification, sponsor, and engagement end date. The first release boundary is a coordinated assessment record and final approval; contract negotiation, account creation, and network connectivity are outside scope.",
+      "required_terms": ["vendor access", "access purpose", "data classification", "engagement end date"],
+      "leakage_terms": ["contract negotiation", "account creation", "network connectivity"],
+      "tags": ["security", "third-party-risk"],
+      "stressors": ["path-grant", "multi-role-tribunal", "final-memory-pressure"]
+    },
+    {
+      "name": "feature-store-certification",
+      "prompt": "ML platform governance needs a certification ledger for feature store datasets proposed for production model use. Data scientists and platform reviewers must record feature set, training population, freshness expectation, owner, and certification decision. The first release boundary is certification for a named feature set; feature computation, model training, and online serving are outside this first release.",
+      "required_terms": ["feature store datasets", "feature set", "training population", "certification decision"],
+      "leakage_terms": ["feature computation", "model training", "online serving"],
+      "tags": ["ai-ml-operations", "data-governance"],
+      "stressors": ["domain-depth-obligations", "scientific-casing", "registry-contract-pressure"]
+    },
+    {
+      "name": "experiment-analysis-approval",
+      "prompt": "Product analytics needs a formal approval trail for high-stakes experiment analyses before leaders act on them. Analysts present experiment cohort, primary metric, stopping rule, confidence interval, and approver comments. Decision makers need confidence that methodology received independent scrutiny. The first release boundary is review of one completed experiment analysis and a decision record; experiment assignment, event collection, and report automation are not included.",
+      "required_terms": ["experiment cohort", "primary metric", "stopping rule", "confidence interval"],
+      "leakage_terms": ["experiment assignment", "event collection", "report automation"],
+      "tags": ["analytics", "experimentation"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "domain-depth-obligations"]
+    },
+    {
+      "name": "service-account-custody",
+      "prompt": "Identity administration needs a stewardship register for service accounts whose original owners have changed teams. Administrators record service account, current custodian, dependent application, access scope, and custody review result. Operations teams need clear accountability when service ownership becomes ambiguous. The first release boundary is ownership confirmation and unresolved-custody escalation; credential rotation, permission changes, and application discovery are outside the release.",
+      "required_terms": ["service accounts", "current custodian", "dependent application", "custody review result"],
+      "leakage_terms": ["credential rotation", "permission changes", "application discovery"],
+      "tags": ["identity-administration", "governance"],
+      "stressors": ["path-grant", "noun-verb-homonym", "final-memory-pressure"]
+    },
+    {
+      "name": "clinical-cohort-request-review",
+      "prompt": "A clinical research data platform needs a review surface for investigators requesting access to de-identified patient cohorts. The review captures protocol identifier, cohort criteria, data use agreement, privacy reviewer, and access expiration. Research administrators need to trace each access decision to its study. The first release boundary is committee review for one cohort request; cohort extraction, record linkage, and clinical data transfer are outside scope.",
+      "required_terms": ["de-identified patient cohorts", "protocol identifier", "data use agreement", "access expiration"],
+      "leakage_terms": ["cohort extraction", "record linkage", "clinical data transfer"],
+      "tags": ["research-data", "clinical-data"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "domain-depth-obligations"]
+    },
+    {
+      "name": "api-deprecation-coordination",
+      "prompt": "Developer relations needs a coordination product for API deprecations that impact external integrators. API owners add deprecated endpoint, migration date, affected partner segment, replacement capability, and support contact. Partner managers need clarity on changes with contractual implications. The first release boundary is a deprecation calendar with partner acknowledgement; API gateway policy, SDK publishing, and outbound email delivery are excluded.",
+      "required_terms": ["API deprecations", "deprecated endpoint", "migration date", "partner acknowledgement"],
+      "leakage_terms": ["API gateway policy", "SDK publishing", "outbound email delivery"],
+      "tags": ["developer-tools", "api-governance"],
+      "stressors": ["scientific-casing", "long-first-path", "atlas-label-pressure"]
+    },
+    {
+      "name": "post-incident-action-tracker",
+      "prompt": "Reliability leaders need a concise product for tracking commitments made after customer-impacting incidents. An action is tied to incident reference, contributing condition, accountable owner, due date, and evidence of completion. The first release boundary is action tracking for completed incident reviews with weekly aging; incident detection, root-cause analysis, and work-item synchronization are outside the boundary.",
+      "required_terms": ["customer-impacting incidents", "contributing condition", "due date", "evidence of completion"],
+      "leakage_terms": ["incident detection", "root-cause analysis", "work-item synchronization"],
+      "tags": ["incident-operations", "reliability"],
+      "stressors": ["final-memory-pressure", "long-first-path", "latency-pressure"]
+    },
+    {
+      "name": "landing-zone-exception-register",
+      "prompt": "Cloud architects need an exception register for teams that cannot meet a standard landing zone requirement during an approved launch window. The record holds cloud account, landing zone control, exception rationale, compensating review, and sunset milestone. The first release boundary is reviewable exception records and milestone reminders; account vending, infrastructure deployment, and policy enforcement are outside this release.",
+      "required_terms": ["landing zone requirement", "cloud account", "exception rationale", "sunset milestone"],
+      "leakage_terms": ["account vending", "infrastructure deployment", "policy enforcement"],
+      "tags": ["cloud-platform", "security"],
+      "stressors": ["path-grant", "registry-contract-pressure", "multi-role-tribunal"]
+    },
+    {
+      "name": "sensitive-field-classification-review",
+      "prompt": "Data governance needs a review workflow for classifying sensitive fields proposed for use in newly shared datasets. Stewards provide dataset name, field label, proposed classification, handling rationale, and approving privacy partner. Sharing teams need a reliable explanation for each approved classification. The first release boundary is classification decisions and a searchable decision log; data masking, catalog scanning, and pipeline permissions remain outside scope.",
+      "required_terms": ["sensitive fields", "dataset name", "proposed classification", "decision log"],
+      "leakage_terms": ["data masking", "catalog scanning", "pipeline permissions"],
+      "tags": ["data-governance", "security"],
+      "stressors": ["noun-verb-homonym", "multi-role-tribunal", "atlas-label-pressure"]
+    },
+    {
+      "name": "alert-noise-adjudication",
+      "prompt": "An observability practice needs a structured adjudication queue for alerts repeatedly dismissed as non-actionable. Responders and service owners record alert name, triggering condition, false-positive pattern, user impact, and adjudication outcome. The first release boundary is review for noisy alerts with a documented owner; alert rule editing, notification routing, and incident creation are outside this product.",
+      "required_terms": ["non-actionable", "triggering condition", "false-positive pattern", "adjudication outcome"],
+      "leakage_terms": ["alert rule editing", "notification routing", "incident creation"],
+      "tags": ["observability", "incident-operations"],
+      "stressors": ["noun-verb-homonym", "multi-role-tribunal", "latency-pressure"]
+    },
+    {
+      "name": "penetration-test-finding-triage",
+      "prompt": "Security coordination needs a private triage register for penetration test findings that require joint review with application owners. Each entry includes finding identifier, affected asset, exploitation precondition, business impact, and remediation decision. Risk leaders need an accountable record for accepted residual exposure. The first release boundary is finding intake and risk disposition; penetration testing, code changes, and vulnerability verification are excluded.",
+      "required_terms": ["penetration test findings", "affected asset", "exploitation precondition", "risk disposition"],
+      "leakage_terms": ["penetration testing", "code changes", "vulnerability verification"],
+      "tags": ["security", "risk-management"],
+      "stressors": ["domain-depth-obligations", "multi-role-tribunal", "final-memory-pressure"]
+    },
+    {
+      "name": "training-data-consent-review",
+      "prompt": "AI governance requires a review registry for proposed training data that may carry consent restrictions. Data owners, model teams, and privacy reviewers need to record data source, consent basis, intended model, geographic scope, and approval outcome. The first release boundary is review of one training data proposal; data ingestion, model fine-tuning, and consent collection are outside the release.",
+      "required_terms": ["training data", "consent basis", "intended model", "geographic scope"],
+      "leakage_terms": ["data ingestion", "model fine-tuning", "consent collection"],
+      "tags": ["ai-ml-operations", "privacy"],
+      "stressors": ["domain-depth-obligations", "multi-role-tribunal", "scientific-casing"]
+    },
+    {
+      "name": "dashboard-certification-register",
+      "prompt": "Business intelligence teams need a simple certification register for executive dashboards relied on in operating reviews. Analysts submit dashboard name, metric owner, data freshness, known limitation, and certification reviewer. Executives need visible confidence boundaries before relying on reported trends. The first release boundary is certification status and review dates for named dashboards; dashboard building, query scheduling, and embedded analytics are not included.",
+      "required_terms": ["executive dashboards", "metric owner", "data freshness", "certification reviewer"],
+      "leakage_terms": ["dashboard building", "query scheduling", "embedded analytics"],
+      "tags": ["analytics", "business-intelligence"],
+      "stressors": ["noun-verb-homonym", "registry-contract-pressure", "latency-pressure"]
+    },
+    {
+      "name": "break-glass-access-review",
+      "prompt": "Identity and security teams need an after-the-fact review surface for break-glass access used during operational emergencies. The access reviewer records emergency account, incident reference, access interval, stated purpose, and follow-up disposition. Oversight teams need a concise trail of exceptional emergency access. The first release boundary is a weekly review ledger for used access; emergency authentication, session recording, and privilege revocation are outside scope.",
+      "required_terms": ["break-glass access", "emergency account", "access interval", "follow-up disposition"],
+      "leakage_terms": ["emergency authentication", "session recording", "privilege revocation"],
+      "tags": ["identity-administration", "security"],
+      "stressors": ["path-grant", "final-memory-pressure", "multi-role-tribunal"]
+    },
+    {
+      "name": "environmental-sensor-data-release",
+      "prompt": "A research data platform wants a release-review process for environmental sensor datasets shared with collaborating institutions. Researchers provide station identifier, sampling interval, calibration status, license condition, and release steward. Collaborators need provenance context before interpreting measurements across stations. The first release boundary is approval of a dataset release package; sensor ingestion, quality correction, and external repository deposit are excluded.",
+      "required_terms": ["environmental sensor datasets", "station identifier", "sampling interval", "calibration status"],
+      "leakage_terms": ["sensor ingestion", "quality correction", "external repository deposit"],
+      "tags": ["research-data", "environmental-science"],
+      "stressors": ["scientific-casing", "domain-depth-obligations", "atlas-label-pressure"]
+    },
+    {
+      "name": "package-provenance-exception",
+      "prompt": "Developer security needs a decision register for package provenance exceptions when a release depends on an unverified third-party package. Release managers and security reviewers capture package name, upstream source, provenance gap, affected release, and expiration decision. The first release boundary is exception review and expiry tracking; package downloading, dependency resolution, and build signing are outside the product.",
+      "required_terms": ["package provenance exceptions", "third-party package", "provenance gap", "expiry tracking"],
+      "leakage_terms": ["package downloading", "dependency resolution", "build signing"],
+      "tags": ["developer-tools", "software-supply-chain"],
+      "stressors": ["domain-depth-obligations", "multi-role-tribunal", "registry-contract-pressure"]
+    },
+    {
+      "name": "regional-failover-readiness",
+      "prompt": "Incident operations needs a readiness record for services scheduled to participate in a regional failover exercise. Service owners and incident commanders confirm recovery objective, dependency list, communications owner, and exercise decision. Business continuity leaders need to identify unresolved dependencies before scheduling. The first release boundary is readiness approval before one exercise; traffic shifting, failover execution, and performance testing are not part of this release.",
+      "required_terms": ["regional failover exercise", "recovery objective", "dependency list", "communications owner"],
+      "leakage_terms": ["traffic shifting", "failover execution", "performance testing"],
+      "tags": ["incident-operations", "resilience"],
+      "stressors": ["multi-role-tribunal", "long-first-path", "latency-pressure"]
+    },
+    {
+      "name": "network-egress-review",
+      "prompt": "Cloud platform security needs a review queue for requested network egress paths from isolated workloads. Requesters identify workload, destination domain, business purpose, data classification, and approving network owner. Service teams need documented rationale for every external destination. The first release boundary is approval decisions for a requested egress path; firewall configuration, DNS management, and traffic inspection are outside the boundary.",
+      "required_terms": ["network egress paths", "isolated workloads", "destination domain", "approving network owner"],
+      "leakage_terms": ["firewall configuration", "DNS management", "traffic inspection"],
+      "tags": ["cloud-platform", "security"],
+      "stressors": ["path-grant", "domain-depth-obligations", "registry-contract-pressure"]
+    },
+    {
+      "name": "master-data-stewardship-dispute",
+      "prompt": "A data governance office needs an arbitration space for disputes about master data stewardship across sales and finance systems. Participants submit business entity, contested attribute, proposed steward, evidence source, and tribunal decision. Department leaders need durable resolution rationale during organizational transitions. The first release boundary is a dispute docket and signed stewardship decision; master-data editing, system synchronization, and data-quality remediation are excluded.",
+      "required_terms": ["master data stewardship", "business entity", "contested attribute", "tribunal decision"],
+      "leakage_terms": ["master-data editing", "system synchronization", "data-quality remediation"],
+      "tags": ["data-governance", "enterprise-data"],
+      "stressors": ["noun-verb-homonym", "multi-role-tribunal", "atlas-label-pressure"]
+    },
+    {
+      "name": "service-level-objective-waiver",
+      "prompt": "Reliability engineering needs a time-bounded waiver process for a service level objective that cannot be met during a planned transition. The waiver states service level objective, affected customer journey, error budget context, mitigation owner, and review date. The first release boundary is waiver review and expiry reporting; SLO calculation, alert configuration, and deployment gating are outside scope.",
+      "required_terms": ["service level objective", "affected customer journey", "error budget context", "expiry reporting"],
+      "leakage_terms": ["SLO calculation", "alert configuration", "deployment gating"],
+      "tags": ["observability", "reliability"],
+      "stressors": ["domain-depth-obligations", "long-first-path", "latency-pressure"]
+    },
+    {
+      "name": "security-control-evidence-calendar",
+      "prompt": "Security coordination wants a calendar for control owners to deliver evidence for recurring assurance reviews. A control entry identifies control objective, evidence artifact, accountable owner, review cycle, and assessor result. Assurance managers need early visibility into evidence requests at risk. The first release boundary is evidence-request tracking and missed-cycle visibility; evidence collection, audit testing, and compliance reporting are outside the first release.",
+      "required_terms": ["control owners", "control objective", "evidence artifact", "review cycle"],
+      "leakage_terms": ["evidence collection", "audit testing", "compliance reporting"],
+      "tags": ["security", "compliance"],
+      "stressors": ["final-memory-pressure", "registry-contract-pressure", "atlas-label-pressure"]
+    },
+    {
+      "name": "model-drift-escalation-review",
+      "prompt": "ML operations needs a cross-functional review queue for a model drift signal that may affect a deployed forecasting model. Data scientists, operations leads, and product owners record drift indicator, reference population, business consequence, escalation owner, and review outcome. The first release boundary is a decision record for one drift signal; drift detection, retraining, and production rollout are excluded.",
+      "required_terms": ["model drift signal", "deployed forecasting model", "reference population", "business consequence"],
+      "leakage_terms": ["drift detection", "retraining", "production rollout"],
+      "tags": ["ai-ml-operations", "observability"],
+      "stressors": ["domain-depth-obligations", "multi-role-tribunal", "scientific-casing"]
+    },
+    {
+      "name": "revenue-metric-restatement",
+      "prompt": "Finance analytics needs a controlled forum for reviewing a proposed revenue metric restatement after a source-system correction. Stakeholders capture reporting period, prior value, revised value, correction rationale, and approval authority. Finance leaders need a permanent record of why reported history changed. The first release boundary is a restatement record with published decision; ledger correction, financial close, and investor communication are outside this release.",
+      "required_terms": ["revenue metric restatement", "reporting period", "revised value", "approval authority"],
+      "leakage_terms": ["ledger correction", "financial close", "investor communication"],
+      "tags": ["analytics", "finance-data"],
+      "stressors": ["noun-verb-homonym", "multi-role-tribunal", "final-memory-pressure"]
+    },
+    {
+      "name": "group-membership-exception",
+      "prompt": "Identity administrators need an exception register for group membership that cannot follow the standard role model. The request documents identity group, requested member, access rationale, sponsoring manager, and renewal date. Access reviewers need durable context for every renewed exception. The first release boundary is review and renewal tracking for exceptional membership; directory updates, role-model redesign, and entitlement enforcement remain outside scope.",
+      "required_terms": ["group membership", "standard role model", "sponsoring manager", "renewal date"],
+      "leakage_terms": ["directory updates", "role-model redesign", "entitlement enforcement"],
+      "tags": ["identity-administration", "access-governance"],
+      "stressors": ["path-grant", "noun-verb-homonym", "registry-contract-pressure"]
+    },
+    {
+      "name": "neuroimaging-data-access-board",
+      "prompt": "A research data platform needs a board-ready workspace for requests to access controlled neuroimaging datasets. The board reviews study identifier, imaging modality, consent limitation, analysis purpose, and access decision. Study coordinators need consistent rationale across multidisciplinary access decisions. The first release boundary is a review record for each dataset request; image transfer, de-identification processing, and analysis workspace provisioning are outside this product.",
+      "required_terms": ["controlled neuroimaging datasets", "imaging modality", "consent limitation", "analysis purpose"],
+      "leakage_terms": ["image transfer", "de-identification processing", "analysis workspace provisioning"],
+      "tags": ["research-data", "neuroscience"],
+      "stressors": ["scientific-casing", "domain-depth-obligations", "multi-role-tribunal"]
+    }
+  ]
+}

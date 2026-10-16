@@ -8,6 +8,7 @@ from dataclasses import asdict, dataclass
 from typing import Any
 
 from odylith.runtime.governance import proof_state
+from odylith.runtime.project_intelligence import presenter as project_intelligence_presenter
 from odylith.runtime.surfaces import dashboard_template_runtime
 from odylith.runtime.surfaces import tooling_dashboard_cheatsheet_presenter
 from odylith.runtime.surfaces import tooling_dashboard_release_presenter
@@ -177,6 +178,7 @@ def build_template_context(payload: Mapping[str, Any]) -> tooling_dashboard_temp
         welcome_html=_render_welcome_state_html(payload),
         maintainer_notes_html=maintainer_notes_html,
         cheatsheet_html=cheatsheet_html,
+        project_html=project_intelligence_presenter.render_project_html(payload),
     )
 
 

@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from odylith.runtime.surfaces import dashboard_ui_primitives
+from odylith.runtime.surfaces import render_tooling_dashboard
 from odylith.runtime.surfaces import tooling_dashboard_frontend_contract as contract
 
 
@@ -30,6 +31,36 @@ def _seed_tooling_shell_assets(tmp_path: Path) -> Path:
 
 def test_tooling_shell_header_contract_matches_current_source() -> None:
     contract.assert_tooling_shell_header_contract()
+
+
+def test_release_spotlight_styles_have_one_loaded_owner() -> None:
+    base_css = contract._template_asset_path("style.css").read_text(encoding="utf-8")
+    spotlight_css = contract._template_asset_path("release_spotlight.css").read_text(encoding="utf-8")
+
+    assert "upgrade-spotlight" not in base_css
+    assert contract.load_tooling_shell_style_css().count(spotlight_css.rstrip("\n")) == 1
+    assert ".upgrade-spotlight-stage[hidden]" in spotlight_css
+    assert "@keyframes upgrade-spotlight-rise" in spotlight_css
+    assert "@media (max-width: 960px)" in spotlight_css
+
+
+def test_release_spotlight_style_changes_invalidate_shell_fingerprint(monkeypatch: pytest.MonkeyPatch) -> None:
+    spotlight_path = contract._template_asset_path("release_spotlight.css")
+    before = render_tooling_dashboard._refresh_guard_code_fingerprint()
+    original_read_bytes = Path.read_bytes
+    read_paths = []
+
+    def changed_spotlight(path: Path) -> bytes:
+        value = original_read_bytes(path)
+        if path == spotlight_path:
+            read_paths.append(path)
+            return value + b"\n/* changed spotlight */\n"
+        return value
+
+    monkeypatch.setattr(Path, "read_bytes", changed_spotlight)
+
+    assert render_tooling_dashboard._refresh_guard_code_fingerprint() != before
+    assert read_paths == [spotlight_path]
 
 
 def test_tooling_shell_header_contract_rejects_template_drift(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -97,4 +128,31 @@ def test_tooling_shell_frontend_contract_loads_cheatsheet_modules() -> None:
     assert 'const CASEBOOK_SORT_DEFAULT = "newest";' in control_js
     assert 'casebook: { bug: "", severity: "", status: "", sort: CASEBOOK_SORT_DEFAULT }' in control_js
     assert 'if (sort !== CASEBOOK_SORT_DEFAULT) query.set("sort", sort);' in control_js
-    assert 'const sortToken = canonicalizeCasebookSortToken(raw.sort || "");' in control_js
+    assert 'state.sort = canonicalizeCasebookSortToken(rawState && rawState.sort ? rawState.sort : "");' in control_js
+    assert control_js.count("function createToolingShellNavigation(") == 1
+    assert control_js.count("window.OdylithFrameBridge = {surface, frame};") == 1
+    assert 'odylith-casebook-navigate' not in control_js
+
+
+@pytest.mark.parametrize("relative", [
+    "templates/tooling_dashboard/control.js",
+    "templates/tooling_dashboard/navigation.js",
+    "governance_frame_bridge.py",
+    "tooling_dashboard_frontend_contract.py",
+])
+def test_navigation_owner_changes_invalidate_shell_fingerprint(relative, monkeypatch):
+    path = Path(render_tooling_dashboard.__file__).parent / relative
+    before = render_tooling_dashboard._refresh_guard_code_fingerprint()
+    read_bytes = Path.read_bytes
+    observed = []
+
+    def changed(candidate):
+        content = read_bytes(candidate)
+        if candidate == path:
+            observed.append(candidate)
+            return content + b"\nchanged navigation dependency\n"
+        return content
+
+    monkeypatch.setattr(Path, "read_bytes", changed)
+    assert render_tooling_dashboard._refresh_guard_code_fingerprint() != before
+    assert observed == [path]

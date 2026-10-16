@@ -3,79 +3,108 @@ name: release
 on:
   workflow_dispatch:
     inputs:
+      operation:
+        description: Build one signed draft, or promote the qualified exact draft
+        required: true
+        type: choice
+        options: [candidate, promote]
       tag:
-        description: Release tag like v0.1.0
+        description: Reserved stable release tag
         required: true
         type: string
       expected_sha:
-        description: Commit SHA reserved by the local maintainer release session
+        description: Exact canonical H reserved by the maintainer release session
         required: true
         type: string
+      promotion:
+        description: Closed exact-D tuple from the local qualification owner; promotion only
+        required: false
+        type: string
+
+concurrency:
+  group: release-${{ inputs.tag }}
+  cancel-in-progress: false
 
 jobs:
-  build-and-upload:
+  release:
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash
+    permissions:
+      contents: write
+      id-token: write
     env:
       ODYLITH_RELEASE_REPO: odylith/odylith
       ODYLITH_RELEASE_ACTOR: freedom-research
       ODYLITH_RELEASE_REF: refs/heads/main
-    permissions:
-      contents: write
-      id-token: write
+      RELEASE_OPERATION: ${{ inputs.operation }}
+      RELEASE_TAG: ${{ inputs.tag }}
+      RELEASE_EXPECTED_SHA: ${{ inputs.expected_sha }}
+      ODYLITH_PROMOTION_BINDING: ${{ inputs.promotion }}
     steps:
-      - name: Authorize canonical release owner
+      - name: Authorize canonical release owner and data inputs
         run: |
-          if [[ "${GITHUB_REPOSITORY}" != "${ODYLITH_RELEASE_REPO}" ]]; then
-            echo "canonical releases are only allowed from ${ODYLITH_RELEASE_REPO}; got ${GITHUB_REPOSITORY}" >&2
-            exit 2
-          fi
-          if [[ "${GITHUB_ACTOR}" != "${ODYLITH_RELEASE_ACTOR}" ]]; then
-            echo "canonical releases are only allowed for GitHub actor ${ODYLITH_RELEASE_ACTOR}; got ${GITHUB_ACTOR}" >&2
-            exit 2
-          fi
-          if [[ "${GITHUB_REF}" != "${ODYLITH_RELEASE_REF}" ]]; then
-            echo "canonical releases must run from ${ODYLITH_RELEASE_REF}; got ${GITHUB_REF}" >&2
-            exit 2
-          fi
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+          [[ "$GITHUB_REPOSITORY" == "$ODYLITH_RELEASE_REPO" ]] || exit 2
+          [[ "$GITHUB_ACTOR" == "$ODYLITH_RELEASE_ACTOR" ]] || exit 2
+          [[ "$GITHUB_REF" == "$ODYLITH_RELEASE_REF" ]] || exit 2
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 2
+          [[ "$RELEASE_EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]] || exit 2
+          [[ "$RELEASE_OPERATION" == candidate || "$RELEASE_OPERATION" == promote ]] || exit 2
+          [[ "$GITHUB_SHA" == "$RELEASE_EXPECTED_SHA" ]] || exit 2
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
         with:
           fetch-depth: 0
           fetch-tags: true
           persist-credentials: false
-      - name: Verify release tag and commit binding
+      - name: Verify tag and clean canonical H
         run: |
-          if ! git rev-parse "${{ inputs.tag }}^{commit}" >/dev/null 2>&1; then
-            echo "release tag ${{ inputs.tag }} is not present in the checked-out repository state" >&2
-            exit 2
-          fi
-          tag_sha="$(git rev-parse "${{ inputs.tag }}^{commit}")"
-          if [[ "${GITHUB_SHA}" != "${{ inputs.expected_sha }}" ]]; then
-            echo "workflow dispatch commit mismatch: expected ${{ inputs.expected_sha }} got ${GITHUB_SHA}" >&2
-            exit 2
-          fi
-          if [[ "${tag_sha}" != "${{ inputs.expected_sha }}" ]]; then
-            echo "release tag ${{ inputs.tag }} points to ${tag_sha}, expected ${{ inputs.expected_sha }}" >&2
-            exit 2
-          fi
-      - name: Validate commit identities
-        run: python scripts/validate_git_identity.py history --repo-root . HEAD
-      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+          [[ "$(git rev-parse "${RELEASE_TAG}^{commit}")" == "$RELEASE_EXPECTED_SHA" ]] || exit 2
+          [[ "$(git rev-parse HEAD)" == "$RELEASE_EXPECTED_SHA" ]] || exit 2
+          [[ -z "$(git status --porcelain)" ]] || exit 2
+          python scripts/validate_git_identity.py history --repo-root . HEAD
+      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548
         with:
-          python-version: "3.13"
-      - name: Install Hatch
+          python-version: '3.13'
+      - name: Install release tooling
         run: python -m pip install --upgrade virtualenv==20.31.1 hatch==1.14.1
       - name: Sync Hatch environment
         run: hatch env create
-      - name: Validate self-host release posture
-        run: hatch run python -m odylith.cli validate self-host-posture --repo-root . --mode release --expected-tag "${{ inputs.tag }}"
-      - name: Build wheels
+      - name: Reserve candidate before any package build
+        if: inputs.operation == 'candidate'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          hatch build
-      - name: Ensure release exists
+          [[ ! -e dist && ! -L dist ]] || exit 2
+          hatch run python scripts/release/hosted_release_custody.py reserve --tag "$RELEASE_TAG" --revision "$RELEASE_EXPECTED_SHA" --output "$RUNNER_TEMP/odylith-candidate-reservation.json"
+          mkdir "$RUNNER_TEMP/odylith-candidate-logs"
+      - name: Validate self-host release posture
+        if: inputs.operation == 'candidate'
+        run: |
+          hatch run python scripts/sync_version_truth.py --repo-root . release-check --expected-version "${RELEASE_TAG#v}"
+          hatch run python -m odylith.cli governance sync-component-spec-requirements --repo-root . --check-only
+          hatch run python -m odylith.cli validate self-host-posture --repo-root . --mode release --expected-tag "$RELEASE_TAG"
+      - name: Build one wheel
+        if: inputs.operation == 'candidate'
+        run: hatch build --target wheel dist 2>&1 | tee "$RUNNER_TEMP/odylith-candidate-logs/hosted-wheel.log"
+      - name: Generate and sign candidate assets once
+        if: inputs.operation == 'candidate'
+        run: hatch run python scripts/release/publish_release_assets.py --repo "$ODYLITH_RELEASE_REPO" --tag "$RELEASE_TAG" --dist-dir dist --candidate 2>&1 | tee "$RUNNER_TEMP/odylith-candidate-logs/hosted-assets.log"
+      - name: Check package domain leakage
+        if: inputs.operation == 'candidate'
+        run: hatch run python scripts/release/platform_domain_leakage_check.py --repo-root . --dist-dir dist
+      - name: Verify signed installed candidate
+        if: inputs.operation == 'candidate'
+        env:
+          ODYLITH_RELEASE_REQUIRE_SIGSTORE_VERIFY: '1'
+        run: hatch run python scripts/release/local_release_smoke.py --version "${RELEASE_TAG#v}" --dist-dir dist 2>&1 | tee "$RUNNER_TEMP/odylith-candidate-logs/hosted-smoke.log"
+      - name: Stage completed signed draft
+        if: inputs.operation == 'candidate'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${{ inputs.tag }}" --repo "${ODYLITH_RELEASE_REPO}" --title "${{ inputs.tag }}" --notes "Odylith release ${{ inputs.tag }}" || true
-      - name: Upload release assets
+        run: hatch run python scripts/release/hosted_release_custody.py stage --reservation "$RUNNER_TEMP/odylith-candidate-reservation.json" --dist-dir dist
+      - name: Promote exact qualified candidate without build or signing
+        if: inputs.operation == 'promote'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: hatch run python scripts/release/publish_release_assets.py --repo "${ODYLITH_RELEASE_REPO}" --tag "${{ inputs.tag }}" --dist-dir dist --upload
+        run: hatch run python scripts/release/hosted_release_custody.py promote

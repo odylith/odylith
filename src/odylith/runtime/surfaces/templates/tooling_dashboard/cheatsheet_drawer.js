@@ -87,12 +87,10 @@
 
   if (toggle && drawer && searchInput) {
     toggle.addEventListener("click", () => {
-      window.requestAnimationFrame(() => {
-        if (drawer.classList.contains("open")) {
-          searchInput.focus();
-          searchInput.select();
-        }
-      });
+      if (drawer.classList.contains("open")) {
+        searchInput.focus();
+        searchInput.select();
+      }
     });
   }
 

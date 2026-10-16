@@ -1,4 +1,4 @@
-"""Exercise a local hosted-release install flow against a temporary repo."""
+"""Prove deterministic installation and candidate-contract safety, not Greenfield success."""
 
 from __future__ import annotations
 
@@ -19,22 +19,153 @@ from urllib import error as urllib_error
 
 from odylith.install.release_assets import fetch_release
 from odylith.install.state import AUTHORITATIVE_RELEASE_REPO
+from greenfield_matrix_write_audit import begin_installed_write_audit
+from odylith.runtime.domain_intelligence.greenfield_process import run_command_with_group_timeout
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    HOST_CANDIDATE_CONTRACT_VERSION as _EXPECTED_CANDIDATE_CONTRACT_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
+    HOST_CANDIDATE_FORMAT_VERSION as _EXPECTED_CANDIDATE_FORMAT_VERSION,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 _TEMP_ROOT_CLEANUP_RETRY_COUNT = 5
 _TEMP_ROOT_CLEANUP_RETRY_DELAY_SECONDS = 0.2
 _TEMP_ROOT_CLEANUP_RETRYABLE_ERRNOS = {errno.EACCES, errno.EBUSY, errno.ENOTEMPTY, errno.EPERM}
+_TEMP_ROOT_CLEANUP_SETTLE_COUNT = 3
+_TEMP_ROOT_CLEANUP_SETTLE_DELAY_SECONDS = 0.05
+_COMMAND_TIMEOUT_SECONDS = 300
+_CANDIDATE_CONTRACT_SMOKE_PROMPT = (
+    "Create a project governance package for a first-time user."
+)
+
+
+def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
+    """Keep source events catalog-owned and candidate lifecycle allocations closed."""
+
+    try:
+        serialized = json.dumps(candidate_schema, sort_keys=True)
+        if any(
+            token in serialized
+            for token in (
+                "candidate_" + "review",
+                "reviewed_" + "candidate_sha256",
+                "review_input_" + "candidate_sha256",
+                "admission_witness",
+            )
+        ):
+            return False
+        schema = candidate_schema  # keep the structural walk explicit for release diagnosis
+        assert isinstance(schema, dict)
+        if (schema.get("type") != "object" or schema.get("additionalProperties") is not False
+                or set(schema.get("required") or ()) != {"version", "result"}
+                or set(schema.get("properties") or {}) != {"version", "result"}):
+            return False
+        properties = schema["properties"]
+        if properties["version"].get("enum") != [_EXPECTED_CANDIDATE_FORMAT_VERSION]:
+            return False
+        authored = properties["result"]["anyOf"][0]
+        authored_properties = authored["properties"]
+        authored_fields = {
+            "status", "facts", "assumptions", "ambiguities", "consistency",
+            "provisional_design", "source_duty_binding",
+        }
+        if (authored.get("type") != "object" or authored.get("additionalProperties") is not False
+                or set(authored.get("required") or ()) != authored_fields
+                or set(authored_properties) != authored_fields):
+            return False
+        facts = authored_properties["facts"]
+        constraint = facts["properties"]["operational_constraints"]["items"]
+        design = authored_properties["provisional_design"]
+        first_run = design["properties"]["first_run"]
+        fact_fields = {
+            "product_story", "state_object", "problem", "opportunity", "product_view",
+            "success_metrics", "evidence_requirements", "operational_constraints", "non_goals",
+        }
+        binding = authored_properties["source_duty_binding"]
+        binding_fields = {
+            "version", "source_sha256", "ledger_sha256", "off_path_transitions",
+            "conditional_guards", "boundaries", "proof_duties",
+        }
+        if (binding.get("type") != "object" or binding.get("additionalProperties") is not False
+                or set(binding.get("required") or ()) != binding_fields
+                or set(binding.get("properties") or {}) != binding_fields
+                or binding["properties"]["version"].get("const")
+                != "odylith.greenfield.source-duty-binding.v4"):
+            return False
+        for role, fields in (
+            ("off_path_transitions", {"duty_id", "component_key", "workstream_key", "effects"}),
+            ("conditional_guards", {"duty_id", "component_key", "workstream_key"}),
+            ("boundaries", {"duty_id", "component_key", "workstream_key"}),
+            ("proof_duties", {"duty_id", "component_key", "workstream_key"}),
+        ):
+            rows = binding["properties"][role]
+            item = rows["items"]
+            if (rows.get("type") != "array" or item.get("type") != "object"
+                    or item.get("additionalProperties") is not False
+                    or set(item.get("required") or ()) != fields
+                    or set(item.get("properties") or {}) != fields):
+                return False
+        return bool(
+            isinstance(constraint, dict)
+            and facts.get("type") == "object"
+            and facts.get("additionalProperties") is False
+            and set(facts.get("properties") or {}) == fact_fields
+            and set(facts.get("required") or ()) == fact_fields
+            and first_run.get("type") == "object"
+            and first_run.get("additionalProperties") is False
+            and set(first_run.get("properties") or {}) == {"rationale"}
+            and set(first_run.get("required") or ()) == {"rationale"}
+            and first_run["properties"]["rationale"].get("type") == "string"
+            and first_run["properties"]["rationale"].get("minLength") == 1
+            and first_run["properties"]["rationale"].get("maxLength") == 1000
+            and isinstance(design["properties"]["components"], dict)
+            and "project_summary" in design.get("required", ())
+            and design["properties"]["project_summary"].get("type") == "string"
+            and design["properties"]["project_summary"].get("minLength") == 1
+            and design["properties"]["project_summary"].get("maxLength") == 600
+            and constraint.get("type") == "object"
+            and constraint.get("additionalProperties") is False
+            and set(constraint.get("required") or ()) == {"quote", "context"}
+            and set(constraint.get("properties") or {}) == {"quote", "context"}
+            and "constraint_custody" not in constraint
+            and all(
+                constraint["properties"][field].get("type") == "string"
+                for field in ("quote", "context")
+            )
+            and all(
+                binding["properties"][field] == {"type": "string", "minLength": 64, "maxLength": 64}
+                for field in ("source_sha256", "ledger_sha256")
+            )
+        )
+    except (AssertionError, AttributeError, KeyError, IndexError, TypeError):
+        return False
 
 
 def _run(*, cwd: Path, env: dict[str, str], command: list[str]) -> subprocess.CompletedProcess[str]:
-    completed = subprocess.run(
-        command,
-        cwd=str(cwd),
-        env=env,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=str(cwd),
+            env=env,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=_COMMAND_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout.decode("utf-8", errors="replace") if isinstance(exc.stdout, bytes) else str(exc.stdout or "")
+        stderr = exc.stderr.decode("utf-8", errors="replace") if isinstance(exc.stderr, bytes) else str(exc.stderr or "")
+        raise RuntimeError(
+            "\n".join(
+                [
+                    f"command timed out after {_COMMAND_TIMEOUT_SECONDS}s: {' '.join(command)}",
+                    f"cwd: {cwd}",
+                    stdout.strip(),
+                    stderr.strip(),
+                ]
+            ).strip()
+        ) from exc
     if completed.returncode != 0:
         raise RuntimeError(
             "\n".join(
@@ -74,17 +205,32 @@ def _previous_release_is_published(*, version: str) -> bool:
         if exc.code == 404:
             return False
         raise
+    except ValueError as exc:
+        if "HTTP Error 404" in str(exc):
+            return False
+        raise
     return True
 
 
 class _QuietHandler(http.server.SimpleHTTPRequestHandler):
+    def handle(self) -> None:
+        try:
+            super().handle()
+        except (BrokenPipeError, ConnectionResetError):
+            return
+
     def log_message(self, format: str, *args) -> None:  # noqa: A003
         del format, args
 
 
-def _serve_directory(directory: Path) -> tuple[socketserver.TCPServer, str]:
+class _ReleaseAssetServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    daemon_threads = True
+    allow_reuse_address = True
+
+
+def _serve_directory(directory: Path) -> tuple[_ReleaseAssetServer, str]:
     handler = lambda *args, **kwargs: _QuietHandler(*args, directory=str(directory), **kwargs)  # noqa: E731
-    server = socketserver.TCPServer(("127.0.0.1", 0), handler)
+    server = _ReleaseAssetServer(("127.0.0.1", 0), handler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     host, port = server.server_address
@@ -97,9 +243,8 @@ def _cleanup_smoke_temp_root(path: Path) -> None:
     for attempt in range(_TEMP_ROOT_CLEANUP_RETRY_COUNT + 1):
         try:
             shutil.rmtree(target)
-            return
         except FileNotFoundError:
-            return
+            pass
         except OSError as exc:
             last_error = exc
             if exc.errno not in _TEMP_ROOT_CLEANUP_RETRYABLE_ERRNOS:
@@ -107,8 +252,28 @@ def _cleanup_smoke_temp_root(path: Path) -> None:
             if attempt >= _TEMP_ROOT_CLEANUP_RETRY_COUNT:
                 break
             time.sleep(_TEMP_ROOT_CLEANUP_RETRY_DELAY_SECONDS)
+            continue
+        if _cleanup_smoke_temp_root_stayed_removed(target):
+            return
+        last_error = OSError(errno.ENOTEMPTY, f"temporary root reappeared after cleanup: {target}")
+        if attempt >= _TEMP_ROOT_CLEANUP_RETRY_COUNT:
+            break
+        time.sleep(_TEMP_ROOT_CLEANUP_RETRY_DELAY_SECONDS)
     if last_error is not None:
+        for _ in range(_TEMP_ROOT_CLEANUP_SETTLE_COUNT + 1):
+            shutil.rmtree(target, ignore_errors=True)
+            if _cleanup_smoke_temp_root_stayed_removed(target):
+                return
+            time.sleep(_TEMP_ROOT_CLEANUP_SETTLE_DELAY_SECONDS)
         shutil.rmtree(target, ignore_errors=True)
+
+
+def _cleanup_smoke_temp_root_stayed_removed(target: Path) -> bool:
+    for _ in range(_TEMP_ROOT_CLEANUP_SETTLE_COUNT):
+        if target.exists():
+            return False
+        time.sleep(_TEMP_ROOT_CLEANUP_SETTLE_DELAY_SECONDS)
+    return not target.exists()
 
 
 def _local_release_env(*, base_url: str, version: str) -> dict[str, str]:
@@ -116,7 +281,12 @@ def _local_release_env(*, base_url: str, version: str) -> dict[str, str]:
     env["ODYLITH_RELEASE_ALLOW_INSECURE_LOCALHOST"] = "1"
     env["ODYLITH_RELEASE_BASE_URL"] = base_url
     env["ODYLITH_RELEASE_MAINTAINER_ROOT"] = str(REPO_ROOT)
-    env["ODYLITH_RELEASE_SKIP_SIGSTORE_VERIFY"] = "1"
+    if env.get("ODYLITH_RELEASE_REQUIRE_SIGSTORE_VERIFY") == "1":
+        if env.get("ODYLITH_RELEASE_SKIP_SIGSTORE_VERIFY", "").strip() not in ("", "0"):
+            raise RuntimeError("canonical signed package smoke cannot bypass Sigstore")
+        env.pop("ODYLITH_RELEASE_SKIP_SIGSTORE_VERIFY", None)
+    else:
+        env["ODYLITH_RELEASE_SKIP_SIGSTORE_VERIFY"] = "1"
     env = _force_deterministic_reasoning_env(env)
     env["ODYLITH_VERSION"] = version
     return env
@@ -127,6 +297,11 @@ def _force_deterministic_reasoning_env(env: dict[str, str]) -> dict[str, str]:
     # have a local reasoning provider available or exported in the shell.
     env["ODYLITH_REASONING_MODE"] = "disabled"
     env["ODYLITH_REASONING_PROVIDER"] = "auto-local"
+    env["ODYLITH_REASONING_TIMEOUT_SECONDS"] = "1"
+    env["ODYLITH_REASONING_CODEX_BIN"] = "/usr/bin/false"
+    env["ODYLITH_REASONING_CLAUDE_BIN"] = "/usr/bin/false"
+    env["ODYLITH_COMPASS_STANDUP_BACKGROUND_DISABLE"] = "1"
+    env["ODYLITH_NO_BROWSER"] = "1"
     return env
 
 
@@ -139,6 +314,268 @@ def _install_cwd(repo_root: Path) -> Path:
 def _require_output_contains(*, output: str, expected: str, label: str) -> None:
     if expected not in output:
         raise RuntimeError(f"{label} missing expected text: {expected!r}")
+
+
+_GREENFIELD_GUIDANCE_FILES = (
+    "AGENTS.md",
+    "odylith/AGENTS.md",
+    "odylith/skills/odylith-greenfield-governance/SKILL.md",
+    "odylith/skills/odylith-show-me/SKILL.md",
+)
+_CONSUMER_GUIDANCE_FILES = (
+    "AGENTS.md",
+    "CLAUDE.md",
+    ".claude/CLAUDE.md",
+    "odylith/AGENTS.md",
+    "odylith/CLAUDE.md",
+)
+_CONSUMER_GUIDANCE_DIRECTORIES = (
+    ".agents/skills",
+    ".claude",
+    ".codex",
+    "odylith/agents-guidelines",
+    "odylith/skills",
+)
+_CONSUMER_MANAGED_SURFACE_DIRECTORIES = (
+    ".agents",
+    ".claude",
+    ".codex",
+    "odylith",
+)
+_CONSUMER_GUIDANCE_TEXT_SUFFIXES = (
+    ".css",
+    ".html",
+    ".js",
+    ".json",
+    ".md",
+    ".mjs",
+    ".toml",
+    ".txt",
+    ".yaml",
+    ".yml",
+)
+_CONSUMER_SURFACE_SKIP_DIRS = {
+    ".git",
+    "__pycache__",
+}
+_STALE_GREENFIELD_GUIDANCE_TOKENS = (
+    "host drafts backlog",
+    "host model drafts",
+    "active host model authors the project-specific proposal in chat",
+    "greenfield apply --repo-root . --proposal-file <proposal.json>",
+    "host-authored proposal JSON is re" + "viewed",
+    "host authors an internal proposal payload",
+    "the host authors the proposal",
+    ".odylith/runtime/greenfield/active-proposal.v1.json",
+)
+_OBSOLETE_GREENFIELD_COMMAND_RAIL_TOKENS = (
+    "showing the only hash-bound confirm rail",
+    "use exactly one hash-bound command: confirm, edit, or reject",
+    "## choose one command",
+)
+_GREENFIELD_PROPOSAL_FIRST_GUIDANCE_CONCEPTS = (
+    ("proposal command", ("greenfield prepare", "greenfield propose")),
+    ("sealed transaction", ("ProductCreateTransaction",)),
+    ("read-only public proposal", ("read-only", "read only")),
+    ("unavailable public confirmation interface", ("no qualified confirmation interface",)),
+    ("commit command", ("greenfield create",)),
+    ("transaction file", ("--transaction-file",)),
+    ("confirmation hash", ("--transaction-hash", "transaction-hash", "hash-bound")),
+    ("explicit confirmation", ("--confirm",)),
+    ("atomic readback", ("rollback guard", "readback")),
+    (
+        "commit-only no-work boundary",
+        (
+            "no product reinterpretation",
+            "does not parse",
+            "does not generate",
+            "commit-only",
+            "only verifies",
+            "verifies receipt",
+            "without model reasoning",
+            "never interprets evidence",
+            "no model, generation or repair",
+        ),
+    ),
+    (
+        "candidate and transaction JSON boundary",
+        (
+            "JSON candidate matching the returned schema",
+            "candidate matching the returned schema",
+            "proposal or transaction JSON",
+            "proposal JSON",
+        ),
+    ),
+    (
+        "schema-loop silence",
+        (
+            "parser/schema retries",
+            "parser retries",
+            "schema retries",
+            "narrate retries",
+            "narrate internal schema failures",
+            "narrate schema failures",
+        ),
+    ),
+)
+_FORBIDDEN_CONSUMER_MAINTAINER_RESTRICTION_TOKENS = (
+    "freedom-research",
+    "sole canonical contributor identity",
+    "Commit messages must use only",
+    "coding-assistant trailers",
+    "main branch is read-only",
+    "never work directly on `main`",
+    "current branch is `main`, create",
+    "New branches must use",
+    "<year>/freedom/<tag>",
+    "branch prefix",
+    "dev-validate",
+    "release-preflight",
+    "release-candidate",
+    "make dev-validate",
+    "make release-preflight",
+    "make release-candidate",
+    "release migration-gate",
+    "GitHub actor:",
+    "canonical release authority",
+)
+_FORBIDDEN_CONSUMER_MAINTAINER_TREE_TOKENS = (
+    "freedom-research",
+    "sole canonical contributor identity",
+    "Commit messages must use only",
+    "coding-assistant trailers",
+    "main branch is read-only",
+    "never work directly on `main`",
+    "current branch is `main`, create",
+    "New branches must use",
+    "<year>/freedom/<tag>",
+)
+
+
+def _require_greenfield_surfaces(*, repo_root: Path, label: str) -> None:
+    for relative_path in (
+        "odylith/radar/radar.html",
+        "odylith/registry/registry.html",
+        "odylith/atlas/atlas.html",
+        "odylith/compass/compass.html",
+        "odylith/casebook/casebook.html",
+    ):
+        if not (repo_root / relative_path).is_file():
+            raise RuntimeError(f"{label} did not render {relative_path}")
+
+
+def _require_greenfield_baseline(*, repo_root: Path, env: dict[str, str]) -> None:
+    """Check the installed runtime's complete working and published baseline without repair."""
+
+    _run(cwd=repo_root, env=env, command=[
+        str(repo_root / ".odylith/runtime/current/bin/python"), "-I", "-B", "-c", """
+from pathlib import Path
+from odylith import cli
+from odylith.runtime.domain_intelligence import greenfield_create_baseline as baseline
+from odylith.runtime.domain_intelligence import greenfield_generation_store as store
+
+root = Path.cwd()
+generation = store.require_greenfield_working_generation(root)
+for tree in (root, generation.repository_root):
+    baseline._require_completed_baseline_surfaces(tree, cli._FIRST_RUN_SURFACE_OUTPUTS)
+""",
+    ])
+
+
+def _require_greenfield_guidance_uses_confirmed_create(*, repo_root: Path, label: str) -> None:
+    for relative_path in _GREENFIELD_GUIDANCE_FILES:
+        path = repo_root / relative_path
+        if not path.is_file():
+            raise RuntimeError(f"{label} did not install greenfield guidance file: {relative_path}")
+        text = path.read_text(encoding="utf-8")
+        compact_text = " ".join(text.split())
+        for token in _STALE_GREENFIELD_GUIDANCE_TOKENS:
+            if token in text:
+                raise RuntimeError(f"{label} guidance still teaches stale greenfield schema-repair flow: {relative_path}: {token}")
+        for token in _OBSOLETE_GREENFIELD_COMMAND_RAIL_TOKENS:
+            if token in compact_text.casefold():
+                raise RuntimeError(
+                    f"{label} guidance exposes an obsolete public greenfield command rail: "
+                    f"{relative_path}: {token}"
+                )
+        for concept, alternatives in _GREENFIELD_PROPOSAL_FIRST_GUIDANCE_CONCEPTS:
+            if not any(token.casefold() in compact_text.casefold() for token in alternatives):
+                expected = " or ".join(alternatives)
+                raise RuntimeError(
+                    f"{label} guidance omits proposal-first create {concept}: {relative_path}: {expected}"
+                )
+
+
+def _iter_consumer_guidance_files(repo_root: Path) -> tuple[Path, ...]:
+    root = Path(repo_root)
+    paths: dict[str, Path] = {}
+    for relative_path in _CONSUMER_GUIDANCE_FILES:
+        path = root / relative_path
+        if path.is_file():
+            paths[path.relative_to(root).as_posix()] = path
+    for relative_dir in _CONSUMER_GUIDANCE_DIRECTORIES:
+        directory = root / relative_dir
+        if not directory.is_dir():
+            continue
+        for path in directory.rglob("*"):
+            if not path.is_file():
+                continue
+            relative_parts = path.relative_to(root).parts
+            if len(relative_parts) >= 2 and relative_parts[:2] == (".claude", "worktrees"):
+                continue
+            if path.suffix not in _CONSUMER_GUIDANCE_TEXT_SUFFIXES:
+                continue
+            paths[path.relative_to(root).as_posix()] = path
+    return tuple(paths[key] for key in sorted(paths))
+
+
+def _iter_consumer_managed_surface_files(repo_root: Path) -> tuple[Path, ...]:
+    root = Path(repo_root)
+    paths: dict[str, Path] = {}
+    for relative_path in _CONSUMER_GUIDANCE_FILES:
+        path = root / relative_path
+        if path.is_file():
+            paths[path.relative_to(root).as_posix()] = path
+    for relative_dir in _CONSUMER_MANAGED_SURFACE_DIRECTORIES:
+        directory = root / relative_dir
+        if not directory.is_dir():
+            continue
+        for path in directory.rglob("*"):
+            if not path.is_file():
+                continue
+            relative_path = path.relative_to(root)
+            if _CONSUMER_SURFACE_SKIP_DIRS.intersection(relative_path.parts):
+                continue
+            if len(relative_path.parts) >= 2 and relative_path.parts[:2] == (".claude", "worktrees"):
+                continue
+            if path.suffix not in _CONSUMER_GUIDANCE_TEXT_SUFFIXES:
+                continue
+            paths[relative_path.as_posix()] = path
+    return tuple(paths[key] for key in sorted(paths))
+
+
+def _require_no_maintainer_restrictions_in_consumer_guidance(*, repo_root: Path, label: str) -> None:
+    _require_no_maintainer_restrictions_in_consumer_tree(repo_root=repo_root, label=label)
+
+
+def _require_no_maintainer_restrictions_in_consumer_tree(*, repo_root: Path, label: str) -> None:
+    root = Path(repo_root)
+    for path in _iter_consumer_guidance_files(root):
+        relative_path = path.relative_to(root).as_posix()
+        text = path.read_text(encoding="utf-8")
+        for token in _FORBIDDEN_CONSUMER_MAINTAINER_RESTRICTION_TOKENS:
+            if token in text:
+                raise RuntimeError(f"{label} consumer surface leaks maintainer-only restriction: {relative_path}: {token}")
+    for path in _iter_consumer_managed_surface_files(root):
+        relative_path = path.relative_to(root).as_posix()
+        text = path.read_text(encoding="utf-8")
+        for token in _FORBIDDEN_CONSUMER_MAINTAINER_TREE_TOKENS:
+            if token in text:
+                raise RuntimeError(f"{label} consumer surface leaks maintainer-only restriction: {relative_path}: {token}")
+
+
+def _require_no_maintainer_identity_in_consumer_guidance(*, repo_root: Path, label: str) -> None:
+    _require_no_maintainer_restrictions_in_consumer_guidance(repo_root=repo_root, label=label)
 
 
 def _seed_legacy_compass_archive_fixture(*, repo_root: Path) -> None:
@@ -232,6 +669,8 @@ def _require_compass_history_layout(*, repo_root: Path) -> None:
 
 def _install_and_smoke(*, repo_root: Path, install_script: Path, env: dict[str, str]) -> None:
     _run(cwd=_install_cwd(repo_root), env=env, command=["bash", str(install_script)])
+    _require_greenfield_guidance_uses_confirmed_create(repo_root=repo_root, label="fresh install")
+    _require_no_maintainer_restrictions_in_consumer_guidance(repo_root=repo_root, label="fresh install")
     odylith = repo_root / ".odylith" / "bin" / "odylith"
     version = _run(cwd=repo_root, env=env, command=[str(odylith), "version", "--repo-root", "."]).stdout
     _require_output_contains(output=version, expected=f"Active: {env['ODYLITH_VERSION']}", label="odylith version")
@@ -239,8 +678,79 @@ def _install_and_smoke(*, repo_root: Path, install_script: Path, env: dict[str, 
     doctor = _run(cwd=repo_root, env=env, command=[str(odylith), "doctor", "--repo-root", "."]).stdout
     _require_output_contains(output=doctor, expected="Context engine mode: full_local_memory", label="odylith doctor")
     _require_output_contains(output=doctor, expected="Context engine pack: installed", label="odylith doctor")
-    _run(cwd=repo_root, env=env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."])
+    _greenfield_candidate_contract_smoke(repo_root=repo_root, odylith=odylith, env=env)
     _run(cwd=repo_root, env=env, command=[str(odylith), "sync", "--repo-root", ".", "--force"])
+    _require_greenfield_surfaces(repo_root=repo_root, label="fresh install baseline")
+    _require_greenfield_baseline(repo_root=repo_root, env=env)
+
+
+def _greenfield_candidate_contract_smoke(*, repo_root: Path, odylith: Path, env: dict[str, str]) -> None:
+    _require_greenfield_baseline(repo_root=repo_root, env=env)
+    show = _run(cwd=repo_root, env=env, command=[str(odylith), "show", "--repo-root", "."]).stdout
+    _require_output_contains(output=show, expected="Odylith read this repo", label="odylith show")
+    audit = begin_installed_write_audit(repo_root=repo_root)
+    try:
+        completed = run_command_with_group_timeout(
+            cwd=repo_root,
+            env={**env, **audit.environment()},
+            command=audit.command(
+                runtime_python=repo_root / ".odylith/runtime/current/bin/python",
+                arguments=(
+                    "greenfield", "candidate-contract", "--repo-root", ".",
+                    "--prompt", _CANDIDATE_CONTRACT_SMOKE_PROMPT,
+                ),
+            ),
+            timeout=90,
+            pass_fds=audit.pass_fds,
+        )
+    finally:
+        observed = audit.finish()
+    if completed.returncode != 0:
+        raise RuntimeError(
+            "\n".join(
+                (
+                    "candidate-contract smoke command failed",
+                    str(completed.stdout or "").strip(),
+                    str(completed.stderr or "").strip(),
+                )
+            ).strip()
+        )
+    try:
+        payload = json.loads(str(completed.stdout or ""))
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(
+            "candidate-contract smoke returned invalid JSON: "
+            + str(completed.stderr or "").strip()
+        ) from exc
+    request = payload.get("request") if isinstance(payload, dict) else None
+    candidate_schema = payload.get("candidate_schema") if isinstance(payload, dict) else None
+    issues: list[str] = []
+    if not isinstance(payload, dict):
+        issues.append("candidate contract is not a JSON object")
+    elif payload.get("version") != _EXPECTED_CANDIDATE_CONTRACT_VERSION:
+        issues.append("candidate contract does not match the release-pinned contract version")
+    if (
+        isinstance(payload, dict)
+        and payload.get("candidate_version") != _EXPECTED_CANDIDATE_FORMAT_VERSION
+    ):
+        issues.append("candidate contract does not match the release-pinned candidate version")
+    if not isinstance(request, dict) or _CANDIDATE_CONTRACT_SMOKE_PROMPT not in str(
+        request.get("evidence") or ""
+    ):
+        issues.append("candidate contract did not preserve the exact prompt evidence")
+    if not _has_current_host_candidate_schema(candidate_schema):
+        issues.append("candidate contract did not preserve complete host-owned semantic custody")
+    if observed.active is not True:
+        issues.append("candidate-contract smoke did not activate the installed write audit")
+    if observed.error:
+        issues.append("candidate-contract smoke could not complete the installed write audit")
+    if observed.write_attempts:
+        issues.append("candidate-contract smoke attempted repository writes")
+    if observed.subprocess_attempts:
+        issues.append("candidate-contract smoke attempted child subprocesses")
+    if issues:
+        raise RuntimeError("candidate-contract smoke failed: " + "; ".join(issues))
+    _require_greenfield_baseline(repo_root=repo_root, env=env)
 
 
 def _install_previous_release(*, repo_root: Path, install_script: Path, previous_version: str) -> None:
@@ -260,6 +770,33 @@ def _install_clean_previous_release(*, repo_root: Path, install_script: Path, pr
     )
 
 
+def _dist_manifest_requires_migration(*, install_script: Path) -> bool:
+    manifest_path = install_script.parent / "release-manifest.json"
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    return bool(manifest.get("migration_required"))
+
+
+def _run_upgrade_rehearsal(
+    *,
+    repo_root: Path,
+    install_script: Path,
+    target_version: str,
+    local_env: dict[str, str],
+) -> None:
+    odylith = repo_root / ".odylith" / "bin" / "odylith"
+    if _dist_manifest_requires_migration(install_script=install_script):
+        _run(cwd=_install_cwd(repo_root), env=local_env, command=["bash", str(install_script)])
+        return
+    _run(
+        cwd=repo_root,
+        env=local_env,
+        command=[str(odylith), "upgrade", "--repo-root", ".", "--to", target_version, "--write-pin"],
+    )
+
+
 def _upgrade_cycle(
     *,
     repo_root: Path,
@@ -273,14 +810,17 @@ def _upgrade_cycle(
         install_script=install_script,
         previous_version=previous_version,
     )
-    odylith = repo_root / ".odylith" / "bin" / "odylith"
     _seed_legacy_compass_archive_fixture(repo_root=repo_root)
-    _run(
-        cwd=repo_root,
-        env=local_env,
-        command=[str(odylith), "upgrade", "--repo-root", ".", "--to", target_version, "--write-pin"],
+    _run_upgrade_rehearsal(
+        repo_root=repo_root,
+        install_script=install_script,
+        target_version=target_version,
+        local_env=local_env,
     )
+    odylith = repo_root / ".odylith" / "bin" / "odylith"
+    _greenfield_candidate_contract_smoke(repo_root=repo_root, odylith=odylith, env=local_env)
     _run(cwd=repo_root, env=local_env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."])
+    _require_greenfield_baseline(repo_root=repo_root, env=local_env)
     _require_compass_history_layout(repo_root=repo_root)
     _install_clean_previous_release(
         repo_root=repo_root,
@@ -289,7 +829,9 @@ def _upgrade_cycle(
     )
     _seed_legacy_compass_archive_fixture(repo_root=repo_root)
     _run(cwd=_install_cwd(repo_root), env=local_env, command=["bash", str(install_script)])
+    _greenfield_candidate_contract_smoke(repo_root=repo_root, odylith=odylith, env=local_env)
     _run(cwd=repo_root, env=local_env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."])
+    _require_greenfield_baseline(repo_root=repo_root, env=local_env)
     _require_compass_history_layout(repo_root=repo_root)
     _install_clean_previous_release(
         repo_root=repo_root,
@@ -297,12 +839,16 @@ def _upgrade_cycle(
         previous_version=previous_version,
     )
     _seed_legacy_compass_archive_fixture(repo_root=repo_root)
-    _run(
-        cwd=repo_root,
-        env=local_env,
-        command=[str(odylith), "upgrade", "--repo-root", ".", "--to", target_version, "--write-pin"],
+    _run_upgrade_rehearsal(
+        repo_root=repo_root,
+        install_script=install_script,
+        target_version=target_version,
+        local_env=local_env,
     )
+    odylith = repo_root / ".odylith" / "bin" / "odylith"
+    _greenfield_candidate_contract_smoke(repo_root=repo_root, odylith=odylith, env=local_env)
     _run(cwd=repo_root, env=local_env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."])
+    _require_greenfield_baseline(repo_root=repo_root, env=local_env)
     _require_compass_history_layout(repo_root=repo_root)
 
 
@@ -344,12 +890,25 @@ def _stale_uninstall_residue_cycle(
     _require_output_contains(output=version, expected=f"Active: {target_version}", label="stale residue version")
     if not (repo_root / "odylith" / "AGENTS.md").is_file():
         raise RuntimeError("stale uninstall residue install did not restore odylith/ governed source truth")
+    _require_greenfield_baseline(repo_root=repo_root, env=local_env)
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run local Odylith release smoke tests against generated assets.")
+    parser = argparse.ArgumentParser(description=(
+        "Prove installation, upgrade and the read-only candidate-contract boundary. "
+        "This does not qualify a successful Greenfield request; the required installed matrix owns that proof."
+    ))
     parser.add_argument("--version", required=True, help="Release version, for example 0.1.0.")
     parser.add_argument("--dist-dir", default="dist", help="Directory containing generated release assets.")
+    parser.add_argument(
+        "--previous-version",
+        action="append",
+        default=[],
+        help=(
+            "Published previous version to rehearse into the local target. "
+            "May be repeated; defaults to the immediate semver predecessor."
+        ),
+    )
     return parser
 
 
@@ -366,25 +925,31 @@ def main(argv: list[str] | None = None) -> int:
         local_env = _local_release_env(base_url=base_url, version=args.version)
         fresh_repo = _repo_root(temp_root, "fresh-install")
         _install_and_smoke(repo_root=fresh_repo, install_script=install_script, env=local_env)
+        # Positive show/propose/CONFIRM and readback belong to the required installed matrix.
 
-        previous_version = _semver_previous(args.version)
-        if previous_version and _previous_release_is_published(version=previous_version):
-            lifecycle_repo = _repo_root(temp_root, "upgrade-cycle")
-            _upgrade_cycle(
-                repo_root=lifecycle_repo,
-                install_script=install_script,
-                previous_version=previous_version,
-                target_version=args.version,
-                local_env=local_env,
-            )
-            stale_residue_repo = _repo_root(temp_root, "stale-uninstall-residue")
-            _stale_uninstall_residue_cycle(
-                repo_root=stale_residue_repo,
-                install_script=install_script,
-                previous_version=previous_version,
-                target_version=args.version,
-                local_env=local_env,
-            )
+        previous_versions = tuple(str(version).strip() for version in args.previous_version if str(version).strip())
+        if not previous_versions:
+            immediate_previous = _semver_previous(args.version)
+            previous_versions = (immediate_previous,) if immediate_previous else ()
+        for previous_version in previous_versions:
+            if previous_version and _previous_release_is_published(version=previous_version):
+                suffix = previous_version.replace(".", "-")
+                lifecycle_repo = _repo_root(temp_root, f"upgrade-cycle-{suffix}")
+                _upgrade_cycle(
+                    repo_root=lifecycle_repo,
+                    install_script=install_script,
+                    previous_version=previous_version,
+                    target_version=args.version,
+                    local_env=local_env,
+                )
+                stale_residue_repo = _repo_root(temp_root, f"stale-uninstall-residue-{suffix}")
+                _stale_uninstall_residue_cycle(
+                    repo_root=stale_residue_repo,
+                    install_script=install_script,
+                    previous_version=previous_version,
+                    target_version=args.version,
+                    local_env=local_env,
+                )
     finally:
         server.shutdown()
         server.server_close()

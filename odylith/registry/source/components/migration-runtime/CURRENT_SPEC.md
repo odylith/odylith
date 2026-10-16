@@ -1,5 +1,5 @@
 # Migration Runtime
-Last updated: 2026-05-03
+Last updated: 2026-09-10
 
 
 ## Overview
@@ -15,6 +15,8 @@ contract.
   lookup, dry-run planning, migration apply, durable ledger verification,
   doctor migration observability, and release migration gate validation.
 - **Evidence anchors**: `src/odylith/install/migration_runtime.py`,
+  `src/odylith/install/migration_release_gate.py`,
+  `src/odylith/install/migration_observer.py`,
   `src/odylith/install/destructive_write_scenarios.py`,
   `src/odylith/install/legacy_install_migration.py`,
   `src/odylith/install/versioning.py`
@@ -44,13 +46,43 @@ contract.
   staged runtime writes its durable verification marker.
 - Lock/cache sludge and generated dashboard staleness are reported as repair or
   refresh posture, not release migration failures.
+- Upgrade and already-current install refresh must write the Dashboard runtime
+  version sidecar and force the shell-facing dashboard refresh so generated
+  `odylith/index.html` cannot silently lag the authoritative `odylith version`
+  state after release adoption.
+- The v0.1.15 Atlas box-explanation migration regenerates generated Atlas
+  browser surfaces so older 0.1.10 through 0.1.14 installs derive every
+  flowchart container and inner box from Mermaid source, preserve repo-owned
+  Atlas catalog truth, and write a dedicated migration ledger.
+- Install-time repo-state migrations must also force the shell-facing dashboard
+  refresh before closeout when first-run surfaces already exist, and hosted
+  installer output must make the complete-install upgrade lifecycle explicit.
 - `migration_required=true` releases are blocked only when no registered
   migration can satisfy the declared requirement for the concrete from/to
   version window.
+- Missing runtime verification evidence must outrank already-current consumer
+  classification. A same-version consumer reinstall may stay no-op only when
+  the runtime is verified and `previous_version == target_version`; a
+  `migration_required=true` release transition must still reach the registered
+  migration blocker when no migration covers the concrete target.
 - `doctor` may report migration state, but repair-class cleanup must not run
   release migrations.
 - `release migration-gate` fixture coverage is explicit per migration id and
   fixture token, so incidental test words cannot satisfy release-gate proof.
+- Release checks and their report belong to `migration_release_gate.py`;
+  install planning and execution remain in `migration_runtime.py`. Shared
+  manifest-target eligibility belongs to `MigrationDefinition`.
+- The CLI requires an explicit `--base-ref` whose publication the caller has
+  verified. The observer reports resolved predecessor and candidate commits,
+  compares their endpoint trees, and includes committed, staged, unstaged and
+  untracked relevant paths. Working-tree-only observation is diagnostic, not
+  release qualification. Final qualification uses a clean, frozen candidate.
+- Missing or invalid Git scope, conflicting explicit paths, and relevant
+  skip-worktree or assume-unchanged entries fail closed as unproven. A valid
+  comparison with no relevant changes is explicitly not applicable.
+- Completed assessments bind the target version, resolved predecessor, literal
+  changed paths, file modes and fingerprintable contents. Committing unchanged
+  bytes preserves assessment; changing their contents or predecessor does not.
 - Destructive-write scenarios are first-class gate input. The gate now tracks
   host config, managed project-root assets, governance source truth, legacy
   root/state migration conflicts, runtime activation, ledger idempotency,
@@ -79,9 +111,16 @@ contract.
   root migration, and version-window decisions.
 - Downstream: `odylith.install.manager`, `odylith.cli`, upgrade reports,
   doctor output, and release migration-gate validation.
-- Governance: B-127, CB-135, and Atlas D-042.
+- Governance: B-127, B-142, CB-135, CB-337, and Atlas D-042.
 
 ## Test Coverage
+
+- `tests/unit/install/test_migration_release_scope.py` uses real Git repositories
+  to prove commit survival, exact completed-assessment reuse, endpoint identity,
+  rename/deletion, literal paths, and unavailable-scope refusal.
+- `tests/unit/install/test_migration_observer.py` owns classifier and exact-marker
+  controls; `tests/unit/test_release_migration_cli.py` proves public baseline
+  wiring, diagnostic status and the single release-gate owner.
 
 - Unit: `tests/unit/install/test_migration_runtime.py` covers registered
   definitions, scenario classification, selected/skipped/blocked decisions,
@@ -115,21 +154,26 @@ contract.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-05-02 · Implementation:** Registered the v0.1.13 Casebook compact-metadata migration, proved 0.1.10/0.1.11/0.1.12 upgrade paths, refreshed Casebook and Radar surfaces, and tightened migration_required gating so no-op registered migrations cannot satisfy future release manifests.
+- **2026-06-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 7 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `bin/greenfield-post-confirm-matrix`, `odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md`, `odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md`, `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, plus 3 more
+- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-141
-  - Evidence: odylith/casebook/bugs/2026-05-01-casebook-renders-prose-status-and-type-chips.md, src/odylith/install/casebook_metadata_migration.py +2 more
-- **2026-04-27 · Implementation:** 0.1.12 migration-runtime QA pass closed with full pytest, release migration gate, doctor, Casebook, and component-registry validation green.
+  - Evidence: `odylith/casebook/bugs/2026-05-01-casebook-renders-prose-status-and-type-chips.md`, `src/odylith/install/casebook_metadata_migration.py`, `src/odylith/install/migration_runtime.py`, `tests/integration/install/test_lifecycle_simulator.py`
+- **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-127
-  - Evidence: odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md, src/odylith/install/migration_runtime.py +1 more
-- **2026-04-27 · Implementation:** 0.1.12 migration runtime gate hardened with legacy root routing, explicit fixture markers, active-state classification, and expanded edge-case tests.
+  - Evidence: `odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md`, `src/odylith/install/migration_runtime.py`, `tests/unit/install/test_migration_runtime.py`
+- **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-127
-  - Evidence: odylith/technical-plans/in-progress/2026-04/2026-04-27-migration-runtime-release-gate.md, src/odylith/install/migration_runtime.py +1 more
-- **2026-04-27 · Implementation:** Implemented the 0.1.12 migration-runtime release gate: dry-run/apply share one MigrationPlan, v0.1.11 value-engine migration routes through the registry, doctor reports ledger state, and release migration-gate validates fixture coverage and lifecycle bypasses.
+  - Evidence: `odylith/technical-plans/in-progress/2026-04/2026-04-27-migration-runtime-release-gate.md`, `src/odylith/install/migration_runtime.py`, `tests/unit/install/test_migration_runtime.py`
+- **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-127
-  - Evidence: odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md, src/odylith/install/migration_runtime.py +1 more
+  - Evidence: `odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md`, `src/odylith/install/migration_runtime.py`, `tests/unit/install/test_migration_runtime.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-09-10: Preserve committed release changes through an explicit published-predecessor comparison and refuse unavailable checkout evidence; separate release-gate ownership from install execution. Focused proof: 85 controls pass with independent bounded review. Current frozen broad proof after the separate CB-338 correction passes 5,058 runtime, 1,437 install, 180 CLI and 376 browser checks, with one documented fixture-state skip and all 3,204 inputs unchanged. Complete migration qualification remains open; committing is not completed assessment. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: CB-337)
 
 - 2026-04-27: Created the migration-runtime release gate for 0.1.12, routing the v0.1.11 value-engine migration through registered dry-run/apply/doctor and release-gate contracts. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127))
 - 2026-04-27: Hardened the 0.1.12 gate with legacy Odyssey repo-state migration, active-versus-historical version separation, explicit fixture markers, shared install versioning, and expanded scenario coverage. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127); Casebook: CB-135)
@@ -138,3 +182,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-29: Expanded CB-136 from direct settings overwrite into symlinked host/project managed-asset protection; the release gate now proves 21 destructive-write scenarios, including symlinked `.claude/`, `.codex/`, `.agents/`, `odylith/`, and release-note target paths. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127); Casebook: CB-136)
 - 2026-04-30: Corrected consumer uninstall to preserve repo-local `odylith/` governed source truth, remove `.odylith/` runtime state, and leave host config directories in place, with symlink-safe runtime-state proof in the destructive-write matrix. (Plan: [B-140](odylith/radar/radar.html?view=plan&workstream=B-140); Casebook: CB-143)
 - 2026-05-03: Bound v0.1.14 upgrade safety to registered migrations instead of repair folklore: install reruns detect existing Odylith installs as upgrades, Casebook source metadata is normalized through the release migration runner, Atlas SVG/PNG assets rerender when render-style fingerprints drift, topology-spine edges are regenerated, and the release migration gate proves 0.1.10/0.1.11/0.1.12/0.1.13 -> 0.1.14. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Assessment: [B-140](odylith/radar/radar.html?view=plan&workstream=B-140); Bugs: `CB-150`, `CB-162`)
+- 2026-05-09: Registered the v0.1.15 Atlas box-explanation migration so 0.1.10, 0.1.11, 0.1.12, 0.1.13, and 0.1.14 consumer installs upgrade to Atlas surfaces that explain containers and inner boxes with readable copy while leaving repo-owned Atlas source truth intact. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Assessment: [B-140](odylith/radar/radar.html?view=plan&workstream=B-140))
+- 2026-05-04: Invalidated generated refresh-guard cache entries with a v2 byte-content fingerprint so existing installs upgrading to v0.1.14 cannot reuse stale surface-render decisions from older size/mtime cache state. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-167`)
+- 2026-05-04: Added the post-upgrade dashboard version-state sidecar and forced default shell refresh so upgraded consumer repos cannot keep showing an old shell version after `odylith version` has advanced. Install-time repo-state migrations now force the same dashboard refresh when they do not route through upgrade, the hosted installer names the complete-install upgrade lifecycle, and sync dirty-overlap recovery blocks before tracked Radar normalization while pointing shell drift to the narrow dashboard refresh path. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Bug: `CB-168`)
+- 2026-06-28: Tightened migration scenario classification so missing runtime verification blocks before already-current no-op, verified same-version reinstalls remain no-op, and `migration_required=true` release transitions without a registered target migration still fail closed. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-135`)

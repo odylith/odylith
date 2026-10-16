@@ -68,6 +68,33 @@ def _write_repo_root(repo_root: Path) -> None:
     (repo_root / "AGENTS.md").write_text("# Repo Root\n\nBody\n", encoding="utf-8")
 
 
+def _assert_canonical_assist_cadence(guidance_text: str) -> None:
+    assert "When feedback requests more" in guidance_text or "When explicit intervention feedback asks for more frequent Assist" in guidance_text
+    assert "substantive-continuation beats" in guidance_text
+    assert "Omit bare acknowledgements, routine chatter, and internals" in guidance_text or "while keeping bare acknowledgements, routine chatter, and internal execution details out" in guidance_text
+    assert "Never add Assist merely because Odylith ran." in guidance_text
+    assert "Lead with the user win" in guidance_text
+    assert "changed IDs" in guidance_text
+    assert "the `odylith_off` edge" in guidance_text
+    assert "counts, deltas, or validation outcomes" in guidance_text
+    assert "Generic receipts are not premium interventions" in guidance_text
+    assert "supplies one shared prompt-visible Assist line" not in guidance_text
+
+
+def _assert_bundled_assist_cadence(guidance_text: str) -> None:
+    assert "When explicit intervention feedback asks for more frequent Assist" in guidance_text
+    assert "earned cadence" in guidance_text
+    assert "substantive-continuation beats" in guidance_text
+    assert "while keeping bare acknowledgements, routine chatter, and internal execution details out" in guidance_text
+    assert "Never add Assist merely because Odylith ran." in guidance_text
+    assert "Lead with the user win" in guidance_text
+    assert "changed IDs" in guidance_text
+    assert "the `odylith_off` edge" in guidance_text
+    assert "concrete counts, deltas, or validation outcomes" in guidance_text
+    assert "Generic receipts are not premium interventions." in guidance_text
+    assert "supplies one shared prompt-visible Assist line" not in guidance_text
+
+
 def _write_casebook_bug(
     path: Path,
     *,
@@ -708,11 +735,12 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert (repo_root / ".codex" / "hooks.json").is_file()
     assert (repo_root / ".codex" / "agents" / "odylith-workstream.toml").is_file()
     codex_hooks = json.loads((repo_root / ".codex" / "hooks.json").read_text(encoding="utf-8"))
-    assert codex_hooks["SessionStart"][0]["hooks"][0]["command"] == (
+    assert codex_hooks["hooks"]["SessionStart"][0]["hooks"][0]["command"] == (
         "python3 ./.agents/bin/odylith-host-launcher.py codex session-start-ground --repo-root ."
     )
     assert (repo_root / ".agents" / "skills" / "odylith-start" / "SKILL.md").is_file()
-    assert not (repo_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").exists()
+    assert (repo_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").is_file()
+    assert (repo_root / ".agents" / "skills" / "odylith-subagent-orchestrator" / "SKILL.md").is_file()
     assert (repo_root / "odylith" / "runtime" / "source" / "product-version.v1.json").is_file()
     assert (repo_root / "odylith" / "runtime" / "source" / "tooling_shell.v1.json").is_file()
     assert (repo_root / "odylith" / "index.html").is_file()
@@ -761,19 +789,20 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "--force --impact-mode full" not in shell_index_html
     guidance_text = guidance_path.read_text(encoding="utf-8")
     assert "local repo truth, not a copy of the Odylith product repo" in guidance_text
+    assert "Generated human-visible content has a non-negotiable clarity floor across all lanes" in guidance_text
     assert "`.claude/`, `.codex/`, `.agents/skills/`, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped guidance companions under `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md`, `odylith/agents-guidelines/`, and `odylith/skills/` are Odylith-managed guidance assets" in guidance_text
-    assert "Before any substantive repo scan or code change outside trivial fixes, run `./.odylith/bin/odylith start --repo-root .` first" in guidance_text
+    assert "Before substantive scans or edits, run `./.odylith/bin/odylith start --repo-root .`" in guidance_text
     assert "keep the active workstream, component, or packet in scope" in guidance_text
-    assert "Direct repo scan before that start step is a policy violation unless the task is trivial or Odylith is unavailable." in guidance_text
+    assert "Direct repo scan before start violates policy unless the task is trivial or Odylith is unavailable." in guidance_text
     assert "Do not run `odylith context`, `odylith query`, `git status`, broad repo search, or other repo-inspection commands in parallel with that start step." in guidance_text
     assert "Let `start` finish first; then run `odylith context --repo-root . <ref>` only when the user, start output, or governed truth gives an exact anchor." in guidance_text
-    assert "The repo-root managed `AGENTS.md` block is the shared hard-law kernel for both Codex and Claude Code." in guidance_text
-    assert "help/show/capabilities fast paths" in guidance_text
+    assert "The repo-root managed `AGENTS.md` block is shared by Codex and Claude Code." in guidance_text
+    assert "help/show/capabilities routes" in guidance_text
     assert "Codex and Claude Code share the same default Odylith lane" in guidance_text
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in guidance_text
-    assert "Describe progress in task terms like the exact file/workstream, the bug under test, or the validation in flight" in guidance_text
-    assert "Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates" in guidance_text
-    assert "never prefix commentary with control-plane receipt labels" in guidance_text
+    assert "Describe the file, bug, or validation in progress" in guidance_text
+    assert "Do not narrate routine `odylith start`, `odylith context`, or `odylith query` commands" in guidance_text
+    assert "or use control-plane receipt labels" in guidance_text
     assert "Capability inventory is product-owned and host-agnostic" in guidance_text
     assert "run `odylith capabilities` and print stdout only" in guidance_text
     assert "Help and technical-plan command discovery use the single authoritative help path" in guidance_text
@@ -787,17 +816,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "literal commands" not in guidance_text
     assert "Keep normal commentary task-first and human." in guidance_text
     assert "Reserve `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` for rare high-signal moments." in guidance_text
-    assert "At closeout, or when a visible-intervention recovery renders a prompt-submit or visibility-proof note" in guidance_text
-    assert "normal non-passthrough prompts do not get an Assist line by default" in guidance_text
-    assert "Do not add Assist just because Odylith ran" in guidance_text
-    assert "supplies one shared prompt-visible Assist line" not in guidance_text
-    assert "Lead with the user win" in guidance_text
-    assert "updated governance IDs inline when changed" in guidance_text
-    assert "affected governance-contract IDs when no governed file moved" in guidance_text
-    assert "`odylith_off` or broader unguided path edge when supported" in guidance_text
-    assert "keep it crisp, authentic, clear, simple, insightful" in guidance_text
-    assert "ground the line in concrete observed counts, measured deltas, or validation outcomes" in guidance_text
-    assert "or a concrete chat-visibility complaint" in guidance_text
+    _assert_bundled_assist_cadence(guidance_text)
     assert "Silence is better than filler." in guidance_text
     assert "run the repo-local `odylith start`/`odylith context` step" not in guidance_text
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in guidance_text
@@ -810,6 +829,27 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "search existing workstream, plan, bug, component, diagram, and recent session/Compass context first" in guidance_text
     assert "If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation" in guidance_text
     assert "default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help`" in guidance_text
+    assert "odylith greenfield prepare --repo-root . --prompt" in guidance_text
+    assert "One product-owned parent runs the authority gate, source-duty inventory, source-only verifier, and one candidate" in guidance_text
+    assert "Admission checks citations, relations, invariants and hashes, then seals ProductCreateTransaction" in guidance_text
+    assert "Manual commands keep source custody." in guidance_text
+    assert "After candidate receipt, no model/semantic/provider call" in guidance_text
+    assert "No full-candidate reviewer, parser/regex, repair, retry, fallback or model ladder" in guidance_text
+    assert "Clarification: show one question and stop; no candidate or transaction" in guidance_text
+    assert "Standard shares 300s gate/candidate plus 15s completion" in guidance_text
+    assert "The nonreplenishing 660s diagnostic parent" in guidance_text
+    assert "Receipt delivery, guardian retirement and final preview serialization follow." in guidance_text
+    assert "Cancellation grace: 2s; timing remains unqualified." in guidance_text
+    assert "Terminal `odylith greenfield decide` CONFIRM/REJECT remain model-free" in guidance_text
+    assert "Public chat has no qualified confirmation interface. Chat/hooks cannot authorize create" in guidance_text
+    assert 'odylith greenfield prepare --transaction-hash HASH --completion-receipt PATH --edit "<correction>"' in guidance_text
+    assert "old/equal seals retain their original receipt" in guidance_text
+    assert "Bounded CONFIRM/create require the explicitly delivered --completion-receipt; stored digest/diagnostic records cannot authorize" in guidance_text
+    assert "Late/error work delivers no proof, even if cleanup fails." in guidance_text
+    assert "Receipt delivery failures are accepted-or-unknown, never cancellation; lost receipts cannot be reissued." in guidance_text
+    assert "Markdown is view, not truth; proposal or transaction JSON stays compiler-owned" in guidance_text
+    assert "odylith greenfield create --transaction-file PATH --transaction-hash HASH --completion-receipt PATH --confirm" in guidance_text
+    assert "verifies receipt, hash, and preconditions under rollback guard without model, generation, or repair" in guidance_text
     assert "When a routine governance task already maps to a first-class CLI family such as `odylith bug capture`, `odylith backlog create`, `odylith component register`, `odylith atlas scaffold`, or `odylith compass log`" in guidance_text
     assert "rerender only the owned surface" in guidance_text
     assert "Treat AI slop as a regression" in guidance_text
@@ -839,33 +879,43 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "Do not run `odylith context`, `odylith query`, `git status`, broad repo search, or other repo-inspection commands in parallel with that start step." in root_agents
     assert "Let `start` finish first; then narrow." in root_agents
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in root_agents
-    assert "the exact file/workstream, the bug under test, or the validation in flight" in root_agents
-    assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in root_agents
-    assert "Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates" in root_agents
+    assert "Describe task progress" in root_agents
+    assert "never say `Startup fell back`" in root_agents
     assert "never prefix commentary with control-plane receipt labels" in root_agents
-    assert "Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters." in root_agents
+    assert "mention Odylith only when the user asks, a real blocker requires it, or lane distinction matters" in root_agents
     assert "direct-edit and Bash PostToolUse hooks stay silent on success" in root_agents
     assert "Claude Stop is memory/logging only" in root_agents
     assert "literal commands" not in root_agents
     assert "Keep normal commentary task-first and human;" in root_agents
     assert "reserve `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` for rare high-signal moments" in root_agents
-    assert "At closeout, add at most one `Odylith Assist:` or `**Odylith Assist:**` line only when it materially helps" in root_agents
-    assert "normal non-passthrough prompts do not get an Assist line by default" in root_agents
-    assert "Do not add Assist just because Odylith ran" in root_agents
-    assert "supplies one shared prompt-visible Assist line" not in root_agents
-    assert "Lead with the user win" in root_agents
-    assert "link updated governance IDs inline when they changed" in root_agents
-    assert "name affected governance-contract IDs only when no governed file moved" in root_agents
-    assert "frame the edge against `odylith_off` or the broader unguided path" in root_agents
-    assert "keep it crisp, authentic, clear, simple, insightful" in root_agents
-    assert "ground the line in concrete observed counts, measured deltas, or validation outcomes" in root_agents
-    assert "or a concrete chat-visibility complaint" in root_agents
+    _assert_canonical_assist_cadence(root_agents)
     assert "Silence is better than filler." in root_agents
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in root_agents
     assert "stop at diagnosis and maintainer-ready feedback" in root_agents
     assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in root_agents
-    assert "search existing truth first" in root_agents
-    assert "repo-local launcher, truthful `odylith ... --help`" in root_agents
+    assert "search truth first" in root_agents
+    assert "odylith greenfield prepare --repo-root . --prompt" in root_agents
+    assert "One product-owned parent runs the authority gate, source-duty inventory, source-only verifier, and one candidate" in root_agents
+    assert "Admission checks citations, relations, invariants and hashes, then seals ProductCreateTransaction" in root_agents
+    assert "Manual commands keep source custody." in root_agents
+    assert "After candidate receipt, no model/semantic/provider call" in root_agents
+    assert "No full-candidate reviewer, parser/regex, repair, retry, fallback or model ladder" in root_agents
+    assert "Clarification: show one question and stop; no candidate or transaction" in root_agents
+    assert "Standard shares 300s gate/candidate plus 15s completion" in root_agents
+    assert "The nonreplenishing 660s diagnostic parent" in root_agents
+    assert "Receipt delivery, guardian retirement and final preview serialization follow." in root_agents
+    assert "Cancellation grace: 2s; timing remains unqualified." in root_agents
+    assert "Terminal `odylith greenfield decide` CONFIRM/REJECT remain model-free" in root_agents
+    assert "Public chat has no qualified confirmation interface. Chat/hooks cannot authorize create" in root_agents
+    assert 'odylith greenfield prepare --transaction-hash HASH --completion-receipt PATH --edit "<correction>"' in root_agents
+    assert "old/equal seals retain their original receipt" in root_agents
+    assert "Bounded CONFIRM/create require the explicitly delivered --completion-receipt; stored digest/diagnostic records cannot authorize" in root_agents
+    assert "Late/error work delivers no proof, even if cleanup fails." in root_agents
+    assert "Receipt delivery failures are accepted-or-unknown, never cancellation; lost receipts cannot be reissued." in root_agents
+    assert "Markdown is view, not truth; proposal or transaction JSON stays compiler-owned" in root_agents
+    assert "odylith greenfield create --transaction-file PATH --transaction-hash HASH --completion-receipt PATH --confirm" in root_agents
+    assert "verifies receipt, hash, and preconditions under rollback guard without model, generation, or repair" in root_agents
+    assert "repo-local launcher, and truthful `odylith ... --help`" in root_agents
     assert "rerender only the owned surface" in root_agents
     assert "odylith radar refresh" in root_agents
     assert "odylith registry refresh" in root_agents
@@ -875,7 +925,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "odylith compass deep-refresh" in root_agents
     assert "Queued backlog items" in root_agents
     assert "do not pick it up automatically" in root_agents
-    assert "If the slice expands beyond one truthful record, use child workstreams or execution waves" in root_agents
+    assert "When a slice needs more than one truthful record, use child workstreams or execution waves" in root_agents
     assert "substantive grounded consumer-lane work" in root_agents
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in root_agents
     assert "Odylith grounding:" not in guidance_text
@@ -1027,7 +1077,7 @@ def test_install_bundle_merges_host_settings_after_verified_runtime_activation(t
     codex_hooks = json.loads(codex_hooks_path.read_text(encoding="utf-8"))
     codex_prompt_commands = [
         hook["command"]
-        for group in codex_hooks["UserPromptSubmit"]
+        for group in codex_hooks["hooks"]["UserPromptSubmit"]
         for hook in group.get("hooks", [])
     ]
     assert "python3 user.py" in codex_prompt_commands
@@ -1548,6 +1598,31 @@ def test_start_preflight_accepts_product_repo_source_fallback_when_recorded_fall
     assert preflight.next_command == "./.odylith/bin/odylith start --repo-root ."
 
 
+def test_bootstrap_launcher_handles_empty_runtime_candidates_under_nounset(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    bootstrap = repo_root / ".odylith" / "bin" / "odylith-bootstrap"
+    bootstrap.parent.mkdir(parents=True, exist_ok=True)
+    bootstrap_body = runtime._bootstrap_launcher_script(  # noqa: SLF001
+        fallback_python=tmp_path / "missing" / "python",
+    )
+    bootstrap.write_text(bootstrap_body, encoding="utf-8")
+    bootstrap.chmod(0o755)
+
+    result = subprocess.run(
+        [str(bootstrap), "doctor", "--repo-root", str(repo_root), "--repair"],
+        cwd=repo_root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert 'for candidate_python in "${candidates[@]}"; do' not in bootstrap_body
+    assert 'for candidate_python in ${candidates[@]+"${candidates[@]}"}; do' in bootstrap_body
+    assert "unbound variable" not in result.stderr
+
+
 def test_start_preflight_rejects_consumer_source_local_lane(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
@@ -1645,27 +1720,18 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     upgrade_install(repo_root=repo_root, release_repo="odylith/odylith")
 
     guidance_text = (repo_root / "odylith" / "AGENTS.md").read_text(encoding="utf-8")
-    assert "Before any substantive repo scan or code change outside trivial fixes, run `./.odylith/bin/odylith start --repo-root .` first" in guidance_text
+    assert "Before substantive scans or edits, run `./.odylith/bin/odylith start --repo-root .`" in guidance_text
     assert "Do not run `odylith context`, `odylith query`, `git status`, broad repo search, or other repo-inspection commands in parallel with that start step." in guidance_text
-    assert "The repo-root managed `AGENTS.md` block is the shared hard-law kernel for both Codex and Claude Code." in guidance_text
+    assert "The repo-root managed `AGENTS.md` block is shared by Codex and Claude Code." in guidance_text
     assert "Codex and Claude Code share the same default Odylith lane" in guidance_text
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in guidance_text
-    assert "Describe progress in task terms like the exact file/workstream, the bug under test, or the validation in flight" in guidance_text
+    assert "Describe the file, bug, or validation in progress" in guidance_text
     assert "Capability inventory is product-owned and host-agnostic" in guidance_text
     assert "Help and technical-plan command discovery use the single authoritative help path" in guidance_text
     assert "CLI-first is non-negotiable here too" in guidance_text
     assert "Keep normal commentary task-first and human." in guidance_text
     assert "Reserve `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` for rare high-signal moments." in guidance_text
-    assert "At closeout, or when a visible-intervention recovery renders a prompt-submit or visibility-proof note" in guidance_text
-    assert "normal non-passthrough prompts do not get an Assist line by default" in guidance_text
-    assert "Do not add Assist just because Odylith ran" in guidance_text
-    assert "supplies one shared prompt-visible Assist line" not in guidance_text
-    assert "Lead with the user win" in guidance_text
-    assert "updated governance IDs inline when changed" in guidance_text
-    assert "affected governance-contract IDs when no governed file moved" in guidance_text
-    assert "`odylith_off` or broader unguided path edge when supported" in guidance_text
-    assert "ground the line in concrete observed counts, measured deltas, or validation outcomes" in guidance_text
-    assert "or a concrete chat-visibility complaint" in guidance_text
+    _assert_bundled_assist_cadence(guidance_text)
     assert "Silence is better than filler." in guidance_text
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in guidance_text
     assert "Odylith grounding:" not in guidance_text
@@ -1690,7 +1756,8 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     assert (repo_root / "odylith" / "skills" / "odylith-subagent-router" / "SKILL.md").is_file()
     assert (repo_root / ".codex" / "config.toml").is_file()
     assert (repo_root / ".agents" / "skills" / "odylith-start" / "SKILL.md").is_file()
-    assert not (repo_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").exists()
+    assert (repo_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").is_file()
+    assert (repo_root / ".agents" / "skills" / "odylith-subagent-orchestrator" / "SKILL.md").is_file()
 
 
 def test_upgrade_resyncs_guidance_from_activated_runtime_assets(monkeypatch, tmp_path: Path) -> None:
@@ -1754,21 +1821,12 @@ def test_install_bundle_product_repo_preserves_source_owned_odylith_guidance_and
     assert "Describe task progress, not control-plane receipts" in root_agents
     assert "Keep normal commentary task-first and human;" in root_agents
     assert "reserve `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` for rare high-signal moments" in root_agents
-    assert "At closeout, add at most one `Odylith Assist:` or `**Odylith Assist:**` line only when it materially helps" in root_agents
-    assert "normal non-passthrough prompts do not get an Assist line by default" in root_agents
-    assert "Do not add Assist just because Odylith ran" in root_agents
-    assert "supplies one shared prompt-visible Assist line" not in root_agents
-    assert "Lead with the user win" in root_agents
-    assert "link updated governance IDs inline when they changed" in root_agents
-    assert "name affected governance-contract IDs only when no governed file moved" in root_agents
-    assert "frame the edge against `odylith_off` or the broader unguided path" in root_agents
-    assert "ground the line in concrete observed counts, measured deltas, or validation outcomes" in root_agents
-    assert "or a concrete chat-visibility complaint" in root_agents
+    _assert_canonical_assist_cadence(root_agents)
     assert "Silence is better than filler." in root_agents
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in root_agents
     assert "Odylith grounding:" not in root_agents
     assert "Odylith didn't return immediately" not in root_agents
-    assert "search existing truth first" in root_agents
+    assert "search truth first" in root_agents
 
 
 def test_upgrade_backfills_odylith_state_root_in_gitignore(tmp_path: Path) -> None:
@@ -1924,6 +1982,57 @@ def test_source_repo_upgrade_is_detached_override_and_preserves_last_known_good(
     assert status.detached is True
     assert status.last_known_good_version == "1.2.3"
     assert status.diverged_from_pin is True
+
+
+def test_product_repo_upgrade_realigns_source_local_to_packaged_release(tmp_path: Path, monkeypatch) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    _write_product_repo_shape(repo_root)
+    source_root = _write_fake_source_checkout(tmp_path)
+
+    install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
+    upgrade_install(repo_root=repo_root, release_repo="odylith/odylith", source_repo=source_root)
+
+    staged_root, staged_python = _seed_verified_release_runtime(repo_root, version="1.2.3")
+    monkeypatch.setattr(
+        install_manager_module,
+        "fetch_release",
+        lambda **kwargs: SimpleNamespace(version="1.2.3"),
+    )
+    monkeypatch.setattr(
+        install_manager_module,
+        "install_release_runtime",
+        lambda **kwargs: SimpleNamespace(
+            version="1.2.3",
+            manifest={"repo_schema_version": 1, "migration_required": True},
+            python=staged_python,
+            root=staged_root,
+            verification={"wheel_sha256": "wheel-1.2.3"},
+        ),
+    )
+    monkeypatch.setattr(install_manager_module, "_ensure_managed_context_engine_pack", lambda **kwargs: {})
+    monkeypatch.setattr(
+        install_manager_module.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
+    )
+
+    summary = upgrade_install(
+        repo_root=repo_root,
+        release_repo="odylith/odylith",
+        version="1.2.3",
+        write_pin=True,
+    )
+
+    state = load_install_state(repo_root=repo_root)
+    status = version_status(repo_root=repo_root)
+    assert summary.active_version == "1.2.3"
+    assert summary.previous_version == "source-local"
+    assert state["active_version"] == "1.2.3"
+    assert state["detached"] is False
+    assert (repo_root / ".odylith" / "runtime" / "current").resolve().name == "1.2.3"
+    assert status.posture != "detached_source_local"
 
 
 def test_source_repo_upgrade_normalizes_current_runtime_symlink_fallback(monkeypatch, tmp_path: Path) -> None:

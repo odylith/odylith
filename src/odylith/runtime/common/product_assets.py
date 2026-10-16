@@ -19,7 +19,16 @@ def resolve_product_path(*, repo_root: Path, relative_path: str | Path) -> Path:
     candidate = (Path(repo_root).resolve() / relative).resolve()
     if candidate.exists():
         return candidate
-    normalized = relative.as_posix().lstrip("./")
+    normalized = _normalized_relative_path(relative)
     if normalized.startswith("odylith/"):
         normalized = normalized.removeprefix("odylith/")
     return (bundled_product_root() / normalized).resolve()
+
+
+def _normalized_relative_path(relative: Path) -> str:
+    """Remove explicit current-directory prefixes without corrupting dotfiles."""
+
+    token = relative.as_posix()
+    while token.startswith("./"):
+        token = token[2:]
+    return token

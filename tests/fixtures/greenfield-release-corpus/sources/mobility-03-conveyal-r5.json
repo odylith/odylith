@@ -1,0 +1,53 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "transport",
+    "transit",
+    "traffic",
+    "mobility",
+    "vehicle",
+    "route"
+  ],
+  "matched_description_evidence_terms": [
+    "transport",
+    "transit"
+  ],
+  "repository": {
+    "default_branch": "dev",
+    "description": "Developed to power Conveyal's web-based interface for scenario planning and land-use/transport accessibility analysis, R5 is our routing engine for multimodal (transit/bike/walk/car) networks with a particular focus on public transit",
+    "full_name": "conveyal/r5",
+    "id": 44746588,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "r5",
+    "node_id": "MDEwOlJlcG9zaXRvcnk0NDc0NjU4OA==",
+    "pushed_at": "2026-07-17T16:21:38Z",
+    "topics": [
+      "accessibility",
+      "gtfs",
+      "modeling",
+      "planning",
+      "transit",
+      "transportation"
+    ]
+  },
+  "response_item_index": 6,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Atransportation&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:16:03 GMT",
+    "x-github-request-id": "D12F:31B943:13A257B:14074A0:6A5B6071"
+  },
+  "search_response_path": "responses/mobility.json",
+  "search_response_sha256": "565bb6369880e63ae5091c0cb38bc6947fe28c3bc23ea5ab44847c97bd635dd9",
+  "selection_index": 3,
+  "source_family": "mobility",
+  "source_id": "github-repository:44746588",
+  "source_uri": "https://github.com/conveyal/r5",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

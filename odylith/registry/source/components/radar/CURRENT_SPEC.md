@@ -5,10 +5,8 @@
   B-111 through B-117. The surface should show the umbrella, execution waves,
   release target `release-0-1-11`, and proof gates without turning Odylith Discipline
   into noisy task theater.
-Last updated: 2026-05-03
+Last updated: 2026-10-13
 
-
-Last updated (UTC): 2026-04-15
 
 ## Purpose
 Radar is Odylith's authoritative workstream backlog and execution-evidence
@@ -17,6 +15,123 @@ execution evidence into the ranked workstream view used by operators and other
 Odylith surfaces.
 
 ## Scope And Non-Goals
+### List preview controlled-boilerplate exclusion
+
+Radar preserves differentiated authored Proposed Solution priority. It skips only
+the whole controlled producer boilerplate from the existing
+`contract.default_section_boilerplate(title)` contract, plus the observed v14
+“Create the workstream from …” variant; the next actual source field then
+supplies preview text. Full authored sections remain in selected detail and raw
+source. Repeated Project Problem must not globally outrank a differentiated
+Proposed Solution.
+
+
+### Five-core narrative projection
+
+Radar projects recorded Problem, Customer, Opportunity, Product View, and
+Success Metrics directly. Optional headings appear only when their underlying
+facts exist; legacy exact defaults remain valid, and placeholder or title-only
+records refuse. Optional risk flags never waive Tribunal posture facts.
+
+### Assessment custody
+
+`backlog_assessment.py` owns assessment state, provenance, score validation and
+the existing assessed formula. Provisional Greenfield designs are unassessed:
+numeric judgments are unknown, categorical judgments say unassessed, and
+source/index/context/plan continuation preserve that state. Mixed numeric and
+unassessed metadata fails closed. Views say Not assessed without a score bar or
+assessed rank. Explicit dependency ordering is retained independently. Existing
+valid assessed records preserve the formula, ranges and manual override rules.
+Authoring refuses scores beyond the existing validator's 0–100 range before
+publishing source truth. CB-324 Wave Q1 owns strict source/readback, assessed
+parity, projection and desktop/mobile normal/empty/error proof.
+
+### Decision-rationale custody
+Shared backlog authoring and legacy normalization preserve supplied product
+decisions. Missing why-now, outcome, tradeoff and deferred-scope fields are not
+permission to synthesize them. Empty new records receive only known ordering
+metadata; empty legacy rewrites report that ordering rationale was not supplied
+without guessing priority. Nonempty partial rationale remains unchanged except
+the existing explicit manual-override maintenance contract. Renderers project
+these recorded decisions without completing them. This applies to ordinary
+Radar creation and Greenfield prewrite; no model or semantic parser owns a
+second interpretation. CB-209 records the two removed fallback paths, exact
+canonical-rationale controls, independent review and rendered-package proof.
+
+### Active plan registration
+The existing plan/workstream reconciler owns missing Active Plans rows, not a
+second authoring command. Registration requires a real in-progress plan with
+unique explicit status, dates and one Backlog ID, plus an existing active
+workstream whose unique reciprocal metadata names that exact plan. Validate the
+whole missing-row batch and a non-aliased, structurally valid index before any
+insertion. Reject unsafe table delimiters and conflicting bindings; preserve
+unrelated index bytes, line endings and file mode. Registration alone must not
+create a successor, promote a workstream or rewrite authored plan content.
+CB-339's initial passing controls were falsified by four independent boundary
+cases; final acceptance requires those cases and actual reopened-plan readback.
+
+### Authored workstream previews
+The payload builder owns selection of the preview's recorded section: prefer
+Proposed Solution, then an explicitly labeled available source section. The
+browser displays that complete block. Project-wide Problem or Opportunity
+must not displace an available workstream-specific deliverable, and title words
+must not be used to invent or rewrite its meaning.
+
+CB-303 requires removal of sentence classifiers, title-based inference and
+sentence-count clipping from both list previews and selected-detail summaries.
+Authority qualifiers, conditions, punctuation and list order must survive.
+Absent content gets an honest empty state; untrusted markup must remain inert
+both in embedded payloads and in the rendered view. Long source blocks must
+remain reachable while scrolling windowed lists, not disappear because the
+virtualizer assumes every row has the same height.
+
+The owning seam is `render_backlog_ui_payload_runtime.py` for source-field
+selection, `backlog_rich_text.py` for shared Markdown syntax rendering and
+`render_backlog_ui_html_runtime.py` for layout and interaction. List previews,
+selected details and standalone documents must share the formatting owner;
+sentence or command rewriting is not Markdown rendering. Preview formatting
+must not nest active links or form controls inside the row selection button.
+Raw HTML, image fetching and executable fences do not gain authority from
+authored content; detail links retain URL validation.
+Section source spans come from the same Markdown parser, so fenced, quoted
+and nested heading-shaped text cannot manufacture top-level sections. Literal
+or escaped checklist markers must not become false completion evidence.
+Ordering rationale and implemented summaries preserve authored Markdown too;
+plain metadata normalization is not a prose rendering step.
+Proof must include distinct workstreams with repeated project framing,
+desktop/mobile rendering, unavailable runtime detail, hostile markup and a
+late condition in an unusually long windowed row. This display contract does
+not establish that Greenfield authored sufficient product verification.
+
+### Selected detail readability
+The local Radar detail grid owns the width of its header and narrative blocks.
+Its single track must fit the available content box on mobile and desktop;
+the enclosing panel's clipping must never hide ordinary prose or KPI values.
+CB-303 native 430-pixel evidence reproduces an implicit auto track wider than
+the panel. The local track must stay bounded and long metadata must wrap without
+rewriting meaning; constraining the track alone does not prevent text clipping.
+The correction does not change shared header geometry or shorten prose.
+Regression proof must measure text ranges
+and blocks against clipping ancestors, not only document width or DOM presence.
+
+### Selection and empty-state lifecycle
+`backlog_selection_ui.py` owns detail loading and cancellation. No source rows
+produces a clear explanation and an Open Project next step; zero filtered rows
+explains how to recover existing workstreams. A selection revision invalidates
+late responses even when the same workstream ID is selected again. The HTML
+renderer owns populated detail markup, not a competing empty/async path.
+CB-330 requires desktop/mobile source-empty and filtered recovery browser proof.
+
+### Standalone source fidelity
+`backlog_detail_pages.py` renders complete workstream and plan documents through
+the existing rich-text renderer. Section content and supplied rationale remain
+source-owned: no character clipping, sentence-count cap, vocabulary-specific
+paraphrase or spelling repair may replace the recorded text. Unbroken references
+wrap within the page rather than extending outside it or being hidden. Regression
+proof preserves late restrictions, list order and punctuation and measures actual
+text ranges at desktop and mobile widths. Concise source authoring is an upstream
+responsibility, not permission for the reader to discard meaning.
+
 ### Radar owns
 - The canonical Odylith workstream backlog under `odylith/radar/source/`.
 - The repo-local release-planning source subtree under
@@ -48,6 +163,15 @@ Odylith surfaces.
   controls across the product. When Atlas, Registry, Casebook, Compass, or the
   shell render a shared workstream button, the destination is Radar's
   workstream route rather than a surface-local approximation.
+- Radar's visible sort control is authoritative. Scope-signal rank may dominate
+  only when the operator selects Rank; Score and Date modes must order rows by
+  their own comparators after the fixed execution/parked/active/finished
+  section grouping.
+- Greenfield provisional workstream prerequisites must reach native
+  `workstream_depends_on` record IDs before transaction sealing. The existing
+  allocation/link owner resolves canonical design keys; dependency prose and
+  Atlas arrows alone are not native Radar topology proof. No title parsing or
+  post-confirm link rebuilding is permitted.
 
 ## Runtime Contract
 ### Source truth
@@ -142,6 +266,11 @@ Problem, Opportunity, Product View, and Success Metrics.
 The practical effect is that Radar doubles as both the visual backlog surface
 and the contract gate for workstream authoring quality.
 
+Radar legacy backlog normalization may update `Last updated (UTC)` in
+`odylith/radar/source/INDEX.md`, but UTC-labeled metadata must be derived from a
+UTC clock. Local calendar dates are not acceptable for UTC freshness fields,
+especially near local/UTC day boundaries.
+
 In the Odylith product repo, workstream `title` should name the slice directly
 and must not be prefixed with `Odylith`; Radar is already product-scoped, so
 the extra prefix only wastes width in Radar and Compass.
@@ -181,6 +310,10 @@ Radar execution-wave summaries must preserve unknown progress. If a linked
 workstream has no explicit `plan.progress_ratio`, the backlog UI leaves the
 execution-wave progress chip blank instead of coercing that absence into
 synthetic `0%`.
+Radar execution-wave focus cards must not reserve an artificial second text
+column just to hold status chips. The focus copy owns the full readable width;
+chips may float at the top edge on desktop, but body copy must reclaim the
+space below them and collapse cleanly on narrow viewports.
 Radar-visible workstream progress is based on execution-relevant checklist
 sections only. `Learnings`, `Defer`, `Non-Goals`, `Impacted Areas`,
 `Traceability`, risk/mitigation checklists, and `Open Questions` must stay
@@ -205,6 +338,22 @@ Radar's traceability layer is first-class, not optional garnish.
 - it fills missing or empty topology fields
 - it does not overwrite explicit metadata unless forced
 - it emits a JSON autofix report instead of silently mutating everything
+
+### Program And Child Adoption
+Radar authoring must offer a CLI-only path for the reciprocal topology that its
+validators require. Operators must not be forced to hand-edit front matter to
+set `workstream_parent` or update an umbrella's `workstream_children`.
+
+- `odylith backlog create --parent <umbrella>` creates new workstreams as
+  children and updates the existing umbrella.
+- `odylith program adopt <umbrella> <workstream>` adopts an existing orphan
+  workstream into an umbrella.
+- `odylith wave assign <umbrella> <wave> <workstream> --adopt` handles the
+  common assign-and-adopt case in one command.
+
+Operator-facing errors for missing parent links must name these commands. They
+must not leak Tribunal or hard-scope vocabulary when the actionable fix is a
+governed adoption step.
 
 ### Default-surface diagnostics policy
 - `traceability-autofix-report.v1.json` is a maintainer-facing diagnostics
@@ -296,27 +445,31 @@ themselves.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-05-02 · Implementation:** Domain Intelligence corrected to host-reasoned proposal authoring with apply-time topology validation and no in-code project taxonomy.
+- **2026-10-13 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
-  - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +1 more
-- **2026-05-02 · Implementation:** Deepened B-142 Domain Intelligence with first-class science/math archetypes, greenfield UX/release planning module, refreshed governance surfaces, and full engine/install/browser proof.
+  - Evidence: `odylith/casebook/bugs/2026-07-17-clean-head-component-forensics-fail-to-converge-after-sync-commit.md`, `odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md`
+- **2026-10-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142, B-145
+  - Evidence: `src/odylith/runtime/governance/sync_workstream_artifacts.py`, `src/odylith/runtime/project_intelligence/builder.py`, `src/odylith/runtime/surfaces/registry_component_identity_ui.py`
+- **2026-09-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
-  - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, src/odylith/runtime/domain_intelligence/archetypes.py +1 more
-- **2026-05-02 · Implementation:** B-141 activation pass keeps source-local memory on Lance/Tantivy, preserves visible Assist recovery, and leaves consumer pinned runtimes on the managed feature pack.
-  - Scope: B-141
-  - Evidence: odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md, odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md +2 more
-- **2026-05-02 · Implementation:** Added end-to-end governed sync performance tests for B-141 covering full sync dry-run, all-surface dashboard refresh, Compass status, owned surface refresh commands, no-provider credit burn, and dashboard parallelism.
-  - Scope: B-141
-  - Evidence: odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md, odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md +1 more
-- **2026-05-02 · Implementation:** B-140/B-141 v0.1.13 dev-maintainer surfaces now keep source-local proof distinct from pinned 0.1.12 and default Release Targets to current/next aliases.
-  - Scope: B-140, B-141
-  - Evidence: odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md, src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py +1 more
-- **2026-05-02 · Implementation:** Proved v0.1.13 historical upgrade matrix for 0.1.10, 0.1.11, and 0.1.12 starts; release migration gate remains green.
-  - Scope: B-141
-  - Evidence: odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md, odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md +1 more
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`, `src/odylith/runtime/governance/sync_workstream_artifacts.py`
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 6 verifiable artifact references.
+  - Evidence: `odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_proposals.py`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`, plus 2 more
+- **2026-06-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md`, `odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py`, plus 1 more
+- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md`, `src/odylith/runtime/domain_intelligence/greenfield_proposals.py`, `src/odylith/runtime/domain_intelligence/proposal_validation.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-10-06: Controlled-default preview proof passes 21 checks while excluding only controlled boilerplate and retaining differentiated authored Proposed Solution in detail. Installed and release proof remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+- 2026-10-06: Closed native What changed details retain distinct authored facts through exact deduplication. The blanket-suppression attempt was reverted after its discriminator failed; the settled source tests pass 31 focused checks with independent CLEAR review. This is source-only presentation proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+- 2026-10-06: Final P1 narrative corrections retain the producer's current behavior and all ten frozen source projections; this is not a claim that the producer is unchanged from `111fc`. The final affected checks and canonical source contract pass 145 ideas, 28 execution-linked records, five releases, and 20 active targets. Receipt: `/private/tmp/odylith-five-core-repo-contract-readback-20261006.json` (SHA-256 `b1fa49a41933569adbcb658ea3484ad65d834de9fc0da39f21aeb4d3b584506a`). Source-only proof; installed and release qualification remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+- 2026-05-09: Removed the dead right-column constraint from Radar execution-wave focus cards so the narrative uses the full available width while status chips remain visible and responsive. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141))
+- 2026-05-04: Added CLI-owned reciprocal workstream adoption through `backlog create --parent/--umbrella`, `program adopt`, and `wave assign --adopt`; wave assignment errors now translate missing `workstream_parent` into an actionable adoption command instead of a hard-scope denial. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-167`)
 - 2026-05-03: Created `release-0-1-14`, moved active B-141/B-142 targeting to it, and tagged completed B-140 migration-observer proof against the same release so Radar, Compass, and release-planning read models show the v0.1.14 work in one target. (Plans: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141), [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-04-15: Hardened Radar detail and authoring so runtime backlog detail exposes renderer-ready workstream fields, summary payloads retain fail-closed fallback detail, `odylith backlog create` requires grounded core detail, backlog validation rejects placeholder or boilerplate Problem/Customer/Opportunity/Product View/Success Metrics sections, and stale finished-workstream plan bindings cannot mint accidental successor backlogs. (Plan: [B-098](odylith/radar/radar.html?view=plan&workstream=B-098))
 - 2026-04-09: Switched Radar default operational ordering onto Delivery Intelligence's shared Scope Signal Ladder while keeping the underlying backlog exhaustive. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071); Bug: `CB-090`)
@@ -328,3 +481,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-08: Bound Radar workstream chips to the shared compact `B-###` button contract so backlog and release views stop drifting when generic identifier styling changes elsewhere. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Excluded Radar workstream chips from generic chip styling and added live/bundle plus browser proof so shared chip changes cannot silently reopen workstream-button drift. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-080`)
 - 2026-04-09: Locked Radar summary stats and current-release cards to Dashboard's shared KPI/stat-card contract and added browser proof for labeled, non-`v`-prefixed current-release values. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-085`)
+- 2026-05-07: Fixed Radar sort mode precedence so Score and Date selections are not silently overridden by scope-signal rank, while Rank remains the explicit scope-signal ordering mode. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-178`)

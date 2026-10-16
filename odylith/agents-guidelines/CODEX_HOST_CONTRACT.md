@@ -10,6 +10,15 @@
   mean the same thing on both hosts.
 - Routine backlog, plan, bug, spec, component, and diagram upkeep should stay
   on that shared lane first.
+- Governance-learning is part of the shared lane. Codex must not treat chat
+  memory, hook context, or final-answer prose as durable truth: escaped
+  defects and failed simulations go to Casebook, planned work to Radar or
+  technical plans, component-contract changes to Registry, flow/topology
+  changes to Atlas, and decisions or proof checkpoints to Compass before
+  closeout, commit, build, or release claims. Before Codex fixes a bug, it
+  must search existing Casebook and related governance artifacts, read prior
+  failed mechanisms, failed fix attempts, and guardrails, do not repeat a fix
+  path that already failed, and record new mechanism-level learning.
 - Host-specific guidance belongs only where a native host capability is real,
   locally supported, and materially reduces hops compared with the shared CLI
   path.
@@ -88,9 +97,17 @@
 - Consumer install and repair now derive the effective `.codex/config.toml`
   from the local Codex capability snapshot instead of copying one frozen
   feature assumption forever. Hooks are enabled in the effective config only
-  when the local Codex build proves `features.codex_hooks = true`.
+  when the local Codex feature registry reports hooks enabled. Use the reported
+  `features.hooks` key, or `features.codex_hooks` on older registries; do not
+  infer support from a version number.
 - Codex only activates the checked-in `.codex/` layer for trusted projects.
   Install materialization is not the same thing as host activation.
+- `.codex/hooks.json` uses a top-level `hooks` object containing event groups.
+  A legacy flat event map is not current native wiring. Install and repair
+  preserve user hooks while migrating the document. Non-managed hooks also need
+  native trust of their exact definition through `/hooks`; changed definitions
+  require review again. Writing the file does not grant trust or prove that the
+  callback ran or its completion was visible.
 - Odylith treats Codex compatibility as capability-based. Validate the local
   host with `./.odylith/bin/odylith codex compatibility --repo-root .` instead
   of pinning a maximum Codex version or assuming one exact CLI build is the
@@ -99,8 +116,8 @@
 ## Native Codex CLI Support
 - Repo-scoped custom project agents under `.codex/agents/*.toml`.
 - Repo-scoped config under `.codex/config.toml`.
-- Repo-scoped lifecycle hooks under `.codex/hooks.json` when
-  `[features] codex_hooks = true`.
+- Repo-scoped lifecycle hooks under `.codex/hooks.json` when hooks are enabled
+  and the project and exact hook definitions are trusted.
 - Repo-scoped skill shims under `.agents/skills/*/SKILL.md`.
 
 ## Codex-Only Optimizations When Supported
@@ -111,14 +128,18 @@
   probe, so routing and host banners can distinguish the baseline-safe lane
   from locally proven project-hook support instead of treating every Codex
   build as the same frozen capability set.
-- If you want to know whether those optional Codex project-asset optimizations
-  are actually live, run `./.odylith/bin/odylith codex compatibility --repo-root .`.
-- `baseline_safe_assistant_visible_ready` is intentionally stricter than
-  "Codex can read AGENTS." It requires the local Codex feature registry to
-  report `features.codex_hooks = true`, `.codex/hooks.json` to wire
+- To inspect optional Codex project-asset configuration, run
+  `./.odylith/bin/odylith codex compatibility --repo-root .`.
+- `baseline_safe_hooks_configured` requires the local Codex feature registry to
+  report hooks enabled and `.codex/hooks.json` to wire
   `UserPromptSubmit`, Bash `PostToolUse`, and `Stop` to the Odylith CLI hook
-  commands, the live prompt-input probe to show repo-root guidance, and the
-  assistant-render fallback to be available for chat-visible delivery.
+  commands. This is not native trust, execution or visible-delivery proof.
+  Static `intervention-status` reports `Activation: unverified` when those files
+  are configured. It advances to `Activation: ready` only when the current
+  delivery ledger joins a native UserPromptSubmit system-message/fallback event
+  to a Stop assistant-chat confirmation with the same intervention identity.
+  Manual fallback, unrelated confirmation, and static files remain partial and
+  must never trigger automatic trust changes.
   `codex debug prompt-input` proves model-visible repo guidance only; it does
   not prove the user saw any intervention in chat.
 - `codex exec --json` is useful smoke coverage for the CLI command lane, but
@@ -160,37 +181,35 @@
   governed source-of-truth set, records a tiny dirty event under
   `.odylith/runtime/host-hooks/`, and returns silently. It must not run
   `odylith start`, `odylith sync`, or conversation rendering on the tool-call
-  critical path. Stop-time settlement drains those dirty events, then runs
-  `./.odylith/bin/odylith sync --impact-mode selective <paths>` only when an
-  exact governed target was recorded. Scoped `AGENTS.md` and `CLAUDE.md`
-  companions inside governed subtrees are ignored.
+  critical path. Stop leaves those dirty-path records untouched and never
+  dispatches `odylith sync`. Scoped `AGENTS.md` and `CLAUDE.md` companions
+  inside governed subtrees are ignored.
 - The command-scoped inference must stay exact under dirty worktrees and
   shell edge cases: rename and move operations preserve the old governed path
   when truth leaves a governed subtree, shell control operators and
   redirection tails cannot widen the target set, and explicit inline
   `python -c` / `node -e` file-write one-liners may refresh only when the
   hook can recover an exact governed path literal from the current command.
-- The checkpoint never blocks the tool call. Sync failures happen during
-  Stop-time settlement, keep pending dirty events in place, exit the hook path
-  with code 0, and emit a fail-soft `systemMessage` describing the failure so
-  the operator can recover manually.
+- The checkpoint never blocks the tool call. Stop does not turn a retained
+  checkpoint into a refresh attempt or a refresh receipt.
 - This is **checkpoint parity** with Claude's direct-edit and Bash checkpoint
   lanes for hookable Bash edits. Native desktop write payloads remain
   supported by the parser and `visible-intervention` fallback command, but
   they are not automatic hook coverage until Codex exposes those tools to
   `PostToolUse`.
-- Codex prompt-context and stop-summary lanes feed
-  the same shared conversation-observation core in
+- Codex prompt-context feeds the shared conversation-observation core in
   `src/odylith/runtime/intervention_engine/`. Prompt submit may emit one
   earned teaser plus one shared `Odylith Assist:` visibility line for
-  non-passthrough prompts; stop-summary may replay an already-earned ambient
-  block, Observation, or Proposal. Governed writes stay inside one
-  confirmation-gated `Odylith Proposal`.
+  non-passthrough prompts. Stop-summary does not render or replay an Ambient
+  Highlight, Observation, Proposal, or Assist. Governed writes stay inside
+  one confirmation-gated `Odylith Proposal`.
 - When prompt submit earns a teaser, Codex should carry that sentence in the
   hook `systemMessage` and also place an assistant-render fallback in
   `hookSpecificOutput.additionalContext`. When no teaser is earned for a
-  normal non-passthrough prompt, the shared prompt-visible Assist line is the
-  fallback instead of silence. Prompt-time context should feel like one gentle
+  routine low-signal prompt, Codex stays quiet; a concrete decision or
+  proof-boundary request, meaningful closeout, explicit intervention feedback
+  request, or replayed earned live moment gets one useful Assist line.
+  Prompt-time context should feel like one useful
   interjection, not a visible dump of narrowing scaffolding.
 - Plain `Odylith, show me what you can do` and `Odylith, help` prompts are
   first-match route locks, not requests for a Codex-authored capability
@@ -201,8 +220,9 @@
   route must forbid hand-written "here's what Odylith demonstrated" summaries,
   install-posture narration, dirty-path analysis, context-packet summaries,
   module-count scans, tmp-clone warnings, spawn-policy notes, and follow-up
-  questions. Codex must run the first available repo-root show/help command,
-  return stdout only, or report the shortest actionable Odylith blocker.
+  questions. It must also forbid creating, scaffolding, editing, or testing
+  sample application files in response to show-me. Codex must run the first available repo-root show/help command,
+  return stdout only, then stop the turn without additional shell probes, or report the shortest actionable Odylith blocker.
 - Requests to list Odylith capabilities, engines, product architecture, or the
   capability map must run `odylith capabilities` and print stdout only. That
   inventory is product-owned and host-model agnostic; Codex must not infer it
@@ -218,24 +238,53 @@
   `odylith/technical-plans/source/` directory.
 - Post-bash checkpoint is a dirty-event recorder, not a live intervention
   carrier and not a refresh receipt lane. Successful dirty-event recording
-  stays silent. If deferred refresh fails or is skipped, Stop may emit only
-  the compact failure-level status, optionally after an already-earned visible
-  block.
-- Stop-summary is a logging and replay lane, not a fresh visible-intervention
-  author. It confirms what the assistant already showed, logs meaningful
-  summaries to Compass, and may replay a pending Ambient Highlight,
-  Observation, or Proposal that was already earned by prompt or Bash
-  checkpoint hooks. It must not manufacture a new Observation, Proposal,
-  Assist, Risks, History, Insight, continuation reason, transcript-proof copy,
-  or governance ID from the stop summary itself.
-- A replayed Stop beat may append the matching one-line Assist when that Assist
-  belongs to the same pending live moment. Low-signal stops, already visible
-  closeouts, validation summaries without a pending live beat, and explicit
-  uninstall/status turns stay silent in hook output.
+  stays silent. Stop does not drain the record or report deferred refresh
+  state.
+- Stop-summary is a silent, private memory producer. It filters meaningful
+  assistant summaries and records them, plus any matching assistant-chat
+  delivery confirmations, in
+  `.odylith/runtime/host-hooks/compass-events.v1.jsonl`. This journal is separate
+  from disposable dirty-path checkpoints, so an older runtime clearing those
+  checkpoints cannot delete pending history. Each retained Compass
+  event keeps its exact host and session identity and a stable
+  `host-event-<ID>` transaction identity. Stop does not write canonical
+  Compass files, run `odylith sync`, settle a continuation, or render or replay
+  a visible intervention. Successful capture stays silent; bounded storage or
+  budget failure may emit only a compact save warning. Codex keeps a 14-second
+  owned budget inside the native hook's 20-second outer timeout.
+- With an active immutable publication, native hooks and read-only intervention
+  callers retain exact events in this private ledger. Only an admitted managed
+  writer holding the repository lock may append directly to the canonical stream.
+  Shared event readers include pending intervention events, invalidate their
+  caches when either store changes, and deduplicate exact published identities.
+- Retained events are available to session and judgment memory. Their semantic
+  validity remains `UNKNOWN` after publication; publication proves byte custody.
+  After a successful ordinary, non-hook `odylith compass log` or `odylith
+  sync`, foreground maintenance promotes at most four retained events through
+  the normal CLI mutation continuation, verifies their immutable published
+  bytes, and only then acknowledges them. Remaining events stay queued without
+  data loss. If this later memory maintenance fails, the authored command
+  remains successful and reports the history as separately pending. A
+  successful sync also retires only the dirty-path records whose governed
+  paths were covered by that sync. No background service publishes or settles
+  this memory.
+- `odylith compass log --complete` finishes the original admitted append and
+  publication. When the receipt is still prepared and its preimage is
+  unchanged, completion performs the first append; it never repeats an append
+  already present. Automatic recovery resumes only a pending receipt for the
+  exact event that is still queued. An unrelated manual receipt blocks the
+  normal writer until explicit completion. The narrow publication route accepts
+  `odylith compass log --repo-root . --host-event ID` and
+  `odylith compass log --repo-root . --host-event=ID`; no other arguments may
+  accompany the repository and retained event identity.
 - `./.odylith/bin/odylith codex visible-intervention --repo-root .` is the
   manual low-latency escape hatch for Codex Desktop or any Codex build that
   keeps hook output hidden. It prints the exact Markdown the assistant should
   show; do not rewrite the copy by hand.
+- The visible-intervention fallback is not a receipt lane. It must suppress
+  generic "Odylith activity" copy and render only premium, inspectable notes
+  tied to a concrete Observation, Proposal, validation result, or visibility
+  failure.
 - `./.odylith/bin/odylith codex intervention-status --repo-root .` is the
   cheap activation proof surface. It reports static hook readiness, the active
   UX lanes, recent delivery-ledger events, pending proposals, and the exact
@@ -343,12 +392,12 @@
 - Local evidence on 2026-04-16 shows `codex-cli 0.119.0-alpha.28` exposes
   `features.codex_hooks`, reads the repo-root AGENTS contract through
   `codex debug prompt-input`, and has the three Odylith intervention hooks
-  wired in `.codex/hooks.json`; those are separate checks, and all must remain
-  green before claiming live-proven Codex intervention posture.
+  wired in `.codex/hooks.json`. That historical configuration evidence does not
+  establish current native trust or chat-visible delivery.
 
 ## Native-Blocked And Deferred
-- No `PreCompact` hook equivalent.
-- No `SubagentStart` or `SubagentStop` hook equivalent.
+- Odylith does not currently register `PreCompact`, `SubagentStart` or
+  `SubagentStop` hooks, even where the native host exposes those events.
 - No custom statusline renderer API comparable to Claude's command-driven
   statusline.
 - No routed named-agent selection through Odylith's current `spawn_agent`

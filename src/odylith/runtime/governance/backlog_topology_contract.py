@@ -11,6 +11,10 @@ from odylith.runtime.governance.backlog_metadata import split_metadata_ids
 
 _IDEA_ID_RE = re.compile(r"^B-(?P<num>\d{3,})$")
 _TOPOLOGY_GATE_START = dt.date(2026, 5, 1)
+_RELEASE_SPINE_TERMS = (
+    "governed harness",
+    "turn gate",
+)
 _TOPOLOGY_SENSITIVE_TERMS = (
     "atlas",
     "browser surface",
@@ -108,6 +112,22 @@ def _topology_sensitive(spec: TopologyIdeaSpec) -> bool:
     return any(term in haystack for term in _TOPOLOGY_SENSITIVE_TERMS)
 
 
+def _release_spine_sensitive(spec: TopologyIdeaSpec) -> bool:
+    priority = str(spec.metadata.get("priority", "")).strip().upper()
+    if priority != "P0" or not _topology_sensitive(spec):
+        return False
+    haystack = "\n".join(
+        [
+            str(spec.metadata.get("title", "")),
+            str(spec.metadata.get("impacted_parts", "")),
+            spec.section_bodies.get("Problem", ""),
+            spec.section_bodies.get("Proposed Solution", ""),
+            spec.section_bodies.get("Scope", ""),
+        ]
+    ).lower()
+    return any(term in haystack for term in _RELEASE_SPINE_TERMS)
+
+
 def _topology_gate_applies(spec: TopologyIdeaSpec) -> bool:
     try:
         opened = dt.date.fromisoformat(spec.metadata.get("date", "").strip())
@@ -124,6 +144,22 @@ def validate_topology_contract(*, ideas: Mapping[str, TopologyIdeaSpec]) -> list
         for diagram_id in _build_related_diagram_values(spec):
             if not re.fullmatch(r"D-\d{3}", diagram_id):
                 errors.append(f"{spec.path}: `related_diagram_ids` contains invalid diagram id `{diagram_id}`")
+
+        topology_relation_values = [
+            *_build_topology_values(spec, "workstream_parent"),
+            *_build_topology_values(spec, "workstream_children"),
+            *_build_topology_values(spec, "workstream_depends_on"),
+            *_build_topology_values(spec, "workstream_blocks"),
+        ]
+        if _release_spine_sensitive(spec) and not _topology_rationale_exempts(spec):
+            if not _build_related_diagram_values(spec):
+                errors.append(
+                    f"{spec.path}: release-spine workstream `{idea_id}` must declare `related_diagram_ids` or an explicit topology rationale"
+                )
+            if not topology_relation_values:
+                errors.append(
+                    f"{spec.path}: release-spine workstream `{idea_id}` must declare at least one workstream topology relation (`workstream_parent`, `workstream_children`, `workstream_depends_on`, or `workstream_blocks`) or an explicit topology rationale"
+                )
 
         if (
             spec.status in {"implementation", "finished"}

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -8,6 +9,45 @@ from pathlib import Path
 import pytest
 
 from odylith.runtime.surfaces import auto_update_mermaid_diagrams as mermaid
+from odylith.runtime.surfaces import mermaid_worker_session
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import AUTHORED_PROJECTION_ORIGIN
+
+
+@pytest.mark.parametrize("authority", [
+    {"projection_origin": AUTHORED_PROJECTION_ORIGIN},
+    {"authored_atlas_view_authority": {}},
+])
+def test_authored_atlas_never_falls_back_to_lossy_static_renderer(
+    tmp_path: Path, monkeypatch, authority: dict,
+) -> None:
+    source = tmp_path / "diagram.mmd"
+    source.write_text('flowchart TD\n  A["quoted action"] --> B["result"]\n')
+    item = {
+        "diagram_id": "D-001", "source_mmd": "diagram.mmd",
+        "source_svg": "diagram.svg", "source_png": "diagram.png", **authority,
+    }
+    classified = mermaid._classify_diagram_items(
+        repo_root=tmp_path, items=[item],
+        fingerprint_cache=mermaid.diagram_freshness.ContentFingerprintCache(),
+    )
+
+    def unavailable(**kwargs):
+        raise RuntimeError("native renderer unavailable")
+
+    static_calls = []
+    monkeypatch.setattr(mermaid, "_MermaidWorkerSession", unavailable)
+    monkeypatch.setattr(mermaid, "_render_diagram", unavailable)
+    monkeypatch.setattr(
+        mermaid.generated_flowchart_assets, "render_generated_flowchart_assets",
+        lambda **kwargs: static_calls.append(kwargs) or True,
+    )
+    with pytest.raises(RuntimeError, match="Blocking diagram ids: D-001"):
+        mermaid._render_diagrams_batch(
+            repo_root=tmp_path, render_jobs=classified.render_jobs, cli_version="11.12.0",
+        )
+    assert static_calls == []
+    assert not (tmp_path / "diagram.svg").exists()
+    assert not (tmp_path / "diagram.png").exists()
 
 
 def test_render_diagrams_batch_falls_back_from_blocking_worker_job(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -86,6 +126,79 @@ def test_render_diagrams_batch_raises_blocking_ids_when_one_shot_fallback_fails(
     assert "warning: one-shot Mermaid render failed for D-001" in output
 
 
+def test_render_diagrams_batch_uses_static_generated_flowchart_renderer_when_browser_paths_fail(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    class _DeadWorker:
+        def __init__(self, *, repo_root: Path, cli_version: str) -> None:  # noqa: ARG002
+            return None
+
+        def __enter__(self) -> _DeadWorker:
+            return self
+
+        def __exit__(self, exc_type, exc, tb) -> None:  # type: ignore[no-untyped-def]
+            return None
+
+        def render_one(self, *, job, timeout_seconds: float = 60.0) -> None:  # noqa: ANN001, ARG002
+            raise RuntimeError("Chromium launch denied")
+
+    def _failing_render_diagram(*, repo_root: Path, source_mmd: str, source_svg: str, source_png: str, cli_version: str) -> None:  # noqa: ARG001
+        raise subprocess.CalledProcessError(returncode=1, cmd=["mmdc"])
+
+    source = tmp_path / "odylith/atlas/source/demo.mmd"
+    svg = tmp_path / "odylith/atlas/source/demo.svg"
+    png = tmp_path / "odylith/atlas/source/demo.png"
+    source.parent.mkdir(parents=True, exist_ok=True)
+    source.write_text(
+        "\n".join(
+                [
+                    "flowchart LR",
+                    '  subgraph ops["Operations"]',
+                    '    component1["Review queue"]',
+                    "  end",
+                    '  actor["Resident"] --> S1["Submit request"]',
+                    "  S1 --> component1",
+                    '  component1 --> proof["Proof result<br/>decision stays visible"]',
+                "  classDef personStyle fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
+                "  classDef service fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;",
+                "  class actor personStyle;",
+                "  class component1 service;",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(mermaid, "_MermaidWorkerSession", _DeadWorker)
+    monkeypatch.setattr(mermaid, "_render_diagram", _failing_render_diagram)
+
+    mermaid._render_diagrams_batch(  # noqa: SLF001
+        repo_root=tmp_path,
+        render_jobs=(
+            {
+                "diagram_id": "D-001",
+                "source_mmd": "odylith/atlas/source/demo.mmd",
+                "source_svg": "odylith/atlas/source/demo.svg",
+                "source_png": "odylith/atlas/source/demo.png",
+            },
+        ),
+        cli_version="11.12.0",
+    )
+
+    output = capsys.readouterr().out
+    assert "rendered Odylith-generated flowchart with static renderer" in output
+    svg_text = svg.read_text(encoding="utf-8")
+    assert svg_text.startswith("<svg")
+    assert "#0B1726" in svg_text
+    assert "#1F3144" in svg_text
+    assert "#17233A" not in svg_text
+    assert "#334155" not in svg_text
+    assert "#0F1D30" not in svg_text
+    assert "#24384A" not in svg_text
+    assert png.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+
+
 def test_one_shot_mermaid_render_uses_atlas_render_config(tmp_path: Path, monkeypatch) -> None:
     commands: list[list[str]] = []
 
@@ -94,6 +207,11 @@ def test_one_shot_mermaid_render_uses_atlas_render_config(tmp_path: Path, monkey
         return subprocess.CompletedProcess(cmd, 0)
 
     monkeypatch.setattr(mermaid.subprocess, "run", _fake_run)
+    monkeypatch.setattr(
+        mermaid._mermaid_worker_session,  # noqa: SLF001
+        "resolve_mermaid_cli_bin",
+        lambda **_kwargs: tmp_path / "node_modules" / ".bin" / "mmdc",
+    )
 
     mermaid._render_diagram(  # noqa: SLF001
         repo_root=tmp_path,
@@ -105,34 +223,126 @@ def test_one_shot_mermaid_render_uses_atlas_render_config(tmp_path: Path, monkey
 
     assert len(commands) == 2
     for command in commands:
+        assert command[0].endswith("mmdc")
+        assert "npx" not in command
         assert "--configFile" in command
         assert command[command.index("--configFile") + 1].endswith("mermaid_render_config.json")
+        assert "--puppeteerConfigFile" in command
+        assert command[command.index("--puppeteerConfigFile") + 1].endswith("mermaid_puppeteer_config.json")
+
+
+def test_mermaid_worker_resolves_cached_cli_before_npx(tmp_path: Path, monkeypatch) -> None:
+    cache_root = tmp_path / ".npm"
+    package_root = cache_root / "_npx" / "cached" / "node_modules" / "@mermaid-js" / "mermaid-cli"
+    package_root.mkdir(parents=True)
+    package_root.joinpath("package.json").write_text(
+        json.dumps({"name": "@mermaid-js/mermaid-cli", "version": "11.12.0"}),
+        encoding="utf-8",
+    )
+    bin_root = package_root.parent.parent / ".bin"
+    bin_root.mkdir(parents=True)
+    bin_root.joinpath("mmdc").write_text("#!/usr/bin/env node\n", encoding="utf-8")
+
+    def _unexpected_npx(*_args, **_kwargs):  # noqa: ANN002, ANN003
+        raise AssertionError("cached Mermaid CLI should be used before npx")
+
+    mermaid_worker_session._MERMAID_PACKAGE_ROOT_CACHE.clear()  # noqa: SLF001
+    monkeypatch.setenv("npm_config_cache", str(cache_root))
+    monkeypatch.delenv("ODYLITH_ALLOW_MERMAID_NPX_INSTALL", raising=False)
+    monkeypatch.delenv("ODYLITH_MERMAID_CLI_ROOT", raising=False)
+    monkeypatch.setattr(mermaid_worker_session.shutil, "which", lambda _name: None)
+    monkeypatch.setattr(mermaid_worker_session.subprocess, "run", _unexpected_npx)
+
+    resolved = mermaid_worker_session.resolve_mermaid_cli_bin(repo_root=tmp_path, cli_version="11.12.0")
+
+    assert resolved == bin_root.joinpath("mmdc").resolve()
 
 
 def test_mermaid_worker_applies_managed_palette_to_legacy_and_new_diagrams() -> None:
     worker_source = (Path(mermaid.__file__).with_name("assets") / "mermaid_cli_worker.mjs").read_text(encoding="utf-8")
 
     assert "const clusterPalette = [" in worker_source
+    assert "const BODY_TEXT = '#0B1726';" in worker_source
+    assert "const STRUCTURE_LABEL = '#1F3144';" in worker_source
+    assert "rewriteManagedTextColors" in worker_source
+    assert "#17233A" not in worker_source
+    assert "#334155" not in worker_source
+    assert "#0F1D30" not in worker_source
+    assert "#24384A" not in worker_source
+    assert "stripManagedTextStyle" in worker_source
+    assert "managedTextStyle(label.getAttribute('style') || '', tone.label)" in worker_source
+    assert "--no-sandbox" in worker_source
+    assert "--disable-setuid-sandbox" in worker_source
+    assert "--disable-dev-shm-usage" in worker_source
     assert "const clusterPaletteByBucket = {" in worker_source
     assert "const nodePalette = {" in worker_source
+    assert "const connectorPalette = {" in worker_source
+    assert "const classBucketAliases = {" in worker_source
     assert "bucketForText" in worker_source
     assert "bucketForClassNames" in worker_source
     assert "toneForCluster" in worker_source
     assert "toneForNode" in worker_source
-    assert "clusterPalette[index % clusterPalette.length]" in worker_source
+    assert "clusterPalette[index % clusterPalette.length]" not in worker_source
     assert "const tone = clusterPalette[index % clusterPalette.length];" not in worker_source
-    assert "const tone = toneForCluster(cluster, clusterPalette[index % clusterPalette.length]);" in worker_source
-    assert "#effcf9" in worker_source
-    assert "#f1f7ff" in worker_source
-    assert "#fff3f0" in worker_source
-    assert "#ffece7" in worker_source
-    assert "#e8fbf7" in worker_source
-    assert "#df8f7d" in worker_source
-    assert "#f4ebff" in worker_source
-    assert "Atlas owns rendered color for consistency across legacy and new diagrams." in worker_source
+    assert "#FBFDFF" in worker_source
+    assert "#EFF6FF" in worker_source
+    assert "#ECFDFB" in worker_source
+    assert "#F5F3FF" in worker_source
+    assert "#FFF8E6" in worker_source
+    assert "#FFF1F0" in worker_source
+    assert "#B9C7D8" in worker_source
+    assert "#52677F" in worker_source
+    assert "unclassified nodes stay neutral" in worker_source
+    assert "stripManagedShapeStyle" in worker_source
+    assert "stripManagedEdgeStyle" in worker_source
+    assert "/^(fill|stroke|stroke-width)" in worker_source
+    assert "Atlas owns rendered semantic color for consistency across legacy and" in worker_source
     assert "styleDeclares(authoredStyle, 'fill')" not in worker_source
     assert "styleDeclares(authoredStyle, 'stroke')" not in worker_source
-    assert "clusterToneForNode" in worker_source
+    assert "clusterNodeToneForNode" not in worker_source
+
+
+def test_atlas_source_diagrams_use_current_readability_palette() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    source_dir = repo_root / "odylith" / "atlas" / "source"
+    retired_colors = ("#17233A", "#334155")
+    offenders: list[str] = []
+    for path in sorted(source_dir.glob("*.mmd")):
+        for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+            if any(color in line for color in retired_colors):
+                offenders.append(f"{path.relative_to(repo_root)}:{line_number}")
+
+    assert offenders == []
+
+
+def test_mermaid_worker_container_wash_is_lighter_than_matching_node_tone() -> None:
+    worker_source = (Path(mermaid.__file__).with_name("assets") / "mermaid_cli_worker.mjs").read_text(encoding="utf-8")
+
+    node_fills = dict(re.findall(r"^\s+(\w+): \{ fill: '(#[0-9a-f]{6})'", worker_source, flags=re.MULTILINE | re.I))
+    cluster_rows = re.findall(
+        r"\{ bucket: '(\w+)', fill: '(#[0-9a-f]{6})', stroke: '(#[0-9a-f]{6})'",
+        worker_source,
+        flags=re.I,
+    )
+
+    assert len(cluster_rows) == 6
+    for bucket, cluster_fill, _cluster_stroke in cluster_rows:
+        assert bucket in node_fills
+        if bucket == "neutral":
+            assert cluster_fill.casefold() == node_fills[bucket].casefold()
+        else:
+            assert _relative_luminance(cluster_fill) > _relative_luminance(node_fills[bucket])
+
+
+def _relative_luminance(hex_color: str) -> float:
+    value = str(hex_color).lstrip("#")
+    channels = [int(value[index : index + 2], 16) / 255 for index in (0, 2, 4)]
+
+    def linear(channel: float) -> float:
+        return channel / 12.92 if channel <= 0.04045 else ((channel + 0.055) / 1.055) ** 2.4
+
+    red, green, blue = [linear(channel) for channel in channels]
+    return 0.2126 * red + 0.7152 * green + 0.0722 * blue
 
 
 def test_mermaid_worker_request_prints_heartbeat(monkeypatch, capsys) -> None:

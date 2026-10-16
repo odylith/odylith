@@ -1,9 +1,10 @@
-%% Reviewed 2026-04-17 for v0.1.11 to show Delivery Intelligence handing compact packet, execution, memory, Tribunal, visible intervention, and benchmark proof through one closed loop.
+%% Reviewed 2026-09-08: recorded Delivery evidence stays stable across commits while Registry and Context retain live workspace observations.
 sequenceDiagram
   participant Dev as Developer or AI Coding Engine
   participant Repo as Repo + Plans + Specs
   participant Gates as Local Gates + CI
   participant Compass as Compass Timeline
+  participant Registry as Registry Evidence Collector
   participant Odylith as Odylith Observer
   participant Delivery as Delivery Intelligence
   participant Context as Context Engine
@@ -21,12 +22,23 @@ sequenceDiagram
   Repo-->>Odylith: Changed paths and worktree signal
   Gates->>Odylith: Test, build, policy, release outcomes
   Compass->>Odylith: Decision, implementation, clearance events
+  Compass->>Registry: Recorded decisions and implementation evidence
+  Repo-->>Registry: Temporary worktree observations for live views
+  Registry-->>Context: Live component events and forensic coverage
+  Note over Registry,Context: Live and recorded-only reports use separate cache identities.
 
   Odylith->>Odylith: Observe and fingerprint
   alt No meaningful case delta
     Odylith->>Odylith: Reuse cached posture and back off toward 300s idle cadence
   else Case fingerprint changed or leverage rises
     Odylith->>Delivery: Build or refresh scoped dossiers
+    alt Persisted Delivery refresh
+      Delivery->>Registry: Request recorded-only evidence
+      Registry-->>Delivery: Events without temporary workspace activity
+    else Live fallback without a valid saved artifact
+      Delivery->>Registry: Request live evidence
+      Registry-->>Delivery: Recorded events and workspace observations
+    end
     Delivery-->>Odylith: Ranked candidate cases + evidence bundles
     Delivery->>Context: Build compact packet digest
     Context-->>Delivery: Packet quality, target resolution, route readiness
@@ -45,6 +57,7 @@ sequenceDiagram
     Visibility-->>Shell: Render Observation / Proposal / Assist only when visible proof policy allows
     Execution->>Benchmark: Record execution posture and false-admit or false-deny evidence
     Odylith->>Runtime: Persist delivery_intelligence.v4, reasoning.v4, posture.v4
+    Note over Delivery,Runtime: Persisted Delivery excludes temporary workspace observations.<br/>Source/spec sync and commit require no second settlement refresh.
   end
 
   Odylith-->>Shell: Refresh compact inbox preview

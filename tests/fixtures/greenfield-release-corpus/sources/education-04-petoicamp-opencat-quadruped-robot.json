@@ -1,0 +1,65 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "education",
+    "learning",
+    "student",
+    "teaching",
+    "school",
+    "course"
+  ],
+  "matched_description_evidence_terms": [
+    "education"
+  ],
+  "repository": {
+    "default_branch": "main",
+    "description": "An open source quadruped robot pet framework for developing Boston Dynamics-style four-legged robots that are perfect for STEM, coding & robotics education, IoT robotics applications, AI-enhanced robotics application services, research, and DIY robotics kit development.",
+    "full_name": "PetoiCamp/OpenCat-Quadruped-Robot",
+    "id": 326441188,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "OpenCat-Quadruped-Robot",
+    "node_id": "MDEwOlJlcG9zaXRvcnkzMjY0NDExODg=",
+    "pushed_at": "2026-07-01T12:56:09Z",
+    "topics": [
+      "ai",
+      "arduino",
+      "block-coding",
+      "education",
+      "iot",
+      "legged-robot",
+      "quadruped",
+      "quadruped-robot-gaits",
+      "raspberry-pi",
+      "robot-cat",
+      "robot-dog",
+      "robot-kit",
+      "robot-pet",
+      "robotics",
+      "robotics-education",
+      "simulation",
+      "stem",
+      "visual-programming",
+      "walking"
+    ]
+  },
+  "response_item_index": 8,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aeducation&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:15:57 GMT",
+    "x-github-request-id": "D127:37400:14E2036:154650B:6A5B606A"
+  },
+  "search_response_path": "responses/education.json",
+  "search_response_sha256": "d51afeba9684308dd78e53e1ecc6ffcf33d5093aa6f1d2e4bc3690c31b6b2504",
+  "selection_index": 4,
+  "source_family": "education",
+  "source_id": "github-repository:326441188",
+  "source_uri": "https://github.com/PetoiCamp/OpenCat-Quadruped-Robot",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

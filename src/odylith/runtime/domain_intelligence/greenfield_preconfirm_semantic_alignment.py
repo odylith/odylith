@@ -1,0 +1,284 @@
+"""Semantic model alignment checks for pre-confirm greenfield packages."""
+
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any
+
+from odylith.runtime.common.value_coercion import normalize_string
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_checkpoint_text,
+    authored_first_run_relations,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import provisional_proof_assumption
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import AUTHORED_SEMANTICS_KEY, first_path_relations_from_intent
+from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
+from odylith.runtime.domain_intelligence.greenfield_scalar_values import nested_text_values
+from odylith.runtime.domain_intelligence.greenfield_provisional_package import build_provisional_components
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import provisional_design_from_intent, project_presentation_name
+from odylith.runtime.analysis_engine.types import slugify
+
+
+def semantic_model_shape_issues(
+    semantic: Mapping[str, Any], *, intent: Mapping[str, Any] | None = None,
+) -> list[str]:
+    required = (
+        "first_path_contract",
+        "domain_ontology",
+        "components",
+        "workstreams",
+        "diagram_event_graph",
+        "proof_obligations",
+    )
+    issues = [
+        f"GreenfieldSemanticModel missing `{key}`"
+        for key in required
+        if not isinstance(semantic.get(key), (Mapping, list))
+    ]
+    if normalize_string(semantic.get("schema_version")) != ("odylith.greenfield.semantic_model.v5" if intent and intent[AUTHORED_SEMANTICS_KEY]["version"].endswith(".v19") else "odylith.greenfield.semantic_model.v4"):
+        issues.append("GreenfieldSemanticModel schema_version is missing or unsupported")
+    first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
+    events = first_path.get("events") if isinstance(first_path, Mapping) else None
+    if not isinstance(events, list) or not events:
+        issues.append("FirstPathContract must include structured first-path events")
+    elif not any(isinstance(row, Mapping) and row.get("visible_result") for row in events):
+        try:
+            source_duty = intent.get(AUTHORED_SEMANTICS_KEY, {}).get("source_duty") if intent else None
+            fresh = source_duty and source_duty["ledger_receipt"]["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}
+            if fresh:
+                run = authored_first_run_relations(intent)
+                expected = [(row["order"], bool(row["visible_result_quote"])) for row in run]
+                graph_events = mapping_rows(semantic.get("diagram_event_graph", {}).get("events"))
+                if [(row.get("source_event_order"), row.get("visible_result")) for row in graph_events] != expected:
+                    raise ValueError("Complete-run graph must retain its exact source-owned result producer")
+            elif not intent or not provisional_proof_assumption(intent.get("assumptions", [])):
+                raise ValueError("FirstPathContract must identify at least one visible result event")
+            checkpoint = authored_checkpoint_text(intent)
+            if (
+                first_path.get("authority_kind") != ("source_grounded" if semantic.get("schema_version") == "odylith.greenfield.semantic_model.v5" else "provisional_design")
+                or first_path.get("visible_result") != checkpoint
+                or (not fresh and any(
+                    row.get("authority_kind") != "assumption" or row.get("required_evidence") != checkpoint
+                    for row in mapping_rows(semantic.get("proof_obligations"))
+                    if row.get("key") in {"first_path_contract", "release_boundary"}
+                ))
+            ):
+                raise ValueError("FirstPathContract must retain its canonical proposed proof checkpoint")
+        except ValueError as exc:
+            issues.append(str(exc))
+    first_path_capability = normalize_string(
+        first_path.get("capability") if isinstance(first_path, Mapping) else ""
+    )
+    if not first_path_capability:
+        issues.append("FirstPathContract must preserve the accepted path capability")
+    ontology = semantic.get("domain_ontology") if isinstance(semantic.get("domain_ontology"), Mapping) else {}
+    if not normalize_string(ontology.get("product_title") if isinstance(ontology, Mapping) else ""):
+        issues.append("DomainOntology must carry the canonical product title")
+    graph = semantic.get("diagram_event_graph") if isinstance(semantic.get("diagram_event_graph"), Mapping) else {}
+    if not normalize_string(graph.get("proof_checkpoint") if isinstance(graph, Mapping) else ""):
+        issues.append("DiagramEventGraph must carry a readable proof checkpoint")
+    proof_keys = {
+        normalize_string(row.get("key"))
+        for row in mapping_rows(semantic.get("proof_obligations"))
+        if normalize_string(row.get("key"))
+    }
+    for key in ("first_path_contract", "release_boundary"):
+        if key not in proof_keys:
+            issues.append(f"GreenfieldSemanticModel missing `{key}` proof obligation")
+    return issues
+
+
+def semantic_component_alignment_issues(proposal: Mapping[str, Any], semantic: Mapping[str, Any]) -> list[str]:
+    proposal_components = mapping_rows(proposal.get("components"))
+    model_components = mapping_rows(semantic.get("components"))
+    issues: list[str] = []
+    intent = proposal.get("intent")
+    if not isinstance(intent, Mapping):
+        return ["GreenfieldSemanticModel is missing the canonical source-and-design intent"]
+    try:
+        design = provisional_design_from_intent(intent)
+        expected_components = build_provisional_components(
+            intent=intent, product_slug=slugify(project_presentation_name(source_title=str(intent.get("title") or ""), design=design)) or "greenfield-project",
+        )
+    except ValueError as exc:
+        return [str(exc)]
+    if semantic.get("provisional_design") != design:
+        issues.append("GreenfieldSemanticModel drifted from the canonical provisional design")
+    expected_by_id = {row["component_id"]: row for row in expected_components}
+    proposal_by_id = {_component_id(row): row for row in proposal_components if _component_id(row)}
+    model_by_id = {_component_id(row): row for row in model_components if _component_id(row)}
+    if set(proposal_by_id) != set(expected_by_id):
+        issues.append("Greenfield component inventory drifted from the canonical provisional design")
+    if set(proposal_by_id) != set(model_by_id):
+        missing = sorted(set(proposal_by_id) - set(model_by_id))
+        extra = sorted(set(model_by_id) - set(proposal_by_id))
+        if missing:
+            issues.append(f"GreenfieldSemanticModel missing component contract(s): {', '.join(missing[:5])}")
+        if extra:
+            issues.append(f"GreenfieldSemanticModel has component contract(s) not rendered by proposal: {', '.join(extra[:5])}")
+    for component_id, row in proposal_by_id.items():
+        model = model_by_id.get(component_id)
+        if not isinstance(model, Mapping):
+            continue
+        expected = expected_by_id.get(component_id)
+        if expected is None or row.get("component_contract") != expected["component_contract"]:
+            issues.append(f"Greenfield component `{component_id}` drifted from canonical provisional design")
+        if model.get("component_contract") != row.get("component_contract"):
+            issues.append(f"GreenfieldSemanticModel component `{component_id}` drifted from its provisional contract")
+        if model.get("semantic_axis") != "provisional_design":
+            issues.append(f"GreenfieldSemanticModel component `{component_id}` lost its provisional authority")
+    return issues
+
+
+def semantic_workstream_alignment_issues(proposal: Mapping[str, Any], semantic: Mapping[str, Any]) -> list[str]:
+    proposal_rows = mapping_rows(proposal.get("backlog"))
+    model_rows = mapping_rows(semantic.get("workstreams"))
+    proposal_by_title = {
+        normalize_string(row.get("title")): row
+        for row in proposal_rows
+        if normalize_string(row.get("title"))
+    }
+    model_by_title = {
+        normalize_string(row.get("title")): row
+        for row in model_rows
+        if normalize_string(row.get("title"))
+    }
+    proposal_titles = set(proposal_by_title)
+    model_titles = set(model_by_title)
+    missing = sorted(proposal_titles - model_titles)
+    extra = sorted(model_titles - proposal_titles)
+    issues: list[str] = []
+    if missing:
+        issues.append(f"GreenfieldSemanticModel missing workstream contract(s): {', '.join(missing[:4])}")
+    if extra:
+        issues.append(f"GreenfieldSemanticModel has workstream contract(s) not rendered by proposal: {', '.join(extra[:4])}")
+    for title in sorted(proposal_titles.intersection(model_titles)):
+        proposal_row = proposal_by_title[title]
+        model_row = model_by_title[title]
+        checks = {
+            "local_problem": normalize_string(proposal_row.get("problem")),
+            "first_slice": normalize_string(proposal_row.get("recommended_first_slice")),
+            "proof": " ".join(
+                normalize_string(value)
+                for value in nested_text_values(proposal_row.get("validation"))
+                if normalize_string(value)
+            ),
+        }
+        for key, expected in checks.items():
+            actual = normalize_string(model_row.get(key))
+            if expected and actual != expected:
+                issues.append(f"GreenfieldSemanticModel workstream `{title}` drifted from proposal `{key}`")
+        proposal_components = tuple(
+            normalize_string(value)
+            for value in nested_text_values(proposal_row.get("component_focus"))
+            if normalize_string(value)
+        )
+        model_components = tuple(
+            normalize_string(value)
+            for value in nested_text_values(model_row.get("component_ids"))
+            if normalize_string(value)
+        )
+        if proposal_components and proposal_components != model_components:
+            issues.append(f"GreenfieldSemanticModel workstream `{title}` component_ids drifted from proposal component_focus")
+    return issues
+
+
+def semantic_diagram_alignment_issues(proposal: Mapping[str, Any], semantic: Mapping[str, Any]) -> list[str]:
+    graph = semantic.get("diagram_event_graph") if isinstance(semantic.get("diagram_event_graph"), Mapping) else {}
+    active_components = {
+        _component_id(row)
+        for row in mapping_rows(proposal.get("components"))
+        if _component_id(row) and _is_first_release_scope(row.get("release_scope"))
+    }
+    graph_components = {
+        normalize_string(value)
+        for value in nested_text_values(
+            graph.get("component_sequence") if isinstance(graph, Mapping) else ()
+        )
+        if normalize_string(value)
+    }
+    issues: list[str] = []
+    if active_components != graph_components:
+        issues.append("DiagramEventGraph component sequence drifted from active ReleaseScope components")
+    first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
+    intent = proposal.get("intent")
+    if not isinstance(intent, Mapping):
+        return [*issues, "Greenfield event alignment is missing the canonical source-and-design intent"]
+    try:
+        relations = authored_first_run_relations(intent)
+    except (TypeError, ValueError) as exc:
+        return [*issues, str(exc)]
+    authored = intent[AUTHORED_SEMANTICS_KEY]
+    if first_path.get("authority_kind") != ("source_grounded" if semantic.get("schema_version") == "odylith.greenfield.semantic_model.v5" else "provisional_design"):
+        issues.append("FirstPathContract lost its provisional first-run authority")
+    if semantic.get("source_precedence") != authored["source_precedence"]:
+        issues.append("GreenfieldSemanticModel source precedence drifted from canonical intent")
+    if semantic.get("provisional_design") != authored["provisional_design"]:
+        issues.append("GreenfieldSemanticModel first-run design drifted from canonical intent")
+    source_duty = authored.get("source_duty")
+    lifecycle = source_duty.get("lifecycle") if isinstance(source_duty, Mapping) else None
+    if semantic.get("source_lifecycle") != lifecycle:
+        issues.append("GreenfieldSemanticModel source lifecycle drifted from canonical intent")
+    expected_transitions = lifecycle.get("off_path_transitions", []) if isinstance(lifecycle, Mapping) else []
+    if graph.get("state_transitions") != expected_transitions:
+        issues.append("DiagramEventGraph state transitions drifted from canonical lifecycle")
+    expected_events = tuple(
+        (index, row["order"], row["event_quote"], "proposed_first_run")
+        for index, row in enumerate(relations, 1)
+    )
+    for label, projection in (("FirstPathContract", first_path), ("DiagramEventGraph", graph)):
+        expected_projection_events = expected_events
+        if label == "FirstPathContract" and authored["version"].endswith(".v19"):
+            expected_projection_events = tuple((index, row["order"], row["event_quote"], "source_grounded")
+                                               for index, row in enumerate(first_path_relations_from_intent(intent), 1))
+            if first_path.get("actor") != first_path_relations_from_intent(intent)[0]["actor_fact_quote"] or first_path.get("raw_path") != intent["first_path"]:
+                issues.append("FirstPathContract drifted from the source-declared opening and path")
+        raw_events = projection.get("events")
+        rows = mapping_rows(raw_events)
+        actual_events = tuple(
+            (row.get("index"), row.get("source_event_order"), row.get("text"), row.get("source_kind"))
+            for row in rows
+        )
+        if (
+            not isinstance(raw_events, list) or len(raw_events) != len(rows)
+            or any(type(row.get(key)) is not int for row in rows for key in ("index", "source_event_order"))
+            or actual_events != expected_projection_events
+        ):
+            issues.append(f"{label} events drifted from the canonical proposed first run")
+    diagram_rows = mapping_rows(proposal.get("diagrams"))
+    if not diagram_rows:
+        issues.append("pre-confirm completion requires in-memory Atlas diagram artifacts")
+    for row in diagram_rows:
+        if not normalize_string(row.get("mermaid_source")):
+            issues.append(
+                f"Atlas diagram `{normalize_string(row.get('title')) or normalize_string(row.get('slug'))}` "
+                "missing in-memory Mermaid source"
+            )
+    return issues
+
+
+def rendered_spec_alignment_issues(proposal: Mapping[str, Any], rendered_specs: Mapping[str, str]) -> list[str]:
+    active_labels = {
+        normalize_string(row.get("label"))
+        for row in mapping_rows(proposal.get("components"))
+        if normalize_string(row.get("label")) and _is_first_release_scope(row.get("release_scope"))
+    }
+    rendered_labels = {normalize_string(label) for label in rendered_specs}
+    issues: list[str] = []
+    if active_labels and rendered_labels != active_labels:
+        missing = sorted(active_labels - rendered_labels)
+        extra = sorted(rendered_labels - active_labels)
+        if missing:
+            issues.append(f"prewrite Registry package missing rendered active component spec(s): {', '.join(missing[:5])}")
+        if extra:
+            issues.append(f"prewrite Registry package rendered component spec(s) outside active release scope: {', '.join(extra[:5])}")
+    return issues
+
+
+def _component_id(row: Mapping[str, Any]) -> str:
+    return normalize_string(row.get("component_id")) or normalize_string(row.get("label")).casefold().replace(" ", "-")
+
+
+def _is_first_release_scope(value: Any) -> bool:
+    scope = normalize_string(value).casefold()
+    return scope not in {"deferred", "out_of_scope", "future", "external"}

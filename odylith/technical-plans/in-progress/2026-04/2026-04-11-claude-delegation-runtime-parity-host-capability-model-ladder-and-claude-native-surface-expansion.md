@@ -240,3 +240,21 @@ Related Bugs:
 - [ ] The `subagent_router.py` decomposition is on the backlog as an
       explicit bounded workstream, so the next Claude-side tuning does not
       have to land in a red-zone shared file.
+
+## Traceability
+
+Bounded host-aware routing, delegation, and explicit model/reasoning posture.
+
+### Runbooks
+
+- `odylith/runtime/SUBAGENT_OPERATIONS.md`
+
+### Developer Docs
+
+- `odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md`
+
+### Code References
+
+- `src/odylith/runtime/common/host_runtime.py`
+- `src/odylith/runtime/common/agent_runtime_contract.py`
+- `src/odylith/runtime/orchestration/subagent_router.py`

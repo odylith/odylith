@@ -1940,6 +1940,7 @@ def install_bundle(
             include_brand=False,
             version=active_version,
             product_root=_bundled_product_root_for_runtime(runtime_root),
+            activate_host_settings=integration_enabled,
         )
         migration_plan = migration_runtime.plan_release_migrations(
             repo_root=root,
@@ -2191,6 +2192,7 @@ def upgrade_install(
                 include_brand=False,
                 version=current_version,
                 product_root=_bundled_product_root_for_runtime(current_runtime),
+                activate_host_settings=integration_enabled,
             )
             migration_plan_payload, migration_results, value_engine_migration = _apply_release_migration_plan(
                 plan=migration_plan,
@@ -2246,7 +2248,11 @@ def upgrade_install(
         )
         if migration_plan.blocked_reason:
             raise ValueError(migration_plan.blocked_reason)
-        if bool(manifest.get("migration_required")) and not migration_plan.satisfies_manifest_requirement():
+        if (
+            repo_role != PRODUCT_REPO_ROLE
+            and bool(manifest.get("migration_required"))
+            and not migration_plan.satisfies_manifest_requirement()
+        ):
             raise ValueError(
                 f"release {staged.version} is marked as migration_required but no registered migration plan satisfies it"
             )
@@ -2280,22 +2286,15 @@ def upgrade_install(
                 release_repo=release_repo,
             )
 
-        pin_changed = False
-        if effective_write_pin:
-            write_version_pin(
-                repo_root=root,
-                version=staged.version,
-                repo_schema_version=repo_schema_version,
-                migration_required=False,
-            )
-            pin_changed = True
-            pin = load_version_pin(repo_root=root, fallback_version=staged.version)
-
         previous_python = _runtime_python(previous_runtime)
         launcher_path = ensure_launcher(repo_root=root, fallback_python=staged.python)
         switch_runtime(repo_root=root, target=staged.root)
-        smoke = _run_odylith_smoke(python=staged.python, repo_root=root)
-        if smoke.returncode != 0:
+        smoke = None
+        try:
+            smoke = _run_odylith_smoke(python=staged.python, repo_root=root)
+            if smoke.returncode != 0:
+                raise RuntimeError((smoke.stderr or smoke.stdout).strip())
+        except Exception as exc:
             if previous_runtime is not None:
                 switch_runtime(repo_root=root, target=previous_runtime)
             if previous_python is not None:
@@ -2307,11 +2306,23 @@ def upgrade_install(
                     "status": "failed",
                     "previous_version": current_version,
                     "target_version": staged.version,
-                    "stderr": smoke.stderr.strip(),
-                    "stdout": smoke.stdout.strip(),
+                    "stderr": smoke.stderr.strip() if smoke is not None else str(exc),
+                    "stdout": smoke.stdout.strip() if smoke is not None else "",
                 },
             )
-            raise RuntimeError(f"post-activation smoke check failed for {staged.version}: {(smoke.stderr or smoke.stdout).strip()}")
+            raise RuntimeError(f"post-activation smoke check failed for {staged.version}: {exc}") from exc
+
+        # Activation smoke is read-only; failed attempts must not rewrite operator pin intent.
+        pin_changed = False
+        if effective_write_pin:
+            write_version_pin(
+                repo_root=root,
+                version=staged.version,
+                repo_schema_version=repo_schema_version,
+                migration_required=False,
+            )
+            pin_changed = True
+            pin = load_version_pin(repo_root=root, fallback_version=staged.version)
 
         state_for_persist = (
             _discard_versions_newer_than(state=previous_state, ceiling_version=staged.version)
@@ -2335,6 +2346,7 @@ def upgrade_install(
             include_brand=False,
             version=staged.version,
             product_root=_bundled_product_root_for_runtime(staged.root),
+            activate_host_settings=integration_enabled,
         )
         migration_plan_payload, migration_results, value_engine_migration = _apply_release_migration_plan(
             plan=migration_plan,
@@ -2562,6 +2574,7 @@ def rollback_install(*, repo_root: str | Path) -> RollbackSummary:
             include_brand=False,
             version=target_version,
             product_root=_bundled_product_root_for_runtime(target_root),
+            activate_host_settings=integration_enabled,
         )
         pin = load_version_pin(repo_root=root, fallback_version=target_version)
         diverged = bool(pin and target_version != pin.odylith_version)
@@ -2947,6 +2960,7 @@ def doctor_bundle(
             include_brand=False,
             version=repaired_active_version,
             product_root=_bundled_product_root_for_runtime(runtime_root),
+            activate_host_settings=integration_enabled,
         )
         _sync_consumer_casebook_bug_index(repo_root=root, repo_role=repo_role)
         component_register_repair = repair_component_register_registry_drift(

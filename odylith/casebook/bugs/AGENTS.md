@@ -1,5 +1,10 @@
 # Casebook Bugs AGENTS
 
+## Governance-Learning
+- Before changing or validating this surface for a durable error, escaped defect, failed mechanism, failed simulation, bad generated artifact, semantic drift, quality-gate miss, latency breach, architecture decision, validation result, or release-risk learning, search Casebook and related governance truth first.
+- Read prior failed mechanisms, failed fix attempts, rejected approaches, guardrails, and validation history; do not repeat a fix path that already failed.
+- Capture new mechanism-level learning in Casebook or Compass, and update Radar or plans, Registry, and Atlas when the learning changes planned work, component contracts, or flows.
+
 Scope: applies to all files under `odylith/casebook/bugs/`.
 
 ## Purpose
@@ -15,6 +20,10 @@ Scope: applies to all files under `odylith/casebook/bugs/`.
 - `odylith/casebook/bugs/INDEX.md` is the canonical bug index.
 - Individual bug markdown files remain the source of truth for case detail.
 - Individual bug markdown files should carry a stable `- Bug ID: CB-###` field near the top of the record.
+- Human-visible bug records must use simple, grammatical language for the
+  failure signature, trigger path, violated invariant, impact, workaround,
+  and validation evidence. Do not let malformed labels, clipped prose, or
+  internal shorthand replace the operator-facing failure story.
 - `- Status:` must be one compact single-word token from the Casebook lifecycle FSM: `Open`, `InProgress`, `Mitigated`, `Monitoring`, `Resolved`, `FixedPendingRelease`, or `Closed`; put rollout notes, closure reasons, and mitigation context in evidence fields.
 - `- Fixed:` is optional, but when present it must be a `YYYY-MM-DD` date or one compact single-word token such as `Pending`, `Fixed`, `Released`, or `Closed`; put rollout/deploy notes in evidence fields.
 - `- Type:` must be one compact single-word token such as `Product`, `Tooling`, `UX`, `OperatorUX`, or `DataLoss`; do not use slashes, spaces, counts, or prose labels.

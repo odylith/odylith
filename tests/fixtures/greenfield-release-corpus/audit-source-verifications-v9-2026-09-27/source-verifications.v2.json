@@ -1,0 +1,690 @@
+{
+  "audit_request_plan": "tests/fixtures/greenfield-release-corpus/greenfield-release-audit-requests.v8.json",
+  "claim_class": "source-verification-only",
+  "rebound_from": "tests/fixtures/greenfield-release-corpus/audit-source-verifications-v9-2026-09-27-pre-rebind/source-verifications.v2.json",
+  "rebound_from_sha256": "94e47d6d6a85f25c71afdf6ba92999f764e126e16f9234c4c096a73899c19250",
+  "record_count": 40,
+  "records": [
+    {
+      "audit_request_sha256": "07f152240ca402efb3e0ab63e86575886049c37524855520acaf19c34ec6faff",
+      "case_id": "release-accessibility-004-topic",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:58:58 GMT",
+        "etag": "W/\"40b201b63270f1b1806ff8c3e4c83e814e7046095f6c07018dc8bfffd393dd91\"",
+        "x-github-request-id": "F76C:1664F1:1D6194A:22C6742:6AB98392"
+      },
+      "source_custody_sha256": "8d99a3171d729022d78fc88f24c63ca84541b0d9f88e35b9fcf4dd025021584e",
+      "source_id": "github-repository:273499522",
+      "source_uri": "https://github.com/radix-ui/primitives",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-accessibility-004-topic.json",
+      "source_verification_sha256": "8b2c95d74443ba5cc08a97e92ca05eb79ccc2f8f646553c2a4c87dff78b3be11",
+      "source_verification_uri": "https://api.github.com/repositories/273499522",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "f24025a93024e1fd3473779da04d5fff9145d73568b9679597745ad9435e1108",
+      "case_id": "release-accessibility-005-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:07 GMT",
+        "etag": "W/\"8053767c6d250caed6bf60b3bc672bd5539b2c5d9aac1443aff4b78b088c1777\"",
+        "x-github-request-id": "F795:22BBAA:1B9E4E8:210251A:6AB9839A"
+      },
+      "source_custody_sha256": "e2951511b7772378782350622e9199dd8c228f351516a625ddf6867b55df5707",
+      "source_id": "github-repository:762289766",
+      "source_uri": "https://github.com/mui/base-ui",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-accessibility-005-source.json",
+      "source_verification_sha256": "bd0d9901d23fb8eed3057931bdb35a8e37f754126463a837e084c58cc8ae6eee",
+      "source_verification_uri": "https://api.github.com/repositories/762289766",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "a77269375f6ccbf6c353fcd04c90f23ed11cc30257e376a5169cadb215562dd6",
+      "case_id": "release-accessibility-006-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:04 GMT",
+        "etag": "W/\"28450f6f34bd19bae18b71c110ff27f19eae7ef6fa2cc9ff4f469036a4f7361a\"",
+        "x-github-request-id": "F789:1ABC82:1C9D0CC:22010A2:6AB98397"
+      },
+      "source_custody_sha256": "8b8aad0d3cd6ef821da363fb0443026ed5469dfcdfd430b0e2ec90ee069e8531",
+      "source_id": "github-repository:654115547",
+      "source_uri": "https://github.com/radix-ui/themes",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-accessibility-006-source.json",
+      "source_verification_sha256": "2991e7afcfe6a52ee6d32bd75bac2b257f0c544fe24ed83ca8c3a0eced59dc56",
+      "source_verification_uri": "https://api.github.com/repositories/654115547",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "d04691a48c7a7416d3d72eef5bad7595724e1c486eb7f1551715a37e4beb40cb",
+      "case_id": "release-accessibility-007-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:01 GMT",
+        "etag": "W/\"40d3ff85d2e4b6fd7800cc53f951e7ce54d0f7531e8342f1920fd5effc11e523\"",
+        "x-github-request-id": "F777:25A9A8:1F9EB72:2502C56:6AB98395"
+      },
+      "source_custody_sha256": "3226329acf7a56382bca0a7c67af182062aee822feca047891889bec0f8a3559",
+      "source_id": "github-repository:657119460",
+      "source_uri": "https://github.com/unovue/reka-ui",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-accessibility-007-source.json",
+      "source_verification_sha256": "aea1058d6c4d048036326ef5dec7ad0e85072d3ec0f25808fe5d833faf0e6166",
+      "source_verification_uri": "https://api.github.com/repositories/657119460",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "de8986e329d2a872d24f16f2364eb104220747c9fb179669ed88f42334580308",
+      "case_id": "release-agriculture-021-description",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:58:59 GMT",
+        "etag": "W/\"066ae668fd1791c1550ac1e691e8f9cf69fc7042e63c9bd911af4fcff241b5ff\"",
+        "x-github-request-id": "F76D:26553C:1BF0D58:215556F:6AB98392"
+      },
+      "source_custody_sha256": "b6374180303624fcd65f8407eba6f9e122150ba7693f55f739b02f1e1b906590",
+      "source_id": "github-repository:533452400",
+      "source_uri": "https://github.com/microsoft/farmvibes-ai",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-agriculture-021-description.json",
+      "source_verification_sha256": "d3d328d1a23702412c6ffe7b44757247996f323136cf409d2f3905f9d6deba85",
+      "source_verification_uri": "https://api.github.com/repositories/533452400",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "ed86e764d19231b65c2afe7004180ed2f8e93d1284b3361b20ae98ddd310fc54",
+      "case_id": "release-agriculture-024-topic",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:01 GMT",
+        "etag": "W/\"2b00da8084da8ef364fe9d8ef9af615edb4f0b772fc2a81cee66867e47f4bac7\"",
+        "x-github-request-id": "F778:EBFD5:1D41261:22A58DA:6AB98395"
+      },
+      "source_custody_sha256": "7c3637517c45aa3ba023f3cd18dffdebfe6d88fc18cd15d483ea0a554fe99d8d",
+      "source_id": "github-repository:399194159",
+      "source_uri": "https://github.com/geezacoleman/OpenWeedLocator",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-agriculture-024-topic.json",
+      "source_verification_sha256": "cdff83b607b693d9297e1c7d3bb3ac92ca2629a81e0f677d09161bdeb541cf45",
+      "source_verification_uri": "https://api.github.com/repositories/399194159",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "d5e08927dfc08bfbc6d23d83272c61a1c8496b12b859fadac8c61804cfa749c3",
+      "case_id": "release-agriculture-037-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:07 GMT",
+        "etag": "W/\"369bc8f252b164b5ddc6d78b3f840f60e67116fb411c0de415c60b2e67ccedbb\"",
+        "x-github-request-id": "F796:25BFE4:1BDF38E:21445B6:6AB9839B"
+      },
+      "source_custody_sha256": "70500d402ea98434306febebb1c9156ba5672f141daa39fb02d83739b5077c92",
+      "source_id": "github-repository:95944831",
+      "source_uri": "https://github.com/WorldWindLabs/AgroSphere",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-agriculture-037-source.json",
+      "source_verification_sha256": "fc6ae05e10f69ffbd2ee7973c0ffd5f6891e44ea12b5731236d9f971839eb6ed",
+      "source_verification_uri": "https://api.github.com/repositories/95944831",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "d5b61f5ddd9dec292172953fc100b9e86c77d8aecf32d67e780edd73d0e57c6c",
+      "case_id": "release-agriculture-030-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:03 GMT",
+        "etag": "W/\"6fdcb6b0cb3bf67a8ae1c20735611fe32de8067d4ffb69ed44004e101e2c6676\"",
+        "x-github-request-id": "F785:DC2B2:1AF533B:2059BDD:6AB98397"
+      },
+      "source_custody_sha256": "2b9588b89c6d6ed9d76ba2e8bcfb5faa9efc2b9200d10a68b1376b937c2ae7b5",
+      "source_id": "github-repository:210179111",
+      "source_uri": "https://github.com/kazulagi/plantFEM",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-agriculture-030-source.json",
+      "source_verification_sha256": "242ed9d5162f794370fe1f7c7b6a82cbeff5a61f5bbb8cc8a60b6edea0e472bd",
+      "source_verification_uri": "https://api.github.com/repositories/210179111",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "9c6d3ebc5c83c9454ecc4193bbea5aee14903d71b4e7d571435d09c765589f33",
+      "case_id": "release-civic-tech-041-description",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:58:59 GMT",
+        "etag": "W/\"28ce09b8a0f354a1d8d486ca2e4280687880abf6bc8a16e21e31051bd92664b6\"",
+        "x-github-request-id": "F76F:25D59D:1BEC3E9:2151095:6AB98393"
+      },
+      "source_custody_sha256": "77581ba039d625c0fdf6176abd2f2250e201d1113893f9e536a930f902bbb045",
+      "source_id": "github-repository:241519642",
+      "source_uri": "https://github.com/civictechindex/CTI-website-frontend",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-civic-tech-041-description.json",
+      "source_verification_sha256": "a4176a51031cfb5cd10e2d57bf8ed3bc02f4c7715e4216279d0045f73f0c487a",
+      "source_verification_uri": "https://api.github.com/repositories/241519642",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "65b4d32878994a2cd28b7da52cb2099cd1cdda502d2027050f897566967b752d",
+      "case_id": "release-civic-tech-044-topic",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:03 GMT",
+        "etag": "W/\"3c58bb94ab528b093609e857a8c7773d1cb2f1248a3c41a0d491e0ac1000dd17\"",
+        "x-github-request-id": "F787:260A27:1C64E59:21C9937:6AB98397"
+      },
+      "source_custody_sha256": "6ed62b612052e4585093fdcfef366c6ae54fa7403cb2a52a4b9b2a6cec91ac9a",
+      "source_id": "github-repository:72879182",
+      "source_uri": "https://github.com/codeforamerica/civic-tech-taxonomy",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-civic-tech-044-topic.json",
+      "source_verification_sha256": "ad6d8fdc234b83450c97c1170efa1230e89cdec9c01ff45edebb16cc1b902d70",
+      "source_verification_uri": "https://api.github.com/repositories/72879182",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "3ea06708daf4faee94be500df3d73ca47aec4190820b4d6e6ea69c5595ca855a",
+      "case_id": "release-civic-tech-045-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:01 GMT",
+        "etag": "W/\"65deb420ccbfcf0bcf70d6ff922a5508b709f057a0e2e164aeb6066e1d699c36\"",
+        "x-github-request-id": "F779:C4695:1C72887:21D6B79:6AB98395"
+      },
+      "source_custody_sha256": "d1a22abf0bfc1885420485a2bdeb6f6d800bce86e747ae8e68f77fd4822c189f",
+      "source_id": "github-repository:1139170409",
+      "source_uri": "https://github.com/ChronalLabs/ChronOS",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-civic-tech-045-source.json",
+      "source_verification_sha256": "c1c24b2be30b162f3ceec4b0a1a1b82c0975843174f151038961d8c743ec91cc",
+      "source_verification_uri": "https://api.github.com/repositories/1139170409",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "34f5380fb61ce636b7ea1ed4ce41b41dbee3cb2183bf3c6989f5ab3d081ca4a1",
+      "case_id": "release-civic-tech-057-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:06 GMT",
+        "etag": "W/\"d86405bdadcfb81eeeccd1bb7b2e07cfcd336cc38f9892c06cfc1ab4ce8c071d\"",
+        "x-github-request-id": "F791:257DA5:1BE1998:2146544:6AB9839A"
+      },
+      "source_custody_sha256": "fa4bab419509b7f0736decc7e3c004b866c86d0f30064a944639e849b763f1e4",
+      "source_id": "github-repository:789479462",
+      "source_uri": "https://github.com/NewJerseyStyle/LitePolis",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-civic-tech-057-source.json",
+      "source_verification_sha256": "4bbb79e69b24ffb8de24554e2b45558c0c298a7c3ba7c287f1de5ff6183b6885",
+      "source_verification_uri": "https://api.github.com/repositories/789479462",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "d2be42cacf8fe0e71c98ef8dede8b9910cf4fca9046d30e4b6849c8bea5475d7",
+      "case_id": "release-climate-061-description",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:06 GMT",
+        "etag": "W/\"669c6c89bd644b4bd9219558ac2611c4c173a212825f78545a8b2aedc3a63780\"",
+        "x-github-request-id": "F793:F713C:1BC5DDE:212AEC5:6AB9839A"
+      },
+      "source_custody_sha256": "66697bfeaca72a556b77ee46c5d8480a27576b1abe04392e9e76742393a8101d",
+      "source_id": "github-repository:285335799",
+      "source_uri": "https://github.com/meteostat/meteostat",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-climate-061-description.json",
+      "source_verification_sha256": "7bb9bcfdff65faf842c2cca71f6af4ede46691c13671b4f6fd359cac071cbf5f",
+      "source_verification_uri": "https://api.github.com/repositories/285335799",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "94425ce8ad6a0df7713976c9011e7d9694dae4c6f21089bf059486321eca383e",
+      "case_id": "release-climate-064-topic",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:58:59 GMT",
+        "etag": "W/\"5023cb596d57df9fa2d77471a5286d9d7bca10f0f4a2e6cab7c2aba90b157af6\"",
+        "x-github-request-id": "F76E:257E84:1B711BB:20D5204:6AB98393"
+      },
+      "source_custody_sha256": "5fd06c6937dccb6677ac19bdeafd2438bbca19b6ae679d0940ea7fe8e34bdc4b",
+      "source_id": "github-repository:80646423",
+      "source_uri": "https://github.com/catalyst-cooperative/pudl",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-climate-064-topic.json",
+      "source_verification_sha256": "09bc292d460299348e033d3a8fb3e727d7e434edfb230e35db93d27811843b64",
+      "source_verification_uri": "https://api.github.com/repositories/80646423",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "4922090c7a3aa54e1ac2317a4a57570ef938c57a28cd4dacaa938350d7916c63",
+      "case_id": "release-climate-073-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:04 GMT",
+        "etag": "W/\"a65a481e0d7498ebae624402daebc2571bd791bc8131d7eece4e49619d50f331\"",
+        "x-github-request-id": "F78A:189B6F:1B631B9:20C76EC:6AB98398"
+      },
+      "source_custody_sha256": "251bfa170c53f21f7a50092f63b83736de5e85e52c6cdc3f55940a8f56478259",
+      "source_id": "github-repository:13808834",
+      "source_uri": "https://github.com/heigeo/climata",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-climate-073-source.json",
+      "source_verification_sha256": "576a39236df88f9e9606330ebc2965b3273e0da426a239b859b18f1cd6b1e0cf",
+      "source_verification_uri": "https://api.github.com/repositories/13808834",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "e94cc691e0ffa1c101191ba4acd397ccfb13db41844f3bd658eaacbe1f33e9c9",
+      "case_id": "release-climate-069-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:02 GMT",
+        "etag": "W/\"81b795e0c1bf15fe2623630826976847a8d35127b6d005d2c5ca5813d95b05a9\"",
+        "x-github-request-id": "F77A:25A5C8:1B803E1:20E46DD:6AB98396"
+      },
+      "source_custody_sha256": "7bc5023fee74b4450a0057efbf12c5d0780dd5425b17f736bd14d9969b5305f0",
+      "source_id": "github-repository:270910358",
+      "source_uri": "https://github.com/opennem/opennem",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-climate-069-source.json",
+      "source_verification_sha256": "dd7351efce32bbab62ffd98b7a50c27dd1a2caa503478a053f21944fb12f3ac8",
+      "source_verification_uri": "https://api.github.com/repositories/270910358",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "693847d69a05c56b5ca5522f15e5b06a67bff70be86014c43e7ddba266b38298",
+      "case_id": "release-education-081-description",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:04 GMT",
+        "etag": "W/\"4f34c6845f156707658a699e901bee48becc858288f3b07ca92399edfc07b322\"",
+        "x-github-request-id": "F78C:1DE64D:1C65CF7:21C9D35:6AB98398"
+      },
+      "source_custody_sha256": "c66b1f416e30f2cbba05cfd64ac872caa00d7530d8fc1764db066c3ed09befcd",
+      "source_id": "github-repository:343965132",
+      "source_uri": "https://github.com/microsoft/ML-For-Beginners",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-education-081-description.json",
+      "source_verification_sha256": "816021db631ece88ff4e6adfda54539c5665d640640e67050ae14a1dc6b1f20d",
+      "source_verification_uri": "https://api.github.com/repositories/343965132",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "fd395f2df94a98e9687a2d0a861626de7b0703974cc3f4ab073ce5c9a083eda2",
+      "case_id": "release-education-084-topic",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:58:59 GMT",
+        "etag": "W/\"b779d2817d9d5fb3e85f74aee85b4b6521e064a3b80b13b3964255ac3c317557\"",
+        "x-github-request-id": "F770:ED1D4:1C76493:21DB420:6AB98393"
+      },
+      "source_custody_sha256": "be871286cc303e24017633a9636e25023c83029b584bf2d1c18f6ed5432e02ec",
+      "source_id": "github-repository:95133665",
+      "source_uri": "https://github.com/s-matyukevich/raspberry-pi-os",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-education-084-topic.json",
+      "source_verification_sha256": "450408f23d30814e9b1cb230d72698fc314c91c8868480113bbc9fbb2d443645",
+      "source_verification_uri": "https://api.github.com/repositories/95133665",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "8ed21c78ca337d360e285d9d1ca4c38310636ffd513bcc18ba5e52de5c6899e2",
+      "case_id": "release-education-085-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:06 GMT",
+        "etag": "W/\"3f87c49d77d8bce1b5d2c8ff92094e1bb3f1e5e259c8d1f0957897ba201366b4\"",
+        "x-github-request-id": "F792:F2529:1BD04BB:213433C:6AB9839A"
+      },
+      "source_custody_sha256": "26c735a34cecfd433784848b593d51a80f5a36254fdf5080ab1df94a1c31fce9",
+      "source_id": "github-repository:55358122",
+      "source_uri": "https://github.com/mikesprague/udacity-nanodegrees",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-education-085-source.json",
+      "source_verification_sha256": "0414acf93be7e719fd82832dc683e80b1545baa272dff4eb5627ed22a65b0dff",
+      "source_verification_uri": "https://api.github.com/repositories/55358122",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "3d400df14c17a745808b08bcdf5cf605dc86951747d3d9d7be5b03737004c1d2",
+      "case_id": "release-education-086-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:01 GMT",
+        "etag": "W/\"964c72180e6010bc913ee5ddc5222d13085df610397315e46b53b20ad9f8856f\"",
+        "x-github-request-id": "F776:EBB69:1CD8554:223CDB5:6AB98395"
+      },
+      "source_custody_sha256": "fec0c4b87b1d19ca56d121038723099f3c751516512b736a19e6334990339462",
+      "source_id": "github-repository:326441188",
+      "source_uri": "https://github.com/PetoiCamp/OpenCat-Quadruped-Robot",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-education-086-source.json",
+      "source_verification_sha256": "ddf6b00f75c145d369e9ef2bacc50f76ceb19bd3e0ddc5b865b4e402bc4f93b4",
+      "source_verification_uri": "https://api.github.com/repositories/326441188",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "37c9b1404309dfed3997acdd09869e5520b1ccc69228b66715dccf8ae8856a07",
+      "case_id": "release-healthcare-117-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:06 GMT",
+        "etag": "W/\"ef71634a01042b4ce9ee8d6ee872aece18881c398ed2e74685a0070169941029\"",
+        "x-github-request-id": "F794:25F9B2:1C9BF24:2200AA3:6AB9839A"
+      },
+      "source_custody_sha256": "a9c5971d735a0c94f848ceda37d7b62fb7bcfbd2ac1e5046834a0a0fc9b03c3e",
+      "source_id": "github-repository:953682405",
+      "source_uri": "https://github.com/Cicatriiz/healthcare-mcp-public",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-healthcare-117-source.json",
+      "source_verification_sha256": "e714fc7b9f58d0355e627f217119ba7462612f7e3063f31fdf4631dd2db45c78",
+      "source_verification_uri": "https://api.github.com/repositories/953682405",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "35c26be504e214dd6dee7eba94dba9af0c9cc39d96716d0e2f962de84e6e7052",
+      "case_id": "release-healthcare-104-topic",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:58:59 GMT",
+        "etag": "W/\"32f2ef8be5291468e735147b6ae06ddf220dc814f25c5f22722c31ae57394412\"",
+        "x-github-request-id": "F771:25842E:1B64F50:20C8F78:6AB98393"
+      },
+      "source_custody_sha256": "79e8c48efcca02037093ffeb0077825d2ad9768beaa69388a823b8ba73c39582",
+      "source_id": "github-repository:284780206",
+      "source_uri": "https://github.com/sunlabuiuc/PyHealth",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-healthcare-104-topic.json",
+      "source_verification_sha256": "6dcc5d2ef1145274e041505a6ecef9fd3733ee868daf938fb82938f8ba6f11a1",
+      "source_verification_uri": "https://api.github.com/repositories/284780206",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "67c94827bfc6be0ccffe4ae727a8cca3025ca762b5fc5e5733e081f79df7945c",
+      "case_id": "release-healthcare-108-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:02 GMT",
+        "etag": "W/\"4844d7ce1d136558f58e72a8d5bfa458a88a6ead103c460e189d458ab73fa284\"",
+        "x-github-request-id": "F77B:25DCCC:1BE212B:21465EE:6AB98396"
+      },
+      "source_custody_sha256": "575ad2c5d95e587a1534f44c0ac9c74c34eb7715edf5820f1fa429dbaf1be6a1",
+      "source_id": "github-repository:336295638",
+      "source_uri": "https://github.com/amberkakkar01/Health-Care-Chatbot",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-healthcare-108-source.json",
+      "source_verification_sha256": "06107c831f2bc14001f7bda15f26fe1b7ec572c084f3b3b3e9934a8e4e5dafe0",
+      "source_verification_uri": "https://api.github.com/repositories/336295638",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "0f6473fc304ca859cb7a669d78be4014a5e6270fe8d0c3374f34b938046f4ad8",
+      "case_id": "release-healthcare-109-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:05 GMT",
+        "etag": "W/\"e94a81b9116db4bd1026e496d956bb5a0b8a17f73aa81889752d8854a52dd4ac\"",
+        "x-github-request-id": "F78D:14DF4B:1C6E4BB:21D2996:6AB98398"
+      },
+      "source_custody_sha256": "2f1213e29ddf108b22a4dec0e1ee1cb59eb23b5af6f6521302a880cce8f94480",
+      "source_id": "github-repository:247995671",
+      "source_uri": "https://github.com/ohcnetwork/care",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-healthcare-109-source.json",
+      "source_verification_sha256": "2c0cae9c8abea467d98e76c0ce47c996bdf5583b2774563fcbfc57a66f9e28d3",
+      "source_verification_uri": "https://api.github.com/repositories/247995671",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "9604b8fd4f74702738c8dcd87beb9ba0f5ce3c4214bccb893865f4161456c588",
+      "case_id": "release-mobility-121-description",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:00 GMT",
+        "etag": "W/\"d6b8294530b495fe19f3296b9f09606d1290553034321d65ec229d5666b9659f\"",
+        "x-github-request-id": "F773:2422C0:1D4C3F3:22B0A59:6AB98394"
+      },
+      "source_custody_sha256": "7012d50ee9aa07bc9d80dfd6bd3dc4d7d11584379803e2089989f89543f797f2",
+      "source_id": "github-repository:13044127",
+      "source_uri": "https://github.com/conveyal/transitive.js",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-mobility-121-description.json",
+      "source_verification_sha256": "380877452de14c4771e4645a72677b5558798ab861e731652e85f6f98d4b6397",
+      "source_verification_uri": "https://api.github.com/repositories/13044127",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "1ffe6e5fd4c98260fb822129e237556334cd4891450c65c4161b9fdd28f78017",
+      "case_id": "release-mobility-124-topic",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:07 GMT",
+        "etag": "W/\"6b8454d7b217cfb2d7f2ba817a1ec3a512548f9bd568f4abb18ba535e306f40a\"",
+        "x-github-request-id": "F797:261A14:1C9F7D8:2204464:6AB9839B"
+      },
+      "source_custody_sha256": "24607b0c5d014192a18b0a9435672558e43d64023992f46cf0b07f5119d460af",
+      "source_id": "github-repository:33261270",
+      "source_uri": "https://github.com/TUDelft-CNS-ATM/bluesky",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-mobility-124-topic.json",
+      "source_verification_sha256": "f81e99819194ffe26b1423c7da59256ef423b3652a85b6519eb521018e00a1c6",
+      "source_verification_uri": "https://api.github.com/repositories/33261270",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "b28943567af68524bad540e1e046dd975db22cf8edfcf64c325b19aa2a195d15",
+      "case_id": "release-mobility-125-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:02 GMT",
+        "etag": "W/\"26c939ecd6448d9c806359847a5297e89675a8c79a4f601e078c9c1a39ee697e\"",
+        "x-github-request-id": "F77D:1699D7:1C1493C:2177C7E:6AB98396"
+      },
+      "source_custody_sha256": "b010d0a9365b956858119d7588ea67b034126c8fbabc97727e9647950f2730e7",
+      "source_id": "github-repository:44746588",
+      "source_uri": "https://github.com/conveyal/r5",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-mobility-125-source.json",
+      "source_verification_sha256": "17356c9e701d15467614276280f3c4df794474babac2f4a2d291c3ffc5dd66fa",
+      "source_verification_uri": "https://api.github.com/repositories/44746588",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "c1257a66bb0d753b057cf0372a3c69d8da4079e05e4ec062861379de369cdda5",
+      "case_id": "release-mobility-126-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:04 GMT",
+        "etag": "W/\"8521985ef4a99243a1e5159f356576127791bdff8b68174cc94c51c2ff1d3dd2\"",
+        "x-github-request-id": "F78B:260132:1B5280F:20B6AE7:6AB98398"
+      },
+      "source_custody_sha256": "5203c93c0ac0fa404558a514064b68ca283717116d9a0991026f61878bff9491",
+      "source_id": "github-repository:99143543",
+      "source_uri": "https://github.com/transitland/transitland-processing-animation",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-mobility-126-source.json",
+      "source_verification_sha256": "d8bd2c1595f68ad2a00ef7cfca4e457990ce3d7a92bb05433e599227e5f0e9a1",
+      "source_verification_uri": "https://api.github.com/repositories/99143543",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "186ff93c6d3b97cd14afcb84c2d9ed62cf9f9ed42c7b4d3350fe614320253fe7",
+      "case_id": "release-open-data-142-topic",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:00 GMT",
+        "etag": "W/\"ac10dc324ffe3bb49faeee0cb5f3c3aa71c11ccb581b52ae3b292025cac00fd4\"",
+        "x-github-request-id": "F774:EE13D:1CE48FC:22488F8:6AB98394"
+      },
+      "source_custody_sha256": "a83749c8c7bc7cc3266c97b3a902e5872654d2be3026b3515d88eb8afb374951",
+      "source_id": "github-repository:75407467",
+      "source_uri": "https://github.com/mdeff/fma",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-open-data-142-topic.json",
+      "source_verification_sha256": "246c4d57d08b025e451132e661f46a94a4a91c3ebcc97d05c07cef8a6c08a8b4",
+      "source_verification_uri": "https://api.github.com/repositories/75407467",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "94b8a93b772cec3c62f80dbd40a1bfdc011813399f89bbe5be4b3c860d7a966b",
+      "case_id": "release-open-data-144-topic",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:05 GMT",
+        "etag": "W/\"9980f08b50f96efe003103f37df25bea556b491849919a97d1e72f171834518c\"",
+        "x-github-request-id": "F78E:F13F4:1D1E3EE:2282D2C:6AB98399"
+      },
+      "source_custody_sha256": "d2f38519a99d2eb6ad2afce01f937fafdcf896f8bae2b920b67652879f68bdf7",
+      "source_id": "github-repository:1103742564",
+      "source_uri": "https://github.com/datagouv/datagouv-mcp",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-open-data-144-topic.json",
+      "source_verification_sha256": "99a184f128a14845ceab6857a601d7a889ca4db2c67cd34c6b605f65f85402d5",
+      "source_verification_uri": "https://api.github.com/repositories/1103742564",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "438f2e88dc0ef5c17b162fa029e14b09cb9508d34dd01c7f3f8cbdedd4d279d3",
+      "case_id": "release-open-data-157-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:02 GMT",
+        "etag": "W/\"3bdeaa973de6a01d4a6c7b9807649d4e27a6aebdfa6c476daf4a4d27398038ef\"",
+        "x-github-request-id": "F77F:1E1B34:1C0B395:217013D:6AB98396"
+      },
+      "source_custody_sha256": "d3e8c133ee29257381df0f959cca2194a8f1b640edacec84271cb1dd136caee2",
+      "source_id": "github-repository:1129756504",
+      "source_uri": "https://github.com/ondata/ckan-mcp-server",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-open-data-157-source.json",
+      "source_verification_sha256": "c309dd6d73b5ea9881bf639690771598a9c107bbafc8993973855015cc41c8ad",
+      "source_verification_uri": "https://api.github.com/repositories/1129756504",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "9cfa26a555df99d9b91a6fedeec819032d2d17067e81444b7c57e008f35b8661",
+      "case_id": "release-open-data-150-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:08 GMT",
+        "etag": "W/\"8d5aff38d876b0d144a597372ee83518e0532700b171e2b6a2b4ae589051e4a5\"",
+        "x-github-request-id": "F799:259F60:1BDBA5E:213EFAB:6AB9839B"
+      },
+      "source_custody_sha256": "18ac8d9262ee435bdec9335f9e39a894c624665bcc31ceb680cfc28c1dea2b14",
+      "source_id": "github-repository:107711435",
+      "source_uri": "https://github.com/ip-tools/uspto-opendata-python",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-open-data-150-source.json",
+      "source_verification_sha256": "9149f5114d70d2b532491afdf7ab844eb549370553bb9c9518019acd38cdc2ad",
+      "source_verification_uri": "https://api.github.com/repositories/107711435",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "c48ca68ff80249bf9aba414d9275b0035d732a051f2f4db60cfea01af6c55745",
+      "case_id": "release-research-161-description",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:08 GMT",
+        "etag": "W/\"e2de3e28c379cc466b28abb08617236f83d72fa89e6569ec01160048139674f4\"",
+        "x-github-request-id": "F79A:DFD91:1BDDE77:2142759:6AB9839C"
+      },
+      "source_custody_sha256": "bcc0de71014deacab717ffed6aa9202594115cd696140ffc280422a1ecfd1b24",
+      "source_id": "github-repository:1140843380",
+      "source_uri": "https://github.com/mvanhorn/last30days-skill",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-research-161-description.json",
+      "source_verification_sha256": "e4fa594d3264cb96febd4bb3f29ae979d227259454fea3c4089c65bdeb631b37",
+      "source_verification_uri": "https://api.github.com/repositories/1140843380",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "e47068d4347582cdbeb8822a05ce8f152dd23a1ce0c64cc17166f3696cb896ad",
+      "case_id": "release-research-163-description",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:05 GMT",
+        "etag": "W/\"b4353c695d3b92f2fa0055c3c423708622c304aaf20d2fc037ee16ae9f6d5ad2\"",
+        "x-github-request-id": "F78F:8F7DE:1B80C77:20E4F8A:6AB98399"
+      },
+      "source_custody_sha256": "4da376098c4ea2002b5637d501b8effe38bc7e17c3dcfbb0f2e550a266df8900",
+      "source_id": "github-repository:287463830",
+      "source_uri": "https://github.com/microsoft/qlib",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-research-163-description.json",
+      "source_verification_sha256": "5eaa048c1b59f9d9b97c75cd2c3b53aeb30adb0946d9e0c1e2cc7acc974fe6b9",
+      "source_verification_uri": "https://api.github.com/repositories/287463830",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "027ecfb6800c829040b48ad3bf10bc965202a00e06d5b713c305200585051207",
+      "case_id": "release-research-170-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:03 GMT",
+        "etag": "W/\"1d3bdbcf47d768a6d4319d648ff9bc0d80ca02441e008fa9b933981bdc28de35\"",
+        "x-github-request-id": "F780:F2129:1B96B99:20FA361:6AB98397"
+      },
+      "source_custody_sha256": "9efb055feef4c0d24fe3404b75ef91f7079a1c94844e6ee34029d829de860ad4",
+      "source_id": "github-repository:1124477911",
+      "source_uri": "https://github.com/Weizhena/Deep-Research-skills",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-research-170-source.json",
+      "source_verification_sha256": "f7fe8cdd1c53bf71edad4e455a253cf384aecf660379ed851cf61583a3871f4e",
+      "source_verification_uri": "https://api.github.com/repositories/1124477911",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "facd0bc1cdcc0a579b0ac2bd3f62873cf60381db94955ffd06809f200463f0c0",
+      "case_id": "release-research-171-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:00 GMT",
+        "etag": "W/\"4b4b42cbcd970785b3a22dd1c16a4e9a15877cdbace5bb6bce011013250ca454\"",
+        "x-github-request-id": "F772:260EB9:1C0A303:216ED08:6AB98394"
+      },
+      "source_custody_sha256": "b18bb5c4b2bfbcdcb6319910b402055192aed4724a60acef3c4da0e7ed4a35f6",
+      "source_id": "github-repository:4340323",
+      "source_uri": "https://github.com/jspsych/jsPsych",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-research-171-source.json",
+      "source_verification_sha256": "59693f2c79df2b31dd744969c1f20618e2aa544fa0963b4bffb1094562a4b7e6",
+      "source_verification_uri": "https://api.github.com/repositories/4340323",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "1cadb0d0d97422f0cb7bbc687acb790b7942c9ff920a6c8fd64507dc2b16e9d3",
+      "case_id": "release-security-182-topic",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:03 GMT",
+        "etag": "W/\"333df5c0ef7b8ed69974a32759b1c5a29b8f399fab93cc03397a272e056a2dab\"",
+        "x-github-request-id": "F783:25C1A3:1B21D4C:2085C24:6AB98397"
+      },
+      "source_custody_sha256": "ad858ea899471ef8fdc7009bf681c90c3cd801a1a0885c32dc9f0b8eb29eb5b7",
+      "source_id": "github-repository:71220757",
+      "source_uri": "https://github.com/swisskyrepo/PayloadsAllTheThings",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-security-182-topic.json",
+      "source_verification_sha256": "579a202725e1992d15de82efc4ff387dcdd0df9c4228833d7e283e7995658cec",
+      "source_verification_uri": "https://api.github.com/repositories/71220757",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "8093354b4a4adbf75cc0893d481f54b0e85d18384fd87d815eec12f1cf72ccf4",
+      "case_id": "release-security-183-description",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:05 GMT",
+        "etag": "W/\"c6323e0c822a91d2d55bc76b55ca5caa240a31d206ab45c368fad7da8fc620b7\"",
+        "x-github-request-id": "F790:392496:1B6ED96:20D36D6:6AB98399"
+      },
+      "source_custody_sha256": "e0795aa962d93bae02680724a63544fb91308074f1733cd86d4e95f99d8df19b",
+      "source_id": "github-repository:252813491",
+      "source_uri": "https://github.com/projectdiscovery/nuclei",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-security-183-description.json",
+      "source_verification_sha256": "e4bf35bd7ff8c9fa29a174f0b107373cd1dddebf96850c16c74816ac29b4d253",
+      "source_verification_uri": "https://api.github.com/repositories/252813491",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "fd1a6d884149ecd2549d7c75224d2d0b3d1a4032a76ef4d16aa1de8a2a97a06c",
+      "case_id": "release-security-186-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:07 GMT",
+        "etag": "W/\"b3d87f315b387ac2dca38369cb77babea297eb506add42ee0276b2848a5599db\"",
+        "x-github-request-id": "F798:2F095E:1C0BA8B:21704B9:6AB9839B"
+      },
+      "source_custody_sha256": "8f7c77a0d60fb782db6457bf73dafce0b5c4bbdb1d905350a2391e131c05d651",
+      "source_id": "github-repository:96641209",
+      "source_uri": "https://github.com/shieldfy/API-Security-Checklist",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-security-186-source.json",
+      "source_verification_sha256": "ac045f055e73c2d1aa4963313179b1db1644f2bf0150346f97e0342450a4aff6",
+      "source_verification_uri": "https://api.github.com/repositories/96641209",
+      "source_verified_on": "2026-09-27"
+    },
+    {
+      "audit_request_sha256": "4a8ea99f29f1986aa79143817e2c60bf747a2f68b04c606ba9bde2e4c9184560",
+      "case_id": "release-security-195-source",
+      "response_headers": {
+        "date": "Sun, 27 Sep 2026 20:59:00 GMT",
+        "etag": "W/\"5fa67edb62efd7e3cac9617719eb6f853ad4e2019917b54b2ef8476a76f0cf34\"",
+        "x-github-request-id": "F775:25EA81:1C0E9E6:2173461:6AB98394"
+      },
+      "source_custody_sha256": "73c636041df633a8c0ac901a72fceb80de2c5d772fff495c73422d73006c1724",
+      "source_id": "github-repository:50806714",
+      "source_uri": "https://github.com/drduh/YubiKey-Guide",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_path": "records/release-security-195-source.json",
+      "source_verification_sha256": "f362f38d087434b9b1ee11f34bd8f6114d99e31f69d97f4b72d466c25b3c1b42",
+      "source_verification_uri": "https://api.github.com/repositories/50806714",
+      "source_verified_on": "2026-09-27"
+    }
+  ],
+  "version": "odylith.greenfield.matrix.audit-source-verification.v2"
+}

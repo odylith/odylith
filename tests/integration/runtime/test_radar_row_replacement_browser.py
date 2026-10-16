@@ -1,0 +1,309 @@
+"""Radar row replacement preserves identity and refuses invalid final targets.
+
+The ordinal-prepend fixture is a reflow/clipping negative. These controls do
+not establish a successful click after a visible, layout-preserving ordinal change.
+"""
+
+from contextlib import contextmanager
+import json
+
+import pytest
+
+from odylith.runtime.surfaces import render_backlog_ui_html_runtime as html_runtime
+from tests.integration.runtime import surface_browser_test_support as support
+from tests.integration.runtime.surface_browser_test_support import browser_context
+from tests.unit.runtime.test_backlog_story_projection import AUTHORED_BLOCK
+
+
+class PreparedRow:
+    """Force the proved interleaving only if the helper asks for row geometry."""
+
+    def __init__(self, locator, frame):
+        self.locator = locator
+        self.frame = frame
+        self.stale_box_calls = 0
+
+    def __getattr__(self, name):
+        return getattr(self.locator, name)
+
+    def bounding_box(self):
+        self.stale_box_calls += 1
+        handle = self.locator.element_handle()
+        self.frame.evaluate("""() => new Promise(resolve => {
+            const proof = window.__pointerProof;
+            proof.nativeRAF(timestamp => {
+                proof.flush(timestamp);
+                proof.nativeRAF(resolve);
+            });
+        })""")
+        try:
+            return handle.bounding_box()
+        finally:
+            handle.dispose()
+
+
+def prepare(browser_context, mode="replace"):
+    base_url, context = browser_context
+    page = context.new_page()
+    page.set_viewport_size({"width": 1440, "height": 932})
+    source = (AUTHORED_BLOCK + "\n\n") * 40 + "The final condition is still required."
+    entries = [{
+        "idea_id": f"B-{index + 1:03}", "title": f"Authored workstream {index + 1}",
+        "section": "active", "status": "queued", "rank": str(index + 1),
+        "story_source": "Proposed Solution",
+        "story_text": source if index == 1 else f"Preserve record {index + 1}",
+    } for index in range(185)]
+    page.route("**/radar-pointer.html", lambda route: route.fulfill(
+        status=200, content_type="text/html", body=html_runtime._render_html(payload={"entries": entries}),
+    ))
+    page.route("**/pointer-shell.html", lambda route: route.fulfill(
+        status=200, content_type="text/html",
+        body='<html><body style="margin:0"><header style="height:100px">Governance</header>'
+             '<iframe id="radar" src="radar-pointer.html" style="border:0;width:100%;height:800px"></iframe></body></html>',
+    ))
+    page.goto(base_url + "/pointer-shell.html", wait_until="networkidle")
+    frame = page.frame(url=base_url + "/radar-pointer.html")
+    assert frame is not None
+    button = frame.locator('button[data-idea-id="B-002"]')
+    assert button.locator(".row-story-text").inner_text() == source
+    assert button.evaluate("node => node.clientHeight > node.closest('#list').clientHeight")
+    frame.evaluate("""mode => {
+        const nativeRAF = window.requestAnimationFrame.bind(window);
+        const list = document.querySelector('#list');
+        const proof = window.__pointerProof = {
+            nativeRAF, queued: [], released: 0, replacements: 0, clicks: [],
+            original: list.querySelector('[data-idea-id="B-002"]'),
+        };
+        proof.flush = timestamp => {
+            const callbacks = proof.queued.splice(0);
+            for (const callback of callbacks) {
+                proof.released += 1;
+                callback(timestamp);
+                const fresh = list.querySelector('[data-idea-id="B-002"]');
+                proof.replacement = {
+                    old_connected: proof.original.isConnected,
+                    fresh_connected: fresh?.isConnected || false,
+                    fresh_box: fresh?.getBoundingClientRect().toJSON(),
+                    row_ids: [...list.querySelectorAll('.row')].map(node => node.dataset.ideaId),
+                };
+                if (mode === 'absent') fresh.remove();
+                if (mode === 'duplicate') list.append(fresh.cloneNode(true));
+                if (mode === 'ordinal') list.prepend(fresh);
+                if (mode === 'clip') list.style.cssText += ';height:0;min-height:0;max-height:0;padding:0';
+                if (mode === 'overlay') {
+                    const cover = document.createElement('div');
+                    cover.id = 'pointer-obstruction';
+                    cover.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:white';
+                    document.body.append(cover);
+                }
+            }
+        };
+        new MutationObserver(records => {
+            proof.replacements += records.filter(record =>
+                [...record.removedNodes].some(node => node.matches?.('.row')) &&
+                [...record.addedNodes].some(node => node.matches?.('.row'))).length;
+        }).observe(list, {childList: true});
+        window.requestAnimationFrame = callback => {
+            if (String(callback).includes('renderList(latestRenderedRows')) {
+                proof.queued.push(callback);
+                return -1;
+            }
+            return nativeRAF(timestamp => {proof.flush(timestamp); callback(timestamp);});
+        };
+        document.body.addEventListener('click', event => {
+            if (!proof.clicks.length) proof.replacementsBeforeClick = proof.replacements;
+            proof.clicks.push({trusted: event.isTrusted, id: event.target.closest('[data-idea-id]')?.dataset.ideaId});
+        }, true);
+    }""", mode)
+    return page, frame, PreparedRow(button, frame)
+
+
+def receipt(frame, row, record_property):
+    evidence = frame.evaluate("""() => {
+        const proof = window.__pointerProof;
+        const matches = document.querySelectorAll('#list button[data-idea-id="B-002"]');
+        const list = document.querySelector('#list'), clip = list.getBoundingClientRect();
+        const controls = document.querySelector('.controls').getBoundingClientRect();
+        const node = matches[0], box = node?.getBoundingClientRect();
+        let finalSample = {count: matches.length, scroll_top: list.scrollTop, reachable: false};
+        if (box) {
+            const left = Math.max(box.left, clip.left, 0), right = Math.min(box.right, clip.right, innerWidth);
+            const top = Math.max(box.top, clip.top, controls.bottom, 0);
+            const bottom = Math.min(box.bottom, clip.bottom, innerHeight);
+            const x = (left + right) / 2, y = (top + bottom) / 2;
+            const hit = document.elementFromPoint(x, y);
+            finalSample = {...finalSample, box: box.toJSON(), clip: clip.toJSON(), controls_bottom: controls.bottom,
+                x, y, hit_id: hit?.id || '', hit_row: hit?.closest('[data-idea-id]')?.dataset.ideaId || '',
+                reachable: matches.length === 1 && node.isConnected && right > left && bottom > top && node.contains(hit)};
+        }
+        return {released: proof.released, replacements: proof.replacements,
+            replacements_before_click: proof.replacementsBeforeClick,
+            replacement: proof.replacement, clicks: proof.clicks, final_sample: finalSample};
+    }""")
+    evidence["stale_box_calls"] = row.stale_box_calls
+    record_property("pointer_evidence", json.dumps(evidence, sort_keys=True))
+    return evidence
+
+
+@pytest.mark.parametrize("mode", ["replace"])
+def test_pointer_replacement(browser_context, record_property, mode):
+    page, frame, row = prepare(browser_context, mode)
+    try:
+        support._click_visible_radar_row(row)
+        assessment = frame.locator("#detail .detail-header > details > summary")
+        assessment.focus()
+        assessment.press("Enter")
+        assert frame.locator('#detail [data-kpi="workstream-id"] .v').inner_text() == "B-002"
+    finally:
+        evidence = receipt(frame, row, record_property)
+    assert evidence["released"] == 1
+    assert evidence["replacement"]["old_connected"] is False
+    assert evidence["replacement"]["fresh_connected"] is True
+    assert evidence["replacement"]["row_ids"] == ["B-001", "B-002"]
+    assert evidence["replacements_before_click"] == 1
+    assert evidence["clicks"] == [
+        {"trusted": True, "id": "B-002"}, {"trusted": True, "id": None},
+    ]
+    assert evidence["stale_box_calls"] == 0
+    page.close()
+
+
+@pytest.mark.parametrize("mode", ["ordinal", "absent", "clip", "overlay", "duplicate"])
+def test_pointer_refuses_invalid_final_sample(browser_context, record_property, mode):
+    page, frame, row = prepare(browser_context, mode)
+    if mode == "ordinal":
+        row.locator = frame.locator("#list .row").nth(1)
+    with pytest.raises(AssertionError, match="clipped or obstructed"):
+        support._click_visible_radar_row(row)
+    evidence = receipt(frame, row, record_property)
+    assert evidence["released"] == (2 if mode == "ordinal" else 1)
+    assert evidence["replacement"]["old_connected"] is False
+    assert evidence["replacement"]["fresh_connected"] is True
+    assert evidence["clicks"] == []
+    assert evidence["stale_box_calls"] == 0
+    assert evidence["final_sample"]["reachable"] is False
+    assessment = frame.locator("#detail .detail-header > details > summary")
+    assessment.focus()
+    assessment.press("Enter")
+    assert frame.locator('#detail [data-kpi="workstream-id"] .v').inner_text() == "B-001"
+    assert frame.evaluate("() => window.__pointerProof.clicks") == [{"trusted": True, "id": None}]
+    page.close()
+
+
+def _search_detail_body(idea_id):
+    return 'Object.assign(window.__ODYLITH_BACKLOG_DETAIL_SHARDS__ ||= {}, ' + json.dumps({
+        idea_id: {"title": f"Loaded {idea_id}"},
+    }) + ');'
+
+
+@contextmanager
+def _search_fixture(browser_context, *, hold_detail=False):
+    base_url, context = browser_context
+    entries = [{
+        "idea_id": f"B-{index:03}", "title": f"Workstream {index}",
+        "section": "active", "status": "queued", "rank": str(index),
+        "priority": "P1" if index == 2 else "P2", "story_text": f"Preserve record {index}",
+    } for index in range(1, 4)]
+    pending = []
+    with support._new_page(context) as (page, observation):
+        def detail(route):
+            idea_id = route.request.url.rsplit('/', 1)[-1].removesuffix('.js')
+            if hold_detail and idea_id == "B-002":
+                pending.append(route)
+            else:
+                route.fulfill(status=200, content_type="application/javascript", body=_search_detail_body(idea_id))
+
+        page.route("**/search-detail/*.js", detail)
+        page.route("**/radar-search.html", lambda route: route.fulfill(
+            status=200, content_type="text/html", body=html_runtime._render_html(payload={
+                "entries": entries, "detail_manifest": {
+                    idea_id: f"/search-detail/{idea_id}.js" for idea_id in ("B-001", "B-002")
+                },
+            }),
+        ))
+        page.goto(base_url + "/radar-search.html", wait_until="load")
+        support._wait_for_radar_detail_id(page, "B-001")
+        try:
+            yield page, pending
+        finally:
+            if pending:
+                for route in pending:
+                    route.fulfill(status=200, content_type="application/javascript", body=_search_detail_body("B-002"))
+                page.wait_for_function("() => !!window.__ODYLITH_BACKLOG_DETAIL_SHARDS__?.['B-002']")
+            support._assert_clean_page(page, observation)
+
+
+def test_search_blur_preserves_native_row_click(browser_context, record_property):
+    with _search_fixture(browser_context) as (page, _pending):
+        page.evaluate("""() => {
+            const proof = window.__searchClick = {events: [], down: null};
+            for (const type of ['pointerdown', 'change', 'pointerup', 'click']) {
+                document.addEventListener(type, event => {
+                    const row = event.target.closest('[data-idea-id]');
+                    if (type === 'pointerdown') proof.down = row;
+                    proof.events.push({type, trusted: event.isTrusted, row: row?.dataset.ideaId || '',
+                        downConnected: proof.down?.isConnected ?? null});
+                }, true);
+            }
+        }""")
+        page.locator("#query").fill("B-002")
+        page.locator('button[data-idea-id="B-002"]').click()
+        events = page.evaluate("() => window.__searchClick.events")
+        record_property("search_click_events", json.dumps(events))
+        assert [event["row"] for event in events if event["type"] == "click"] == ["B-002"]
+        assert all(event["trusted"] and event["downConnected"] for event in events if event["type"] in {"pointerup", "click"})
+        support._wait_for_radar_detail_id(page, "B-002")
+
+
+def test_unchanged_filter_events_preserve_rendered_row(browser_context):
+    with _search_fixture(browser_context) as (page, _pending):
+        query = page.locator("#query")
+        query.fill("B-002")
+        row = page.locator('button[data-idea-id="B-002"]').element_handle()
+        try:
+            query.press("Tab")
+            assert row.evaluate("node => node.isConnected")
+            query.dispatch_event("input")
+            query.dispatch_event("change")
+            assert row.evaluate("node => node.isConnected")
+        finally:
+            row.dispose()
+
+
+def test_changed_filters_keep_empty_and_degraded_recovery(browser_context):
+    with _search_fixture(browser_context) as (page, _pending):
+        query = page.locator("#query")
+        query.fill("B-002")
+        assert page.locator("#list .row").count() == 1
+        page.locator("#priority").select_option("P2")
+        assert page.locator("#list .row").count() == 0
+        assert page.locator("#detail-empty").is_visible()
+        query.fill("")
+        assert page.locator("#list .row").count() == 2
+        page.locator("#priority").select_option("all")
+        assert page.locator("#list .row").count() == 3
+        query.evaluate("node => { node.value = 'B-003'; node.dispatchEvent(new Event('change', {bubbles: true})); }")
+        assert page.locator("#list .row").count() == 1
+        page.locator('button[data-idea-id="B-003"]').click()
+        support._wait_for_radar_detail_id(page, "B-003")
+        assert page.locator("#detail [role=status]").inner_text() == "Workstream detail unavailable. The available summary is shown."
+        query.fill("no matching workstream")
+        assert page.locator("#detail-empty").is_visible()
+        query.fill("")
+        support._wait_for_radar_detail_id(page, "B-003")
+
+
+def test_search_selection_rejects_late_previous_detail(browser_context):
+    with _search_fixture(browser_context, hold_detail=True) as (page, pending):
+        page.locator("#query").fill("B-002")
+        with page.expect_request("**/search-detail/B-002.js"):
+            page.locator('button[data-idea-id="B-002"]').click()
+        assert page.locator('button[data-idea-id="B-002"].active').count() == 1
+        page.locator("#query").fill("B-001")
+        page.locator('button[data-idea-id="B-001"]').click()
+        support._wait_for_radar_detail_id(page, "B-001")
+        assert len(pending) == 1
+        pending.pop().fulfill(status=200, content_type="application/javascript", body=_search_detail_body("B-002"))
+        page.wait_for_function("() => !!window.__ODYLITH_BACKLOG_DETAIL_SHARDS__?.['B-002']")
+        support._wait_for_radar_detail_id(page, "B-001")
+        assert page.locator("#detail .detail-title").inner_text() == "Loaded B-001"

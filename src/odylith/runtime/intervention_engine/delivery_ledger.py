@@ -215,7 +215,10 @@ def active_lane_matrix(*, host_family: str) -> list[dict[str, str]]:
         "Bash checkpoint hook with cached grounding and assistant recovery; "
         "native apply_patch depends on host dispatch or visible recovery"
         if host == "codex"
-        else "Write/Edit/MultiEdit and Bash checkpoint hooks with assistant recovery"
+        else (
+            "Write/Edit/MultiEdit and Bash checkpoint hooks refresh governance silently on success; "
+            "stop-summary or explicit visible recovery must render chat text"
+        )
     )
     return [
         {
@@ -230,7 +233,7 @@ def active_lane_matrix(*, host_family: str) -> list[dict[str, str]]:
         },
         {
             "lane": "Odylith Observation",
-            "phase": "post-tool checkpoints, with stop-summary recovery",
+            "phase": "Codex post-tool checkpoints; Claude stop-summary or explicit visible recovery",
             "visibility": edit_visibility,
         },
         {

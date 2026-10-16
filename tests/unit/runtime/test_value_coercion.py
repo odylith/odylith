@@ -42,6 +42,13 @@ def test_dedupe_strings_trims_dedupes_and_honors_limit() -> None:
     ]
 
 
+def test_dedupe_by_key_preserves_first_value_for_caller_owned_keys() -> None:
+    assert value_coercion.dedupe_by_key(
+        ["First Path", "first-path", "Proof"],
+        lambda value: value.casefold().replace("-", " "),
+    ) == ["First Path", "Proof"]
+
+
 def test_string_rows_requires_list_by_default_and_can_allow_scalars_or_sequences() -> None:
     assert value_coercion.string_rows([" Alpha ", "", "Beta", "Alpha"]) == ["Alpha", "Beta"]
     assert value_coercion.string_rows((" Alpha ", "Beta")) == []

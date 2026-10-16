@@ -1,0 +1,67 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "climate",
+    "weather",
+    "energy",
+    "emission",
+    "carbon",
+    "environment"
+  ],
+  "matched_description_evidence_terms": [
+    "climate",
+    "weather"
+  ],
+  "repository": {
+    "default_branch": "master",
+    "description": "Turn any electrical irrigation valve into a smart-valve.. or run your pumps on a smart schedule based on your climate! This homebridge plugin exposes a multi-zone irrigation sprinkler dummy control system to Apple's HomeKit. Although a dummy, it brings smarts of an evapotranspiration based climate and plant adaptive irrigation controller with the use of OpenWeatherMap API. The plugin can optionally email you, and/or send you push notifications through Pushover or Pushcut, with the watering schedule it has calculated, or when a watering run is completed, along with the next 7-day weather forecast. Added option to expose system controls to Homekit allowing a user to enable/disable irrigation, rechecks, push and email notifications from within the Home App. Associated WaterLevel Characteristic shows the % of watering cycle remaining.",
+    "full_name": "MTry/homebridge-smart-irrigation",
+    "id": 346664121,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "homebridge-smart-irrigation",
+    "node_id": "MDEwOlJlcG9zaXRvcnkzNDY2NjQxMjE=",
+    "pushed_at": "2025-12-08T09:21:45Z",
+    "topics": [
+      "adaptive-control",
+      "climate",
+      "evapotranspiration",
+      "homebridge",
+      "homebridge-plugin",
+      "homebridge-smart-irrigation",
+      "homekit",
+      "irrigation",
+      "openweathermap-api",
+      "pushcut",
+      "pushover",
+      "smart-irrigation",
+      "solenoid-valves",
+      "sprinkler",
+      "sprinkler-controller",
+      "valve",
+      "watering",
+      "watering-controller",
+      "weather",
+      "zones"
+    ]
+  },
+  "response_item_index": 29,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aclimate&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:15:51 GMT",
+    "x-github-request-id": "D11F:1970B5:13E88A8:144CDCD:6A5B6064"
+  },
+  "search_response_path": "responses/climate.json",
+  "search_response_sha256": "a54b64b33b56141f273c98e7740de87a1cea68dd3d7568861ad24d90624787b7",
+  "selection_index": 12,
+  "source_family": "climate",
+  "source_id": "github-repository:346664121",
+  "source_uri": "https://github.com/MTry/homebridge-smart-irrigation",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

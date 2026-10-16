@@ -1,0 +1,888 @@
+{
+  "claim_class": "audit-requests-only",
+  "requested_audit_count": 40,
+  "requests": [
+    {
+      "audit_request_sha256": "4feb344b7428e9f80ab81b14b8af583ff7376864220eef0652e70769c2f517e0",
+      "case_id": "release-accessibility-001-description",
+      "prompt_sha256": "8876dfede33179fdfa23a9e2f64a286408c0572bab55e642cb66109d7567470a",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "551bab34ffdfda3461e67923c7412ad77295a51c61ae7174db81f3d0d211c48f",
+      "source_excerpt_sha256": "7f43fa201be75da35bb90bd34ac8a328c73abbf0438a6f2b9664356e65e50b63",
+      "source_family": "accessibility",
+      "source_id": "github-repository:295992065",
+      "source_uri": "https://github.com/tailwindlabs/headlessui",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/295992065",
+      "stressors": [
+        "modal-expert-lens",
+        "scientific-casing",
+        "final-memory-pressure"
+      ]
+    },
+    {
+      "audit_request_sha256": "4eb4a5cffa2ce85795f23a95d631d379a78960dd11e171651d5afab3f5bef345",
+      "case_id": "release-agriculture-021-description",
+      "prompt_sha256": "e1a6255c5608ec64675456a432f536ba04a030dbe5e0b55cf5fb2d852e4a1f0a",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "df4d19be342ebca32ea380aba29cba43bf591ebc6d91fc15c8b53f02a1921688",
+      "source_excerpt_sha256": "172e6ad747dc4417e9ac85f69fc414ffabf225a3ceb5213acabd99baf7e0e780",
+      "source_family": "agriculture",
+      "source_id": "github-repository:533452400",
+      "source_uri": "https://github.com/microsoft/farmvibes-ai",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/533452400",
+      "stressors": [
+        "registry-contract-pressure",
+        "path-grant",
+        "long-first-path"
+      ]
+    },
+    {
+      "audit_request_sha256": "02a8d930c4c16e4a8210db0d30bbe6e88a524c9d5a8fd17467c9378dd265059b",
+      "case_id": "release-civic-tech-044-topic",
+      "prompt_sha256": "998059bcdba190cd4c7f037005002301da764a109287ea80621b19589a147aa8",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "32ac58d1bb32ced99c0234e905d80759688296339f7f7499f208eae55c5eaeb1",
+      "source_excerpt_sha256": "aba7dc464d51939944588fa9673476286b47581b1bb58877710797ba273e6d2b",
+      "source_family": "civic-tech",
+      "source_id": "github-repository:72879182",
+      "source_uri": "https://github.com/codeforamerica/civic-tech-taxonomy",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/72879182",
+      "stressors": [
+        "latency-pressure",
+        "noun-verb-homonym",
+        "domain-depth-obligations"
+      ]
+    },
+    {
+      "audit_request_sha256": "d22f53b27a8238cb119da386f36fa1d39f4a1a17bfa376ee00920415d9263167",
+      "case_id": "release-climate-064-topic",
+      "prompt_sha256": "3559492ab49b8c0c23ba30dc78c02d67c3164bfa53517f59a7fa9f2b3a24a11b",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "dfd7f6dbd88dc4b848656fe5b5d437642f8d33df9de701e49379eb574abcd742",
+      "source_excerpt_sha256": "5f79b2322616892b8215453a990b444b183a60078b51034c7a7074480bfcc743",
+      "source_family": "climate",
+      "source_id": "github-repository:80646423",
+      "source_uri": "https://github.com/catalyst-cooperative/pudl",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/80646423",
+      "stressors": [
+        "atlas-label-pressure",
+        "modal-expert-lens",
+        "multi-role-tribunal"
+      ]
+    },
+    {
+      "audit_request_sha256": "e605ce24bd53abd3f097cdc0f056bcceaa9dd6e5aa5d30ede23796e00d6074a2",
+      "case_id": "release-education-081-description",
+      "prompt_sha256": "564951bd4de565ff4c6be5a569af28ddd89d337583e0acde95dd7bef943ba347",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "8abbe8203228e71a1240dae2950d35818d900859de42530f705a1ab6bf30c306",
+      "source_excerpt_sha256": "4a857ebed97a37e1d12c7feb2960e6e2d26551ccba3440dab91ec9e6a5f01f5d",
+      "source_family": "education",
+      "source_id": "github-repository:343965132",
+      "source_uri": "https://github.com/microsoft/ML-For-Beginners",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/343965132",
+      "stressors": [
+        "scientific-casing",
+        "domain-depth-obligations",
+        "latency-pressure"
+      ]
+    },
+    {
+      "audit_request_sha256": "3411214050984a4b2420cc4a33187d916387f1fffac7720a62d8827b5b76d57d",
+      "case_id": "release-healthcare-101-description",
+      "prompt_sha256": "8d8674095ee66e36e24935063539461d2716b4c3c0140e5c3bbd02e45a3ef8d5",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "e586eb2e6adb8d474155fdb7b39e62b80e1870ad54acb66bcb2715685726cbaa",
+      "source_excerpt_sha256": "7fa7c40c7047821c5852e3b7b49e9206cc410302465b4fa03bdd0a42fb2e44a8",
+      "source_family": "healthcare",
+      "source_id": "github-repository:1086572146",
+      "source_uri": "https://github.com/the-momentum/open-wearables",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/1086572146",
+      "stressors": [
+        "path-grant",
+        "multi-role-tribunal",
+        "atlas-label-pressure"
+      ]
+    },
+    {
+      "audit_request_sha256": "738ebb1612bd77ee809150cdc989d714a93e8a225ab7d64536b4c6b5ced23738",
+      "case_id": "release-mobility-124-topic",
+      "prompt_sha256": "25493fce6fb8f51669536d396b95a3f432e15b5e7d59bcb576c62d3676395cdd",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "58d64e248d3635f6af527300e7223935503f851cac049cfe0bfb0aef3db6e1c9",
+      "source_excerpt_sha256": "076a33c9195228ef8f63159243d900a8efb7cdf296756bb47dcf1154bf6d2aac",
+      "source_family": "mobility",
+      "source_id": "github-repository:33261270",
+      "source_uri": "https://github.com/TUDelft-CNS-ATM/bluesky",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/33261270",
+      "stressors": [
+        "noun-verb-homonym",
+        "long-first-path",
+        "registry-contract-pressure"
+      ]
+    },
+    {
+      "audit_request_sha256": "dfb660b50e7497d5afea0ed8b12fd9103d13d885a7b528fc4b5b100ac90c57c2",
+      "case_id": "release-open-data-144-topic",
+      "prompt_sha256": "2975cf91e1dfd37267c9a1137d3dcf6bcceddd962133a2470851a39875b39093",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "db90e59eacd7cbb4528f58974895bada8c8bbd418d4200406180f096521f9b74",
+      "source_excerpt_sha256": "10182ab855ff772753c05b2fea333666b5f312835d32936b6b03e08ef2cbd6d3",
+      "source_family": "open-data",
+      "source_id": "github-repository:1103742564",
+      "source_uri": "https://github.com/datagouv/datagouv-mcp",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/1103742564",
+      "stressors": [
+        "modal-expert-lens",
+        "scientific-casing",
+        "final-memory-pressure"
+      ]
+    },
+    {
+      "audit_request_sha256": "0b6b578285d84d2732541e9870892cbb3d548399a3457dd555dd84a38cea89ed",
+      "case_id": "release-research-161-description",
+      "prompt_sha256": "c9531fdcc61770cd1648ca8be8155ff64059f67e0593582672a0da044e808872",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "c5d18127e6453236d1a9cabb4ff57be8dd5af0b570e78819c6a55e48603b1407",
+      "source_excerpt_sha256": "ee626e3e638bfc9b115b0442a83ead012f6badde53d386204b1a4293d461479a",
+      "source_family": "research",
+      "source_id": "github-repository:1140843380",
+      "source_uri": "https://github.com/mvanhorn/last30days-skill",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/1140843380",
+      "stressors": [
+        "domain-depth-obligations",
+        "registry-contract-pressure",
+        "noun-verb-homonym"
+      ]
+    },
+    {
+      "audit_request_sha256": "f2bd8fb7ff01dde8c935605a36baa28fe4d39fe90585516f360ae1b67d7d1471",
+      "case_id": "release-security-182-topic",
+      "prompt_sha256": "b247882c147797e44489b8a2f38f4b879c5120b0ca5673b6db78985838b6d62f",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "f047931964dcea3d8a4a02f60df46c5a854399f1556f08d8d6fe75a02bc90c90",
+      "source_excerpt_sha256": "721152d9d7ea07f8d55b35ff2d6e7eb6b471d8ac2be01262bca7dceb13ec8a76",
+      "source_family": "security",
+      "source_id": "github-repository:71220757",
+      "source_uri": "https://github.com/swisskyrepo/PayloadsAllTheThings",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/71220757",
+      "stressors": [
+        "long-first-path",
+        "atlas-label-pressure",
+        "path-grant"
+      ]
+    },
+    {
+      "audit_request_sha256": "27f249c18f0d526b9307b87256a6872ea15380916920d88f407f1b83445a4243",
+      "case_id": "release-accessibility-005-source",
+      "prompt_sha256": "5bd1e9d775a346611de933d85b27712511b060f15bd1ed48265c7c42bde22ba7",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "c73df265d05b53b692d95ce665d7ac4f4235191bf1c67348fae6a0ed3fdf104b",
+      "source_excerpt_sha256": "43d50c540bfd8a231a220196eefbfac3da300acdaf3dc8b543b6d4a548fc79f2",
+      "source_family": "accessibility",
+      "source_id": "github-repository:762289766",
+      "source_uri": "https://github.com/mui/base-ui",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/762289766",
+      "stressors": [
+        "multi-role-tribunal",
+        "final-memory-pressure",
+        "modal-expert-lens"
+      ]
+    },
+    {
+      "audit_request_sha256": "94e45d397d079fcc1751afb3519d3438552486553dbde68f5a6923c75b74f215",
+      "case_id": "release-agriculture-026-source",
+      "prompt_sha256": "f6f1b682f8e2aeb1e97194b57c9d2d52211d702208a4d43ab39e55804c14ccf9",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "a19832fd7485adf78df3cd2d3ec89f00fcbfc6304f5b7c98dc3f79791dbc8dfe",
+      "source_excerpt_sha256": "71b1374cd0f4053924732bf36330d04216aa9905f5650d47b794cc005719127a",
+      "source_family": "agriculture",
+      "source_id": "github-repository:171045076",
+      "source_uri": "https://github.com/gabrieltseng/pycrop-yield-prediction",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/171045076",
+      "stressors": [
+        "scientific-casing",
+        "domain-depth-obligations",
+        "latency-pressure"
+      ]
+    },
+    {
+      "audit_request_sha256": "9c2ce4d643566f91448bdf13f1407923118cceef1c655e4828d3b10e2829b695",
+      "case_id": "release-civic-tech-046-source",
+      "prompt_sha256": "4da0fe904207057144bd16f7425d43e612c75f6190e810fd6866d28eefacbd91",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "d7a3e0c957833340b4e152fc235da81209a42a381f3e94a7a5f20c6419d360cb",
+      "source_excerpt_sha256": "fa5a6138590338fee92c464c4f3e1b9742c332b43d196a7d39bf1a9e00520bd1",
+      "source_family": "civic-tech",
+      "source_id": "github-repository:881453766",
+      "source_uri": "https://github.com/civic-dashboard/civic-dashboard-web",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/881453766",
+      "stressors": [
+        "path-grant",
+        "multi-role-tribunal",
+        "atlas-label-pressure"
+      ]
+    },
+    {
+      "audit_request_sha256": "bf9250590f0e91571a32a1e0db799e00d2dc1c3974ef3cf5d8eca6e9ab19fce1",
+      "case_id": "release-climate-069-source",
+      "prompt_sha256": "a0d9ecbab6491a795f7603ac4fcf4ae0efdb39a430e83a03baaddcf213d90b2d",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "6831266e48d8c3f3d123cc2f88d0cca073027b5ef33f467727aff912f0bc8c33",
+      "source_excerpt_sha256": "29d7b833989d6308efd5eb6b18264e09e0cd88f8649d4944d2afc9019aced62d",
+      "source_family": "climate",
+      "source_id": "github-repository:270910358",
+      "source_uri": "https://github.com/opennem/opennem",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/270910358",
+      "stressors": [
+        "noun-verb-homonym",
+        "long-first-path",
+        "registry-contract-pressure"
+      ]
+    },
+    {
+      "audit_request_sha256": "14fb8d08682905890d92d1f717b2e84a5e450d9d80644fb571fe5a1edb13eecd",
+      "case_id": "release-education-085-source",
+      "prompt_sha256": "c2920c950da54a0538c2a5c3b8e697cd378b5294bd7a9fc282f355fb52cf2e2f",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "d3a934a91991f9e10ab23bdc3882e7d0ce4f2050ed03146528e52f7ade1a16d7",
+      "source_excerpt_sha256": "8b27a1c9a0805d29b056bd690b8345c2fa1db50647a72303f9bec8fef7746e1e",
+      "source_family": "education",
+      "source_id": "github-repository:55358122",
+      "source_uri": "https://github.com/mikesprague/udacity-nanodegrees",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/55358122",
+      "stressors": [
+        "final-memory-pressure",
+        "latency-pressure",
+        "scientific-casing"
+      ]
+    },
+    {
+      "audit_request_sha256": "bb638843d69579f97f2c2b09f2d2750cc7a8ef2bc777c0ce023bfb81d1329b7f",
+      "case_id": "release-healthcare-104-topic",
+      "prompt_sha256": "c4d71087d40be82eda1d10361eb6ae23d83cf7c2842f6eac4ecd7d3a2c5fcfc1",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "dea6e1e26ca2f0373086d37528807e1372f2fb127182004f5d3fcc81e9ec3aa1",
+      "source_excerpt_sha256": "5490c06140bd564bc3e5e699899bf39a9d8301075024ff3556093618a4c37968",
+      "source_family": "healthcare",
+      "source_id": "github-repository:284780206",
+      "source_uri": "https://github.com/sunlabuiuc/PyHealth",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/284780206",
+      "stressors": [
+        "multi-role-tribunal",
+        "final-memory-pressure",
+        "modal-expert-lens"
+      ]
+    },
+    {
+      "audit_request_sha256": "7d1a00265c3d9ba628ff79d483118d595f99ccb08ac8b8b5518dd9ca61eb23a1",
+      "case_id": "release-mobility-121-description",
+      "prompt_sha256": "7c94a63cf612b3aaf79077e0129a8f21f47c4570b5dadd9d815b97ef72f37ead",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "98b8dc7afd99c70bf335e0de83b50f3d4a78126deb4cbbf4eca99befa0b565c3",
+      "source_excerpt_sha256": "2763d1311cdaa8d2eb59ef5e8cf54fd46e181a1d875054a52db677ae8a6290e6",
+      "source_family": "mobility",
+      "source_id": "github-repository:13044127",
+      "source_uri": "https://github.com/conveyal/transitive.js",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/13044127",
+      "stressors": [
+        "latency-pressure",
+        "noun-verb-homonym",
+        "domain-depth-obligations"
+      ]
+    },
+    {
+      "audit_request_sha256": "ec7f1b77a7d2866190c923412bfd9b6c4a874fabcd7ba821fe80070e269659f5",
+      "case_id": "release-open-data-142-topic",
+      "prompt_sha256": "32a2831eb357549e421580448832ce3318b505bc332eb064d6c18163a1aa3f14",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "48518511472bd7c01b6f0b0fc3cc3aa56c966ec729468b556e481cc0ce7e8ce9",
+      "source_excerpt_sha256": "b277fd623676a525c29b9eb155afc8c9010681814ceafb2d7627f47b9a232576",
+      "source_family": "open-data",
+      "source_id": "github-repository:75407467",
+      "source_uri": "https://github.com/mdeff/fma",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/75407467",
+      "stressors": [
+        "registry-contract-pressure",
+        "path-grant",
+        "long-first-path"
+      ]
+    },
+    {
+      "audit_request_sha256": "9bf5dff70e39350a2e6d8e577dcd4816460ee090962e1940dd015ac41eee9439",
+      "case_id": "release-research-163-description",
+      "prompt_sha256": "aeac5cb266e22edd53095f5f67e461dc13b0bffeef176eadca87d64a8eb547d5",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "f7ddbf4665bb5e15cdc5d6bac9af2c5b799a3cee9459e93f44aaef32431f41d3",
+      "source_excerpt_sha256": "5b401a1791000b4a020709043879bf4669c21b92569d8d77e6f3ded3f04cc654",
+      "source_family": "research",
+      "source_id": "github-repository:287463830",
+      "source_uri": "https://github.com/microsoft/qlib",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/287463830",
+      "stressors": [
+        "atlas-label-pressure",
+        "modal-expert-lens",
+        "multi-role-tribunal"
+      ]
+    },
+    {
+      "audit_request_sha256": "c6f16044d66d1b19d26ab00b644f5cc6243fe17255f632389c18cb2f6ed6dfe6",
+      "case_id": "release-security-183-description",
+      "prompt_sha256": "b58dca2b5f1b3814bf9a4f99015d4bd2fadbc783e13240a7a705222a73d5259b",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "ac14d04644009228f64d6377ef98a854d5e97de4bbb54408d88463626b3dd245",
+      "source_excerpt_sha256": "c1f26b8d616966a8512b31b65898b38d8ff9b1e130188304eeb0ce811096a7a9",
+      "source_family": "security",
+      "source_id": "github-repository:252813491",
+      "source_uri": "https://github.com/projectdiscovery/nuclei",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/252813491",
+      "stressors": [
+        "domain-depth-obligations",
+        "registry-contract-pressure",
+        "noun-verb-homonym"
+      ]
+    },
+    {
+      "audit_request_sha256": "9e9cf3912ef0cea1124956ffa7e5b64bf66be5b86d633869e55a754b82cea629",
+      "case_id": "release-accessibility-006-source",
+      "prompt_sha256": "1595173d6167dc9d95118e13fc9a66c6cfa2dd35cc2b329c73da70381ad2f3ff",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "d6d2cd12b9e94ac9972434927881ac0ad086effb3b6af9e897b41b0d569f1d03",
+      "source_excerpt_sha256": "8bf85a0b6cdbf7b11aeeecc4ac048483a2f66132f386c43974d059f32ab30601",
+      "source_family": "accessibility",
+      "source_id": "github-repository:654115547",
+      "source_uri": "https://github.com/radix-ui/themes",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/654115547",
+      "stressors": [
+        "long-first-path",
+        "atlas-label-pressure",
+        "path-grant"
+      ]
+    },
+    {
+      "audit_request_sha256": "f0e4688a5e21b8a77e73edb15147bf5f7e9521bb6b6b0d75f21be49ce85640f9",
+      "case_id": "release-agriculture-030-source",
+      "prompt_sha256": "ed17a33aa7e94e521f46818c5384061a2c3b56eec394f8d751240d1c0f253c52",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "8d1b92ea356918615e8d22ea4118213a494dbc08cd03596106917d1d8c330242",
+      "source_excerpt_sha256": "f7fcd50902e276792c1da4a91af3c69e4c6bc6d481f7a55721320ac8271581aa",
+      "source_family": "agriculture",
+      "source_id": "github-repository:210179111",
+      "source_uri": "https://github.com/kazulagi/plantFEM",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/210179111",
+      "stressors": [
+        "final-memory-pressure",
+        "latency-pressure",
+        "scientific-casing"
+      ]
+    },
+    {
+      "audit_request_sha256": "3dc81be8b221e3cadf1fa5f21ae31910c7d901ff54f0b1ccaa1a0fc2df6b6ece",
+      "case_id": "release-civic-tech-041-description",
+      "prompt_sha256": "21e7d33a088c6c75f80ad4c72db2bfab1d1d9c617ec41bee6b283351f9aca4fb",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "a994727be3608e9c2b5325d9d0ad0f969ed30a7314d8c64de1c92efde912a4e0",
+      "source_excerpt_sha256": "f622003eb62c7b0fe6152ab9364c81240d28856d4999b6557599ade4780b21f6",
+      "source_family": "civic-tech",
+      "source_id": "github-repository:241519642",
+      "source_uri": "https://github.com/civictechindex/CTI-website-frontend",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/241519642",
+      "stressors": [
+        "final-memory-pressure",
+        "latency-pressure",
+        "scientific-casing"
+      ]
+    },
+    {
+      "audit_request_sha256": "12a90df04fe1e70361c64aaade75b95542df9be03ce6e43463bc5d493d78baa8",
+      "case_id": "release-climate-061-description",
+      "prompt_sha256": "889a060533f823f6b339a85698ab966b3760d21959797ddc0a8d908aea72cfb9",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "96171916f966125d48cfc4fc5d157977ae8c17cb4044770c379388dcef6258b5",
+      "source_excerpt_sha256": "ae1b0a004fcb3acd8af43aba7fc3db98ae4cd68fef875a9deeda43c994871df5",
+      "source_family": "climate",
+      "source_id": "github-repository:285335799",
+      "source_uri": "https://github.com/meteostat/meteostat",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/285335799",
+      "stressors": [
+        "long-first-path",
+        "atlas-label-pressure",
+        "path-grant"
+      ]
+    },
+    {
+      "audit_request_sha256": "0684789d714279efbaf4bbc2e64926ea1babf2406754ccb0d64a25e3c99b8d70",
+      "case_id": "release-education-084-topic",
+      "prompt_sha256": "f9c0a7d411e5227c5bd29f5a91f7cce365e5dbc7908cc53dd5b411bbc9df7fbe",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "8e5a82f2007a5b8b337df94f293a583c9ab05c2668379707d7356b46cc437c87",
+      "source_excerpt_sha256": "ddf7ff5ebd9d66ce161466c1c0262430fa04de32b0e420ee3f489e2e2112e386",
+      "source_family": "education",
+      "source_id": "github-repository:95133665",
+      "source_uri": "https://github.com/s-matyukevich/raspberry-pi-os",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/95133665",
+      "stressors": [
+        "domain-depth-obligations",
+        "registry-contract-pressure",
+        "noun-verb-homonym"
+      ]
+    },
+    {
+      "audit_request_sha256": "76961defd8c4aea6298c0ec215e21189f2679d2c3eb08f72a43d933062ad99d8",
+      "case_id": "release-healthcare-108-source",
+      "prompt_sha256": "84f5b238b12b5caf0181d5c568cc62134ffae1606633515cf55656bd63a1b7ad",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "baa7aa7c8a11a32e4af89673f6253a6dd72807a252b3c67adeb955b6fe22bac0",
+      "source_excerpt_sha256": "a8dc6b67d430ecdfd30b9b85e326bc9f373abd3672848f50a550d7bd907d5b49",
+      "source_family": "healthcare",
+      "source_id": "github-repository:336295638",
+      "source_uri": "https://github.com/amberkakkar01/Health-Care-Chatbot",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/336295638",
+      "stressors": [
+        "atlas-label-pressure",
+        "modal-expert-lens",
+        "multi-role-tribunal"
+      ]
+    },
+    {
+      "audit_request_sha256": "1d62b1a130f7f1384c9d9e7848a79e9430b33cb9485015a1087968a67c112c61",
+      "case_id": "release-mobility-125-source",
+      "prompt_sha256": "cf87f1c910be4043c69c1adac6aca6d4756ff20ec4cff1cf9bfe8de7118b1b11",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "a7dad5640177c3a4ab3c8b54e3950e7fe63f32368c925a231f0f7551566c26a6",
+      "source_excerpt_sha256": "d2fc0ffd21799f5683f724ff2e295babb6321210e2a7bd39b472a27eeb55328d",
+      "source_family": "mobility",
+      "source_id": "github-repository:44746588",
+      "source_uri": "https://github.com/conveyal/r5",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/44746588",
+      "stressors": [
+        "scientific-casing",
+        "domain-depth-obligations",
+        "latency-pressure"
+      ]
+    },
+    {
+      "audit_request_sha256": "89edd8f243a37a8362ef04d8a5c8c2cc53ec83fe4f0de6ea3e1126566cc096d6",
+      "case_id": "release-open-data-146-source",
+      "prompt_sha256": "456a56f0cc9250c972ad6cd6e37b65704d7c1145d62c6ac64c4d7ce666bfe458",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "967b969e11f35f26c8c59452e4668463af065becbe6bd21475ee611594f25130",
+      "source_excerpt_sha256": "5f5af6dc920e9843db902a7da6f2cb1b5acbe2cfb6357b966fc86abe64c57f5e",
+      "source_family": "open-data",
+      "source_id": "github-repository:579552122",
+      "source_uri": "https://github.com/opengeos/aws-open-data-geo",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/579552122",
+      "stressors": [
+        "noun-verb-homonym",
+        "long-first-path",
+        "registry-contract-pressure"
+      ]
+    },
+    {
+      "audit_request_sha256": "05605eb01f71e6ccfbee1d878d89bed2d9a68fb4785aba9d1b52b58e0423c8f0",
+      "case_id": "release-research-170-source",
+      "prompt_sha256": "6ac9dd0d110d462c0872c45f5e0096dd45c5c588bb91822155dfba159c2c4a8a",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "486f3c9a7c1365d654504550379903503673b5273ee232ae1560f14c2239c2e9",
+      "source_excerpt_sha256": "977e0d47db7aab843427d13eef8933269e56d7cc053698395979dbf4dbad0be1",
+      "source_family": "research",
+      "source_id": "github-repository:1124477911",
+      "source_uri": "https://github.com/Weizhena/Deep-Research-skills",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/1124477911",
+      "stressors": [
+        "multi-role-tribunal",
+        "final-memory-pressure",
+        "modal-expert-lens"
+      ]
+    },
+    {
+      "audit_request_sha256": "93a34ed6f0961d533e6f51ba780c215d4cf2969eb8072386a0cf653943e55b22",
+      "case_id": "release-security-186-source",
+      "prompt_sha256": "8f64401acfe728802c79e3f238d901c7311fa9d47b8cb0dfc05c5010d71d739e",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "6a9dc7b840f96ee7770a3538ae336b3ec5330bbae8a4475001ecbc9c156bc051",
+      "source_excerpt_sha256": "0e6372c23d6650a5acd06210e499c4f8c0a2b309d0055d0d6b92bfbd68f4fff2",
+      "source_family": "security",
+      "source_id": "github-repository:96641209",
+      "source_uri": "https://github.com/shieldfy/API-Security-Checklist",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/96641209",
+      "stressors": [
+        "registry-contract-pressure",
+        "path-grant",
+        "long-first-path"
+      ]
+    },
+    {
+      "audit_request_sha256": "e9213e874044887895393bf0f4afa21674d0868e32dddddbe206f3231259e120",
+      "case_id": "release-accessibility-004-topic",
+      "prompt_sha256": "67914d1ba766ec8b316a980de6133e00f39d1effccb7dec5686629e006de657a",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "4c1ddccab9eb5e24f1e443c721f56a20e8b0cc7373572f1b915d31ef48b7daf5",
+      "source_excerpt_sha256": "714db89df42bdb7ce4beb63d373d13ea159049419e7d5032748900d46a677550",
+      "source_family": "accessibility",
+      "source_id": "github-repository:273499522",
+      "source_uri": "https://github.com/radix-ui/primitives",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/273499522",
+      "stressors": [
+        "scientific-casing",
+        "domain-depth-obligations",
+        "latency-pressure"
+      ]
+    },
+    {
+      "audit_request_sha256": "c26dda65df5f2eae5970011fd916fb13e172a6a5c06cae554e136f1d49512e10",
+      "case_id": "release-agriculture-024-topic",
+      "prompt_sha256": "f03446890c2436cfbf341ad974886e6e8b5686e65e8426c2bfd16143ad7fdadb",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "73238eb8ddde55731df43983245888e67c736c3b7875eb6d3c9b70c4da005d5c",
+      "source_excerpt_sha256": "3f52a423f8ebd4ccad56c627fa1287d3286e15e20968d590bfbbbb6d53162a1c",
+      "source_family": "agriculture",
+      "source_id": "github-repository:399194159",
+      "source_uri": "https://github.com/geezacoleman/OpenWeedLocator",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/399194159",
+      "stressors": [
+        "path-grant",
+        "multi-role-tribunal",
+        "atlas-label-pressure"
+      ]
+    },
+    {
+      "audit_request_sha256": "8d06a1ec4651dc87909a78ec4cdb718b8aef3b07aeded5caba9fd1f177c5b041",
+      "case_id": "release-civic-tech-045-source",
+      "prompt_sha256": "410e20033a11a1d98837f679e79a623f2da67be7efa49de544f5d4b575fc5063",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "fee634973e573cf2d2b442180f82d1187fb2f56052880a330fabb5167e0cee9b",
+      "source_excerpt_sha256": "a002998ab12267e50e6ff9f7be639bdd90cd3c29e4120fc5a7124709d4c43a21",
+      "source_family": "civic-tech",
+      "source_id": "github-repository:1139170409",
+      "source_uri": "https://github.com/ChronalLabs/ChronOS",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/1139170409",
+      "stressors": [
+        "modal-expert-lens",
+        "scientific-casing",
+        "final-memory-pressure"
+      ]
+    },
+    {
+      "audit_request_sha256": "07c3e6ebd33e62d4040eea8f9cc2c87f1597ebb6eb0016333d5c35bf3d757909",
+      "case_id": "release-climate-066-source",
+      "prompt_sha256": "752899a9b51e3654656d8fd64b56d968afc5bf2fa57b1c067187d25d87b63ad3",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "7956bf13047132226758ef2f9fb176e726085781b2054bfa964c08ccbecc5c6c",
+      "source_excerpt_sha256": "663ef9629d7e5e3c64932a89ecacd0eca037993664e9cbddb3caec602491045a",
+      "source_family": "climate",
+      "source_id": "github-repository:103773583",
+      "source_uri": "https://github.com/pangeo-data/climpred",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/103773583",
+      "stressors": [
+        "latency-pressure",
+        "noun-verb-homonym",
+        "domain-depth-obligations"
+      ]
+    },
+    {
+      "audit_request_sha256": "a0e970088c850bd4ec82b4d7141ccc968ca2fd61ac3fa20960ea94a690915347",
+      "case_id": "release-education-086-source",
+      "prompt_sha256": "bf9d544115689c547fa78435d7226f5b5af7d1b19a332d8a0122d67e194c804b",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "490ac69f37a86fe5f074e48ac496930a56a5f2e7a47067498eda7e8d3da3dbdd",
+      "source_excerpt_sha256": "fd5469768416ce9f706f9b0f2b7af4a929b739aa44b30607512b95e433c42ff5",
+      "source_family": "education",
+      "source_id": "github-repository:326441188",
+      "source_uri": "https://github.com/PetoiCamp/OpenCat-Quadruped-Robot",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/326441188",
+      "stressors": [
+        "atlas-label-pressure",
+        "modal-expert-lens",
+        "multi-role-tribunal"
+      ]
+    },
+    {
+      "audit_request_sha256": "c1476d591b27128b9006d798f5daab7cb2b42a6e4917cd6e7562ba4d07239419",
+      "case_id": "release-healthcare-109-source",
+      "prompt_sha256": "83c882e5c60f182f39763584619c5821e939e6c1debf2d33c762cc58794422d0",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "4d2f220e7167a40ac854cbaeeb59409b6659a3ba513d7fb130cec5ab29da1cae",
+      "source_excerpt_sha256": "af5b77fdd5297e60c256a3fdefce549e12375f5af501a58884d46760b0a95c32",
+      "source_family": "healthcare",
+      "source_id": "github-repository:247995671",
+      "source_uri": "https://github.com/ohcnetwork/care",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/247995671",
+      "stressors": [
+        "registry-contract-pressure",
+        "path-grant",
+        "long-first-path"
+      ]
+    },
+    {
+      "audit_request_sha256": "f8347e8bc11f3a7d6fd1e45b9fb0acdb5aca5f202f31792701ab6d00c1bd127c",
+      "case_id": "release-mobility-126-source",
+      "prompt_sha256": "ae1b8f0aed2635dc77657551133be3ef89d24f80a3f8007131a9be7f11dfdab5",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "06b2d1472d8eb2df0bd354f62ba77f570a509a797dd0aba1591b2db4a89133de",
+      "source_excerpt_sha256": "9c5167e6ce7ee7b58f564866e2cd800b4e2caffd43b9cda599aeb68404b76ead",
+      "source_family": "mobility",
+      "source_id": "github-repository:99143543",
+      "source_uri": "https://github.com/transitland/transitland-processing-animation",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/99143543",
+      "stressors": [
+        "multi-role-tribunal",
+        "final-memory-pressure",
+        "modal-expert-lens"
+      ]
+    },
+    {
+      "audit_request_sha256": "561ca11ccd7e47b3801dfa79a2b4d270e82b88feb32f610530c2dac27f69320d",
+      "case_id": "release-open-data-150-source",
+      "prompt_sha256": "900dcc214a18a4e9c25b91c8ebefe5cbba6a206f4b6d5b3c95bdca4eaac9e0e2",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "e6a1f1f719dd9ae76175afe55658cea4fb3f5881b069e9e801461bf575eee4c7",
+      "source_excerpt_sha256": "742db21da4a8c522c65f9fa5f46a44012555aeb1bf46c94b26045978ad702ac1",
+      "source_family": "open-data",
+      "source_id": "github-repository:107711435",
+      "source_uri": "https://github.com/ip-tools/uspto-opendata-python",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/107711435",
+      "stressors": [
+        "domain-depth-obligations",
+        "registry-contract-pressure",
+        "noun-verb-homonym"
+      ]
+    },
+    {
+      "audit_request_sha256": "3fdbce25a10885adf28e1454336c5b3cc4c98f9a599912af110922457cbf0634",
+      "case_id": "release-research-171-source",
+      "prompt_sha256": "cad56cce27ba8d6fd3caae5bb1bfedbc3363314c3a22a892c2e300a15048b0d2",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "9cc3f3a509dc5232b619695a274960f70bf7979ec063be196780fd199269453a",
+      "source_excerpt_sha256": "07789aa49a28b87376c573bed4e06b5b6d42c6b3ef2068e75a77ff45754a6df5",
+      "source_family": "research",
+      "source_id": "github-repository:4340323",
+      "source_uri": "https://github.com/jspsych/jsPsych",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/4340323",
+      "stressors": [
+        "long-first-path",
+        "atlas-label-pressure",
+        "path-grant"
+      ]
+    },
+    {
+      "audit_request_sha256": "0d9fe706d69958dd8280fc9e15475f3298cdf27c28c97dade3a3f9ad4d4b2395",
+      "case_id": "release-security-195-source",
+      "prompt_sha256": "ae760d0cb63f6a1c272c164e2369f993b6589ad827b394a3bd13168eec128649",
+      "required_assessments": {
+        "derivation_assessment": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved"
+      },
+      "source_artifact_sha256": "aa57d23acadb6ca73ecc2ea491fca22d9d904f23b40f5b63a775c16d792911f7",
+      "source_excerpt_sha256": "81ccfa08f2d675ef02196c142a7884dc1626f26693c8a0d4bc35ac930ea9d508",
+      "source_family": "security",
+      "source_id": "github-repository:50806714",
+      "source_uri": "https://github.com/drduh/YubiKey-Guide",
+      "source_verification_method": "github-repository-api-check-v1",
+      "source_verification_uri": "https://api.github.com/repositories/50806714",
+      "stressors": [
+        "final-memory-pressure",
+        "latency-pressure",
+        "scientific-casing"
+      ]
+    }
+  ],
+  "source_case_file": "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v1.json",
+  "version": "odylith.greenfield.matrix.audit-request-plan.v2"
+}

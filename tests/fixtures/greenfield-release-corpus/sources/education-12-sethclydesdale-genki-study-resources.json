@@ -1,0 +1,53 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "education",
+    "learning",
+    "student",
+    "teaching",
+    "school",
+    "course"
+  ],
+  "matched_description_evidence_terms": [
+    "course"
+  ],
+  "repository": {
+    "default_branch": "master",
+    "description": "A collection of exercises for practicing what is taught in Genki: An Integrated Course in Elementary Japanese.",
+    "full_name": "SethClydesdale/genki-study-resources",
+    "id": 121683086,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "genki-study-resources",
+    "node_id": "MDEwOlJlcG9zaXRvcnkxMjE2ODMwODY=",
+    "pushed_at": "2026-07-16T23:54:49Z",
+    "topics": [
+      "education",
+      "genki",
+      "japanese",
+      "japanese-language",
+      "japanese-study",
+      "language-learning",
+      "website"
+    ]
+  },
+  "response_item_index": 31,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aeducation&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:15:57 GMT",
+    "x-github-request-id": "D127:37400:14E2036:154650B:6A5B606A"
+  },
+  "search_response_path": "responses/education.json",
+  "search_response_sha256": "d51afeba9684308dd78e53e1ecc6ffcf33d5093aa6f1d2e4bc3690c31b6b2504",
+  "selection_index": 12,
+  "source_family": "education",
+  "source_id": "github-repository:121683086",
+  "source_uri": "https://github.com/SethClydesdale/genki-study-resources",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

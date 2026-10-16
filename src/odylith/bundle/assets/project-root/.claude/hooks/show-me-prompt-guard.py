@@ -80,7 +80,8 @@ def _additional_context(project_dir: Path) -> str:
         "`odylith-show-me` skill if it is available. Otherwise run the first command "
         "that works from the repo root and capture stdout only: "
         "`./.odylith/bin/odylith show --repo-root .`; "
-        "`odylith show --repo-root .`. Return that stdout directly. Do not run "
+        "`odylith show --repo-root .`. Return that stdout directly, then end the turn "
+        "immediately. Do not run any other Bash command before or after it. Do not run "
         "`start`, `doctor`, `version`, `intervention-status`, `visible-intervention`, "
         "host compatibility checks, or launcher-state explanations unless the user "
         "explicitly asks for diagnostics. If neither command can run, report only "
@@ -95,7 +96,8 @@ def _help_additional_context(project_dir: Path) -> str:
         "not generic Claude capabilities, install, runtime, intervention, launcher, or "
         "repo diagnosis. Run the first command that works from the repo root and capture stdout only: "
         "`./.odylith/bin/odylith --help`; `odylith --help`. Return that stdout "
-        "directly. Do not run `start`, `show`, `doctor`, `version`, "
+        "directly, then end the turn immediately. Do not run any other Bash command before or after it. "
+        "Do not run `start`, `show`, `doctor`, `version`, "
         "`intervention-status`, `visible-intervention`, host compatibility checks, "
         "or launcher-state explanations unless the user explicitly asks for diagnostics."
     )
@@ -110,7 +112,8 @@ def _capability_inventory_context(project_dir: Path) -> str:
         "memory, local files, or generic Claude Code capability prose. Run the "
         "first command that works from the repo root and capture stdout only: "
         "`./.odylith/bin/odylith capabilities --repo-root .`; "
-        "`odylith capabilities --repo-root .`. Return that stdout directly."
+        "`odylith capabilities --repo-root .`. Return that stdout directly, then end the turn immediately. "
+        "Do not run any other Bash command before or after it."
     )
 
 

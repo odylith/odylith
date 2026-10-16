@@ -37,9 +37,6 @@ const __ODYLITH_SHELL_REDIRECT_IN_PROGRESS__ = (function enforceShellOwnedSurfac
     }
     window.__ODYLITH_SHELL_REDIRECTING__ = true;
     window.__ODYLITH_SHELL_REDIRECT_TARGET__ = shellUrl.toString();
-    if (typeof window.stop === "function") {
-      window.stop();
-    }
     targetWindow.location.replace(shellUrl.toString());
     return true;
   } catch (_error) {
@@ -66,7 +63,7 @@ const DATA = window["__ODYLITH_REGISTRY_DATA__"] || {};
     const allComponents = Array.isArray(payload.components) ? payload.components.slice() : [];
     const REGISTRY_LIST_WINDOW_THRESHOLD = 160;
     const REGISTRY_LIST_OVERSCAN = 20;
-    const REGISTRY_LIST_ROW_HEIGHT = 86;
+    const REGISTRY_LIST_ROW_HEIGHT = 104;
     const REGISTRY_LIST_HEADER_HEIGHT = 30;
     let latestRenderedComponents = [];
     let latestListWindowKey = "";
@@ -337,6 +334,104 @@ initSharedQuickTooltips();
       return `${raw.slice(0, cut).replace(/[ ,;:-]+$/, "")}...`;
     }
 
+    function componentKind(row) {
+  return humanizeToken(row && row.kind || "").trim();
+}
+
+function componentRawName(row) {
+  return String(row && (row.name || row.component_id) || "").replace(/\s+/g, " ").trim();
+}
+
+function componentCompactName(row, limit = 64) {
+  const raw = componentRawName(row);
+  if (!raw) return "Component";
+  const kind = componentKind(row);
+  let candidate = raw;
+  if (candidate.length > limit) {
+    const relativeClause = candidate.match(/\s+(?:that|which|who|where|when|whose)\s+/i);
+    if (relativeClause && relativeClause.index >= 12) {
+      candidate = candidate.slice(0, relativeClause.index).replace(/[ ,;:-]+$/, "").trim();
+    }
+  }
+  if (
+    kind
+    && candidate
+    && candidate !== raw
+    && raw.toLowerCase().endsWith(` ${kind.toLowerCase()}`)
+    && !candidate.toLowerCase().endsWith(` ${kind.toLowerCase()}`)
+  ) {
+    candidate = `${candidate} ${kind}`;
+  }
+  return clipText(candidate || raw, limit);
+}
+
+function componentFullIdentity(row) {
+  const raw = componentRawName(row);
+  const componentId = String(row && row.component_id || "").trim();
+  if (raw && componentId && raw.toLowerCase() !== componentId.toLowerCase()) {
+    return `${raw} (${componentId})`;
+  }
+  return raw || componentId || "Component";
+}
+
+function compactPathLabel(path, fallback = "Artifact") {
+  const raw = String(path || "").trim();
+  if (!raw) return fallback;
+  if (raw.endsWith("/CURRENT_SPEC.md")) return "Component spec";
+  if (raw.startsWith("src/")) return "Source boundary";
+  return clipText(basenamePath(raw) || raw, 54);
+}
+
+function compactRegistryNarrative(value, row) {
+  const text = String(value || "").trim();
+  const registrationText = text.replace(/`/g, "");
+  if (registrationText === "Logical component registered through odylith component register."
+      || (registrationText.startsWith("Logical component registered through odylith component register with ")
+          && registrationText.endsWith(" as its initial evidence anchor."))) return "";
+  const prefix = `${String(row && row.name || "")} is a proposed logical component. Proposed responsibility: `;
+  const generated = row && row.status === "planned" && row.qualification === "candidate";
+  return generated && text.startsWith(prefix) ? text.slice(prefix.length) : text;
+}
+
+function summaryTextRow(title, body) {
+  const text = String(body || "").trim();
+  return `<p class="summary-row"><strong>${escapeHtml(title)}:</strong> ${escapeHtml(text || "Not documented.")}</p>`;
+}
+
+function summaryArtifactRow(title, path, label) {
+  const token = String(path || "").trim();
+  if (!token) return "";
+  return `
+    <div class="summary-row summary-artifact-row">
+      <strong>${escapeHtml(title)}:</strong>
+      <span class="artifact-list">
+        ${artifactChip(
+          { path: token, href: token },
+          token,
+          "artifact artifact-compact",
+          label || compactPathLabel(token, title),
+        )}
+      </span>
+    </div>
+  `;
+}
+
+function renderComponentListButton(row, selectedId) {
+  const categoryToken = String(row.category || "").trim().toLowerCase();
+  const fullIdentity = componentFullIdentity(row);
+  const metaText = humanizeToken(row.status || "active");
+  return `
+    <li>
+      <button type="button" class="component-btn${row.component_id === selectedId ? " active" : ""}" data-component="${escapeHtml(row.component_id)}" title="${escapeHtml(fullIdentity)}" aria-label="${escapeHtml(fullIdentity)}">
+        <span class="component-card-title">${escapeHtml(componentCompactName(row, 58))}</span>
+        <span class="component-meta" title="${escapeHtml(fullIdentity)}">${escapeHtml(metaText)}</span>
+        <span class="inline">
+          <span class="label ${escapeHtml(toneClassForCategory(categoryToken))}">${escapeHtml(humanizeToken(categoryToken))}</span>
+        </span>
+      </button>
+    </li>
+  `;
+}
     function normalizedEventKind(event) {
       return String(event && event.kind || "").trim().toLowerCase();
     }
@@ -693,9 +788,9 @@ initSharedQuickTooltips();
 
     function productLayerDescription(layer) {
       const token = String(layer || "").trim().toLowerCase();
-      if (token === "shell_host") return "Owns the top-level Odylith shell and host routing surface.";
+      if (token === "shell_host") return "Owns top-level Odylith shell and host routing surface.";
       if (token === "evidence_surface") return "Owns one of the operator-facing evidence and inspection surfaces.";
-      if (token === "memory_retrieval") return "Owns the derived local memory, sparse recall, packet compaction, and dense-context diagnostics substrate.";
+      if (token === "memory_retrieval") return "Owns derived local memory, sparse recall, packet compaction, and dense-context diagnostics substrate.";
       if (token === "intelligence") return "Owns case-building, reasoning, or remediation intelligence inside Odylith.";
       if (token === "agent_execution") return "Owns bounded agent routing, orchestration, or host-execution behavior.";
       if (token === "cli_bootstrap") return "Owns install, bootstrap, or operator command-entry boundaries for Odylith.";
@@ -772,11 +867,6 @@ initSharedQuickTooltips();
       if (next !== `${window.location.pathname}${window.location.search}`) {
         window.history.replaceState(null, "", next);
       }
-      if (window.parent && window.parent !== window) {
-        const state = { component };
-        window.parent.postMessage({ type: "odylith-registry-navigate", state }, "*");
-        window.parent.postMessage({ type: "odylith-registry-navigate", state }, "*");
-      }
     }
 
     function countMapFromPayload(key) {
@@ -816,12 +906,12 @@ initSharedQuickTooltips();
         { label: "Visible Components", value: Number(visibleCount || 0), tooltip: "Components visible under current search and filters." },
         { label: "All Components", value: Number(counts.components || 0), tooltip: "Total first-class component inventory size." },
         { label: "Events", value: Number(counts.events || 0), tooltip: "Codex stream events visible to Registry." },
-        { label: "Meaningful", value: Number(counts.meaningful_events || 0), tooltip: "Governance-relevant events." },
-        { label: "Mapped Meaningful", value: Number(counts.mapped_meaningful_events || 0), tooltip: "Meaningful events with mapped components." },
+        { label: "Governance Events", value: Number(counts.meaningful_events || 0), tooltip: "Governance-relevant events." },
+        { label: "Events Linked to Components", value: Number(counts.mapped_meaningful_events || 0), tooltip: "Meaningful events with mapped components." },
       ];
       if (Number(counts.unmapped_meaningful_events || 0) > 0) {
         rows.push({
-          label: "Unmapped Meaningful",
+          label: "Events Missing Component Links",
           value: Number(counts.unmapped_meaningful_events || 0),
           tooltip: "Meaningful events without mapped components.",
           warn: true,
@@ -834,6 +924,10 @@ initSharedQuickTooltips();
           tooltip: "Unresolved component tokens pending curated review.",
         });
       }
+      const missingLinks = Number(counts.unmapped_meaningful_events || 0);
+      document.getElementById("registryActivitySummary").textContent = missingLinks > 0
+        ? `Activity and coverage · ${missingLinks} ${missingLinks === 1 ? "event needs" : "events need"} component links`
+        : "Activity and coverage";
       kpisEl.innerHTML = rows
         .map((row) => (
           `<article class="kpi-card${row.warn ? " warn" : ""}" data-tooltip="${escapeHtml(row.tooltip || "")}">`
@@ -949,9 +1043,7 @@ initSharedQuickTooltips();
     function selectDefault(items, requested) {
       if (!items.length) return "";
       const token = String(requested || "").trim().toLowerCase();
-      if (token && items.some((row) => String(row.component_id || "").toLowerCase() === token)) {
-        return token;
-      }
+      if (token) return items.some((row) => String(row.component_id || "").toLowerCase() === token) ? token : "";
       return String(items[0].component_id || "").trim().toLowerCase();
     }
 
@@ -1065,22 +1157,7 @@ initSharedQuickTooltips();
           blocks.push(`<li class="group-head">${escapeHtml(humanizeToken(item.category))} · ${item.count}</li>`);
           return;
         }
-        const row = item.row;
-          const categoryToken = String(row.category || "").trim().toLowerCase();
-          const toneClass = toneClassForCategory(categoryToken);
-          const coverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};
-        blocks.push(`
-          <li>
-            <button type="button" class="component-btn${row.component_id === selectedId ? " active" : ""}" data-component="${escapeHtml(row.component_id)}">
-              <span class="component-card-title">${escapeHtml(row.name || row.component_id)}</span>
-              <span class="component-meta">${escapeHtml(row.component_id)} · ${escapeHtml(humanizeToken(row.kind))} · ${escapeHtml(humanizeToken(row.status || "active"))} · ${escapeHtml(forensicCoverageLabel(coverage))} · ${escapeHtml(Number(row.timeline_count || 0))} events</span>
-              <span class="inline">
-                <span class="label ${escapeHtml(toneClass)}">${escapeHtml(humanizeToken(categoryToken))}</span>
-                <span class="label">${escapeHtml(humanizeToken(row.qualification || "curated"))}</span>
-              </span>
-            </button>
-          </li>
-        `);
+        blocks.push(renderComponentListButton(item.row, selectedId));
       });
       if (windowed.afterPx > 0) {
         blocks.push(`<li class="list-spacer" aria-hidden="true" style="height:${windowed.afterPx}px"></li>`);
@@ -1139,11 +1216,12 @@ initSharedQuickTooltips();
       return `<span class="label" data-tooltip="${escapeHtml(tooltip || "")}">${escapeHtml(label)}</span>`;
     }
 
-    function artifactChip(item, tooltip, className = "artifact") {
+    function artifactChip(item, tooltip, className = "artifact", labelOverride = "") {
       const path = String(item && item.path || "").trim();
       const href = String(item && item.href || path).trim();
       if (!path || !href) return "";
-      return `<a class="${escapeHtml(className)}" href="${escapeHtml(href)}" target="_top" data-tooltip="${escapeHtml(tooltip || "Artifact evidence path.")}">${escapeHtml(path)}</a>`;
+      const label = String(labelOverride || path).trim() || "artifact";
+      return `<a class="${escapeHtml(className)}" href="${escapeHtml(href)}" target="_top" data-tooltip="${escapeHtml(tooltip || path || "Artifact evidence path.")}">${escapeHtml(label)}</a>`;
     }
 
     function renderSpecLinkGroup(title, items, emptyLabel, tooltip) {
@@ -1542,10 +1620,6 @@ initSharedQuickTooltips();
     }
 
     function renderDetail(row) {
-      if (!row) {
-        detailEl.innerHTML = "";
-        return;
-      }
       const workstreams = Array.isArray(row.workstreams) ? row.workstreams : [];
       const diagrams = Array.isArray(row.diagrams) ? row.diagrams : [];
       const diagramDetails = Array.isArray(row.diagram_details) ? row.diagram_details : [];
@@ -1583,7 +1657,7 @@ initSharedQuickTooltips();
       const syntheticExecutiveEvents = windowEvents.filter((event) => isSyntheticTimelineEvent(event));
       const baselineExecutiveEvents = windowEvents.filter((event) => isBaselineTimelineEvent(event));
       const primaryWorkstream = workstreamPreview[0] || "";
-      const componentName = String(row.name || row.component_id || "This component").trim() || "This component";
+      const componentName = componentCompactName(row, 72);
       const confidence = intelligenceConfidence(
         explicitExecutiveEvents.length,
         syntheticExecutiveEvents.length,
@@ -1615,11 +1689,11 @@ initSharedQuickTooltips();
         specDeveloperDocs: Array.isArray(row.spec_developer_docs) ? row.spec_developer_docs : [],
       };
       const metadata = [
+        staticLabel(`ID: ${row.component_id}`, "Exact component identifier."),
         staticLabel(`Category: ${humanizeToken(row.category)}`, categoryDescription(row.category)),
         staticLabel(`Qualification: ${humanizeToken(row.qualification)}`, qualificationDescription(row.qualification)),
         staticLabel(`Kind: ${humanizeToken(row.kind)}`, "Component structure class."),
         staticLabel(`Owner: ${row.owner || "unknown"}`, "Declared ownership for governance routing."),
-        staticLabel(`Status: ${humanizeToken(row.status || "unknown")}`, "Lifecycle state of this component record."),
       ].join("");
 
       const wsLinks = workstreams.length
@@ -1689,7 +1763,12 @@ initSharedQuickTooltips();
         ? `<p class="desc">${escapeHtml(forensicCoverageLabel(forensicCoverage))}. ${escapeHtml(emptyReasons.length ? ensureSentence(naturalList(emptyReasons)) : "No mapped forensic evidence channels are currently attached.")}</p>`
         : `<p class="desc">${escapeHtml(forensicCoverageSummary(forensicCoverage))}</p>`;
 
+      const whyTracked = String(row.why_tracked || "").trim();
+      const rawWhatItIs = String(row.what_it_is || "").trim();
+      const whatItIs = compactRegistryNarrative(rawWhatItIs, row);
       const rows = [
+        whatItIs !== rawWhatItIs ? contextRow("Registry description", 1, `<p class="desc">${escapeHtml(rawWhatItIs)}</p>`, "Exact stored description; the header omits only generated scaffolding.", true) : "",
+        contextRow("Why tracked", whyTracked ? 1 : 0, `<p class="desc">${escapeHtml(whyTracked)}</p>`, "Declared delivery or governance rationale.", true),
         contextRow("Forensic Coverage", Number(row.timeline_count || 0), forensicCoverageBody, "Registry coverage truth derived from explicit Compass events, recent path matches, and mapped workstream evidence.", true),
         contextRow("Metadata", 5, metadata, "Category, qualification, and ownership qualifiers."),
         contextRow("Product Layer", productLayer ? 1 : 0, productLayerBody, "Odylith product-layer placement for this component."),
@@ -1701,10 +1780,11 @@ initSharedQuickTooltips();
         contextRow("Path Prefixes", pathPrefixes.length, pathLabels, "Artifact prefixes used in event mapping."),
       ].join("");
 
-      const displayName = String(row.name || row.component_id || "").trim();
+      const displayName = componentRawName(row);
+      const fullIdentity = componentFullIdentity(row);
       const fallbackToken = String(row.component_id || "").trim();
       const specPath = String(row.spec_ref || "").trim();
-      const specLastUpdated = String(row.spec_last_updated || "").trim() || "Unknown";
+      const specLastUpdated = String(row.spec_last_updated || "").trim();
       const specHistory = Array.isArray(row.spec_feature_history) ? row.spec_feature_history : [];
       const specMarkdown = String(row.spec_markdown || "").trim();
       const specRunbooks = Array.isArray(row.spec_runbooks) ? row.spec_runbooks : [];
@@ -1724,15 +1804,12 @@ initSharedQuickTooltips();
             </div>
           </details>
         `
-        : '<p class="summary-row"><strong>Triggers:</strong> No trigger phrases documented.</p>';
+        : "";
 
       detailEl.innerHTML = `
-        <h2 class="component-name">${escapeHtml(displayName || fallbackToken)}</h2>
+        <div class="component-identity"><h2 class="component-name" title="${escapeHtml(fullIdentity)}">${escapeHtml(displayName || fallbackToken)}</h2>${staticLabel(humanizeToken(row.status || "unknown"), "Lifecycle state of this component record.")}</div>
         <div class="summary-strip">
-          <p class="summary-row"><strong>What it is:</strong> ${escapeHtml(row.what_it_is || "Not documented.")}</p>
-          <p class="summary-row"><strong>Why tracked:</strong> ${escapeHtml(row.why_tracked || "Not documented.")}</p>
-          ${productLayer ? `<p class="summary-row"><strong>Product layer:</strong> ${escapeHtml(productLayerLabel(productLayer))}</p>` : ""}
-          <p class="summary-row"><strong>Forensic coverage:</strong> ${escapeHtml(forensicCoverageSummary(forensicCoverage))}</p>
+          <p class="summary-row component-purpose">${escapeHtml(whatItIs || "Purpose not documented.")}</p>
           ${triggerBlock}
         </div>
         <details class="spec-expand">
@@ -1741,12 +1818,13 @@ initSharedQuickTooltips();
               <p class="detail-disclosure-title spec-summary-title">Current Spec</p>
             </div>
             <span class="spec-summary-meta">
-              <span class="label">Last updated ${escapeHtml(specLastUpdated)}</span>
+              ${specLastUpdated ? `<span class="label">Last updated ${escapeHtml(specLastUpdated)}</span>` : ""}
               <span class="label">Feature entries ${escapeHtml(String(specHistory.length))}</span>
             </span>
           </summary>
           <div class="spec-expand-body">
-            <p class="summary-row"><strong>Spec source:</strong> ${escapeHtml(specPath || "Not documented.")}</p>
+            ${specLastUpdated ? "" : summaryTextRow("Last updated", "Not documented.")}
+            ${specPath ? summaryArtifactRow("Spec source", specPath, compactPathLabel(specPath, "Component spec")) : '<p class="summary-row"><strong>Spec source:</strong> Not documented.</p>'}
             ${renderSpecLinkGroup(
               "Runbooks",
               specRunbooks,
@@ -1782,10 +1860,15 @@ initSharedQuickTooltips();
 
     const FORENSIC_DIGEST_WORKSTREAM_LIMIT = 4;
     const FORENSIC_DIGEST_ARTIFACT_LIMIT = 2;
+    const FORENSIC_DIGEST_GROUP_LIMIT = 4;
 
     function forensicEventCountLabel(count) {
       const value = Number(count || 0);
       return `${value} ${pluralize(value, "event", "events")}`;
+    }
+
+    function forensicNormalizeText(value) {
+      return String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
     }
 
     function forensicEvidenceEvents(row) {
@@ -1809,13 +1892,102 @@ initSharedQuickTooltips();
       return Number.isFinite(value) ? value : 0;
     }
 
-    function forensicCoverageStrip(events, forensicCoverage) {
+    function forensicEventSignature(event) {
+      const workstreams = (Array.isArray(event && event.workstreams) ? event.workstreams : [])
+        .map((item) => String(item || "").trim())
+        .filter(Boolean)
+        .sort()
+        .join(",");
+      const artifacts = (Array.isArray(event && event.artifacts) ? event.artifacts : [])
+        .map((item) => String(item && (item.path || item.href) || "").trim())
+        .filter(Boolean)
+        .sort()
+        .join(",");
+      return [
+        forensicNormalizeText(event && event.kind),
+        forensicNormalizeText(event && event.summary),
+        workstreams,
+        artifacts,
+      ].join("|");
+    }
+
+    function forensicUniqueEvents(events) {
+      const unique = [];
+      const seen = new Set();
+      (Array.isArray(events) ? events : []).forEach((event) => {
+        const signature = forensicEventSignature(event);
+        if (!signature || seen.has(signature)) return;
+        seen.add(signature);
+        unique.push(event);
+      });
+      return unique;
+    }
+
+    function forensicIsDiagnosticEvent(event) {
+      const kind = forensicNormalizeText(event && event.kind);
+      const summary = forensicNormalizeText(event && event.summary);
+      return (
+        kind.includes("intervention_")
+        || kind.includes("hook")
+        || kind.includes("teaser")
+        || kind.includes("assist")
+        || summary.includes("hidden hook")
+        || summary.includes("non-visible")
+      );
+    }
+
+    function forensicEvidenceChannel(event) {
+      const kind = forensicNormalizeText(event && event.kind);
+      const summary = forensicNormalizeText(event && event.summary);
+      if (forensicIsDiagnosticEvent(event)) return "Diagnostic signal";
+      if (kind.includes("spec") || kind.includes("history") || summary.includes("spec")) return "Spec history";
+      if (kind.includes("validation") || kind.includes("benchmark") || kind.includes("proof")) return "Proof and validation";
+      if (kind.includes("path") || kind.includes("source") || kind.includes("workspace")) return "Source and path evidence";
+      if (kind.includes("implementation") || kind.includes("decision") || kind.includes("workstream")) return "Workstream evidence";
+      if (Array.isArray(event && event.workstreams) && event.workstreams.length) return "Workstream evidence";
+      if (Array.isArray(event && event.artifacts) && event.artifacts.length) return "Source and path evidence";
+      return "Evidence signal";
+    }
+
+    function forensicMaterialEvents(events) {
+      return (Array.isArray(events) ? events : []).filter((event) => !forensicIsDiagnosticEvent(event));
+    }
+
+    function forensicEvidenceHealthSummary(events, forensicCoverage) {
+      const rows = Array.isArray(events) ? events : [];
+      if (!rows.length) return "No evidence is attached yet.";
+      const material = forensicMaterialEvents(rows);
+      const diagnosticCount = Math.max(0, rows.length - material.length);
+      const channelCount = new Set(rows.map(forensicEvidenceChannel)).size;
+      if (material.length) {
+        const supportBits = [
+          forensicCoverageMetric(forensicCoverage, "mapped_workstream_evidence_count") ? "workstream-linked" : "",
+          forensicCoverageMetric(forensicCoverage, "spec_history_event_count") ? "spec-history" : "",
+        ].filter(Boolean).join(" and ");
+        const supportText = supportBits ? ` Coverage includes ${supportBits} evidence.` : "";
+        const diagnosticText = diagnosticCount ? ` Diagnostic/internal signals are kept in grouped details.` : "";
+        return `${material.length} material ${pluralize(material.length, "signal", "signals")} linked across ${channelCount} ${pluralize(channelCount, "channel", "channels")}.${supportText}${diagnosticText}`;
+      }
+      return "Only diagnostic/internal signals are attached. Treat this as supporting context until workstream, spec, source, or path evidence appears.";
+    }
+
+    function renderForensicHealth(events, forensicCoverage) {
+      return `
+        <article class="forensic-health-card">
+          <p class="forensic-health-title">Evidence health</p>
+          <p class="forensic-health-copy">${escapeHtml(forensicEvidenceHealthSummary(events, forensicCoverage))}</p>
+        </article>
+      `;
+    }
+
+    function forensicCoverageStrip(events, forensicCoverage, rawCount = null) {
+      const materialCount = forensicMaterialEvents(events).length;
       const facts = [
-        ["Events", events.length],
-        ["Explicit", forensicCoverageMetric(forensicCoverage, "explicit_event_count")],
-        ["Path matches", forensicCoverageMetric(forensicCoverage, "recent_path_match_count")],
-        ["Workstream evidence", forensicCoverageMetric(forensicCoverage, "mapped_workstream_evidence_count")],
-        ["Spec history", forensicCoverageMetric(forensicCoverage, "spec_history_event_count")],
+        ["Events", rawCount === null ? events.length : Number(rawCount || 0)],
+        ["Material", materialCount],
+        ["Workstreams", forensicCoverageMetric(forensicCoverage, "mapped_workstream_evidence_count")],
+        ["Spec", forensicCoverageMetric(forensicCoverage, "spec_history_event_count")],
+        ["Path", forensicCoverageMetric(forensicCoverage, "recent_path_match_count")],
       ];
       return `
         <div class="forensic-coverage-strip" aria-label="Forensic coverage counts">
@@ -1848,19 +2020,6 @@ initSharedQuickTooltips();
       return `<span class="label">+${escapeHtml(String(value))} ${escapeHtml(pluralize(value, noun, `${noun}s`))}</span>`;
     }
 
-    function forensicArtifactOverflowDisclosure(items, overflow) {
-      const value = Number(overflow || 0);
-      if (value <= 0 || !Array.isArray(items) || !items.length) return "";
-      return `
-        <details class="forensic-artifact-disclosure">
-          <summary class="forensic-artifact-overflow-summary" data-tooltip="Show hidden artifact evidence paths.">+${escapeHtml(String(value))} ${escapeHtml(pluralize(value, "artifact", "artifacts"))}</summary>
-          <div class="forensic-artifact-disclosure-panel artifact-list">
-            ${items.map(forensicArtifactLink).filter(Boolean).join("")}
-          </div>
-        </details>
-      `;
-    }
-
     function forensicLimitedWorkstreams(workstreams, limit = FORENSIC_DIGEST_WORKSTREAM_LIMIT) {
       const tokens = [];
       const seen = new Set();
@@ -1890,29 +2049,48 @@ initSharedQuickTooltips();
         seen.add(path);
         rows.push(item);
       });
+      if (Number(limit || 0) <= 0) {
+        return {
+          count: rows.length,
+          html: forensicArtifactDisclosure(rows, rows.length),
+        };
+      }
       const visible = rows.slice(0, limit);
       const hidden = rows.slice(limit);
-      const overflow = Math.max(0, rows.length - visible.length);
       return {
         count: rows.length,
         html: [
           ...visible.map(forensicArtifactLink),
-          forensicArtifactOverflowDisclosure(hidden, overflow),
+          forensicArtifactDisclosure(hidden, hidden.length),
         ].filter(Boolean).join(""),
       };
+    }
+
+    function forensicArtifactDisclosure(rows, count) {
+      const safeRows = Array.isArray(rows) ? rows : [];
+      const total = Number(count || safeRows.length || 0);
+      if (!safeRows.length || total <= 0) return "";
+      return `
+        <details class="forensic-artifact-disclosure">
+          <summary class="forensic-artifact-overflow-summary">+${escapeHtml(String(total))} ${escapeHtml(pluralize(total, "artifact", "artifacts"))}</summary>
+          <div class="forensic-artifact-disclosure-panel">
+            ${safeRows.map(forensicArtifactLink).join("")}
+          </div>
+        </details>
+      `;
     }
 
     function forensicEvidenceGroups(events) {
       const groups = [];
       const byKind = new Map();
       (Array.isArray(events) ? events : []).forEach((event) => {
-        const kind = String(event && event.kind || "unknown").trim().toLowerCase() || "unknown";
-        if (!byKind.has(kind)) {
-          const group = { kind, count: 0, latest: event, workstreams: [], artifacts: [] };
-          byKind.set(kind, group);
+        const channel = forensicEvidenceChannel(event);
+        if (!byKind.has(channel)) {
+          const group = { channel, count: 0, latest: event, workstreams: [], artifacts: [], diagnostic: channel === "Diagnostic signal" };
+          byKind.set(channel, group);
           groups.push(group);
         }
-        const group = byKind.get(kind);
+        const group = byKind.get(channel);
         group.count += 1;
         if (!group.latest || forensicEventTimestamp(event) > forensicEventTimestamp(group.latest)) {
           group.latest = event;
@@ -1920,31 +2098,51 @@ initSharedQuickTooltips();
         group.workstreams.push(...(Array.isArray(event.workstreams) ? event.workstreams : []));
         group.artifacts.push(...(Array.isArray(event.artifacts) ? event.artifacts : []));
       });
-      return groups;
+      return groups.sort((left, right) => {
+        if (left.diagnostic !== right.diagnostic) return left.diagnostic ? 1 : -1;
+        const leftTimestamp = forensicEventTimestamp(left.latest);
+        const rightTimestamp = forensicEventTimestamp(right.latest);
+        if (leftTimestamp === rightTimestamp) return String(left.channel).localeCompare(String(right.channel));
+        return rightTimestamp > leftTimestamp ? 1 : -1;
+      });
     }
 
     function renderForensicTokenRow(workstreams, artifacts, options = {}) {
-      const workstreamLimit = Number(options.workstreamLimit || FORENSIC_DIGEST_WORKSTREAM_LIMIT);
-      const artifactLimit = Number(options.artifactLimit || FORENSIC_DIGEST_ARTIFACT_LIMIT);
+      const workstreamLimit = Number(
+        Object.prototype.hasOwnProperty.call(options, "workstreamLimit")
+          ? options.workstreamLimit
+          : FORENSIC_DIGEST_WORKSTREAM_LIMIT
+      );
+      const artifactLimit = Number(
+        Object.prototype.hasOwnProperty.call(options, "artifactLimit")
+          ? options.artifactLimit
+          : FORENSIC_DIGEST_ARTIFACT_LIMIT
+      );
       const workstreamPreview = forensicLimitedWorkstreams(workstreams, workstreamLimit);
       const artifactPreview = forensicLimitedArtifacts(artifacts, artifactLimit);
       const html = [workstreamPreview.html, artifactPreview.html].filter(Boolean).join("");
       return html ? `<div class="forensic-token-row">${html}</div>` : "";
     }
 
-    function renderForensicLatestEvent(event) {
-      if (!event) {
-        return '<article class="forensic-latest"><p class="empty">No mapped forensic events are attached yet.</p></article>';
-      }
+    function forensicDisplaySummary(event) {
+      return String(event && event.summary || "(no summary)");
+    }
+
+    function renderForensicLatestEvent(event, options = {}) {
+      if (!event) return "";
+      const diagnosticOnly = Boolean(options.diagnosticOnly);
+      const heading = diagnosticOnly ? "Latest diagnostic signal" : "Latest material signal";
+      const className = diagnosticOnly ? "forensic-latest diagnostic" : "forensic-latest";
       return `
-        <article class="forensic-latest">
-          <div class="forensic-row-top">
-            <span class="label" data-tooltip="Codex stream event kind.">${escapeHtml(eventKindLabel(event.kind))}</span>
-            <span class="label" data-tooltip="Component-link confidence for this event.">confidence: ${escapeHtml(event.confidence || "none")}</span>
-            <span class="label">${escapeHtml(event.ts_iso || "No timestamp")}</span>
+        <article class="${className}">
+          <p class="forensic-eyebrow">${escapeHtml(heading)}</p>
+          <div class="forensic-meta-row">
+            <span class="forensic-meta-item" data-tooltip="Evidence channel.">${escapeHtml(forensicEvidenceChannel(event))}</span>
+            <span class="forensic-meta-item" data-tooltip="Component-link confidence for this event.">confidence ${escapeHtml(event.confidence || "none")}</span>
+            <span class="forensic-meta-item">${escapeHtml(event.ts_iso || "No timestamp")}</span>
           </div>
-          <p class="forensic-summary">${escapeHtml(event.summary || "(no summary)")}</p>
-          ${renderForensicTokenRow(event.workstreams, event.artifacts)}
+          <p class="forensic-summary">${escapeHtml(forensicDisplaySummary(event))}</p>
+          ${renderForensicTokenRow(event.workstreams, event.artifacts, { artifactLimit: 0 })}
         </article>
       `;
     }
@@ -1952,68 +2150,109 @@ initSharedQuickTooltips();
     function renderForensicGroups(events) {
       const groups = forensicEvidenceGroups(events);
       if (!groups.length) return "";
+      const visibleGroups = groups.slice(0, FORENSIC_DIGEST_GROUP_LIMIT);
+      const overflow = Math.max(0, groups.length - visibleGroups.length);
       return `
-        <div class="forensic-evidence-list">
-          ${groups.map((group) => `
-            <article class="forensic-group-row">
-              <div class="forensic-row-top">
-                <span class="label">${escapeHtml(eventKindLabel(group.kind))}</span>
-                <span class="label">${escapeHtml(forensicEventCountLabel(group.count))}</span>
-              </div>
-              <p class="forensic-summary">${escapeHtml(group.latest && group.latest.summary || "(no summary)")}</p>
-              ${renderForensicTokenRow(group.workstreams, group.artifacts)}
-            </article>
-          `).join("")}
-        </div>
+        <details class="forensic-group-disclosure">
+          <summary>
+            <span>Grouped evidence</span>
+            <span>${escapeHtml(String(groups.length))} ${escapeHtml(pluralize(groups.length, "channel", "channels"))}${overflow ? ` - +${escapeHtml(String(overflow))} more` : ""}</span>
+          </summary>
+          <div class="forensic-evidence-list">
+            ${visibleGroups.map((group) => `
+              <article class="forensic-group-row">
+                <div class="forensic-group-meta">
+                  <span class="forensic-group-channel">${escapeHtml(group.channel)}</span>
+                  <span class="forensic-group-meta-item">${escapeHtml(forensicEventCountLabel(group.count))}</span>
+                  <span class="forensic-group-meta-item">${escapeHtml(group.latest && group.latest.ts_iso || "No timestamp")}</span>
+                </div>
+                <p class="forensic-summary">${escapeHtml(forensicDisplaySummary(group.latest))}</p>
+                ${renderForensicTokenRow(group.workstreams, group.artifacts, { artifactLimit: 0 })}
+              </article>
+            `).join("")}
+          </div>
+        </details>
       `;
     }
 
     function renderTimeline(row) {
-      const events = forensicEvidenceEvents(row);
+      if (row && !Array.isArray(row.timeline)) {
+        timelineCountEl.textContent = "Unavailable";
+        timelineEl.innerHTML = '<p role="status">Evidence detail is unavailable.</p>';
+        return;
+      }
+      const rawEvents = forensicEvidenceEvents(row);
+      const events = forensicUniqueEvents(rawEvents);
       const forensicCoverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};
-      const latestEvent = forensicNewestEvent(events);
-      timelineCountEl.textContent = forensicEventCountLabel(events.length);
+      const materialEvents = forensicMaterialEvents(events);
+      const headlineEvents = materialEvents.length ? materialEvents : events;
+      const latestEvent = forensicNewestEvent(headlineEvents);
+      const diagnosticOnly = Boolean(!materialEvents.length && events.length);
+      timelineCountEl.textContent = forensicEventCountLabel(rawEvents.length);
       timelineEl.innerHTML = `
         <section class="forensic-digest">
-          ${forensicCoverageStrip(events, forensicCoverage)}
-          ${renderForensicLatestEvent(latestEvent)}
+          ${renderForensicHealth(events, forensicCoverage)}
+          ${forensicCoverageStrip(events, forensicCoverage, rawEvents.length)}
+          ${renderForensicLatestEvent(latestEvent, { diagnosticOnly })}
           ${renderForensicGroups(events)}
         </section>
       `;
     }
 
-    async function renderSelectedComponent(selectedId, filtered) {
-      const selectedSummary = filtered.find((row) => String(row.component_id || "").toLowerCase() === String(selectedId || "").toLowerCase()) || null;
-      if (!selectedSummary) {
-        detailEl.dataset.selectedComponent = "";
-        renderDetail(null);
-        renderTimeline(null);
-        return;
-      }
-      const expectedSelected = String(selectedId || "").trim().toLowerCase();
-      detailEl.dataset.selectedComponent = expectedSelected;
-      detailEl.innerHTML = "";
-      timelineCountEl.textContent = "";
-      timelineEl.innerHTML = "";
-      const loadedDetail = await registryDataSource.loadDetail(selectedId);
-      if (String(detailEl.dataset.selectedComponent || "") !== expectedSelected) {
-        return;
-      }
-      const selected = loadedDetail && typeof loadedDetail === "object"
-        ? { ...selectedSummary, ...loadedDetail }
-        : selectedSummary;
-      renderDetail(selected);
-      renderTimeline(selected);
+    function createRegistrySelection({ detail, timeline, timelineCount, sourceCount, loadDetail, renderDetail, renderTimeline, onOutcome }) {
+      let revision = 0;
+      return async function selectComponent(selectedId, filtered) {
+        const currentRevision = ++revision;
+        const expectedId = String(selectedId || "").trim().toLowerCase();
+        const summary = filtered.find(row => String(row.component_id || "").trim().toLowerCase() === expectedId);
+        detail.dataset.selectedComponent = summary ? expectedId : "";
+        if (!summary) {
+          renderTimeline(null);
+          detail.innerHTML = sourceCount === 0
+            ? `<section class="empty" role="status"><h2>No components yet</h2><p>Registry will show the components defined for this project.</p><p><a href="../index.html?tab=project" target="_top">Open Project</a> to start from your project intent.</p></section>`
+            : `<section class="empty" role="status"><h2>No matching components</h2><p>Change your search or reset the filters to see components already in Registry.</p></section>`;
+          onOutcome({ id: "", outcome: "empty" });
+          return;
+        }
+        detail.innerHTML = "";
+        timelineCount.textContent = "";
+        timeline.innerHTML = "";
+        onOutcome({ id: "", outcome: "loading" });
+        let loaded;
+        try { loaded = await loadDetail(selectedId); } catch (_error) { loaded = null; }
+        if (currentRevision !== revision) return;
+        const complete = loaded && typeof loaded === "object";
+        const selected = complete ? { ...summary, ...loaded } : summary;
+        renderDetail(selected);
+        renderTimeline(selected);
+        if (!complete) detail.innerHTML += '<p role="status">Component detail unavailable. The available summary is shown.</p>';
+        onOutcome({ id: expectedId, outcome: complete ? "ready" : "degraded" });
+      };
     }
+    const requestedRoute = { tab: "registry", ...readState() };
+    let frameSnapshot = { requested: requestedRoute, rendered: null, outcome: "loading" };
+    const frameBridge = window.OdylithFrameBridge.surface({ readSnapshot: () => frameSnapshot });
+    const renderSelectedComponent = createRegistrySelection({
+      detail: detailEl, timeline: timelineEl, timelineCount: timelineCountEl,
+      sourceCount: allComponents.length,
+      loadDetail: id => registryDataSource.loadDetail(id), renderDetail, renderTimeline,
+      onOutcome: ({ id, outcome }) => {
+        frameSnapshot = { requested: requestedRoute, rendered: { tab: "registry", component: id }, outcome };
+        frameBridge.publish();
+      },
+    });
 
     function applyState(requestedId, options = {}) {
+      if (options.push) {
+        frameBridge.navigate({ route: { tab: "registry", component: requestedId }, replaceDocument: false });
+        writeState(requestedId);
+      }
       renderFilterControls();
       const filtered = filteredComponents();
       renderKpis(filtered.length);
       const selectedId = selectDefault(filtered, requestedId);
       renderList(filtered, selectedId, { preserveListScroll: Boolean(options.preserveListScroll) });
       void renderSelectedComponent(selectedId, filtered);
-      if (options.push) writeState(selectedId);
     }
 
     searchEl.addEventListener("input", () => {

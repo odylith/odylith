@@ -19,8 +19,8 @@ from odylith.runtime.surfaces import compass_standup_brief_narrator
 _ACTION_LEAD_RE = re.compile(
     r"^(?:add|align|audit|backfill|bind|build|capture|carry|clean(?:\s+up)?|close|codify|collapse|"
     r"complete|convert|cut|define|deliver|document|enable|enforce|finish|harden|implement|introduce|"
-    r"keep|land|make|migrate|move|pull|publish|re-?add|reconcile|refresh|remove|replace|reuse|seed|"
-    r"ship|stabilize|stop|tighten|unify|update|validate|verify|wire)\b",
+    r"give|keep|land|let|make|migrate|move|prove|pull|publish|re-?add|reconcile|refresh|remove|replace|"
+    r"reuse|seed|ship|show|stabilize|stop|tighten|turn|unify|update|validate|verify|wire)\b",
     re.IGNORECASE,
 )
 
@@ -54,6 +54,7 @@ _scoped_fallback_next_text = compass_briefing_support._scoped_fallback_next_text
 _scoped_fallback_risk_text = compass_briefing_support._scoped_fallback_risk_text
 _standup_fact = compass_briefing_support._standup_fact
 _timeline_clause = compass_briefing_support._timeline_clause
+_trim_dangling_fragment = compass_briefing_support._trim_dangling_fragment
 _wave_context_summary = compass_briefing_support._wave_context_summary
 _ws_label = compass_briefing_support._ws_label
 _ws_why_context = compass_briefing_support._ws_why_context
@@ -89,7 +90,16 @@ def _direction_fact_text(
     match_candidate = action.lstrip("`'\"“”‘’")
     if not _ACTION_LEAD_RE.match(match_candidate):
         action = f"land {action}"
+    if _direction_text_too_long(action):
+        return _sentence(f"{label} is {status_phrase}")
     return _sentence(f"{action}; {label} is {status_phrase}")
+
+
+def _direction_text_too_long(value: str) -> bool:
+    text = " ".join(str(value or "").split()).strip()
+    if len(text) > 150:
+        return True
+    return text.count(",") >= 3
 
 
 def _progress_fact_text(*, done_tasks: int, total_tasks: int, progress_story: str) -> str:
@@ -144,12 +154,14 @@ def _direction_clause_for_story(
         " which gives operators a clearer contract and lower coordination risk.",
         "",
     ).strip()
+    direction_source = _trim_dangling_fragment(direction_source)
     if direction_source.lower().startswith(("this gives operators a clearer contract", "gives operators a clearer contract")):
         direction_source = _narrative_excerpt(
             purpose or benefit or use_story or label,
             max_sentences=1,
             max_chars=180,
         )
+        direction_source = _trim_dangling_fragment(direction_source)
     direction_lead = direction_source.lstrip("`'\"“”‘’").replace("`", "")
     if _ACTION_LEAD_RE.match(direction_lead):
         return direction_source
@@ -178,7 +190,7 @@ def _build_scoped_standup_fact_packet(
     purpose = why_context.get("purpose", "")
     benefit = why_context.get("benefit", "")
     use_story = why_context.get("use_story", "") or purpose
-    architecture_consequence = why_context.get("architecture_consequence", "") or benefit
+    architecture_consequence = why_context.get("architecture_consequence", "")
     direction_clause = _direction_clause_for_story(
         label=label,
         purpose=purpose,
@@ -231,7 +243,7 @@ def _build_scoped_standup_fact_packet(
                 "governed planning surfaces",
                 "packet-level bundle",
                 "plan updated:",
-                "checklist progress updated",
+                "implementation progress updated",
             )
         )
     ]
@@ -559,13 +571,13 @@ def _build_global_standup_fact_packet(
 ) -> dict[str, Any]:
     now_value = now if isinstance(now, dt.datetime) else dt.datetime.now(tz=_COMPASS_TZ)
     focused_primary = dict(ws_rows[0]) if ws_rows else {}
-    primary_label = _ws_label(focused_primary) if focused_primary else "current priority lane"
+    primary_label = _ws_label(focused_primary) if focused_primary else ""
     primary_status = str(focused_primary.get("status", "")).strip() or "unknown"
     primary_why_context = _ws_why_context(focused_primary)
     primary_purpose = primary_why_context.get("purpose", "")
     primary_benefit = primary_why_context.get("benefit", "")
     primary_use_story = primary_why_context.get("use_story", "") or primary_purpose
-    primary_architecture_consequence = primary_why_context.get("architecture_consequence", "") or primary_benefit
+    primary_architecture_consequence = primary_why_context.get("architecture_consequence", "")
     direction_clause = _direction_clause_for_story(
         label=primary_label,
         purpose=primary_purpose,
@@ -575,7 +587,7 @@ def _build_global_standup_fact_packet(
     )
     primary_plan = focused_primary.get("plan", {}) if isinstance(focused_primary.get("plan"), Mapping) else {}
     primary_progress_ratio = float(primary_plan.get("progress_ratio", 0.0) or 0.0)
-    eta_days, eta_source = _estimate_remaining_days(focused_primary if focused_primary else {})
+    eta_days, eta_source = _estimate_remaining_days(focused_primary) if focused_primary else (0, "unavailable")
     execution_updates = (
         [dict(item) for item in execution_updates if isinstance(item, Mapping)]
         if isinstance(execution_updates, Sequence)
@@ -602,7 +614,7 @@ def _build_global_standup_fact_packet(
                 "detached source-local self-host mode",
                 "repo pin is",
                 "plan updated:",
-                "checklist progress updated",
+                "implementation progress updated",
             )
         )
     ]
@@ -616,17 +628,20 @@ def _build_global_standup_fact_packet(
         eta_source=eta_source,
         status=primary_status,
         has_execution_signal=bool(filtered_execution_highlights or execution_highlights),
-    )
+    ) if focused_primary else ""
     latest_evidence_ts, freshness_source = _latest_evidence_marker(
         window_events=window_events,
         window_transactions=window_transactions,
         ws_id=None,
         fallback_last_activity_iso=_latest_window_activity_iso(active_ws_rows or ws_rows),
     )
-    freshness_bucket = _freshness_bucket(latest_ts=latest_evidence_ts, now=now_value)
+    freshness_bucket = (
+        _freshness_bucket(latest_ts=latest_evidence_ts, now=now_value)
+        if focused_primary or latest_evidence_ts is not None else "unknown"
+    )
     freshness_age_label = _freshness_age_label(latest_ts=latest_evidence_ts, now=now_value)
     freshness_text = _freshness_fact_text(
-        label=primary_label,
+        label=primary_label or "the repository",
         freshness_bucket=freshness_bucket,
         freshness_age_label=freshness_age_label,
         source_kind=freshness_source,
@@ -756,24 +771,23 @@ def _build_global_standup_fact_packet(
 
     executive_direction = _decapitalize_clause(
         direction_clause or "keep the dependent follow-on workstreams moving"
-    )
-    section_candidates["current_execution"].append(
-        _standup_fact(
-            section_key="current_execution",
-            voice_hint="executive",
-            priority=100,
-            text=_direction_fact_text(
-                label=primary_label,
-                status_phrase=status_phrase,
-                direction_text=executive_direction,
-            ),
-            source="workstream_metadata",
-            kind="direction",
-            workstreams=[
-                str(focused_primary.get("idea_id", "")).strip()
-            ] if focused_primary else [],
+    ) if focused_primary else ""
+    if focused_primary:
+        section_candidates["current_execution"].append(
+            _standup_fact(
+                section_key="current_execution",
+                voice_hint="executive",
+                priority=100,
+                text=_direction_fact_text(
+                    label=primary_label,
+                    status_phrase=status_phrase,
+                    direction_text=executive_direction,
+                ),
+                source="workstream_metadata",
+                kind="direction",
+                workstreams=[str(focused_primary.get("idea_id", "")).strip()],
+            )
         )
-    )
     if include_self_host_status:
         self_host_status = _self_host_status_fact(self_host_snapshot)
         if self_host_status is not None:
@@ -786,17 +800,17 @@ def _build_global_standup_fact_packet(
     elif progressed_count > 0:
         if active_untracked_count > 0:
             portfolio_posture = (
-                "Implementation is moving, but some active lanes still do not have checklist progress captured."
+                "Implementation is moving, but some active lanes still do not have progress evidence captured."
             )
         else:
             portfolio_posture = "Implementation is moving while some active lanes are still clearing plan setup."
     else:
         if active_untracked_count > 0:
-            portfolio_posture = "Implementation has started, but checklist progress is not captured yet."
+            portfolio_posture = "Implementation has started, but progress evidence is not captured yet."
         else:
             portfolio_posture = "Most active lanes are still setting up the first implementation slice."
     if top_activity_labels:
-        portfolio_posture = portfolio_posture.rstrip(".") + f" Heaviest movement is in {', '.join(top_activity_labels)}."
+        portfolio_posture = portfolio_posture.rstrip(".") + f". Heaviest movement is in {', '.join(top_activity_labels)}."
     section_candidates["current_execution"].append(
             _standup_fact(
                 section_key="current_execution",
@@ -819,7 +833,8 @@ def _build_global_standup_fact_packet(
                 workstreams=window_coverage_ids,
             )
         )
-    section_candidates["current_execution"].append(
+    if timeline_story:
+        section_candidates["current_execution"].append(
             _standup_fact(
                 section_key="current_execution",
                 voice_hint="operator",
@@ -966,7 +981,7 @@ def _build_global_standup_fact_packet(
                 "flagship_lane": primary_label,
                 "direction": executive_direction,
                 "proof": filtered_execution_highlights[0] if filtered_execution_highlights else "",
-                "forcing_function": next_action_tokens[0] if next_action_tokens else fallback_next_text,
+                "forcing_function": next_action_tokens[0] if next_action_tokens else (fallback_next_text if focused_primary else ""),
                 "use_story": primary_use_story,
                 "architecture_consequence": primary_architecture_consequence,
                 "watch_item": fallback_risk_text,

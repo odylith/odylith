@@ -14,11 +14,15 @@ import datetime as dt
 from dataclasses import replace
 import json
 from pathlib import Path
-import re
 from typing import Any, Callable, Mapping, Sequence
 
+from odylith.runtime.domain_intelligence import greenfield_authored_atlas_view
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance.delivery import scope_signal_ladder
+from odylith.runtime.surfaces import atlas_detail_layout
+from odylith.runtime.surfaces import atlas_render_metadata
+from odylith.runtime.surfaces import atlas_viewer_asset_runtime
+from odylith.runtime.surfaces import atlas_viewer_viewport_runtime
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_ui_primitives
@@ -26,6 +30,7 @@ from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.governance import delivery_intelligence_engine  # Backward-compatible test monkeypatch surface.
 from odylith.runtime.surfaces import generated_surface_cleanup
+from odylith.runtime.surfaces import governance_frame_bridge
 from odylith.runtime.surfaces import source_bundle_mirror
 from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.common import diagram_freshness
@@ -37,42 +42,13 @@ from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.governance import traceability_ui_lookup
 
 
-_SVG_VIEWBOX_RE = re.compile(r"viewBox\s*=\s*['\"]([^'\"]+)['\"]", re.IGNORECASE)
-_WORKSTREAM_ID_RE = re.compile(r"^B-\d{3,}$")
-_DIAGRAM_ID_RE = re.compile(r"^D-(\d{3,})$")
-_DIAGRAM_COMPACT_RE = re.compile(r"^D(\d{3,})$")
 _ATLAS_RENDER_GUARD_NAMESPACE = "generated-refresh-guards"
 _ATLAS_RENDER_GUARD_KEY = "atlas-render"
 
 
-def _extract_svg_viewbox_dimensions(svg_path: Path) -> tuple[float, float] | None:
-    """Best-effort extraction of SVG viewBox width/height."""
-
-    if not svg_path.is_file():
-        return None
-    try:
-        text = svg_path.read_text(encoding="utf-8")
-    except OSError:
-        return None
-
-    match = _SVG_VIEWBOX_RE.search(text)
-    if match is None:
-        return None
-    raw = str(match.group(1)).strip()
-    if not raw:
-        return None
-
-    parts = [token for token in re.split(r"[\s,]+", raw) if token]
-    if len(parts) != 4:
-        return None
-    try:
-        width = float(parts[2])
-        height = float(parts[3])
-    except ValueError:
-        return None
-    if width <= 0 or height <= 0:
-        return None
-    return width, height
+_display_text = atlas_render_metadata.clean_display_text
+_display_rows = atlas_render_metadata.clean_display_rows
+_extract_svg_viewbox_dimensions = atlas_render_metadata.svg_viewbox_dimensions
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -81,17 +57,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         description="Render odylith/atlas/atlas.html from catalog metadata",
     )
     parser.add_argument("--repo-root", default=".", help="Repository root")
-    parser.add_argument(
-        "--catalog",
-        default="odylith/atlas/source/catalog/diagrams.v1.json",
-        help="Diagram catalog metadata path",
-    )
+    parser.add_argument("--catalog", default="odylith/atlas/source/catalog/diagrams.v1.json", help="Diagram catalog metadata path")
     parser.add_argument("--output", default="odylith/atlas/atlas.html", help="HTML output path")
-    parser.add_argument(
-        "--traceability-graph",
-        default="odylith/radar/traceability-graph.v1.json",
-        help="Shared workstream traceability graph JSON path.",
-    )
+    parser.add_argument("--traceability-graph", default="odylith/radar/traceability-graph.v1.json", help="Shared workstream traceability graph JSON path.")
     parser.add_argument(
         "--max-review-age-days",
         type=int,
@@ -103,11 +71,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Fail with non-zero exit when one or more diagrams are stale",
     )
-    parser.add_argument(
-        "--check-only",
-        action="store_true",
-        help="Validate catalog + freshness without writing odylith/atlas/atlas.html.",
-    )
+    parser.add_argument("--check-only", action="store_true", help="Validate catalog + freshness without writing odylith/atlas/atlas.html.")
     parser.add_argument(
         "--diagram-id",
         action="append",
@@ -198,7 +162,7 @@ def _component_catalog_rows(
         rows.append(
             {
                 "component_id": component_id,
-                "name": row.name or component_id,
+                "name": _display_text(row.name or component_id),
             }
         )
     return rows
@@ -401,23 +365,29 @@ def _newest_watch_path(
 
 
 def _normalize_workstream_id(value: str) -> str:
-    token = str(value or "").strip().upper()
-    if _WORKSTREAM_ID_RE.fullmatch(token):
-        return token
-    return ""
+    return component_registry.normalize_workstream_id(value)
 
 
 def _normalize_diagram_id(value: str) -> str:
     token = str(value or "").strip().upper()
     if token.startswith("DIAGRAM:"):
         token = token[len("DIAGRAM:") :].strip()
-    matched = _DIAGRAM_ID_RE.fullmatch(token)
-    if matched is not None:
-        return f"D-{matched.group(1)}"
-    compact = _DIAGRAM_COMPACT_RE.fullmatch(token)
-    if compact is not None:
-        return f"D-{compact.group(1)}"
-    return ""
+    if token.startswith("D") and not token.startswith("D-"):
+        token = f"D-{token[1:]}"
+    return component_registry.normalize_diagram_id(token)
+
+
+def validate_catalog_metadata(
+    *, repo_root: Path, catalog_path: Path, payload: Mapping[str, Any],
+) -> list[str]:
+    """Validate proposed catalog truth without requiring its not-yet-rendered assets."""
+    _rows, errors, _stats = _load_catalog(
+        repo_root=repo_root, catalog_path=catalog_path,
+        output_path=repo_root / "odylith/atlas/atlas.html",
+        max_review_age_days=21, component_index={},
+        catalog_payload=payload, metadata_only=True,
+    )
+    return errors
 
 
 def _load_catalog(
@@ -427,16 +397,20 @@ def _load_catalog(
     output_path: Path,
     max_review_age_days: int,
     component_index: Mapping[str, component_registry.ComponentEntry],
+    catalog_payload: Mapping[str, Any] | None = None,
+    metadata_only: bool = False,
 ) -> tuple[list[dict[str, Any]], list[str], dict[str, int]]:
     errors: list[str] = []
     stats = {"total": 0, "fresh": 0, "stale": 0}
-    if not catalog_path.is_file():
-        return [], [f"catalog missing: {catalog_path}"], stats
-
-    try:
-        payload = json.loads(catalog_path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        return [], [f"invalid json: {catalog_path}: {exc}"], stats
+    if catalog_payload is None:
+        if not catalog_path.is_file():
+            return [], [f"catalog missing: {catalog_path}"], stats
+        try:
+            payload = json.loads(catalog_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            return [], [f"invalid json: {catalog_path}: {exc}"], stats
+    else:
+        payload = catalog_payload
 
     diagrams = payload.get("diagrams", [])
     if not isinstance(diagrams, list):
@@ -470,11 +444,35 @@ def _load_catalog(
             continue
         diagram_id = normalized_diagram_id
         slug = _assert_non_empty(name="slug", value=item.get("slug"), errors=errors, context=context)
-        title = _assert_non_empty(name="title", value=item.get("title"), errors=errors, context=context)
-        kind = _assert_non_empty(name="kind", value=item.get("kind"), errors=errors, context=context)
-        status = _assert_non_empty(name="status", value=item.get("status"), errors=errors, context=context)
-        owner = _assert_non_empty(name="owner", value=item.get("owner"), errors=errors, context=context)
-        summary = _assert_non_empty(name="summary", value=item.get("summary"), errors=errors, context=context)
+        title = _display_text(_assert_non_empty(name="title", value=item.get("title"), errors=errors, context=context))
+        kind = _display_text(_assert_non_empty(name="kind", value=item.get("kind"), errors=errors, context=context))
+        status = _display_text(_assert_non_empty(name="status", value=item.get("status"), errors=errors, context=context))
+        owner = _display_text(_assert_non_empty(name="owner", value=item.get("owner"), errors=errors, context=context))
+        authored_view_claimed = greenfield_authored_atlas_view.is_authored_atlas_view(item)
+        if authored_view_claimed:
+            summary = item.get("summary", "") if isinstance(item.get("summary"), str) else ""
+            read_guide = item.get("read_guide", "") if isinstance(item.get("read_guide"), str) else ""
+            _assert_non_empty(name="summary", value=summary, errors=errors, context=context)
+            catalog_diagram_boxes: list[dict[str, str]] = []
+        else:
+            # Unmarked catalogs retain the general Mermaid/prose interpretation path.
+            # Marked authored rows are already a sealed typed view and never enter it.
+            from odylith.runtime.surfaces import atlas_box_explanations
+
+            summary = _display_text(
+                _assert_non_empty(
+                    name="summary",
+                    value=item.get("summary"),
+                    errors=errors,
+                    context=context,
+                )
+            )
+            read_guide = _display_text(item.get("read_guide", ""))
+            catalog_diagram_boxes = atlas_box_explanations.normalize_catalog_diagram_boxes(
+                raw_boxes=item.get("diagram_boxes", []),
+                context=context,
+                errors=errors,
+            )
         source_mmd = _assert_non_empty(name="source_mmd", value=item.get("source_mmd"), errors=errors, context=context)
         source_svg = _assert_non_empty(name="source_svg", value=item.get("source_svg"), errors=errors, context=context)
         source_png = str(item.get("source_png", "")).strip()
@@ -518,9 +516,9 @@ def _load_catalog(
 
         if mmd_path is not None and not mmd_path.is_file():
             errors.append(f"{context}: source_mmd does not exist: {source_mmd}")
-        if svg_path is not None and not svg_path.is_file():
+        if not metadata_only and svg_path is not None and not svg_path.is_file():
             errors.append(f"{context}: source_svg does not exist: {source_svg}")
-        if source_png and png_path is not None and not png_path.is_file():
+        if not metadata_only and source_png and png_path is not None and not png_path.is_file():
             errors.append(f"{context}: source_png does not exist: {source_png}")
 
         for watch in watch_paths:
@@ -528,24 +526,48 @@ def _load_catalog(
             if not target.exists():
                 errors.append(f"{context}: change_watch_paths entry does not exist: {watch}")
 
-        raw_components = item.get("components", [])
-        if not isinstance(raw_components, list) or not raw_components:
-            errors.append(f"{context}: `components` must be a non-empty list")
-            components: list[dict[str, str]] = []
+        source_text = ""
+        if (authored_view_claimed or metadata_only) and mmd_path is not None:
+            try:
+                source_text = mmd_path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError) as exc:
+                errors.append(
+                    f"{context}: source_mmd is unreadable: {source_mmd} ({exc.__class__.__name__})"
+                )
+
+        authored_view: dict[str, Any] | None = None
+        if authored_view_claimed:
+            try:
+                authored_view = greenfield_authored_atlas_view.validate_authored_atlas_view(
+                    item,
+                    source_text=source_text,
+                )
+            except ValueError as exc:
+                errors.append(f"{context}: {exc}")
+                continue
+            components = authored_view["components"]
         else:
-            components = []
-            for comp_idx, comp in enumerate(raw_components):
-                if not isinstance(comp, dict):
-                    errors.append(f"{context}: components[{comp_idx}] must be an object")
-                    continue
-                comp_name = str(comp.get("name", "")).strip()
-                comp_desc = str(comp.get("description", "")).strip()
-                if not comp_name or not comp_desc:
-                    errors.append(
-                        f"{context}: components[{comp_idx}] requires non-empty `name` and `description`"
+            raw_components = item.get("components", [])
+            if not isinstance(raw_components, list) or not raw_components:
+                errors.append(f"{context}: `components` must be a non-empty list")
+                components = []
+            else:
+                components = []
+                for comp_idx, comp in enumerate(raw_components):
+                    if not isinstance(comp, dict):
+                        errors.append(f"{context}: components[{comp_idx}] must be an object")
+                        continue
+                    comp_name = _display_text(comp.get("name", ""))
+                    comp_desc = atlas_box_explanations.clean_component_description(
+                        name=comp_name,
+                        description=_display_text(comp.get("description", "")),
                     )
-                    continue
-                components.append({"name": comp_name, "description": comp_desc})
+                    if not comp_name or not comp_desc:
+                        errors.append(
+                            f"{context}: components[{comp_idx}] requires non-empty `name` and `description`"
+                        )
+                        continue
+                    components.append({"name": comp_name, "description": comp_desc})
 
         related_backlog = _validate_related_paths(
             repo_root=repo_root,
@@ -600,6 +622,10 @@ def _load_catalog(
                         errors.append(f"{context}: invalid related_workstreams entry `{raw_value}`")
                     continue
                 related_workstreams.append(value)
+        if metadata_only:
+            # Prewrite callers validate the complete candidate before generating assets.
+            # Presentation, rendered-asset inspection and freshness remain render work.
+            continue
         backlog_workstreams: list[str] = []
         related_backlog_entries: list[dict[str, str]] = []
         for backlog_rel in related_backlog:
@@ -616,7 +642,7 @@ def _load_catalog(
                     "file": backlog_rel,
                     "href": path_resolver.href(backlog_rel),
                     "idea_id": inferred,
-                    "title": str(metadata.get("title", "")).strip(),
+                    "title": _display_text(metadata.get("title", "")),
                 }
             )
         related_workstreams = sorted(set(related_workstreams))
@@ -640,7 +666,7 @@ def _load_catalog(
         related_registry = [
             {
                 "file": (
-                    f"{component_index[component_id].name or component_id} ({component_id})"
+                    f"{_display_text(component_index[component_id].name or component_id)} ({component_id})"
                     if component_id in component_index
                     else component_id
                 ),
@@ -657,6 +683,40 @@ def _load_catalog(
 
         if mmd_path is None or svg_path is None or review_date is None:
             continue
+
+        if authored_view is not None:
+            diagram_boxes = authored_view["diagram_boxes"]
+            rendered_summary = authored_view["summary"]
+            rendered_read_guide = authored_view["read_guide"]
+        else:
+            from odylith.runtime.surfaces import atlas_diagram_intelligence
+
+            try:
+                source_text = mmd_path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError) as exc:
+                errors.append(
+                    f"{context}: source_mmd is unreadable: {source_mmd} ({exc.__class__.__name__})"
+                )
+                source_text = ""
+            diagram_boxes = list(
+                atlas_box_explanations.merge_diagram_box_explanations(
+                    source_text=source_text,
+                    catalog_boxes=catalog_diagram_boxes,
+                    component_rows=components,
+                    diagram_title=title,
+                    diagram_summary=summary,
+                )
+            )
+            diagram_boxes = _display_rows(diagram_boxes, ("label", "role", "description"))
+            diagram_narrative = atlas_diagram_intelligence.build_diagram_narrative(
+                title=title,
+                kind=kind,
+                summary=summary,
+                read_guide=read_guide,
+                source_text=source_text,
+            )
+            rendered_summary = _display_text(diagram_narrative.summary)
+            rendered_read_guide = _display_text(diagram_narrative.read_guide)
 
         viewbox_dims = _extract_svg_viewbox_dimensions(svg_path)
         viewbox_width = float(viewbox_dims[0]) if viewbox_dims else 0.0
@@ -715,7 +775,9 @@ def _load_catalog(
                 "kind": kind,
                 "status": status,
                 "owner": owner,
-                "summary": summary,
+                "summary": rendered_summary,
+                "read_guide": rendered_read_guide,
+                "diagram_boxes": diagram_boxes,
                 "last_reviewed_utc": review_date.isoformat(),
                 "review_age_days": review_age_days,
                 "freshness": freshness,
@@ -904,7 +966,7 @@ def _workstream_title_entries(
 
     def remember(*, workstream_id: str, title: str) -> None:
         normalized_id = _normalize_workstream_id(workstream_id)
-        text = str(title or "").strip()
+        text = _display_text(title)
         if not normalized_id or not text:
             return
         lookup[normalized_id] = text
@@ -971,6 +1033,14 @@ def _attach_diagram_workstream_relationships(
             for workstream in [_normalize_workstream_id(str(token or ""))]
             if workstream
         }
+        related_backlog = diagram.get("related_backlog", [])
+        if isinstance(related_backlog, list):
+            for item in related_backlog:
+                if not isinstance(item, Mapping):
+                    continue
+                workstream = _normalize_workstream_id(str(item.get("idea_id", "")))
+                if workstream:
+                    owners.add(workstream)
         # Fail closed on Atlas "active touch" noise: only promote active workstreams
         # that already have authored traceability to the diagram instead of letting
         # broad delivery-intelligence linkage invent new diagram associations.
@@ -1054,6 +1124,7 @@ def _render_html(
     readable_copy_css = dashboard_ui_primitives.content_copy_css(
         selectors=(
             ".summary",
+            ".read-guide-body",
             ".component-card p",
         ),
     )
@@ -1104,6 +1175,27 @@ def _render_html(
         letter_spacing_em=0.07,
         margin="0 0 6px 0",
     )
+    diagram_box_role_label_css = "\n\n".join(
+        (
+            dashboard_ui_primitives.label_surface_css(
+                selector=".diagram-box-role",
+                padding="3px 8px",
+                background="#f6faf7",
+                border_color="#d7e2dc",
+                color="#334155",
+                border_radius_px=4,
+                min_height_px=0,
+            ),
+            dashboard_ui_primitives.label_badge_typography_css(
+                selector=".diagram-box-role",
+                color="#334155",
+                size_px=11,
+                line_height=1.1,
+                letter_spacing_em=0.01,
+                weight=700,
+            ),
+        )
+    )
     atlas_secondary_typography_css = "\n\n".join(
         (
             dashboard_ui_primitives.card_title_typography_css(
@@ -1141,6 +1233,12 @@ def _render_html(
                 line_height=1.35,
                 letter_spacing_em=0.0,
                 margin="0 0 4px 0",
+            ),
+            dashboard_ui_primitives.supporting_copy_typography_css(
+                selector=".component-token",
+                color="#66788c",
+                size_px=11,
+                line_height=1.25,
             ),
             dashboard_ui_primitives.section_heading_css(
                 selector=".context-tag",
@@ -1450,364 +1548,8 @@ def _render_html(
       min-height: calc(100vh - 40px);
     }
 
-    .hero {
-      display: grid;
-      gap: 10px;
-      min-width: 0;
-    }
-
-    __ODYLITH_ATLAS_DISPLAY_TITLE__
-
-    .hero-copy {
-      display: grid;
-      gap: 10px;
-      min-width: 0;
-      width: 100%;
-    }
-
-    .diagram-facts {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 10px;
-      min-width: 0;
-    }
-
-    .diagram-fact {
-      display: grid;
-      gap: 4px;
-      align-content: start;
-      min-width: 0;
-      padding: 10px 12px;
-      border: 1px solid rgba(148, 163, 184, 0.22);
-      border-radius: 12px;
-      background: linear-gradient(180deg, #ffffff, #f8fbff);
-      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
-    }
-
-    .diagram-fact.ok {
-      border-color: rgba(2, 122, 72, 0.22);
-      background: linear-gradient(180deg, #ffffff, #f3fbf6);
-    }
-
-    .diagram-fact.warn {
-      border-color: rgba(181, 71, 8, 0.24);
-      background: linear-gradient(180deg, #ffffff, #fff7ed);
-    }
-
-    .diagram-fact-label,
-    .diagram-fact-value {
-      min-width: 0;
-    }
-
-    .diagram-fact-value {
-      overflow-wrap: anywhere;
-    }
-
-    __ODYLITH_ATLAS_FACT_TYPOGRAPHY__
-
-    .meta-pill {
-      --label-bg: rgba(255, 255, 255, 0.9);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border: 0;
-      border-radius: 0;
-      background: var(--label-bg);
-      padding: 4px 8px;
-      white-space: nowrap;
-      color: #334155;
-    }
-    __ODYLITH_ATLAS_LABEL_TYPOGRAPHY__
-
-    .meta-pill.ok {
-      --label-bg: #027a48;
-      color: white;
-    }
-
-    .meta-pill.warn {
-      --label-bg: #b54708;
-      color: white;
-    }
-
-    .source-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      justify-content: flex-end;
-    }
-
-    .source-links-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      justify-content: flex-end;
-      width: 100%;
-      min-width: 0;
-    }
-
-    .source-link {
-      text-decoration: none;
-      --chip-link-border: rgba(3, 105, 161, 0.25);
-      --chip-link-bg: rgba(255, 255, 255, 0.9);
-      --chip-link-text: #0d4366;
-      --chip-link-border-hover: rgba(14, 165, 163, 0.6);
-      --chip-link-bg-hover: rgba(240, 253, 250, 0.98);
-      --chip-link-text-hover: #0b645f;
-    }
-
-    .alert {
-      border-radius: 12px;
-      border: 1px solid rgba(181, 71, 8, 0.36);
-      background: rgba(255, 244, 234, 0.95);
-      padding: 10px 12px;
-      display: none;
-    }
-
-    .alert.visible {
-      display: block;
-    }
-
-    .viewer-shell {
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      background: #ffffff;
-      overflow: hidden;
-      display: grid;
-      grid-template-rows: auto 1fr;
-      min-height: 660px;
-    }
-
-    .viewer-toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      padding: 9px 10px;
-      border-bottom: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.92);
-    }
-
-    .viewer-toolbar-left {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .viewer-toolbar-right {
-      display: inline-flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .tool-btn {
-      --chip-link-border: rgba(3, 105, 161, 0.24);
-      --chip-link-bg: white;
-      --chip-link-text: #144261;
-      --chip-link-border-hover: rgba(14, 165, 163, 0.65);
-      --chip-link-bg-hover: rgba(240, 253, 250, 0.98);
-      --chip-link-text-hover: #0b645f;
-    }
-
-    .viewer-stage {
-      position: relative;
-      overflow: hidden;
-      min-height: 560px;
-      touch-action: none;
-      cursor: grab;
-      background: #ffffff;
-    }
-
-    .viewer-stage.dragging {
-      cursor: grabbing;
-    }
-
-    .viewer-image {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(1);
-      transform-origin: 50% 50%;
-      max-width: none;
-      max-height: none;
-      pointer-events: none;
-      user-select: none;
-    }
-
-    .details-grid {
-      display: grid;
-      gap: 12px;
-      grid-template-columns: 1.2fr 0.8fr;
-      min-width: 0;
-    }
-
-    .section {
-      min-width: 0;
-      max-width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.88);
-      padding: 12px;
-    }
-
-    .section h3 {
-    }
-
-    .summary {
-      margin: 0;
-    }
-
-    .component-list {
-      margin-top: 11px;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-      gap: 10px;
-      min-width: 0;
-      max-width: 100%;
-    }
-
-    .component-card {
-      min-width: 0;
-      max-width: 100%;
-      border: 1px solid rgba(3, 105, 161, 0.17);
-      border-radius: 10px;
-      padding: 9px 10px;
-      background: rgba(255, 255, 255, 0.95);
-    }
-
-    .component-card strong {
-      display: block;
-    }
-
-    .component-card p {
-      margin: 0;
-    }
-    __ODYLITH_ATLAS_READABLE_COPY__
-
-    __ODYLITH_ATLAS_OPERATOR_READOUT_LAYOUT__
-    __ODYLITH_ATLAS_OPERATOR_READOUT_LABEL__
-    __ODYLITH_ATLAS_OPERATOR_READOUT_COPY__
-    __ODYLITH_ATLAS_OPERATOR_READOUT_META__
-
-    .artifact-group {
-      margin-bottom: 10px;
-    }
-
-    .artifact-group:last-child {
-      margin-bottom: 0;
-    }
-
-    .artifact-label {
-      margin: 0 0 6px 0;
-    }
-    __ODYLITH_ATLAS_ARTIFACT_LABEL_TYPOGRAPHY__
-
-    .artifact-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      min-width: 0;
-      max-width: 100%;
-    }
-
-    .workstream-context-list {
-      flex-direction: row;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .atlas-context-disclosure {
-      border: 1px solid rgba(3, 105, 161, 0.16);
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.94);
-      overflow: hidden;
-    }
-
-    .atlas-context-disclosure > summary {
-      cursor: pointer;
-      list-style: none;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
-      background: rgba(255, 255, 255, 0.96);
-    }
-
-    .atlas-context-disclosure > summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .atlas-context-disclosure > summary::before {
-      content: "▸";
-      color: #5d7389;
-    }
-
-    .atlas-context-disclosure[open] > summary::before {
-      content: "▾";
-    }
-
-    .atlas-context-disclosure[open] > summary {
-      border-bottom: 1px solid rgba(3, 105, 161, 0.16);
-    }
-
-    .atlas-context-disclosure .artifact-list {
-      padding: 10px;
-    }
-
-    .context-link-item {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .context-tags {
-      display: inline-flex;
-      flex-wrap: wrap;
-      gap: 5px;
-    }
-
-    .context-tag {
-      display: inline-flex;
-      align-items: center;
-      --label-bg: rgba(255, 255, 255, 0.92);
-      border: 0;
-      background: var(--label-bg);
-      color: #36566f;
-      border-radius: 0;
-      padding: 2px 7px;
-    }
-
-    .artifact-list a {
-      text-decoration: none;
-      border-bottom: 1px dotted rgba(13, 68, 104, 0.38);
-      width: fit-content;
-      max-width: 100%;
-      overflow-wrap: anywhere;
-      word-break: break-word;
-    }
-
-    .artifact-list a:hover {
-      color: #0a8a84;
-      border-bottom-color: rgba(10, 138, 132, 0.62);
-    }
-
-    .artifact-list a.workstream-pill-link {
-      border-bottom: 0;
-      width: auto;
-    }
-    __ODYLITH_ATLAS_WORKSTREAM_PILL_TYPOGRAPHY__
-
-    .artifact-list a.workstream-pill-link:hover {
-      border-bottom: 0;
-    }
+    __ODYLITH_ATLAS_DETAIL_LAYOUT_CSS__
+    __ODYLITH_ATLAS_EMPTY_VIEW_CSS__
 
     __ODYLITH_ATLAS_SECONDARY_TYPOGRAPHY__
     __ODYLITH_ATLAS_TOOLTIP_SURFACE__
@@ -1824,6 +1566,14 @@ def _render_html(
       .sidebar {
         position: static;
         height: auto;
+      }
+
+      .main {
+        order: 1;
+      }
+
+      .sidebar {
+        order: 2;
       }
 
       .details-grid {
@@ -1846,9 +1596,6 @@ def _render_html(
         grid-template-columns: 1fr;
       }
 
-      .diagram-facts {
-        grid-template-columns: 1fr;
-      }
     }
   </style>
 </head>
@@ -1906,128 +1653,18 @@ def _render_html(
         <div class="stat"><p class="k" id="statStale">0</p><p class="l">Needs Update</p></div>
       </div>
 
+      <p id="diagramListStatus" class="empty-note" role="status" hidden></p>
       <ul id="diagramList" class="diagram-list"></ul>
     </aside>
 
     <main class="panel main">
-      <section class="hero">
-        <div class="hero-copy">
-          <h2 id="diagramTitle" class="hero-title"></h2>
-          <div class="diagram-facts" role="list">
-            <div class="diagram-fact" data-fact="diagram-id" role="listitem">
-              <p class="diagram-fact-label">Diagram ID</p>
-              <p id="diagramId" class="diagram-fact-value"></p>
-            </div>
-            <div class="diagram-fact" data-fact="kind" role="listitem">
-              <p class="diagram-fact-label">Kind</p>
-              <p id="diagramKind" class="diagram-fact-value"></p>
-            </div>
-            <div class="diagram-fact" data-fact="status" role="listitem">
-              <p class="diagram-fact-label">Status</p>
-              <p id="diagramStatus" class="diagram-fact-value"></p>
-            </div>
-            <div class="diagram-fact" data-fact="owner" role="listitem">
-              <p class="diagram-fact-label">Owner</p>
-              <p id="diagramOwner" class="diagram-fact-value"></p>
-            </div>
-            <div class="diagram-fact" data-fact="reviewed" role="listitem">
-              <p class="diagram-fact-label">Reviewed</p>
-              <p id="diagramReviewed" class="diagram-fact-value"></p>
-            </div>
-            <div id="diagramFreshnessCard" class="diagram-fact" data-fact="freshness" role="listitem">
-              <p class="diagram-fact-label">Freshness</p>
-              <p id="diagramFreshness" class="diagram-fact-value"></p>
-            </div>
-          </div>
-        </div>
-        <div class="source-links-wrap">
-          <button id="sidebarToggle" class="tool-btn" type="button" aria-controls="sidebarPanel" aria-expanded="true">Hide Panel</button>
-          <div id="sourceLinks" class="source-links"></div>
-        </div>
-      </section>
-
-      <section id="staleAlert" class="alert"></section>
-
-      <article class="section">
-        <h3>Connected Workstream Context</h3>
-        <div class="artifact-group">
-          <p class="artifact-label">Owners</p>
-          <ul id="ownerWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
-        </div>
-        <div class="artifact-group">
-          <p class="artifact-label">Active Touches</p>
-          <ul id="activeWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
-        </div>
-        <div id="historicalWorkstreamGroup" class="artifact-group" hidden>
-          <p class="artifact-label">Historical References</p>
-          <details id="historicalWorkstreamDisclosure" class="atlas-context-disclosure">
-            <summary id="historicalWorkstreamSummary"></summary>
-            <ul id="historicalWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
-          </details>
-        </div>
-      </article>
-
-      <section class="viewer-shell">
-        <div class="viewer-toolbar">
-          <div class="viewer-toolbar-left">
-            <span id="zoomReadout" class="meta-pill">Zoom 100%</span>
-            <span class="meta-pill">Pinch: zoom</span>
-            <span class="meta-pill">Drag: pan</span>
-            <span class="meta-pill">Shortcuts: + - 0 f ↑ ↓</span>
-          </div>
-          <div class="viewer-toolbar-right">
-            <button id="prevDiagram" class="tool-btn" type="button">Prev</button>
-            <button id="nextDiagram" class="tool-btn" type="button">Next</button>
-            <button id="zoomIn" class="tool-btn" type="button">Zoom +</button>
-            <button id="zoomOut" class="tool-btn" type="button">Zoom -</button>
-            <button id="fit" class="tool-btn" type="button">Fit</button>
-            <button id="reset" class="tool-btn" type="button">Reset</button>
-          </div>
-        </div>
-        <div id="viewerStage" class="viewer-stage">
-          <img id="viewerImage" class="viewer-image" alt="diagram visualization" draggable="false" />
-        </div>
-      </section>
-
-      <section class="details-grid">
-        <article class="section">
-          <h3>What This Diagram Constitutes</h3>
-          <p id="diagramSummary" class="summary"></p>
-          <div id="componentList" class="component-list"></div>
-        </article>
-
-        <article class="section">
-          <h3>Linked Engineering Context</h3>
-          <div class="artifact-group">
-            <p class="artifact-label">Backlog</p>
-            <ul id="backlogLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Plans</p>
-            <ul id="planLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Developer Docs</p>
-            <ul id="docLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Implementation Code</p>
-            <ul id="codeLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Registry Components</p>
-            <ul id="registryLinks" class="artifact-list"></ul>
-          </div>
-          <div class="artifact-group">
-            <p class="artifact-label">Operator Surfaces</p>
-            <ul id="surfaceLinks" class="artifact-list"></ul>
-          </div>
-        </article>
-      </section>
+      __ODYLITH_ATLAS_EMPTY_VIEW_HTML__
+      __ODYLITH_ATLAS_DETAIL_LAYOUT_HTML__
     </main>
   </div>
 
   <script id="catalogData" type="application/json">__DATA__</script>
+  <script>__ODYLITH_FRAME_BRIDGE_RUNTIME__</script>
   <script>
     const payload = JSON.parse(document.getElementById("catalogData").textContent);
     const allDiagrams = payload.diagrams || [];
@@ -2049,6 +1686,7 @@ def _render_html(
 
     const workstreamTitleLookup = sanitizeLookupObject(tooltipLookup.workstream_titles);
     const diagramTitleLookup = sanitizeLookupObject(tooltipLookup.diagram_titles);
+    const componentTitleLookup = sanitizeLookupObject(tooltipLookup.component_titles);
 
     const searchEl = document.getElementById("search");
     const kindFiltersEl = document.getElementById("kindFilters");
@@ -2074,6 +1712,9 @@ def _render_html(
     const sidebarCloseEl = document.getElementById("sidebarClose");
     const staleAlertEl = document.getElementById("staleAlert");
     const summaryEl = document.getElementById("diagramSummary");
+    const readGuideEl = document.getElementById("diagramReadGuide");
+    const diagramBoxesSectionEl = document.getElementById("diagramBoxesSection");
+    const diagramBoxListEl = document.getElementById("diagramBoxList");
     const componentListEl = document.getElementById("componentList");
 
     const backlogLinksEl = document.getElementById("backlogLinks");
@@ -2092,6 +1733,17 @@ def _render_html(
     const stageEl = document.getElementById("viewerStage");
     const imageEl = document.getElementById("viewerImage");
     const zoomReadoutEl = document.getElementById("zoomReadout");
+__ODYLITH_ATLAS_VIEWPORT_RUNTIME__
+    const viewport = createAtlasViewport({
+      stageEl, imageEl, zoomReadoutEl,
+      controls: {
+        zoomIn: document.getElementById("zoomIn"),
+        zoomOut: document.getElementById("zoomOut"),
+        fit: document.getElementById("fit"),
+        reset: document.getElementById("reset"),
+      },
+    });
+__ODYLITH_ATLAS_VIEWER_RUNTIME__
 
     let activeList = allDiagrams.slice();
     let activeIndex = 0;
@@ -2102,23 +1754,28 @@ def _render_html(
     let workstreamFilter = "all";
     let activeDiagram = null;
 
-    let scale = 1;
-    let offsetX = 0;
-    let offsetY = 0;
-    let dragging = false;
-    let dragStartX = 0;
-    let dragStartY = 0;
-    let panPointerId = null;
-    let pinchState = null;
-    const activePointers = new Map();
-
-    const MIN_SCALE = 0.05;
-    const MAX_SCALE = 5;
     const WORKSTREAM_ID_RE = /^B-\\d{3,}$/;
     const DIAGRAM_ID_RE = /^D-\\d{3,}$/;
     const DIAGRAM_COMPACT_RE = /^D(\\d{3,})$/;
     const SIDEBAR_PREF_KEY = "mermaid.sidebar.collapsed";
     const TOOLING_BASE_HREF = __ODYLITH_TOOLING_BASE_HREF__;
+    const params = new URLSearchParams(window.location.search);
+    const paramWorkstream = (params.get("workstream") || "").trim();
+    const paramDiagram = (params.get("diagram") || "").trim();
+    const requestedAtlasRoute = Object.freeze({
+      tab: "atlas",
+      workstream: WORKSTREAM_ID_RE.test(paramWorkstream) ? paramWorkstream : "",
+      diagram: canonicalizeDiagramId(paramDiagram),
+    });
+    let atlasOutcome = "loading";
+    const atlasBridge = window.OdylithFrameBridge.surface({
+      readSnapshot: () => ({ requested: requestedAtlasRoute, rendered: currentAtlasNavigationState(), outcome: atlasOutcome }),
+    });
+    const viewer = createAtlasViewer({
+      mainEl: document.querySelector(".main"), stageEl, imageEl, listEl, viewport,
+      catalogCount: allDiagrams.length, projectHref: `${TOOLING_BASE_HREF}?tab=project`,
+      onOutcome(outcome) { atlasOutcome = outcome; atlasBridge.publish(); },
+    });
     const SORT_DEFAULT = "newest";
     const SORT_TOKENS = new Set(["newest", "oldest", "reviewed", "title", "freshness"]);
     __ODYLITH_ATLAS_QUICK_TOOLTIP_RUNTIME__
@@ -2153,6 +1810,24 @@ def _render_html(
         return `D-${compact[1]}`;
       }
       return "";
+    }
+
+    function diagramSearchTokens(value) {
+      const canonical = canonicalizeDiagramId(value);
+      if (!canonical) return [];
+      const match = canonical.match(/^D-(\\d+)$/);
+      if (!match) return [canonical, canonical.replace("-", "")];
+      const numeric = match[1];
+      const unpadded = numeric.replace(/^0+/, "") || "0";
+      return [canonical, canonical.replace("-", ""), numeric, unpadded];
+    }
+
+    function diagramMatchesExactSearchToken(diagram, needle, normalizedNeedle) {
+      if (!needle && !normalizedNeedle) return false;
+      const tokens = diagramSearchTokens(diagram && diagram.diagram_id).map((token) => String(token || "").toLowerCase());
+      if (needle && tokens.includes(needle)) return true;
+      if (!normalizedNeedle) return false;
+      return tokens.map(normalizeSearchToken).includes(normalizedNeedle);
     }
 
     function canonicalizeSortToken(value) {
@@ -2194,12 +1869,9 @@ def _render_html(
       });
     }
 
-    function ownerWorkstreamsForDiagram(diagram) {
+    function normalizedWorkstreamList(rawValues) {
       const values = new Set();
-      const listed = Array.isArray(diagram && diagram.related_workstreams)
-        ? diagram.related_workstreams
-        : [];
-      listed.forEach((token) => {
+      (Array.isArray(rawValues) ? rawValues : []).forEach((token) => {
         const workstream = String(token || "").trim();
         if (WORKSTREAM_ID_RE.test(workstream)) {
           values.add(workstream);
@@ -2208,33 +1880,11 @@ def _render_html(
       return Array.from(values).sort();
     }
 
-    function activeWorkstreamsForDiagram(diagram) {
-      const values = new Set();
-      const listed = Array.isArray(diagram && diagram.active_workstreams)
-        ? diagram.active_workstreams
-        : [];
-      listed.forEach((token) => {
-        const workstream = String(token || "").trim();
-        if (WORKSTREAM_ID_RE.test(workstream)) {
-          values.add(workstream);
-        }
-      });
-      return Array.from(values).sort();
-    }
+    function ownerWorkstreamsForDiagram(diagram) { return normalizedWorkstreamList(diagram && diagram.related_workstreams); }
 
-    function historicalWorkstreamsForDiagram(diagram) {
-      const values = new Set();
-      const listed = Array.isArray(diagram && diagram.historical_workstreams)
-        ? diagram.historical_workstreams
-        : [];
-      listed.forEach((token) => {
-        const workstream = String(token || "").trim();
-        if (WORKSTREAM_ID_RE.test(workstream)) {
-          values.add(workstream);
-        }
-      });
-      return Array.from(values).sort();
-    }
+    function activeWorkstreamsForDiagram(diagram) { return normalizedWorkstreamList(diagram && diagram.active_workstreams); }
+
+    function historicalWorkstreamsForDiagram(diagram) { return normalizedWorkstreamList(diagram && diagram.historical_workstreams); }
 
     function relatedWorkstreamsForDiagram(diagram) {
       const values = new Set();
@@ -2270,6 +1920,7 @@ def _render_html(
       if (diagramMatchesWorkstream(selectedDiagram, workstreamFilter)) {
         return;
       }
+      viewer.setSelectionWarning(`Diagram ${selectedDiagram.diagram_id} is not linked to workstream ${workstreamFilter}. Showing the diagram with All Workstreams.`);
       workstreamFilter = "all";
       workstreamFilterEl.value = "all";
     }
@@ -2280,14 +1931,14 @@ def _render_html(
       sidebarToggleEl.setAttribute("aria-expanded", String(!collapsed));
     }
 
-    function currentAtlasNavigationState() {
+    function currentAtlasNavigationState(diagramRow = activeDiagram) {
       const rawWorkstream = workstreamFilter === "all" ? "" : String(workstreamFilter || "").trim();
       const workstream = WORKSTREAM_ID_RE.test(rawWorkstream) ? rawWorkstream : "";
-      const diagram = canonicalizeDiagramId(activeDiagram && activeDiagram.diagram_id);
-      return { workstream, diagram };
+      const diagram = canonicalizeDiagramId(diagramRow && diagramRow.diagram_id);
+      return { tab: "atlas", workstream, diagram };
     }
 
-    function syncAtlasNavigation(options = {}) {
+    function syncAtlasNavigation() {
       const state = currentAtlasNavigationState();
       const query = new URLSearchParams(window.location.search);
       query.delete("workstream");
@@ -2302,145 +1953,10 @@ def _render_html(
         window.history.replaceState(null, "", `${window.location.pathname}${suffix}`);
       }
 
-      if (options.notifyParent === false) return;
-      try {
-        if (window.parent && window.parent !== window) {
-          window.parent.postMessage(
-            {
-              type: "odylith-atlas-navigate",
-              state: {
-                tab: "atlas",
-                workstream: state.workstream,
-                diagram: state.diagram,
-              },
-            },
-            "*",
-          );
-        }
-      } catch (_error) {
-        // Fall open: local URL remains canonical for direct Atlas browsing.
-      }
     }
 
     function clamp(value, low, high) {
       return Math.min(high, Math.max(low, value));
-    }
-
-    function applyTransform() {
-      imageEl.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) scale(${scale})`;
-      zoomReadoutEl.textContent = `Zoom ${Math.round(scale * 100)}%`;
-    }
-
-    function resetView() {
-      scale = 1;
-      offsetX = 0;
-      offsetY = 0;
-      applyTransform();
-    }
-
-    function diagramDimensions(diagram) {
-      const vbw = Number(diagram && diagram.svg_viewbox_width ? diagram.svg_viewbox_width : 0);
-      const vbh = Number(diagram && diagram.svg_viewbox_height ? diagram.svg_viewbox_height : 0);
-      if (Number.isFinite(vbw) && Number.isFinite(vbh) && vbw > 0 && vbh > 0) {
-        return { width: vbw, height: vbh };
-      }
-      const iw = imageEl.naturalWidth || 0;
-      const ih = imageEl.naturalHeight || 0;
-      if (!iw || !ih) {
-        return null;
-      }
-      return { width: iw, height: ih };
-    }
-
-    function applyImageBoxSizing(diagram) {
-      const dims = diagramDimensions(diagram);
-      if (!dims) {
-        imageEl.style.width = "";
-        imageEl.style.height = "";
-        return;
-      }
-      // SVGs that declare percentage sizing report tiny intrinsic dimensions in
-      // <img>. Keep the image box aligned with Atlas's viewBox-based fit math.
-      imageEl.style.width = `${dims.width}px`;
-      imageEl.style.height = `${dims.height}px`;
-    }
-
-    function computedFitScale(diagram) {
-      const dims = diagramDimensions(diagram);
-      if (!dims) {
-        return null;
-      }
-      const padding = stageFitPadding();
-      const sw = Math.max(1, (stageEl.clientWidth || 1) - padding * 2);
-      const sh = Math.max(1, (stageEl.clientHeight || 1) - padding * 2);
-      return Math.min(sw / dims.width, sh / dims.height);
-    }
-
-    function stageFitPadding() {
-      const shortSide = Math.min(stageEl.clientWidth || 0, stageEl.clientHeight || 0);
-      if (!shortSide) {
-        return 18;
-      }
-      return clamp(shortSide * 0.045, 18, 54);
-    }
-
-    function applyInitialView(diagram) {
-      const dims = diagramDimensions(diagram);
-      if (!dims) {
-        resetView();
-        return;
-      }
-      const rawFitScale = computedFitScale(diagram);
-      if (rawFitScale === null) {
-        resetView();
-        return;
-      }
-
-      // Start near the full-bounds fit with a small safety margin so diagrams
-      // feel snug on first paint without clipping at the edges.
-      let initialFactor = 1.0;
-      const MIN_INITIAL_FIT_FACTOR = 0.94;
-
-      const rawOverrideFactor = Number(diagram && diagram.initial_view_fit_factor ? diagram.initial_view_fit_factor : 0);
-      if (Number.isFinite(rawOverrideFactor) && rawOverrideFactor > 0) {
-        initialFactor = clamp(rawOverrideFactor, MIN_INITIAL_FIT_FACTOR, initialFactor);
-      }
-
-      const target = rawFitScale * initialFactor;
-      scale = clamp(target, MIN_SCALE, 1);
-      offsetX = 0;
-      offsetY = 0;
-      applyTransform();
-    }
-
-    function fitView() {
-      const rawFitScale = computedFitScale(activeDiagram);
-      if (rawFitScale === null) {
-        resetView();
-        return;
-      }
-      scale = clamp(rawFitScale, MIN_SCALE, MAX_SCALE);
-      offsetX = 0;
-      offsetY = 0;
-      applyTransform();
-    }
-
-    function zoomBy(factor, centerX, centerY) {
-      zoomTo(scale * factor, centerX, centerY);
-    }
-
-    function zoomTo(targetScale, centerX, centerY) {
-      const oldScale = scale;
-      const newScale = clamp(targetScale, MIN_SCALE, MAX_SCALE);
-      if (newScale === oldScale) {
-        return;
-      }
-      const px = centerX - stageEl.clientWidth / 2;
-      const py = centerY - stageEl.clientHeight / 2;
-      offsetX = px - ((px - offsetX) / oldScale) * newScale;
-      offsetY = py - ((py - offsetY) / oldScale) * newScale;
-      scale = newScale;
-      applyTransform();
     }
 
     function clearNode(node) {
@@ -2485,6 +2001,8 @@ def _render_html(
       if (title) return title;
       return diagramId || "Diagram";
     }
+
+    __ODYLITH_ATLAS_DETAIL_RUNTIME_HELPERS__
 
     function normalizeWorkstreamId(value) {
       const token = String(value || "").trim();
@@ -2558,20 +2076,42 @@ def _render_html(
       });
     }
 
+    function displayText(value) {
+      return String(value || "")
+        .replace(/\\*\\*/g, "")
+        .replace(/__/g, "")
+        .replace(/`([^`\\n]*)`/g, "$1")
+        .replace(/\\s+/g, " ")
+        .trim();
+    }
+
     function renderComponents(diagram) {
       clearNode(componentListEl);
       (diagram.components || []).forEach((component) => {
+        const rawName = String(component.name || "").trim();
+        const displayName = componentDisplayName(rawName);
         const card = document.createElement("article");
         card.className = "component-card";
+        const headingGroup = document.createElement("div");
+        headingGroup.className = "component-heading";
 
         const heading = document.createElement("strong");
-        heading.textContent = component.name;
+        heading.textContent = displayText(displayName || rawName);
 
         const body = document.createElement("p");
-        body.textContent = component.description;
+        body.className = "component-description";
+        const description = String(component.description || "");
+        body.textContent = description;
 
-        card.appendChild(heading);
-        card.appendChild(body);
+        headingGroup.appendChild(heading);
+        if (rawName && displayName && rawName !== displayName) {
+          const token = document.createElement("span");
+          token.className = "component-token";
+          token.textContent = displayText(rawName);
+          headingGroup.appendChild(token);
+        }
+        card.appendChild(headingGroup);
+        if (description.trim()) card.appendChild(body);
         componentListEl.appendChild(card);
       });
     }
@@ -2588,33 +2128,7 @@ def _render_html(
 
     function clearActiveDiagram() {
       activeDiagram = null;
-      titleEl.textContent = "";
-      idEl.textContent = "";
-      kindEl.textContent = "";
-      statusEl.textContent = "";
-      ownerEl.textContent = "";
-      reviewedEl.textContent = "";
-      freshnessEl.textContent = "";
-      freshnessCardEl?.classList.remove("ok", "warn");
-      summaryEl.textContent = "";
-      clearNode(sourceLinksEl);
-      clearNode(componentListEl);
-      clearNode(backlogLinksEl);
-      clearNode(planLinksEl);
-      clearNode(docLinksEl);
-      clearNode(codeLinksEl);
-      clearNode(registryLinksEl);
-      clearNode(surfaceLinksEl);
-      clearNode(ownerWorkstreamLinksEl);
-      clearNode(activeWorkstreamLinksEl);
-      clearNode(historicalWorkstreamLinksEl);
-      historicalWorkstreamGroupEl.hidden = true;
-      historicalWorkstreamDisclosureEl.open = false;
-      historicalWorkstreamSummaryEl.textContent = "";
-      staleAlertEl.classList.remove("visible");
-      staleAlertEl.textContent = "";
-      imageEl.removeAttribute("src");
-      imageEl.dataset.fallbackApplied = "";
+      viewer.clear();
     }
 
     function applyMeta(diagram) {
@@ -2630,20 +2144,12 @@ def _render_html(
       freshnessCardEl?.classList.toggle("ok", diagram.freshness !== "stale");
 
       summaryEl.textContent = diagram.summary;
+      readGuideEl.textContent = diagramReadGuide(diagram);
 
-      imageEl.onload = () => applyInitialView(diagram);
-      imageEl.onerror = () => {
-        const fallback = String(diagram.source_png_href || "").trim();
-        if (!fallback) return;
-        if (imageEl.dataset.fallbackApplied === "1") return;
-        imageEl.dataset.fallbackApplied = "1";
-        imageEl.src = fallback;
-      };
-      imageEl.dataset.fallbackApplied = "";
-      applyImageBoxSizing(diagram);
-      imageEl.src = diagram.source_svg_href;
+      viewer.show(diagram);
 
       renderSourceLinks(diagram);
+      renderDiagramBoxes(diagram, diagramBoxesSectionEl, diagramBoxListEl);
       renderComponents(diagram);
       renderAlert(diagram);
 
@@ -2656,15 +2162,20 @@ def _render_html(
       renderWorkstreamContext(diagram);
     }
 
-    function setActive(index) {
+    function setActive(index, userIntent = false) {
+      const nextIndex = clamp(index, 0, activeList.length - 1);
+      const diagram = activeList[nextIndex] || null;
+      if (userIntent) {
+        atlasBridge.navigate({ route: currentAtlasNavigationState(diagram), replaceDocument: false });
+        viewer.setSelectionWarning("");
+      }
       if (!activeList.length) {
         selectedDiagramId = "";
         clearActiveDiagram();
         syncAtlasNavigation();
         return;
       }
-      activeIndex = clamp(index, 0, activeList.length - 1);
-      const diagram = activeList[activeIndex];
+      activeIndex = nextIndex;
       selectedDiagramId = canonicalizeDiagramId(diagram.diagram_id) || String(diagram.diagram_id || "").trim();
       applyMeta(diagram);
 
@@ -2691,12 +2202,10 @@ def _render_html(
       statStaleEl.textContent = String(stale);
     }
 
-    function renderList() {
+    function renderList(userIntent = false) {
       clearNode(listEl);
       if (!activeList.length) {
-        selectedDiagramId = "";
-        clearActiveDiagram();
-        syncAtlasNavigation();
+        setActive(0);
         return;
       }
 
@@ -2725,11 +2234,18 @@ def _render_html(
           <div class="diagram-owner">${diagram.owner}</div>
         `;
 
-        button.addEventListener("click", () => setActive(idx));
+        button.addEventListener("click", () => setActive(idx, true));
         li.appendChild(button);
         listEl.appendChild(li);
       });
 
+      if (!userIntent && selectedDiagramId && !allDiagrams.some(
+        (diagram) => canonicalizeDiagramId(diagram.diagram_id) === canonicalizeDiagramId(selectedDiagramId)
+      )) {
+        clearActiveDiagram();
+        syncAtlasNavigation();
+        return;
+      }
       setActive(Math.min(activeIndex, activeList.length - 1));
     }
 
@@ -2743,9 +2259,10 @@ def _render_html(
         chip.className = "chip" + (kindToken === kindFilter ? " active" : "");
         chip.textContent = kindToken;
         chip.addEventListener("click", () => {
+          viewer.setSelectionWarning("");
           kindFilter = kindToken;
           buildKindFilters();
-          applyFilters();
+          applyFilters({ userIntent: true });
         });
         kindFiltersEl.appendChild(chip);
       });
@@ -2798,6 +2315,7 @@ def _render_html(
         const textParts = [
           diagram.diagram_id,
           diagramToken,
+          ...diagramSearchTokens(diagram.diagram_id),
           diagram.title,
           diagram.summary,
           diagram.kind,
@@ -2818,81 +2336,48 @@ def _render_html(
         return normalizedText.includes(normalizedNeedle);
       }));
 
+      const matchingCount = activeList.length;
       if (!activeList.length && selectedToken) {
         const fallback = allDiagrams.find(
           (diagram) => canonicalizeDiagramId(diagram.diagram_id) === selectedToken
         );
         if (fallback) {
           if (workstreamFilter !== "all" && !diagramMatchesWorkstream(fallback, workstreamFilter)) {
-            workstreamFilter = "all";
-            workstreamFilterEl.value = "all";
-            applyFilters();
+            normalizeSelectedDiagramWorkstreamFilter();
+            applyFilters(options);
             return;
           }
           activeList = [fallback];
         }
       }
 
+      const exactSearchIndex = needle
+        ? activeList.findIndex((diagram) => diagramMatchesExactSearchToken(diagram, needle, normalizedNeedle))
+        : -1;
       const selectedIndex = selectedToken
         ? activeList.findIndex((diagram) => canonicalizeDiagramId(diagram.diagram_id) === selectedToken)
         : -1;
-      activeIndex = selectedIndex >= 0 ? selectedIndex : 0;
+      activeIndex = selectedIndex >= 0 ? selectedIndex : (exactSearchIndex >= 0 ? exactSearchIndex : 0);
+      if (options.userIntent === true) atlasBridge.navigate({ route: currentAtlasNavigationState(activeList[activeIndex] || null), replaceDocument: false });
+      viewer.setResults({ matches: matchingCount, hasSelection: activeList.length > 0 });
       updateStats(activeList);
-      renderList();
+      renderList(options.userIntent === true);
     }
 
     function moveSelection(delta) {
       if (!activeList.length) {
         return;
       }
-      setActive(clamp(activeIndex + delta, 0, activeList.length - 1));
-    }
-
-    function pointerRecord(event) {
-      return {
-        x: event.clientX,
-        y: event.clientY,
-        type: event.pointerType,
-      };
-    }
-
-    function touchPointers() {
-      return [...activePointers.values()].filter((item) => item.type === "touch");
-    }
-
-    function distance(a, b) {
-      const dx = a.x - b.x;
-      const dy = a.y - b.y;
-      return Math.sqrt((dx * dx) + (dy * dy));
-    }
-
-    function center(a, b) {
-      return {
-        x: (a.x + b.x) / 2,
-        y: (a.y + b.y) / 2,
-      };
-    }
-
-    function beginPan(event) {
-      dragging = true;
-      panPointerId = event.pointerId;
-      dragStartX = event.clientX - offsetX;
-      dragStartY = event.clientY - offsetY;
-      stageEl.classList.add("dragging");
-    }
-
-    function endPan() {
-      dragging = false;
-      panPointerId = null;
-      stageEl.classList.remove("dragging");
+      setActive(clamp(activeIndex + delta, 0, activeList.length - 1), true);
     }
 
     document.querySelectorAll("[data-freshness]").forEach((chip) => {
       chip.addEventListener("click", () => {
+        viewer.setSelectionWarning("");
         freshnessFilter = chip.getAttribute("data-freshness") || "all";
         document.querySelectorAll("[data-freshness]").forEach((node) => node.classList.remove("active"));
         chip.classList.add("active");
-        applyFilters();
+        applyFilters({ userIntent: true });
       });
     });
 
@@ -2915,138 +2400,36 @@ def _render_html(
       }
     });
 
-    searchEl.addEventListener("input", applyFilters);
+    searchEl.addEventListener("input", () => {
+      viewer.setSelectionWarning("");
+      applyFilters({ userIntent: true });
+    });
     sortFilterEl.addEventListener("change", () => {
+      viewer.setSelectionWarning("");
       sortFilter = canonicalizeSortToken(sortFilterEl.value || SORT_DEFAULT);
       sortFilterEl.value = sortFilter;
-      applyFilters();
+      applyFilters({ userIntent: true });
     });
     workstreamFilterEl.addEventListener("change", () => {
+      viewer.setSelectionWarning("");
       workstreamFilter = workstreamFilterEl.value || "all";
-      applyFilters({ normalizeWorkstreamFilter: false });
-      syncAtlasNavigation();
+      applyFilters({ normalizeWorkstreamFilter: false, userIntent: true });
     });
 
-    document.getElementById("zoomIn").addEventListener("click", () => {
-      zoomBy(1.14, stageEl.clientWidth / 2, stageEl.clientHeight / 2);
-    });
-
-    document.getElementById("zoomOut").addEventListener("click", () => {
-      zoomBy(0.88, stageEl.clientWidth / 2, stageEl.clientHeight / 2);
-    });
-
-    document.getElementById("fit").addEventListener("click", fitView);
-    document.getElementById("reset").addEventListener("click", resetView);
     document.getElementById("prevDiagram").addEventListener("click", () => moveSelection(-1));
     document.getElementById("nextDiagram").addEventListener("click", () => moveSelection(1));
 
-    stageEl.addEventListener("pointerdown", (event) => {
-      activePointers.set(event.pointerId, pointerRecord(event));
-      stageEl.setPointerCapture(event.pointerId);
-
-      const touches = touchPointers();
-      if (touches.length >= 2) {
-        endPan();
-        const a = touches[0];
-        const b = touches[1];
-        pinchState = {
-          startDistance: Math.max(1, distance(a, b)),
-          startScale: scale,
-        };
-        return;
-      }
-
-      if (!pinchState) {
-        beginPan(event);
-      }
-    });
-
-    stageEl.addEventListener("pointermove", (event) => {
-      if (activePointers.has(event.pointerId)) {
-        activePointers.set(event.pointerId, pointerRecord(event));
-      }
-
-      const touches = touchPointers();
-      if (touches.length >= 2) {
-        if (!pinchState) {
-          const a = touches[0];
-          const b = touches[1];
-          pinchState = {
-            startDistance: Math.max(1, distance(a, b)),
-            startScale: scale,
-          };
-        }
-        const a = touches[0];
-        const b = touches[1];
-        const rect = stageEl.getBoundingClientRect();
-        const midpoint = center(a, b);
-        const ratio = distance(a, b) / Math.max(1, pinchState.startDistance);
-        zoomTo(pinchState.startScale * ratio, midpoint.x - rect.left, midpoint.y - rect.top);
-        return;
-      }
-
-      if (pinchState) {
-        pinchState = null;
-      }
-
-      if (dragging && event.pointerId === panPointerId) {
-        offsetX = event.clientX - dragStartX;
-        offsetY = event.clientY - dragStartY;
-        applyTransform();
-      }
-    });
-
-    function stopPointer(event) {
-      activePointers.delete(event.pointerId);
-      if (event.pointerId === panPointerId) {
-        endPan();
-      }
-
-      if (touchPointers().length < 2) {
-        pinchState = null;
-      }
-
-      try {
-        stageEl.releasePointerCapture(event.pointerId);
-      } catch (err) {
-        // no-op
-      }
-    }
-
-    stageEl.addEventListener("pointerup", stopPointer);
-    stageEl.addEventListener("pointercancel", stopPointer);
-
-    // Desktop trackpad pinch commonly arrives as wheel+ctrlKey.
-    // Accept only that path; plain wheel scrolling must not zoom.
-    stageEl.addEventListener("wheel", (event) => {
-      if (!event.ctrlKey) {
-        return;
-      }
-      event.preventDefault();
-      const rect = stageEl.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      zoomBy(event.deltaY < 0 ? 1.08 : 0.92, x, y);
-    }, { passive: false });
-
     window.addEventListener("keydown", (event) => {
+      if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey) return;
+      const target = event.target;
+      if (target instanceof Element && (target.closest("input, textarea, select") || target.isContentEditable)) return;
       const key = event.key;
-      if (key === "+" || key === "=") {
-        zoomBy(1.14, stageEl.clientWidth / 2, stageEl.clientHeight / 2);
-      } else if (key === "-") {
-        zoomBy(0.88, stageEl.clientWidth / 2, stageEl.clientHeight / 2);
-      } else if (key === "0") {
-        resetView();
-      } else if (key.toLowerCase() === "f") {
-        fitView();
-      } else if (key === "ArrowUp") {
+      if (key === "ArrowUp") {
         moveSelection(-1);
       } else if (key === "ArrowDown") {
         moveSelection(1);
       }
     });
-
-    window.addEventListener("resize", () => fitView());
 
     let sidebarCollapsed = false;
     try {
@@ -3056,9 +2439,6 @@ def _render_html(
     }
     setSidebarCollapsed(sidebarCollapsed);
 
-    const params = new URLSearchParams(window.location.search);
-    const paramWorkstream = (params.get("workstream") || "").trim();
-    const paramDiagram = (params.get("diagram") || "").trim();
     sortFilter = canonicalizeSortToken(params.get("sort") || SORT_DEFAULT);
     sortFilterEl.value = sortFilter;
     if (WORKSTREAM_ID_RE.test(paramWorkstream)) {
@@ -3081,6 +2461,9 @@ def _render_html(
 
     return (
         template.replace("__ODYLITH_BRAND_HEAD__", brand_head_html.strip())
+        .replace("__ODYLITH_ATLAS_DETAIL_LAYOUT_CSS__", atlas_detail_layout.DETAIL_LAYOUT_CSS.strip("\n"))
+        .replace("__ODYLITH_ATLAS_DETAIL_LAYOUT_HTML__", atlas_detail_layout.DETAIL_LAYOUT_HTML.strip("\n"))
+        .replace("__ODYLITH_FRAME_BRIDGE_RUNTIME__", governance_frame_bridge.runtime_js())
         .replace("__ODYLITH_ATLAS_PAGE_BODY__", page_body_css)
         .replace("__ODYLITH_ATLAS_HEADER_TYPOGRAPHY__", atlas_header_css)
         .replace("__ODYLITH_ATLAS_COMPACT_BUTTON_CONTRACT__", atlas_compact_button_css)
@@ -3088,7 +2471,28 @@ def _render_html(
         .replace("__ODYLITH_ATLAS_LABEL_TYPOGRAPHY__", atlas_label_css)
         .replace("__ODYLITH_ATLAS_FACT_TYPOGRAPHY__", atlas_fact_typography_css)
         .replace("__ODYLITH_ATLAS_STAT_TYPOGRAPHY__", atlas_stat_typography_css)
+        .replace(
+            "__ODYLITH_ATLAS_DETAIL_RUNTIME_HELPERS__",
+            atlas_detail_layout.DETAIL_RUNTIME_HELPERS_JS.strip("\n"),
+        )
+        .replace(
+            "__ODYLITH_ATLAS_VIEWPORT_RUNTIME__",
+            atlas_viewer_viewport_runtime.VIEWPORT_RUNTIME_JS.strip("\n"),
+        )
+        .replace(
+            "__ODYLITH_ATLAS_VIEWER_RUNTIME__",
+            atlas_viewer_asset_runtime.VIEWER_RUNTIME_JS.strip("\n"),
+        )
+        .replace(
+            "__ODYLITH_ATLAS_EMPTY_VIEW_CSS__",
+            atlas_viewer_asset_runtime.EMPTY_VIEW_CSS.strip("\n"),
+        )
+        .replace(
+            "__ODYLITH_ATLAS_EMPTY_VIEW_HTML__",
+            atlas_viewer_asset_runtime.EMPTY_VIEW_HTML.strip("\n"),
+        )
         .replace("__ODYLITH_ATLAS_ARTIFACT_LABEL_TYPOGRAPHY__", artifact_label_css)
+        .replace("__ODYLITH_ATLAS_DIAGRAM_BOX_ROLE_LABEL__", diagram_box_role_label_css)
         .replace("__ODYLITH_ATLAS_SECONDARY_TYPOGRAPHY__", atlas_secondary_typography_css)
         .replace("__ODYLITH_ATLAS_WORKSTREAM_PILL_TYPOGRAPHY__", workstream_pill_button_css)
         .replace("__ODYLITH_ATLAS_TOOLTIP_SURFACE__", tooltip_surface_css)

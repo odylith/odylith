@@ -1,5 +1,8 @@
 # Odylith Guidance Behavior
 
+## Governance-Learning Default
+Before acting on a durable error, escaped defect, failed mechanism, failed simulation, bad generated artifact, semantic drift, quality-gate miss, latency breach, architecture decision, validation result, or release-risk learning, search Casebook and related governance truth first. Read prior failed mechanisms, failed fix attempts, rejected approaches, guardrails, and validation history; do not repeat a fix path that already failed. Capture new mechanism-level learning in Casebook or Compass, and update Radar or plans, Registry, and Atlas when the learning changes planned work, component contracts, or flows.
+
 Use this skill when guidance behavior pressure cases, high-risk agent
 instructions, or cross-host guidance contracts need deterministic validation.
 Guidance Behavior is the first deterministic pressure-family proof lane under
@@ -27,6 +30,11 @@ signals, and benchmark sovereignty.
   stale live/source-bundle mirrors for guidance docs, skills, host shims,
   governed program/spec truth, and benchmark corpora before consumer or
   dogfood lanes can claim the guidance behavior contract is green.
+- Treat the human-visible clarity floor as guidance behavior. Shared
+  guidance, installed guidance, skills, and shipped mirrors must all say that
+  generated content must be simple, easy to understand, legible,
+  grammatically coherent, and clear before any voice or live narration is
+  added.
 
 ## Rules
 - Keep the full validator explicit and out of the live hot path.

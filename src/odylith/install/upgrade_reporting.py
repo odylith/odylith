@@ -4,12 +4,16 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
+import tempfile
+import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Mapping
 
 from odylith.install.lock_hygiene import LOCK_NOTE_THRESHOLD, lock_hygiene_summary
+from odylith.install.fs import fsync_directory
 
 GENERATED_CHANGE_MANIFEST_REL = "odylith/upgrade-generated-changes.v1.json"
 
@@ -424,13 +428,37 @@ def phase_payload(
     }
 
 
-def write_upgrade_report(*, repo_root: Path, report: dict[str, object], started_at: datetime) -> Path:
+def write_upgrade_report(
+    *, repo_root: Path, report: dict[str, object], started_at: datetime, exclusive: bool = False,
+) -> Path:
     logs_dir = repo_root / ".odylith" / "runtime" / "logs"
     logs_dir.mkdir(parents=True, exist_ok=True)
-    report_path = logs_dir / f"upgrade-{started_at.strftime('%Y%m%dT%H%M%SZ')}.json"
+    suffix = f"~{started_at.microsecond:06d}-{uuid.uuid4().hex}" if exclusive else ""
+    report_path = logs_dir / f"upgrade-{started_at.strftime('%Y%m%dT%H%M%SZ')}{suffix}.json"
     payload = dict(report)
     payload["report_path"] = str(report_path)
-    report_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    text = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+    if exclusive:
+        fd, temporary = tempfile.mkstemp(prefix=".upgrade-report-", suffix=".tmp", dir=logs_dir)
+        temporary_path = Path(temporary)
+        linked = False
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                handle.write(text)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.link(temporary_path, report_path)
+            linked = True
+            temporary_path.unlink()
+            fsync_directory(logs_dir)
+        except BaseException:
+            temporary_path.unlink(missing_ok=True)
+            if linked:
+                report_path.unlink()
+                fsync_directory(logs_dir)
+            raise
+    else:
+        report_path.write_text(text, encoding="utf-8")
     report["report_path"] = str(report_path)
     return report_path
 
@@ -439,15 +467,21 @@ def latest_upgrade_report(*, repo_root: Path) -> tuple[Path, dict[str, object]] 
     logs_dir = repo_root / ".odylith" / "runtime" / "logs"
     if not logs_dir.is_dir():
         return None
-    candidates = sorted(logs_dir.glob("upgrade-*.json"))
-    for report_path in reversed(candidates):
+    latest = None
+    for report_path in logs_dir.glob("upgrade-*.json"):
         try:
             payload = json.loads(report_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             continue
         if isinstance(payload, dict):
-            return report_path, payload
-    return None
+            try:
+                finished = datetime.fromisoformat(str(payload["finished_at"]).replace("Z", "+00:00")).timestamp()
+            except (KeyError, TypeError, ValueError):
+                finished = report_path.stat().st_mtime
+            key = (finished, report_path.name)
+            if latest is None or key > latest[0]:
+                latest = (key, report_path, payload)
+    return (latest[1], latest[2]) if latest is not None else None
 
 
 def repo_relative_path(*, repo_root: Path, path: Path) -> str:

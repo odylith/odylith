@@ -5,6 +5,13 @@
 
 Use when refreshing, validating, or auditing the Registry surface and its linked component specs, or when execution reveals an untracked or under-specified system boundary that Odylith should start governing.
 
+Governance-learning applies here: any component-contract change discovered
+while fixing an escaped defect, failed mechanism, greenfield repair path,
+validator, renderer, host integration, or release installer must update the
+relevant Registry spec before closeout. Search related Casebook and
+governance truth first, read prior failed mechanisms, do not repeat a fix path
+that already failed, and capture new mechanism-level learning.
+
 ## Lane Boundary
 - In consumer repos, use `./.odylith/bin/odylith` for Registry/governance
   commands and use the consumer repo's own toolchain for repo-code validation.
@@ -15,6 +22,7 @@ Use when refreshing, validating, or auditing the Registry surface and its linked
 ## Canonical Commands
 
 ```bash
+./.odylith/bin/odylith component update-description --repo-root . --id <existing-component-id> --what-it-is "<grounded description>" --dry-run
 ./.odylith/bin/odylith governance sync-component-spec-requirements --repo-root . --component <component_id_or_alias>
 ./.odylith/bin/odylith governance sync-component-spec-requirements --repo-root . --check-only
 ./.odylith/bin/odylith validate component-registry --repo-root . --policy-mode enforce-critical --enforce-deep-skills
@@ -24,6 +32,10 @@ Use when refreshing, validating, or auditing the Registry surface and its linked
 
 ## Rules
 
+- Use `component update-description` to correct an existing inventory description;
+  omit `--dry-run` to apply it and refresh Registry. This command preserves the
+  component's other metadata and `CURRENT_SPEC.md`; do not re-register a component
+  merely to change its description.
 - Search the existing component inventory first and extend, reopen, or deepen an existing component before adding a duplicate entry.
 - Keep the component registry deeply linked to Radar, Atlas, Compass, and local component specs.
 - Prefer the sync pipeline over hand-editing generated Registry artifacts.
@@ -32,3 +44,9 @@ Use when refreshing, validating, or auditing the Registry surface and its linked
 - Keep candidate-versus-curated decisions explicit; do not silently promote auto-derived tokens into first-class components.
 - If no component exists for a materially important surface, suggest or create a reviewed `candidate` entry in the same turn; promote it to first-class only when the evidence is strong enough.
 - When a component exists but its living spec is thin, deepen it with technically specific boundary, responsibility, interface, control, validation, and feature-history detail instead of leaving a placeholder.
+- Component specs must be component-specific, not repeated template copy.
+  Every visible spec section should plainly explain what this component owns,
+  what it receives, what it produces, what it refuses to own, which
+  collaborators it depends on, and what proof makes its boundary trustworthy.
+  Broken grammar, clipped text, Markdown residue, and generic "owns X for the
+  accepted path" narration are Registry regressions.

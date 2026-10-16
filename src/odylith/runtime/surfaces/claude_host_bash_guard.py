@@ -24,6 +24,7 @@ import sys
 
 from odylith.runtime.surfaces import claude_host_shared
 from odylith.runtime.surfaces import bash_guard_policy
+from odylith.runtime.surfaces import host_prompt_route_locks
 
 _BACKLOG_COMPLEXITY_VALUES = ("Low", "Medium", "High", "VeryHigh")
 _BACKLOG_SIZING_VALUES = ("XS", "S", "M", "L", "XL")
@@ -82,7 +83,7 @@ def _claude_backlog_enum_reason(command: str) -> str:
     return ""
 
 
-def evaluate_bash_command(command: str) -> tuple[bool, str]:
+def evaluate_bash_command(command: str, *, repo_root: str | None = None, session_id: object = "") -> tuple[bool, str]:
     """Return ``(blocked, reason)`` for a proposed bash command.
 
     A return of ``(False, "")`` means the command is allowed and no
@@ -92,6 +93,14 @@ def evaluate_bash_command(command: str) -> tuple[bool, str]:
     text = str(command or "").strip()
     if not text:
         return (False, "")
+    route_reason = host_prompt_route_locks.bash_route_lock_denial_reason(
+        repo_root=repo_root or ".",
+        host_family="claude",
+        session_id=session_id,
+        command=text,
+    )
+    if route_reason:
+        return (True, route_reason)
     host_specific_reason = _claude_backlog_enum_reason(text)
     if host_specific_reason:
         return (True, host_specific_reason)
@@ -128,7 +137,11 @@ def main(argv: list[str] | None = None) -> int:
     if not isinstance(tool_input, dict):
         return 0
     command = str(tool_input.get("command", "")).strip()
-    blocked, reason = evaluate_bash_command(command)
+    blocked, reason = evaluate_bash_command(
+        command,
+        repo_root=args.repo_root,
+        session_id=claude_host_shared.hook_session_id(payload),
+    )
     if not blocked:
         return 0
     sys.stdout.write(json.dumps(render_deny_payload(reason)))

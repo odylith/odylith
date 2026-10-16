@@ -86,11 +86,34 @@ def test_conversation_closeout_ownership_stays_decomposed() -> None:
     assert "def visibility_feedback_requested(" in conversation_closeout_text
     assert "def resolve_updated_artifacts(" in conversation_artifacts_text
     assert "prompt_signal_runtime.visibility_feedback_requested(" in conversation_closeout_text
-    assert "prompt_signal_runtime.visibility_feedback_requested(" in host_support_text
+    assert "prompt_signal_runtime.intervention_experience_feedback_requested(" in host_support_text
     assert "conversation_closeout.visibility_feedback_requested(" in host_visible_text
     assert "conversation_closeout.visibility_feedback_requested(" not in host_support_text
     assert "conversation_runtime.visibility_feedback_requested(" not in host_support_text
     assert "conversation_runtime.visibility_feedback_requested(" not in host_visible_text
+
+
+def test_closeout_assist_requires_material_evidence_or_explicit_feedback() -> None:
+    conversation_closeout_text = (
+        ROOT / "src" / "odylith" / "runtime" / "intervention_engine" / "conversation_closeout.py"
+    ).read_text(encoding="utf-8")
+    host_support_text = (
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "host_intervention_support.py"
+    ).read_text(encoding="utf-8")
+
+    assert "def _assist_has_material_turn_evidence(" in conversation_closeout_text
+    assert "Scope alone is not proof." in conversation_closeout_text
+    assert "current-turn evidence such" in conversation_closeout_text
+    assert "has_material_turn_evidence = _assist_has_material_turn_evidence(" in conversation_closeout_text
+    assert "elif visibility_markdown_phrase:" in conversation_closeout_text
+    assert "elif governance_phrase and has_material_turn_evidence:" in conversation_closeout_text
+    assert "elif focus_phrase and has_material_turn_evidence:" in conversation_closeout_text
+    assert 'reason="missing_user_facing_delta"' in conversation_closeout_text
+    assert "low-signal conversational turns quiet" in host_support_text
+    assert "prompt_signal_runtime.has_prompt_intervention_signal(prompt)" in host_support_text
+    assert "if not prompt_assist_requested(updated):" in host_support_text
+    assert 'else "prompt_signal"' in host_support_text
+    assert "return updated" in host_support_text
 
 
 def test_conversation_surface_signal_selection_ownership_stays_decomposed() -> None:

@@ -114,6 +114,13 @@ def _apply_radar_create(*, repo_root: Path, action: Mapping[str, Any]) -> dict[s
         opportunity=detail["opportunity"],
         product_view=detail["product_view"],
         success_metrics=detail["success_metrics"],
+        domain_risk=_normalize_string(payload.get("domain_risk"))
+        or "Governance capture can turn an intervention into durable Radar truth; keep scope bounded and refresh-backed.",
+        security_posture=_normalize_string(payload.get("security_posture"))
+        or (
+            "No credential or runtime-code mutation is allowed by this Radar write; security risk is stale, "
+            "overbroad, or ungrounded agent-authored truth entering governed memory."
+        ),
         priority="P1",
         commercial_value=3,
         product_impact=4,
@@ -160,6 +167,29 @@ def _apply_registry_create(*, repo_root: Path, action: Mapping[str, Any]) -> dic
         label=_normalize_string(payload.get("label")) or _normalize_string(action.get("title")) or "Governance Intervention Engine",
         path=_normalize_string(payload.get("path")) or "src/odylith/runtime/intervention_engine",
         kind=_normalize_string(payload.get("kind")) or "runtime",
+        responsibility=_normalize_string(payload.get("responsibility"))
+        or "Own the bounded governance intervention behavior proposed by the accepted action.",
+        boundary=_normalize_string(payload.get("boundary"))
+        or "The component boundary is the proposed governance intervention path and its source-owned runtime contract.",
+        dependencies=(
+            _normalize_string(payload.get("dependency"))
+            or "Depends on existing governed source truth and dashboard refresh contracts.",
+        ),
+        interfaces=(
+            _normalize_string(payload.get("interface"))
+            or "Governance capture-apply action payload and Registry dashboard read model.",
+        ),
+        validation=(
+            _normalize_string(payload.get("validation"))
+            or "Registry validation and affected dashboard refresh must pass after capture.",
+        ),
+        risks=(
+            _normalize_string(payload.get("risk"))
+            or (
+                "Security/compliance risk is unreviewed agent-authored component truth becoming durable; "
+                "keep candidate scope explicit and require follow-up validation before promotion."
+            ),
+        ),
         dry_run=False,
     ).as_dict()
 

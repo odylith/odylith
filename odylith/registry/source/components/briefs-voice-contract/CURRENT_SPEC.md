@@ -1,8 +1,6 @@
 # Briefs Voice Contract
-Last updated: 2026-04-12
+Last updated: 2026-09-15
 
-
-Last updated (UTC): 2026-04-12
 
 ## Purpose
 Briefs Voice Contract is the governed narration contract for Compass standup
@@ -58,7 +56,7 @@ maintainer-friendly narration.
 - Background brief warming must detect the active local host and stay on the
   bounded local ladder with `medium` reasoning only.
 - Codex ladder for standup briefs:
-  `gpt-5.3-codex-spark` -> `gpt-5.3-codex` -> `gpt-5.4-mini`.
+  `gpt-5.3-codex-spark` -> `gpt-5.6-luna` -> `gpt-5.6-terra`.
 - Claude ladder for standup briefs:
   `haiku` -> `sonnet`.
 - Advance one rung only after a provider budget, rate-limit, or model-availability
@@ -228,7 +226,8 @@ maintainer-friendly narration.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- No synchronized requirement or contract signals yet.
+- **2026-06-25 · Decision:** Decision evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md`, `odylith/casebook/bugs/2026-06-26-agent-guidance-did-not-require-failed-mechanism-capture-before-repeated-fixes.md`, `tests/unit/runtime/test_source_bundle_mirror.py`
 <!-- registry-requirements:end -->
 ## Feature History
 - 2026-04-12: Tightened the governed brief voice again around founder feedback: deterministic rules now explicitly stop at evidence eligibility and drift rejection, while the prose itself stays free-flowing, one-lane, immediate, and human. `Current execution` now prefers one active lane plus one concrete action, `Next planned` now stays on the immediate next move, `Risks to watch` now names explicit seams instead of abstract coherence language, and thin packets are required to produce shorter briefs instead of broader summary prose. (Plan: [B-025](../../../odylith/radar/radar.html?view=plan&workstream=B-025))

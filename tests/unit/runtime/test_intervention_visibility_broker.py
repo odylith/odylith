@@ -20,7 +20,7 @@ def _seed_codex_repo(repo_root: Path) -> None:
     (codex_root / "config.toml").write_text("[features]\ncodex_hooks = true\n", encoding="utf-8")
     (codex_root / "hooks.json").write_text(
         json.dumps(
-            {
+            {"hooks": {
                 "UserPromptSubmit": [
                     {
                         "hooks": [
@@ -49,7 +49,7 @@ def _seed_codex_repo(repo_root: Path) -> None:
                         ]
                     }
                 ],
-            }
+            }}
         ),
         encoding="utf-8",
     )
@@ -131,8 +131,11 @@ def test_broker_hard_fail_visible_for_zero_visibility_feedback(tmp_path: Path) -
     )
 
     assert decision.visible_markdown.startswith(
-        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
+        "---\n\n**Odylith Observation:** You should see guidance when it matters. This is the visible checkpoint; future notes will stay concise, useful, and tied to a decision or verified result."
     )
+    assert "Codex" not in decision.visible_markdown
+    assert "Claude" not in decision.visible_markdown
+    assert "hook" not in decision.visible_markdown.casefold()
     assert "Show the next Odylith" not in decision.visible_markdown
     assert "chat-proved" not in decision.visible_markdown
     assert decision.delivery_status == "assistant_render_required"
@@ -157,10 +160,30 @@ def test_broker_hard_fail_visible_for_zero_signals_branding_feedback(tmp_path: P
     )
 
     assert decision.visible_markdown.startswith(
-        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
+        "---\n\n**Odylith Observation:** You should see guidance when it matters. This is the visible checkpoint; future notes will stay concise, useful, and tied to a decision or verified result."
     )
     assert decision.delivery_status == "assistant_render_required"
     assert decision.proof_required is True
+
+
+def test_broker_suppresses_generic_activity_receipts(tmp_path: Path) -> None:
+    decision = visibility_broker.build_visible_intervention_decision(
+        repo_root=tmp_path,
+        bundle=_bundle(
+            visible_text=(
+                "**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
+            )
+        ),
+        host_family="codex",
+        turn_phase="post_bash_checkpoint",
+        session_id="generic-activity-receipt",
+        include_proposal=False,
+        include_closeout=False,
+    )
+
+    assert decision.visible_markdown == ""
+    assert decision.no_output_reason.startswith("visible_text_quality_blocked:")
+    assert "generic activity receipt" in decision.no_output_reason
 
 
 def test_broker_suppresses_recursive_internal_visible_copy(tmp_path: Path) -> None:

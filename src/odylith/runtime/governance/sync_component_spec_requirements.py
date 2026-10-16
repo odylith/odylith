@@ -16,10 +16,11 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 from pathlib import Path
 import re
-from typing import Iterable, Sequence
+from typing import Iterable, Mapping, Sequence
 
 from odylith.runtime.common.consumer_profile import truth_root_path
 from odylith.runtime.common import repo_path_resolver
@@ -33,12 +34,15 @@ _SECTION_INTRO = (
 _START_MARKER = "<!-- registry-requirements:start -->"
 _END_MARKER = "<!-- registry-requirements:end -->"
 _EMPTY_REQUIREMENTS_LINE = "- No synchronized requirement or contract signals yet."
+_LAST_UPDATED_PREFIXES = ("last updated:", "last updated (utc):")
 _LEGACY_CONSUMER_ORG_TOKEN = "den" + "toai"
 _LEGACY_CONSUMER_PROJECT_TOKEN = "ori" + "on"
 _PUBLIC_REQUIREMENT_SUMMARY_REWRITES = (
     (re.compile(rf"\b{_LEGACY_CONSUMER_ORG_TOKEN}-[A-Za-z0-9_-]+\b", re.IGNORECASE), "a real consumer repo"),
     (re.compile(rf"\b[A-Za-z0-9_-]*{_LEGACY_CONSUMER_PROJECT_TOKEN}[A-Za-z0-9_-]*\b", re.IGNORECASE), "a real consumer repo"),
 )
+_PUBLIC_ARTIFACT_PATH_PREFIXES = ("bin/", "odylith/", "scripts/", "src/", "tests/")
+_PUBLIC_ARTIFACT_PATHS = {"Makefile", "pyproject.toml"}
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -123,9 +127,8 @@ def _event_date(raw_ts: str, *, fallback_date: str) -> str:
         parsed = dt.datetime.fromisoformat(token)
     except ValueError:
         return fallback_date
-    if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=dt.datetime.now().astimezone().tzinfo)
-    return parsed.astimezone().date().isoformat()
+    # Historical dates belong to the recorded event, not the syncing host.
+    return parsed.date().isoformat()
 
 
 def _find_h2_section(lines: Sequence[str], heading: str) -> tuple[int, int] | None:
@@ -148,13 +151,34 @@ def _find_h2_section(lines: Sequence[str], heading: str) -> tuple[int, int] | No
 
 def _upsert_last_updated(*, lines: list[str], today: str) -> tuple[list[str], bool]:
     expected = f"Last updated: {today}"
-    for idx, line in enumerate(lines):
-        if str(line or "").strip().lower().startswith("last updated:"):
-            if str(line) == expected:
-                return lines, False
-            next_lines = list(lines)
-            next_lines[idx] = expected
-            return next_lines, True
+    stamp_indexes = [
+        idx
+        for idx, line in enumerate(lines)
+        if str(line or "").strip().lower().startswith(_LAST_UPDATED_PREFIXES)
+    ]
+    if stamp_indexes:
+        primary_index = next(
+            (
+                idx
+                for idx in stamp_indexes
+                if str(lines[idx] or "").strip().lower().startswith("last updated:")
+            ),
+            stamp_indexes[0],
+        )
+        if len(stamp_indexes) == 1 and lines[primary_index] == expected:
+            return lines, False
+
+        duplicate_indexes = set(stamp_indexes)
+        duplicate_indexes.remove(primary_index)
+        for idx in tuple(duplicate_indexes):
+            if idx + 1 < len(lines) and not str(lines[idx + 1] or "").strip():
+                duplicate_indexes.add(idx + 1)
+        next_lines = [
+            expected if idx == primary_index else line
+            for idx, line in enumerate(lines)
+            if idx not in duplicate_indexes
+        ]
+        return next_lines, True
 
     insert_at = 0
     for idx, line in enumerate(lines):
@@ -200,24 +224,17 @@ def _ensure_requirements_section(lines: list[str]) -> tuple[list[str], tuple[int
     return next_lines, section, True
 
 
-def _format_evidence_suffix(*, event: component_registry.MappedEvent) -> str:
+def _format_evidence_suffix(*, event: component_registry.MappedEvent) -> list[str]:
     parts: list[str] = []
-    if event.workstreams:
-        parts.append(f"Scope: {', '.join(event.workstreams[:4])}")
-    if event.artifacts:
-        normalized_artifacts: list[str] = []
-        seen_artifacts: set[str] = set()
-        for raw in event.artifacts:
-            artifact = str(raw)
-            if artifact in seen_artifacts:
-                continue
-            seen_artifacts.add(artifact)
-            normalized_artifacts.append(artifact)
-        preview = ", ".join(normalized_artifacts[:2])
-        more = len(normalized_artifacts) - 2
-        if more > 0:
-            preview = f"{preview} +{more} more"
-        parts.append(f"Evidence: {preview}")
+    workstreams = _unique_values(event.workstreams)
+    artifacts = _artifact_evidence_references(event.artifacts)
+    if workstreams:
+        parts.append(f"Scope: {', '.join(workstreams[:4])}")
+    if artifacts:
+        joined = ", ".join(f"`{artifact}`" for artifact in artifacts[:4])
+        remaining = max(0, len(artifacts) - 4)
+        suffix = f", plus {remaining} more" if remaining else ""
+        parts.append(f"Evidence: {joined}{suffix}")
     return parts
 
 
@@ -231,6 +248,27 @@ def _clean_requirement_summary(*, summary: str, kind: str) -> str:
     for pattern, replacement in _PUBLIC_REQUIREMENT_SUMMARY_REWRITES:
         normalized = pattern.sub(replacement, normalized)
     return normalized
+
+
+def _requirements_trace_summary(*, event: component_registry.MappedEvent) -> str:
+    artifacts = _artifact_evidence_references(event.artifacts)
+    workstreams = _unique_values(event.workstreams)
+    kind = _normalize_space(event.kind).lower() or "timeline"
+    if kind == "decision":
+        base = "Decision evidence linked this component to governed work."
+    elif kind == "implementation":
+        base = "Implementation evidence linked this component to governed work."
+    else:
+        base = "Timeline evidence linked this component to governed work."
+    qualifiers: list[str] = []
+    if workstreams:
+        qualifiers.append("workstream scope preserved")
+    if artifacts:
+        plural = "s" if len(artifacts) != 1 else ""
+        qualifiers.append(f"{len(artifacts)} verifiable artifact reference{plural}")
+    if not qualifiers:
+        return base
+    return f"{base.rstrip('.')} with {'; '.join(qualifiers)}."
 
 
 def _path_matches_component(*, artifact: str, entry: component_registry.ComponentEntry) -> bool:
@@ -331,15 +369,23 @@ def _build_generated_requirement_lines(
         return [_EMPTY_REQUIREMENTS_LINE]
 
     rows: list[str] = []
-    for event in list(events)[:max_events]:
-        summary = _clean_requirement_summary(summary=event.summary, kind=event.kind)
+    rendered_rows: set[tuple[str, ...]] = set()
+    for event in events:
+        summary = _requirements_trace_summary(event=event)
         if not summary:
             continue
         kind = _normalize_space(event.kind).lower() or "event"
         date_token = _event_date(event.ts_iso, fallback_date=fallback_date)
-        rows.append(f"- **{date_token} · {kind.title()}:** {summary}")
-        for evidence_line in _format_evidence_suffix(event=event):
-            rows.append(f"  - {evidence_line}")
+        rendered_row = (
+            f"- **{date_token} · {kind.title()}:** {summary}",
+            *(f"  - {evidence_line}" for evidence_line in _format_evidence_suffix(event=event)),
+        )
+        if rendered_row in rendered_rows:
+            continue
+        rendered_rows.add(rendered_row)
+        rows.extend(rendered_row)
+        if len(rendered_rows) >= max_events:
+            break
     if rows:
         return rows
     return [_EMPTY_REQUIREMENTS_LINE]
@@ -414,6 +460,11 @@ def _write_if_changed(*, path: Path, lines: Sequence[str]) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def _remember_path(rows: list[str], value: str) -> None:
+    if value not in rows:
+        rows.append(value)
+
+
 def _forensics_payload(
     *,
     entry: component_registry.ComponentEntry,
@@ -437,8 +488,108 @@ def _forensics_payload(
             "developer_docs": list(traceability.get("developer_docs", [])),
             "code_references": list(traceability.get("code_references", [])),
         },
-        "timeline": [row.as_dict() for row in timeline],
+        "timeline": [_forensics_timeline_row(row) for row in timeline],
     }
+
+
+def _forensics_timeline_row(event: component_registry.MappedEvent) -> dict[str, object]:
+    artifacts = _artifact_evidence_references(event.artifacts)
+    workstreams = _unique_values(event.workstreams)
+    return {
+        "event_index": event.event_index,
+        "ts_iso": event.ts_iso,
+        "kind": event.kind,
+        "summary": _forensics_summary(event=event, artifact_count=len(artifacts), workstream_count=len(workstreams)),
+        "workstreams": workstreams,
+        "artifact_count": len(artifacts),
+        "artifacts": artifacts,
+        "explicit_components": _unique_values(event.explicit_components),
+        "mapped_components": _unique_values(event.mapped_components),
+        "confidence": event.confidence,
+        "meaningful": event.meaningful,
+    }
+
+
+def _forensics_summary(
+    *,
+    event: component_registry.MappedEvent,
+    artifact_count: int,
+    workstream_count: int,
+) -> str:
+    kind = _normalize_space(event.kind).lower() or "timeline"
+    if kind == "workspace_activity":
+        base = "Workspace activity touched tracked component evidence."
+    elif kind == "decision":
+        base = "Decision evidence linked this component to governed work."
+    elif kind == "implementation":
+        base = "Implementation evidence linked this component to governed work."
+    elif kind == "statement":
+        base = "Timeline evidence linked this component to governed work."
+    else:
+        base = "Component evidence linked this component to governed work."
+    qualifiers: list[str] = []
+    if workstream_count:
+        qualifiers.append("workstream scope preserved")
+    if artifact_count:
+        plural = "s" if artifact_count != 1 else ""
+        qualifiers.append(f"{artifact_count} verifiable artifact reference{plural}")
+    if not qualifiers:
+        return base
+    return f"{base} {'; '.join(qualifiers)}."
+
+
+def _unique_values(values: Sequence[str]) -> list[str]:
+    rows: list[str] = []
+    seen: set[str] = set()
+    for raw in values:
+        value = str(raw or "").strip()
+        if not value or value in seen:
+            continue
+        seen.add(value)
+        rows.append(value)
+    return rows
+
+
+def _artifact_evidence_references(values: Sequence[str]) -> list[str]:
+    """Keep artifact custody inspectable without exposing unsafe host path terms."""
+
+    return _unique_values(
+        [_artifact_evidence_reference(value) for value in values if _normalize_space(value)]
+    )
+
+
+def _artifact_evidence_reference(value: str) -> str:
+    normalized = _canonical_artifact_path(value)
+    if not normalized:
+        return ""
+    if _is_public_artifact_path(normalized):
+        return normalized
+    digest = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+    return f"sha256:{digest}"
+
+
+def _canonical_artifact_path(value: str) -> str:
+    raw = _normalize_space(value).replace("\\", "/")
+    absolute = raw.startswith("/")
+    parts: list[str] = []
+    for part in raw.split("/"):
+        if not part or part == ".":
+            continue
+        if part == "..":
+            if parts and parts[-1] != "..":
+                parts.pop()
+            else:
+                parts.append(part)
+            continue
+        parts.append(part)
+    normalized = "/".join(parts)
+    return f"/{normalized}" if absolute else normalized
+
+
+def _is_public_artifact_path(value: str) -> bool:
+    if not value or value.startswith(("/", "../")):
+        return False
+    return value in _PUBLIC_ARTIFACT_PATHS or value.startswith(_PUBLIC_ARTIFACT_PATH_PREFIXES)
 
 
 def _write_json_if_changed(*, path: Path, payload: dict[str, object]) -> bool:
@@ -466,6 +617,79 @@ def _resolve_forensics_path(*, entry: component_registry.ComponentEntry, spec_pa
     if spec_path.name == "CURRENT_SPEC.md":
         return spec_path.parent / "FORENSICS.v1.json"
     return spec_path.with_name(f"{entry.component_id}.FORENSICS.v1.json")
+
+
+def _empty_forensic_coverage() -> component_registry.ComponentForensicCoverage:
+    return component_registry.ComponentForensicCoverage(
+        status="tracked_but_evidence_empty",
+        timeline_event_count=0,
+        explicit_event_count=0,
+        recent_path_match_count=0,
+        mapped_workstream_evidence_count=0,
+        spec_history_event_count=0,
+        empty_reasons=[
+            "no_explicit_event",
+            "no_recent_path_match",
+            "no_mapped_workstream_evidence",
+        ],
+    )
+
+
+def _write_forensics_for_targets(
+    *,
+    repo_root: Path,
+    targets: Sequence[str],
+    components: Mapping[str, component_registry.ComponentEntry],
+    report: component_registry.ComponentRegistryReport,
+    traceability_index: Mapping[str, dict[str, list[str]]],
+    check_only: bool,
+    stale_paths: list[str],
+    changed_paths: list[str],
+) -> tuple[int, set[Path], set[Path], set[Path]]:
+    updated_forensics = 0
+    expected_forensics_paths: set[Path] = set()
+    flat_spec_dirs: set[Path] = set()
+    per_component_specs_roots: set[Path] = set()
+    persisted_timelines = component_registry.build_component_timelines(
+        component_index=components,
+        mapped_events=report.mapped_events,
+    )
+    for component_id in targets:
+        entry = components.get(component_id)
+        if entry is None:
+            continue
+        spec_ref = str(entry.spec_ref or "").strip()
+        if not spec_ref:
+            continue
+        spec_path = _resolve(repo_root, spec_ref)
+        if not spec_path.is_file():
+            continue
+        forensics_path = _resolve_forensics_path(entry=entry, spec_path=spec_path)
+        expected_forensics_paths.add(forensics_path.resolve())
+        if forensics_path.name != "FORENSICS.v1.json":
+            flat_spec_dirs.add(spec_path.parent.resolve())
+        else:
+            per_component_specs_roots.add(spec_path.parent.parent.resolve())
+        forensics_rel = repo_path_resolver.display_repo_path(repo_root=repo_root, value=forensics_path)
+        payload = _forensics_payload(
+            entry=entry,
+            coverage=report.forensic_coverage.get(component_id, _empty_forensic_coverage()),
+            timeline=persisted_timelines.get(component_id, []),
+            traceability=traceability_index.get(
+                component_id,
+                {"runbooks": [], "developer_docs": [], "code_references": []},
+            ),
+        )
+        if check_only:
+            expected = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+            current = forensics_path.read_text(encoding="utf-8") if forensics_path.is_file() else ""
+            if current != expected:
+                _remember_path(stale_paths, forensics_rel)
+        else:
+            if _write_json_if_changed(path=forensics_path, payload=payload):
+                updated_forensics += 1
+                _remember_path(changed_paths, forensics_rel)
+    return updated_forensics, expected_forensics_paths, flat_spec_dirs, per_component_specs_roots
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -497,6 +721,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         catalog_path=catalog_path,
         ideas_root=ideas_root,
         stream_path=stream_path,
+        include_workspace_activity=False,
     )
     ignored_prefixes: tuple[str, ...] = (
         "missing stream path",
@@ -541,10 +766,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     changed_paths: list[str] = []
     stale_paths: list[str] = []
     updated_components = 0
-    updated_forensics = 0
-    expected_forensics_paths: set[Path] = set()
-    flat_spec_dirs: set[Path] = set()
-    per_component_specs_roots: set[Path] = set()
     for component_id in targets:
         entry = components.get(component_id)
         if entry is None:
@@ -588,7 +809,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             generated_rows=generated_rows,
         )
         content_changed = bool(created or preamble_changed or section_changed)
-        if content_changed:
+        has_duplicate_update_stamps = sum(
+            1
+            for line in working_lines
+            if str(line or "").strip().lower().startswith(_LAST_UPDATED_PREFIXES)
+        ) > 1
+        if content_changed or has_duplicate_update_stamps:
             working_lines, last_updated_changed = _upsert_last_updated(lines=working_lines, today=today_token)
             content_changed = bool(content_changed or last_updated_changed)
 
@@ -596,51 +822,44 @@ def main(argv: Sequence[str] | None = None) -> int:
             updated_components += 1
             rel = repo_path_resolver.display_repo_path(repo_root=repo_root, value=spec_path)
             if args.check_only:
-                stale_paths.append(rel)
+                _remember_path(stale_paths, rel)
             else:
                 _write_if_changed(path=spec_path, lines=working_lines)
-                changed_paths.append(rel)
+                _remember_path(changed_paths, rel)
 
-        forensics_path = _resolve_forensics_path(entry=entry, spec_path=spec_path)
-        expected_forensics_paths.add(forensics_path.resolve())
-        if forensics_path.name != "FORENSICS.v1.json":
-            flat_spec_dirs.add(spec_path.parent.resolve())
-        else:
-            per_component_specs_roots.add(spec_path.parent.parent.resolve())
-        forensics_rel = repo_path_resolver.display_repo_path(repo_root=repo_root, value=forensics_path)
-        payload = _forensics_payload(
-            entry=entry,
-            coverage=report.forensic_coverage.get(
-                component_id,
-                component_registry.ComponentForensicCoverage(
-                    status="tracked_but_evidence_empty",
-                    timeline_event_count=0,
-                    explicit_event_count=0,
-                    recent_path_match_count=0,
-                    mapped_workstream_evidence_count=0,
-                    spec_history_event_count=0,
-                    empty_reasons=[
-                        "no_explicit_event",
-                        "no_recent_path_match",
-                        "no_mapped_workstream_evidence",
-                    ],
-                ),
-            ),
-            timeline=timelines.get(component_id, []),
-            traceability=traceability_index.get(
-                component_id,
-                {"runbooks": [], "developer_docs": [], "code_references": []},
-            ),
+    if updated_components and not args.check_only:
+        report = component_registry.build_component_registry_report(
+            repo_root=repo_root,
+            manifest_path=manifest_path,
+            catalog_path=catalog_path,
+            ideas_root=ideas_root,
+            stream_path=stream_path,
+            include_workspace_activity=False,
         )
-        if args.check_only:
-            expected = json.dumps(payload, indent=2, sort_keys=True) + "\n"
-            current = forensics_path.read_text(encoding="utf-8") if forensics_path.is_file() else ""
-            if current != expected:
-                stale_paths.append(forensics_rel)
-        else:
-            if _write_json_if_changed(path=forensics_path, payload=payload):
-                updated_forensics += 1
-                changed_paths.append(forensics_rel)
+        timelines = component_registry.build_component_timelines(
+            component_index=components,
+            mapped_events=report.mapped_events,
+        )
+        traceability_index = component_registry.build_component_traceability_index(
+            repo_root=repo_root,
+            components=components,
+        )
+
+    (
+        updated_forensics,
+        expected_forensics_paths,
+        flat_spec_dirs,
+        per_component_specs_roots,
+    ) = _write_forensics_for_targets(
+        repo_root=repo_root,
+        targets=targets,
+        components=components,
+        report=report,
+        traceability_index=traceability_index,
+        check_only=bool(args.check_only),
+        stale_paths=stale_paths,
+        changed_paths=changed_paths,
+    )
 
     for directory in sorted(flat_spec_dirs):
         legacy_path = directory / "FORENSICS.v1.json"

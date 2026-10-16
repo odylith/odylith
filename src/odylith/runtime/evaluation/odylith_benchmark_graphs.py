@@ -884,11 +884,21 @@ def _render_frontier_svg(report: Mapping[str, Any]) -> str:
     if outlier_rows:
         for index, row in enumerate(outlier_rows[:3]):
             y = spotlight_y + spotlight_row_top + index * spotlight_row_step
+            if live_proof:
+                outlier_value = (
+                    f"peak {_human_duration_label(row['latency_extent'])} | "
+                    f"{_compact_number_label(row['prompt_extent'])} tok"
+                )
+            else:
+                outlier_value = (
+                    f"peak {_fmt_ms(row['latency_extent'])} | "
+                    f"{_fmt_int(row['prompt_extent'])} {token_axis_noun.split()[0]} tok"
+                )
             body.extend(
                 [
                     f'<rect x="{right_x + 24}" y="{y - 18}" width="{right_w - 48}" height="34" rx="10" fill="{_PANEL}" stroke="{_GRID}" stroke-width="1"/>',
                     f'<text x="{right_x + 38}" y="{y + 2}" class="label">{_esc(_short_label(row["label"], limit=26))}</text>',
-                    f'<text x="{right_inner_right - 16}" y="{y + 2}" class="small" text-anchor="end">{_esc((f"peak {_human_duration_label(row['latency_extent'])} | {_compact_number_label(row['prompt_extent'])} tok") if live_proof else (f"peak {_fmt_ms(row['latency_extent'])} | {_fmt_int(row['prompt_extent'])} {token_axis_noun.split()[0]} tok"))}</text>',
+                    f'<text x="{right_inner_right - 16}" y="{y + 2}" class="small" text-anchor="end">{_esc(outlier_value)}</text>',
                 ]
             )
 

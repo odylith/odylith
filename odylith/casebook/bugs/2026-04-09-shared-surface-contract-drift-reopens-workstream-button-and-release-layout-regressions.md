@@ -1,5 +1,55 @@
 - Bug ID: CB-080
 
+## Mobile table regression (2026-10-15)
+
+Recurred during v0.1.15 release verification. The initial April 9 correction,
+closure metadata and proof remain historical evidence. The current recurrence
+is an open B-142 release gate, linked from active CB-347. Completed hosted run 38852603764 at
+b67b14ff78d2d86cc129860ac44d81ea3f1efcb0 fails the compact shared-button audit:
+Compass table links have 2px horizontal padding instead of the shared 8px.
+Direct Chromium measurement confirms 2px inside the mobile table and 8px outside;
+both are 8px on desktop. The local audit passes when it selects only synthetic
+fallback anchors. This is a product selector defect and a data-dependent
+coverage gap, not a timing failure or stale mirror.
+
+The mobile generic-chip rule still styles interactive workstream links. Keep
+wrapping and passive chip sizing, but restrict its 2px padding to noninteractive
+chips so the shared workstream primitive owns the link appearance. Strengthen
+the existing Compass browser matrix to check real populated-table controls and
+empty fallback controls across ready, fallback, error and empty states at both
+widths. Retain exact style, overflow, content and observation assertions, plus
+source/live/bundle equality. Do not repeat a local-only CSS fix, weaken the 8px
+contract or accept another fallback-only pass. Diagnosis SHA-256:
+ab056698ea7354c2d4cd3f887f92b6fd7962e7fc7015a508f0059e3f07a9d915.
+Current installed release qualification remains pending.
+
+The first strengthened run retains seven failures and ten passes. Correct
+button spacing exposes a real mobile containment failure: the table needs
+268.44px inside a 262px wrapper, clipping the Progress header. Remove only the
+mobile body-cell gutters; retain header gutters, chip spacing and all existing
+text and boundary checks. The six new empty-state failures come from the test
+helper retaining 28 inherited per-window source rows while clearing only the
+top-level lists. Clear those test-local window lists and catalog explicitly;
+the native reader correctly retains declared source rows. The failed four-file
+revision and log remain preserved.
+
+The final correction passes all 17 bounded checks: the eight existing
+ready/fallback/error/empty desktop/mobile cells, two unchanged shared-button
+audits, two source/live/bundle equality controls and all five Compass shell
+checks. Ready cases measure a real table link at both widths; the other six
+cases explicitly establish an empty state before measuring fallback links.
+All 91 original assertions remain, with 11 added. Both final screenshots were
+visually inspected. Shared links retain 8px horizontal padding, passive mobile
+chips retain 2px, and the mobile header fits without clipping or hidden text.
+
+Independent review clears the four frozen files with no actionable P0/P1 or
+material P2 finding. Final log SHA-256:
+743b1f94527e7065792062261e9e5bd6c33545bc9d98d97f367945d16c86b50f.
+Review SHA-256:
+3fcb5d0be8b38e2722b6962d70ca2018bc9e53d1248fcabeffd15cbd5d94402c.
+The first failed revision remains failed. Complete successor CI and installed
+release proof are still required for the current recurrence.
+
 - Type: Product
 
 

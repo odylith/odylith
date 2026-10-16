@@ -1,0 +1,271 @@
+"""Publish complete immutable successors for successful managed CLI writes."""
+
+from __future__ import annotations
+
+from collections.abc import Callable, Sequence
+from contextvars import ContextVar
+from pathlib import Path
+
+from odylith.install import upgrade_dashboard_recovery
+from odylith.runtime.common import compass_log_continuation
+from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
+from odylith.runtime.domain_intelligence import greenfield_generation_state
+from odylith.runtime.domain_intelligence import greenfield_generation_store
+from odylith.runtime.domain_intelligence import greenfield_repository_lock
+from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.governance import restore_published_files
+
+_CANONICAL_EVENT_WRITER: ContextVar[set[Path] | None] = ContextVar("canonical_event_writer", default=None)
+
+
+def canonical_event_writer_admitted(repo_root: Path) -> bool:
+    """Permit direct event writes only during the admitted operation's lifetime."""
+    admitted = _CANONICAL_EVENT_WRITER.get()
+    return admitted is not None and Path(repo_root).resolve() in admitted
+
+
+_READ_ONLY_COMMANDS = frozenset(
+    {
+        "architecture",
+        "benchmark",
+        "bootstrap",
+        "capabilities",
+        "context",
+        "context-engine",
+        "discipline",
+        "governance-slice",
+        "impact",
+        "lane",
+        "plan",
+        "query",
+        "session-brief",
+        "show",
+        "subagent-orchestrator",
+        "subagent-router",
+        "turn-gate",
+        "validate",
+        "version",
+    }
+)
+
+_COMPLETED_INTERVENTION_STATUS_COMMANDS = frozenset(
+    {
+        ("claude", "intervention-status"),
+        ("codex", "intervention-status"),
+    }
+)
+
+
+class GreenfieldManagedMutationBusyError(RuntimeError):
+    """A supported later writer could not enter the managed mutation boundary."""
+
+
+def command_may_mutate_greenfield_managed_paths(tokens: Sequence[str]) -> bool:
+    """Conservatively classify supported CLI commands; unknown commands are writers."""
+
+    command = tuple(str(token).strip() for token in tokens if str(token).strip())
+    if not command or any(token in {"-h", "--help"} for token in command):
+        return False
+    top = command[0]
+    if top in _READ_ONLY_COMMANDS or top in {"greenfield", "uninstall"}:
+        return False
+    if len(command) > 1 and (
+        (top == "codex" and command[1] == "prompt-context")
+        or (top == "claude" and command[1] == "prompt-bundle")
+    ):
+        # These adapters enter the Greenfield decision lock themselves.
+        return False
+    if command[:2] in _COMPLETED_INTERVENTION_STATUS_COMMANDS and not any(
+        token == "--last-assistant-message" or token.startswith("--last-assistant-message=")
+        for token in command[2:]
+    ):
+        # Status inspection reads readiness and delivery evidence. It becomes a
+        # governed writer only when it confirms assistant-rendered chat output.
+        return False
+    if top == "doctor" and "--repair" not in command:
+        return False
+    if top == "casebook" and len(command) > 1 and command[1] == "validate":
+        return False
+    if top == "atlas" and len(command) > 1 and command[1] == "render" and "--check-only" in command:
+        return False
+    if top == "release" and len(command) > 1 and command[1] in {"list", "show", "migration-gate"}:
+        return False
+    return True
+
+
+def _completed_nonready_intervention_status(tokens: Sequence[str], result: int) -> bool:
+    """Recognize the declared non-ready result of a completed status assessment."""
+
+    command = tuple(str(token).strip() for token in tokens if str(token).strip())
+    return result == 1 and command[:2] in _COMPLETED_INTERVENTION_STATUS_COMMANDS
+
+
+def run_with_greenfield_managed_mutation_boundary(
+    *,
+    repo_root: Path,
+    command_tokens: Sequence[str],
+    operation: Callable[[int | None], int],
+) -> int:
+    """Keep the previous complete view selected until a successful successor is sealed."""
+
+    root = Path(repo_root).expanduser().resolve()
+    if not command_may_mutate_greenfield_managed_paths(command_tokens):
+        return operation(None)
+
+    def admitted_operation(descriptor: int) -> int:
+        admitted = {root}
+        token = _CANONICAL_EVENT_WRITER.set(admitted)
+        try:
+            return operation(descriptor)
+        finally:
+            # Copied asynchronous contexts share the emptied admission set;
+            # they cannot retain authority after the foreground writer exits.
+            admitted.clear()
+            _CANONICAL_EVENT_WRITER.reset(token)
+    complete_log = False
+    abandon_log = False
+    requested_root = ""
+    if tuple(command_tokens[:2]) == ("compass", "log"):
+        # Parse the full public grammar before entering any recovery or writer
+        # path. Invalid recovery-looking syntax must remain completely inert.
+        from odylith.runtime.common import log_compass_timeline_event
+
+        try:
+            log_args = log_compass_timeline_event._parse_args(command_tokens[2:])
+        except SystemExit as exc:
+            raise compass_log_continuation.CompassLogContinuationError(
+                "RECOVERY_REQUIRED: invalid Compass log syntax; no writer ran"
+            ) from exc
+        complete_log = bool(log_args.complete)
+        abandon_log = bool(log_args.abandon_restored)
+        requested_root = str(log_args.repo_root)
+    if complete_log or abandon_log:
+        if Path(requested_root).expanduser().resolve() != root:
+            raise compass_log_continuation.CompassLogContinuationError(
+                "RECOVERY_REQUIRED: Compass recovery repository differs from its lease"
+            )
+    try:
+        with greenfield_repository_lock.greenfield_repository_lock(root) as descriptor:
+            restore_published_files.require_restoration_writer_admission(repo_root=root)
+            if abandon_log:
+                GreenfieldCommitJournal.require_settled_journals(repo_root=root)
+                pinned = greenfield_generation_store.require_greenfield_working_generation(root)
+                active = greenfield_generation_state.active_generation_identity(root)
+                before = greenfield_repository_write_set.greenfield_managed_fingerprints(root)
+                result = admitted_operation(descriptor)
+                if (greenfield_generation_state.active_generation_identity(root) != active
+                        or greenfield_repository_write_set.greenfield_managed_fingerprints(root) != before
+                        or pinned.manifest["after_fingerprints"] != before):
+                    raise compass_log_continuation.CompassLogContinuationError(
+                        "RECOVERY_REQUIRED: Compass abandonment changed publication or managed bytes; "
+                        "no successor was published"
+                    )
+                return result
+            admitted_upgrade = None
+            admitted_authored = None
+            admitted_log = None
+            if complete_log:
+                GreenfieldCommitJournal.require_settled_journals(repo_root=root)
+                admitted_log = compass_log_continuation.require_completion(
+                    repo_root=root, repository_lock_fd=descriptor,
+                )
+                if greenfield_generation_state.active_generation_identity(root) == admitted_log.receipt["successor"]:
+                    return 0
+                pinned = admitted_log.pinned
+            elif upgrade_dashboard_recovery.is_completion_retry(command_tokens):
+                state = greenfield_generation_state.read_active_publication(root)
+                try:
+                    pinned = greenfield_generation_store.require_greenfield_working_generation(root) if state else None
+                except greenfield_generation_store.GreenfieldWorkingGenerationDriftError:
+                    pinned, admitted_upgrade = upgrade_dashboard_recovery.require_completion_retry(repo_root=root)
+                    try:
+                        GreenfieldCommitJournal.require_settled_journals(repo_root=root)
+                    except (OSError, RuntimeError, ValueError) as exc:
+                        raise upgrade_dashboard_recovery.UpgradeDashboardRecoveryError(
+                            "RECOVERY_REQUIRED: another Greenfield transaction needs attention; "
+                            "the dashboard retry and journal recovery were not run"
+                        ) from exc
+            if admitted_upgrade is None and admitted_log is None:
+                GreenfieldCommitJournal.recover_pending_journals(repo_root=root)
+                state = greenfield_generation_state.read_active_publication(root)
+                try:
+                    pinned = greenfield_generation_store.require_greenfield_working_generation(root) if state else None
+                except greenfield_generation_store.GreenfieldWorkingGenerationDriftError:
+                    if not command_tokens or command_tokens[0] != "sync":
+                        raise
+                    from odylith.runtime.domain_intelligence import greenfield_authored_sync_admission
+
+                    admitted_authored = greenfield_authored_sync_admission.require_authored_sync_admission(
+                        repo_root=root, command_tokens=command_tokens,
+                    )
+                    pinned = admitted_authored.pinned
+            active = greenfield_generation_state.active_generation_identity(root)
+            result = admitted_operation(descriptor)
+            if admitted_authored is not None:
+                admitted_authored.require_unchanged_intent(root)
+            if admitted_upgrade is not None:
+                upgrade_dashboard_recovery.require_unchanged_anchors(
+                    repo_root=root, admitted_receipt=admitted_upgrade,
+                )
+            if result != 0 and not _completed_nonready_intervention_status(command_tokens, result):
+                if admitted_upgrade is not None:
+                    upgrade_dashboard_recovery.record_failed_completion(
+                        repo_root=root, repository_lock_fd=descriptor, admitted_receipt=admitted_upgrade,
+                    )
+                return result
+            admitted_log = compass_log_continuation.pending_for_publication(
+                repo_root=root, command_tokens=command_tokens, repository_lock_fd=descriptor,
+            )
+            if pinned is None:
+                # A first install can activate, then perform further managed writes.
+                if greenfield_generation_state.read_active_publication(root) is None:
+                    return result
+                pinned = greenfield_generation_store.pin_active_greenfield_generation(root)
+                active = greenfield_generation_state.active_generation_identity(root)
+            expected = dict(pinned.manifest["after_fingerprints"])
+            actual = greenfield_repository_write_set.greenfield_managed_fingerprints(root)
+            if actual != expected:
+                write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
+                    source_root=pinned.repository_root,
+                    staged_root=root,
+                    publication_precondition=active,
+                )
+                if admitted_authored is not None:
+                    admitted_authored.require_compiled_intent(write_set)
+                manifest = greenfield_generation_store.compile_greenfield_generation_manifest(write_set)
+                generation = greenfield_generation_store.materialize_immutable_greenfield_generation(
+                    repo_root=root, write_set=write_set, manifest_text=manifest,
+                )
+                publication = greenfield_generation_state.compile_greenfield_publication_entry(
+                    write_set_hash=generation.write_set_hash,
+                    generation_manifest_sha256=generation.manifest_sha256,
+                )
+                greenfield_repository_write_set.require_greenfield_repository_after_state(
+                    repo_root=root, write_set=write_set,
+                )
+                if admitted_authored is not None:
+                    admitted_authored.require_unchanged_intent(root)
+                if admitted_log is not None:
+                    admitted_log.mark_sealed(generation)
+                greenfield_generation_store.publish_greenfield_generation(
+                    repo_root=root,
+                    generation=generation,
+                    write_set=write_set,
+                    publication_entry_text=publication,
+                )
+            if upgrade_dashboard_recovery.is_completion_retry(command_tokens):
+                upgrade_dashboard_recovery.complete_retry(repo_root=root, admitted_receipt=admitted_upgrade)
+            if admitted_log is not None:
+                admitted_log.retire()
+            return result
+    except greenfield_repository_lock.GreenfieldRepositoryBusyError as exc:
+        raise GreenfieldManagedMutationBusyError(
+            "BUSY_NO_WRITE: another governed repository transaction is in progress"
+        ) from exc
+
+
+__all__ = [
+    "GreenfieldManagedMutationBusyError",
+    "command_may_mutate_greenfield_managed_paths",
+    "run_with_greenfield_managed_mutation_boundary",
+]

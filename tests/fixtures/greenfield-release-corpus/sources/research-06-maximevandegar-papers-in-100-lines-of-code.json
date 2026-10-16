@@ -1,0 +1,66 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "research",
+    "paper",
+    "study",
+    "science",
+    "academic",
+    "experiment"
+  ],
+  "matched_description_evidence_terms": [
+    "paper"
+  ],
+  "repository": {
+    "default_branch": "main",
+    "description": "Implementation of papers in 100 lines of code.",
+    "full_name": "MaximeVandegar/Papers-in-100-Lines-of-Code",
+    "id": 307222796,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "Papers-in-100-Lines-of-Code",
+    "node_id": "MDEwOlJlcG9zaXRvcnkzMDcyMjI3OTY=",
+    "pushed_at": "2026-04-08T19:27:17Z",
+    "topics": [
+      "3d",
+      "aes",
+      "artificial-intelligence",
+      "deep-learning",
+      "diffusion-models",
+      "educational",
+      "gans",
+      "generative-model",
+      "implementation-of-research-paper",
+      "inverse-rendering",
+      "machine-learning",
+      "meta-learning",
+      "nerf",
+      "neural-radiance-fields",
+      "papers",
+      "python",
+      "pytorch",
+      "reinforcement-learning",
+      "research",
+      "rl"
+    ]
+  },
+  "response_item_index": 16,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aresearch&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:16:19 GMT",
+    "x-github-request-id": "D13E:BE5AA:15AC209:1610295:6A5B6080"
+  },
+  "search_response_path": "responses/research.json",
+  "search_response_sha256": "9bf823d31d6d58104756dffc0d0a38b8872c7be376d025412523808938bb2264",
+  "selection_index": 6,
+  "source_family": "research",
+  "source_id": "github-repository:307222796",
+  "source_uri": "https://github.com/MaximeVandegar/Papers-in-100-Lines-of-Code",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

@@ -209,6 +209,26 @@ def test_build_narration_substrate_trims_storyline_and_omits_healthy_self_host()
     assert "self_host" not in built["summary"]
 
 
+def test_storyline_preserves_full_selected_facts_and_tail_changes_in_fingerprint() -> None:
+    packet = _fact_packet()
+    sentence = "Review the complete evidence and preserve the source-bound decision; " * 5 + "publication is not approved ✅."
+    packet["summary"]["storyline"] = {
+        "flagship_lane": sentence,
+        "direction": "  " + sentence.replace(" ", "\n", 1) + "  ",
+        "proof": sentence,
+        "forcing_function": sentence,
+        "watch_item": " \n ",
+        "use_story": "This field remains outside the selected storyline.",
+    }
+    built = substrate.build_narration_substrate(fact_packet=packet, schema_version="v25")
+    assert built["summary"]["storyline"] == {
+        key: sentence for key in ("flagship_lane", "direction", "proof", "forcing_function")
+    }
+    packet["summary"]["storyline"]["proof"] = sentence.replace("not approved", "approved")
+    changed = substrate.build_narration_substrate(fact_packet=packet, schema_version="v25")
+    assert changed["fingerprint"] != built["fingerprint"]
+
+
 def test_build_narration_substrate_penalizes_meta_current_execution_facts() -> None:
     packet = _fact_packet()
     packet["sections"][1]["facts"] = [

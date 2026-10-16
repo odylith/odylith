@@ -7,6 +7,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from odylith.runtime.intervention_engine import surface_runtime
+from odylith.runtime.intervention_engine import stream_state
 from odylith.runtime.surfaces import codex_host_shared
 from odylith.runtime.surfaces import codex_host_post_bash_checkpoint
 from odylith.runtime.surfaces import host_dirty_checkpoint
@@ -69,62 +70,39 @@ def test_post_bash_checkpoint_records_dirty_event_without_start(monkeypatch, tmp
     assert [event["paths"] for event in events] == [["src/main.py"]]
 
 
-def test_post_bash_checkpoint_skips_start_when_cache_is_warm(monkeypatch, tmp_path: Path) -> None:
-    calls: list[tuple[str, list[str], int]] = []
-    session_id = "codex-start-warm"
-
-    codex_host_post_bash_checkpoint.record_start_grounding_attempt(
-        project_dir=tmp_path,
-        session_id=session_id,
-        completed=subprocess.CompletedProcess(args=["odylith", "start"], returncode=1),
-        now_seconds=1000.0,
+def test_post_bash_retains_scoped_governed_event_without_canonical_dispatch(
+    monkeypatch, tmp_path: Path
+) -> None:
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    target = "odylith/casebook/bugs/current.md"
+    unrelated = "odylith/casebook/bugs/other.md"
+    for relative in (target, unrelated):
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# Recorded issue\n")
+    subprocess.run(["git", "add", target, unrelated], cwd=tmp_path, check=True)
+    before = {relative: (tmp_path / relative).read_bytes() for relative in (target, unrelated)}
+    earlier_id = host_dirty_checkpoint.record_dirty_event(
+        repo_root=tmp_path, host_family="codex", session_id="earlier-session",
+        source="post_bash_checkpoint", paths=[unrelated], governed_paths=[unrelated],
     )
-    monkeypatch.setattr(codex_host_post_bash_checkpoint.time, "time", lambda: 1010.0)
-    monkeypatch.setattr(
-        "sys.stdin",
-        io.StringIO(json.dumps({"tool_input": {"command": "apply_patch <<'PATCH'"}, "session_id": session_id})),
-    )
-    monkeypatch.setattr(
-        codex_host_post_bash_checkpoint.codex_host_shared,
-        "run_odylith",
-        lambda **kwargs: calls.append((str(kwargs["project_dir"]), kwargs["args"], kwargs["timeout"])),
-    )
-    _patch_no_governed_changes(monkeypatch)
+    monkeypatch.setattr(codex_host_shared, "load_payload", lambda: {
+        "session_id": "native-post-bash-session",
+        "tool_input": {"command": f"sed -i 's/issue/defect/' {target}"},
+    })
+    monkeypatch.setattr(codex_host_shared, "run_odylith", lambda **kwargs: (
+        _ for _ in ()).throw(AssertionError("PostToolUse must not dispatch canonical work")))
 
-    exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
+    assert codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)]) == 0
 
-    assert exit_code == 0
-    assert calls == []
-
-
-def test_start_grounding_cache_collapses_process_fallback_sessions(tmp_path: Path) -> None:
-    codex_host_post_bash_checkpoint.record_start_grounding_attempt(
-        project_dir=tmp_path,
-        session_id="agent-111",
-        completed=subprocess.CompletedProcess(args=["odylith", "start"], returncode=1),
-        now_seconds=1000.0,
-    )
-
-    assert not codex_host_post_bash_checkpoint.should_run_start_grounding(
-        project_dir=tmp_path,
-        session_id="agent-222",
-        now_seconds=1010.0,
-    )
-
-
-def test_start_grounding_cache_expires(tmp_path: Path) -> None:
-    codex_host_post_bash_checkpoint.record_start_grounding_attempt(
-        project_dir=tmp_path,
-        session_id="codex-start-stale",
-        completed=subprocess.CompletedProcess(args=["odylith", "start"], returncode=0),
-        now_seconds=1000.0,
-    )
-
-    assert codex_host_post_bash_checkpoint.should_run_start_grounding(
-        project_dir=tmp_path,
-        session_id="codex-start-stale",
-        now_seconds=1000.0 + codex_host_post_bash_checkpoint._START_GROUND_CACHE_TTL_SECONDS + 1,
-    )
+    events = host_dirty_checkpoint.read_dirty_events(repo_root=tmp_path, host_family="codex")
+    assert len(events) == 2 and events[0]["id"] == earlier_id
+    event = events[1]
+    assert event["session_id"] == "native-post-bash-session"
+    assert event["source"] == "post_bash_checkpoint"
+    assert event["paths"] == event["governed_paths"] == [target]
+    assert host_dirty_checkpoint.read_dirty_events(repo_root=tmp_path, host_family="codex") == events
+    assert {relative: (tmp_path / relative).read_bytes() for relative in before} == before
 
 
 def test_post_bash_checkpoint_records_native_apply_patch_payload(monkeypatch, tmp_path: Path) -> None:
@@ -200,100 +178,6 @@ def test_codex_command_from_hook_payload_supports_arguments_json() -> None:
     }
 
     assert codex_host_shared.command_from_hook_payload(payload) == json.loads(payload["arguments"])["cmd"]
-
-
-def test_post_bash_checkpoint_runs_selective_sync_when_governed_paths_change(
-    monkeypatch, tmp_path: Path
-) -> None:
-    calls: list[tuple[str, list[str], int]] = []
-
-    def _fake_run_odylith(*, project_dir, args, timeout=20):
-        calls.append((str(project_dir), list(args), timeout))
-        if args and args[0] == "sync":
-            return SimpleNamespace(returncode=0, stdout="", stderr="")
-        return None
-
-    monkeypatch.setattr(codex_host_post_bash_checkpoint.codex_host_shared, "run_odylith", _fake_run_odylith)
-    host_dirty_checkpoint.record_dirty_event(
-        repo_root=tmp_path,
-        host_family="codex",
-        session_id="codex-sync",
-        source="test",
-        governed_paths=[
-            "odylith/casebook/bugs/2026-04-14-example.md",
-            "odylith/radar/source/INDEX.md",
-        ],
-    )
-
-    result = codex_host_post_bash_checkpoint.settle_deferred_checkpoint_events(
-        project_dir=tmp_path,
-        session_id="codex-sync",
-    )
-
-    assert result == {}
-    assert len(calls) == 2
-    assert calls[0][1] == ["start", "--repo-root", "."]
-    sync_project_dir, sync_args, sync_timeout = calls[1]
-    assert sync_args[0:2] == ["sync", "--repo-root"]
-    assert sync_args[3:5] == ["--impact-mode", "selective"]
-    assert sync_args[5:] == [
-        "odylith/casebook/bugs/2026-04-14-example.md",
-        "odylith/radar/source/INDEX.md",
-    ]
-    assert sync_timeout == 180
-    assert host_dirty_checkpoint.read_dirty_events(repo_root=tmp_path, host_family="codex") == []
-
-
-def test_post_bash_checkpoint_emits_failure_message_on_selective_sync_error(
-    monkeypatch, tmp_path: Path
-) -> None:
-    def _fake_run_odylith(*, project_dir, args, timeout=20):
-        if args and args[0] == "sync":
-            return SimpleNamespace(returncode=2, stdout="", stderr="validate failure\n")
-        return None
-
-    monkeypatch.setattr(codex_host_post_bash_checkpoint.codex_host_shared, "run_odylith", _fake_run_odylith)
-    host_dirty_checkpoint.record_dirty_event(
-        repo_root=tmp_path,
-        host_family="codex",
-        session_id="codex-sync-fail",
-        source="test",
-        governed_paths=["odylith/casebook/bugs/2026-04-14-example.md"],
-    )
-
-    result = codex_host_post_bash_checkpoint.settle_deferred_checkpoint_events(
-        project_dir=tmp_path,
-        session_id="codex-sync-fail",
-    )
-
-    assert result is not None
-    assert "failed" in result["systemMessage"]
-    assert "validate failure" in result["systemMessage"]
-    assert host_dirty_checkpoint.read_dirty_events(repo_root=tmp_path, host_family="codex")
-
-
-def test_post_bash_checkpoint_emits_skipped_message_when_launcher_unavailable(
-    monkeypatch, tmp_path: Path
-) -> None:
-    def _fake_run_odylith(*, project_dir, args, timeout=20):
-        return None  # Launcher not available.
-
-    monkeypatch.setattr(codex_host_post_bash_checkpoint.codex_host_shared, "run_odylith", _fake_run_odylith)
-    host_dirty_checkpoint.record_dirty_event(
-        repo_root=tmp_path,
-        host_family="codex",
-        session_id="codex-sync-skip",
-        source="test",
-        governed_paths=["odylith/casebook/bugs/foo.md"],
-    )
-
-    result = codex_host_post_bash_checkpoint.settle_deferred_checkpoint_events(
-        project_dir=tmp_path,
-        session_id="codex-sync-skip",
-    )
-
-    assert result is not None
-    assert "skipped" in result["systemMessage"]
 
 
 def test_post_bash_checkpoint_keeps_pending_chat_replay_off_tool_path(monkeypatch, capsys, tmp_path: Path) -> None:
@@ -535,6 +419,13 @@ def test_main_records_checkpoint_context_with_live_intervention_payload(
     assert payload["hookSpecificOutput"]["hookEventName"] == "PostToolUse"
     assert "**Odylith Observation:** Codex kept the live intervention lane." in payload["systemMessage"]
     assert "Odylith Assist:" not in payload["systemMessage"]
+    intervention_events = stream_state.load_recent_intervention_events(
+        repo_root=tmp_path,
+        session_id="bash-main",
+    )
+    assert intervention_events
+    assert intervention_events[-1]["delivery_status"] == "assistant_render_required"
+    assert intervention_events[-1]["delivery_channel"] == "assistant_visible_fallback"
     events = host_dirty_checkpoint.read_dirty_events(
         repo_root=tmp_path,
         host_family="codex",

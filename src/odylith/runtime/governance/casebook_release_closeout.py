@@ -14,6 +14,7 @@ from typing import Sequence
 from odylith.runtime.common import casebook_metadata
 from odylith.runtime.governance import casebook_source_validation
 from odylith.runtime.governance import github_issue_casebook
+from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import sync_casebook_bug_index
 from odylith.runtime.governance.github_issue_references import normalize_version
 
@@ -341,9 +342,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     except (CasebookReleaseCloseoutError, ValueError) as exc:
         print(str(exc), file=sys.stderr)
         return 2
+    if bool(args.apply) and plan.changed_paths:
+        try:
+            owned_surface_refresh.raise_for_failed_refresh(
+                repo_root=repo_root,
+                surface="casebook",
+                operation_label="Casebook release closeout",
+            )
+        except RuntimeError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
     if bool(args.as_json):
         payload = plan.as_dict()
         payload["applied"] = bool(args.apply)
+        if bool(args.apply) and plan.changed_paths:
+            payload["refresh"] = {"status": "passed", "surface": "casebook"}
         print(json.dumps(payload, indent=2, sort_keys=True))
     else:
         _print_summary(plan, applied=bool(args.apply))

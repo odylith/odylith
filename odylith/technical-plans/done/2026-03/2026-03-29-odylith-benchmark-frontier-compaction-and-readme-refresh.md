@@ -70,11 +70,9 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [x] Risk: over-compaction drops routed signal needed for accuracy.
-  - [x] Mitigation: rerun focused benchmark tests and keep recall/validation as
-    hard gates.
+  - [x] Mitigation: rerun focused benchmark tests and keep recall/validation as hard gates.
 - [x] Risk: README gets refreshed from a report that is not actually stronger.
-  - [x] Mitigation: compare the final report against the current latest report
-    before regenerating the snapshot and SVG assets.
+  - [x] Mitigation: compare the final report against the current latest report before regenerating the snapshot and SVG assets.
 
 ## Validation/Test Plan
 - [x] `odylith benchmark --repo-root .`

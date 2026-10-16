@@ -5,16 +5,18 @@ from __future__ import annotations
 import datetime as dt
 import json
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping
 
 from odylith.runtime.context_engine import odylith_context_engine_delivery_surface_payload_runtime as delivery_surface_payload_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.governance import component_registry_intelligence as component_registry
+from odylith.runtime.governance import backlog_assessment
 from odylith.runtime.governance import plan_progress
 from odylith.runtime.governance import validate_backlog_contract as contract
 from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.governance import workstream_progress as workstream_progress_runtime
 from odylith.runtime.governance import workstream_inference
+from odylith.runtime.surfaces import backlog_rich_text
 from odylith.runtime.surfaces import backlog_render_support
 from odylith.runtime.surfaces import dashboard_time
 
@@ -374,13 +376,13 @@ def _build_entry(
         errors.append(f"idea markdown missing for `{idea_id}`: {idea_path}")
         return None
 
-    section_text = backlog_render_support._extract_sections_from_markdown(idea_path)
     section_lines = backlog_render_support._extract_sections_with_body(idea_path)
     section_lookup: dict[str, list[str]] = {}
     for title, lines in section_lines:
         normalized_title = str(title or "").strip().lower()
         if normalized_title and normalized_title not in section_lookup:
             section_lookup[normalized_title] = list(lines)
+    section_text = {title: "\n".join(lines).strip() for title, lines in section_lookup.items()}
 
     def _section_html(*titles: str) -> str:
         for title in titles:
@@ -389,6 +391,23 @@ def _build_entry(
             if lines:
                 return backlog_render_support._render_section_body(repo_root=repo_root, lines=lines)
         return ""
+
+    story_source = ""
+    story_text = ""
+    boilerplate = contract.default_section_boilerplate(payload["title"])
+    for title in (
+        "Proposed Solution", "Scope", "Problem", "Opportunity", "Product View",
+        "Founder POV", "Success Metrics", "Success Metric", "Customer",
+    ):
+        body = "\n".join(section_lookup.get(title.lower(), [])).strip()
+        default = boilerplate.get(title, "")
+        if body == default or (title == "Proposed Solution" and body == default.replace(
+            "Create the workstream for ", "Create the workstream from ", 1,
+        )):
+            continue
+        if body:
+            story_source, story_text = title, body
+            break
 
     spec = contract._parse_idea_spec(idea_path)
     metadata = spec.metadata
@@ -476,11 +495,11 @@ def _build_entry(
         if idea_delta >= 0:
             idea_age_days = str(idea_delta)
 
-    score = int(str(payload["ordering_score"]).strip())
-    commercial = int(str(payload["commercial_value"]).strip())
-    product = int(str(payload["product_impact"]).strip())
-    market = int(str(payload["market_value"]).strip())
-    opportunity = round((0.40 * commercial) + (0.35 * product) + (0.25 * market), 2)
+    unassessed = backlog_assessment.is_unassessed(metadata)
+    score = None if unassessed else backlog_assessment.numeric_value(payload["ordering_score"])
+    commercial = None if unassessed else backlog_assessment.numeric_value(payload["commercial_value"])
+    product = None if unassessed else backlog_assessment.numeric_value(payload["product_impact"])
+    market = None if unassessed else backlog_assessment.numeric_value(payload["market_value"])
     idea_ui_path = output_path
     plan_ui_path: Path | None = output_path if promoted_to_plan_path is not None and promoted_to_plan_path.is_file() else None
     progress_view = workstream_progress_runtime.derive_workstream_progress(
@@ -488,20 +507,32 @@ def _build_entry(
         plan=plan_data,
     )
 
+    def _display_text(value: object) -> str:
+        return backlog_rich_text.strip_display_markdown_emphasis(value)
+
+    ordering_rationale = str(metadata.get("ordering_rationale", "")).strip()
+    implemented_summary = str(metadata.get("implemented_summary", "")).strip()
+    rationale_bullets = [str(item).strip() for item in rationale_map.get(idea_id, []) if str(item).strip()]
+    rationale_lines = (
+        ["- " + item.replace("\n", "\n  ") for item in rationale_bullets]
+        if len(rationale_bullets) > 1 else rationale_bullets or [ordering_rationale]
+    )
+
     return {
         "section": section,
-        "rank": payload["rank"].strip(),
-        "rank_num": 999 if payload["rank"].strip() == "-" else int(payload["rank"].strip()),
+        "rank": "unassessed" if unassessed else payload["rank"].strip(),
+        "rank_num": None if unassessed or payload["rank"].strip() == "-" else backlog_assessment.numeric_value(payload["rank"]),
+        "assessment_status": "unassessed" if unassessed else str(metadata.get("assessment_status", "assessed")),
+        "assessment_provenance": str(metadata.get("assessment_provenance", "")),
         "idea_id": idea_id,
-        "title": payload["title"].strip(),
-        "priority": payload["priority"].strip(),
+        "title": _display_text(payload["title"]),
+        "priority": backlog_assessment.UNASSESSED if unassessed else payload["priority"].strip(),
         "ordering_score": score,
-        "opportunity": opportunity,
         "commercial_value": commercial,
         "product_impact": product,
         "market_value": market,
-        "sizing": payload["sizing"].strip(),
-        "complexity": payload["complexity"].strip(),
+        "sizing": backlog_assessment.UNASSESSED if unassessed else payload["sizing"].strip(),
+        "complexity": backlog_assessment.UNASSESSED if unassessed else payload["complexity"].strip(),
         "status": payload["status"].strip(),
         "idea_file": backlog_render_support._as_repo_path(repo_root=repo_root, target=idea_path),
         "idea_href": backlog_render_support._as_relative_href(output_path=output_path, target=idea_path),
@@ -525,27 +556,38 @@ def _build_entry(
         "finished_sort_date_display": finished_sort_date_display,
         "confidence": str(metadata.get("confidence", "")).strip(),
         "founder_override": str(metadata.get("founder_override", "no")).strip(),
-        "ordering_rationale": str(metadata.get("ordering_rationale", "")).strip(),
-        "implemented_summary": str(metadata.get("implemented_summary", "")).strip(),
-        "rationale_bullets": rationale_map.get(idea_id, []),
-        "rationale_text": " ".join(rationale_map.get(idea_id, [])).strip(),
-        "impacted_parts": str(metadata.get("impacted_parts", "")).strip(),
-        "problem": section_text.get("Problem", ""),
+        "ordering_rationale": ordering_rationale,
+        "ordering_rationale_html": backlog_rich_text.render_section_body(
+            repo_root=repo_root, lines=[ordering_rationale],
+        ) if ordering_rationale else "",
+        "implemented_summary": implemented_summary,
+        "rationale_bullets": rationale_bullets,
+        "rationale_html": backlog_rich_text.render_section_body(
+            repo_root=repo_root, lines=rationale_lines,
+        ) if any(rationale_lines) else "",
+        "rationale_text": " ".join(rationale_bullets).strip(),
+        "story_source": story_source,
+        "story_text": story_text,
+        "story_html": backlog_rich_text.render_section_body(
+            repo_root=repo_root, lines=story_text.splitlines(), preview=True,
+        ) if story_text else "",
+        "impacted_parts": _display_text(metadata.get("impacted_parts", "")),
+        "problem": section_text.get("problem", ""),
         "problem_html": _section_html("Problem"),
-        "customer": section_text.get("Customer", ""),
+        "customer": section_text.get("customer", ""),
         "customer_html": _section_html("Customer"),
-        "opportunity": section_text.get("Opportunity", ""),
+        "opportunity": section_text.get("opportunity", ""),
         "opportunity_html": _section_html("Opportunity"),
-        "founder_pov": section_text.get("Product View", section_text.get("Founder POV", "")),
+        "founder_pov": section_text.get("product view", section_text.get("founder pov", "")),
         "founder_pov_html": _section_html("Product View", "Founder POV"),
-        "success_metrics": section_text.get("Success Metrics", section_text.get("Success Metric", "")),
+        "success_metrics": section_text.get("success metrics", section_text.get("success metric", "")),
         "success_metrics_html": _section_html("Success Metrics", "Success Metric"),
         "implemented_summary_html": (
             backlog_render_support._render_section_body(
                 repo_root=repo_root,
-                lines=[str(metadata.get("implemented_summary", "")).strip()],
+                lines=[implemented_summary],
             )
-            if str(metadata.get("implemented_summary", "")).strip()
+            if implemented_summary
             else ""
         ),
         "promoted_to_plan": promoted_to_plan,
@@ -643,6 +685,7 @@ def _backlog_summary_search_text(entry: Mapping[str, object]) -> str:
     parts = [
         str(entry.get("idea_id", "")).strip(),
         str(entry.get("title", "")).strip(),
+        str(entry.get("story_text", "")).strip(),
         str(entry.get("ordering_rationale", "")).strip(),
         str(entry.get("rationale_text", "")).strip(),
         " ".join(

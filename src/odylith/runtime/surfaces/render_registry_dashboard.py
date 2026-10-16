@@ -17,7 +17,13 @@ from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import generated_surface_refresh_guards
+from odylith.runtime.surfaces import governance_surface_theme
+from odylith.runtime.surfaces import governance_frame_bridge
+from odylith.runtime.surfaces import registry_component_identity_ui
 from odylith.runtime.surfaces import registry_forensic_evidence_ui
+from odylith.runtime.surfaces import registry_selection_ui
+from odylith.runtime.surfaces import registry_spec_reading_ui
+from odylith.runtime.surfaces import registry_typography_ui
 from odylith.runtime.surfaces import source_bundle_mirror
 from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.governance import delivery_intelligence_engine
@@ -30,7 +36,6 @@ from odylith.runtime.context_engine import odylith_context_engine_delivery_surfa
 from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.context_engine import odylith_runtime_surface_summary
 from odylith.runtime.governance import traceability_ui_lookup
-
 _REGISTRY_DETAIL_SHARD_SIZE = 32
 _REGISTRY_SUMMARY_HEAVY_FIELDS = frozenset(
     {
@@ -64,7 +69,6 @@ _REGISTRY_INTELLIGENCE_COMPONENT_FIELDS = (
 )
 _REGISTRY_REFRESH_GUARD_KEY = "registry-dashboard-render"
 
-
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="odylith sync",
@@ -77,9 +81,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--ideas-root", default=registry.DEFAULT_IDEAS_ROOT)
     parser.add_argument("--stream", default=registry.DEFAULT_STREAM_PATH)
     parser.add_argument(
-        "--runtime-mode",
-        choices=("auto", "standalone", "daemon"),
-        default="auto",
+        "--runtime-mode", choices=("auto", "standalone", "daemon"), default="auto",
         help="Use the local runtime projection store when available for delivery-intelligence slices.",
     )
     return parser.parse_args(argv)
@@ -105,7 +107,6 @@ def _refresh_guard_watched_paths(
         "src/odylith/runtime/surfaces",
     )
 
-
 def _display_spec_markdown(markdown: str) -> str:
     lines = []
     for raw in str(markdown or "").replace("\r\n", "\n").split("\n"):
@@ -114,6 +115,23 @@ def _display_spec_markdown(markdown: str) -> str:
             continue
         lines.append(raw)
     return "\n".join(lines).strip()
+
+
+def _public_feature_history(history: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    """Project portable feature-history facts without internal resolved paths."""
+
+    rows: list[dict[str, Any]] = []
+    for item in history:
+        row = dict(item)
+        plan_refs = row.get("plan_refs")
+        if isinstance(plan_refs, list):
+            row["plan_refs"] = [
+                {key: value for key, value in dict(ref).items() if key != "resolved_path"}
+                for ref in plan_refs
+                if isinstance(ref, Mapping)
+            ]
+        rows.append(row)
+    return rows
 
 
 def _build_feature_history_timeline_rows(
@@ -176,9 +194,14 @@ def _build_payload(
             diagrams=catalog_payload.get("diagrams", []) if isinstance(catalog_payload, dict) else [],
         )
 
-    runtime_snapshot = odylith_context_engine_store.load_component_registry_snapshot(
-        repo_root=repo_root,
-        runtime_mode=runtime_mode,
+    normalized_runtime_mode = str(runtime_mode or "").strip().lower()
+    runtime_snapshot = (
+        {}
+        if normalized_runtime_mode == "standalone"
+        else odylith_context_engine_store.load_component_registry_snapshot(
+            repo_root=repo_root,
+            runtime_mode=runtime_mode,
+        )
     )
     report = runtime_snapshot.get("report") if isinstance(runtime_snapshot, dict) else None
     if not isinstance(report, registry.ComponentRegistryReport):
@@ -289,7 +312,7 @@ def _build_payload(
                 "spec_href": spec_href,
                 "spec_title": spec_snapshot.title,
                 "spec_last_updated": spec_snapshot.last_updated,
-                "spec_feature_history": list(spec_snapshot.feature_history),
+                "spec_feature_history": _public_feature_history(spec_snapshot.feature_history),
                 "spec_markdown": _display_spec_markdown(spec_snapshot.markdown),
                 "spec_runbooks": surface_path_helpers.path_links(
                     repo_root=repo_root,
@@ -342,7 +365,7 @@ def _build_payload(
             repo_root=repo_root,
             runtime_mode=runtime_mode,
         ),
-        "odylith_runtime": odylith_runtime_surface_summary.load_runtime_surface_summary(repo_root=repo_root),
+        "odylith_runtime": _load_registry_runtime_summary(repo_root=repo_root),
         "counts": {
             "components": len(rows),
             "events": len(report.mapped_events),
@@ -413,6 +436,17 @@ def _build_registry_delivery_intelligence_payload(
             if field in snapshot
         }
     return {"components": projected} if projected else {}
+
+
+def _load_registry_runtime_summary(*, repo_root: Path) -> dict[str, Any]:
+    current_payload = odylith_context_cache.read_json_object(
+        Path(repo_root).resolve() / "odylith" / "compass" / "runtime" / "current.v1.json"
+    )
+    if isinstance(current_payload, Mapping):
+        cached_summary = current_payload.get("odylith_runtime")
+        if isinstance(cached_summary, Mapping):
+            return dict(cached_summary)
+    return odylith_runtime_surface_summary.load_runtime_surface_summary(repo_root=repo_root)
 
 
 def _chunk_registry_items(
@@ -599,10 +633,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       min-height: 38px;
       line-height: 1;
     }
-    .select {
-      font-weight: 700;
-      color: #20456b;
-    }
     __ODYLITH_REGISTRY_CONTROL_LABEL__
     .component-list {
       margin: 0;
@@ -622,27 +652,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     .group-head {
       padding: 0 2px;
     }
-    .component-btn {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: var(--panel-soft);
-      text-align: left;
-      padding: 10px 11px;
-      cursor: pointer;
-      display: grid;
-      gap: 6px;
-    }
-    .component-btn:hover {
-      border-color: #8fb2e6;
-    }
-    .component-btn.active {
-      border-color: var(--line-strong);
-      background: #eaf3ff;
-    }
-    .component-card-title {
-      color: #22496f;
-    }
+    __ODYLITH_REGISTRY_COMPONENT_CARD_SURFACE__
     __ODYLITH_REGISTRY_DETAIL_IDENTITY_TYPOGRAPHY__
     .component-meta {
       margin: 0;
@@ -661,14 +671,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       gap: 12px;
       border-bottom: 1px solid var(--line);
     }
-    .summary-strip {
-      border: 1px solid #d6e3f7;
-      border-radius: 10px;
-      background: linear-gradient(180deg, #f8fbff, #ffffff);
-      padding: 9px 11px;
-      display: grid;
-      gap: 7px;
-    }
+    __ODYLITH_REGISTRY_SUMMARY_STACK_SURFACE__
     .summary-row {
       margin: 0;
     }
@@ -703,142 +706,11 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       list-style: square;
       display: grid;
       gap: 4px;
-      color: #2b4667;
     }
     .trigger-list li {
       margin: 0;
-      line-height: 1.4;
     }
-    .spec-expand {
-      border: 1px solid #d6e3f7;
-      border-radius: 10px;
-      background: linear-gradient(180deg, #f9fcff, #ffffff);
-      overflow: hidden;
-    }
-    .spec-expand > summary {
-      list-style: none;
-      cursor: pointer;
-      padding: 10px 12px;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 8px;
-      align-items: center;
-      border-bottom: 1px solid #e3ecf9;
-      transition: background-color 120ms ease;
-    }
-    .spec-expand > summary:hover {
-      background: #f3f8ff;
-    }
-    .spec-summary-main {
-      margin: 0;
-      display: flex;
-      align-items: center;
-    }
-    .spec-summary-title {
-    }
-    .spec-summary-meta {
-      display: inline-flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: 6px;
-      align-items: center;
-    }
-    .spec-expand[open] > summary {
-      border-bottom-color: #d8e5f7;
-    }
-    .spec-expand-body {
-      padding: 10px 12px;
-      display: grid;
-      gap: 10px;
-    }
-    .spec-links-block {
-      display: grid;
-      gap: 6px;
-    }
-    .spec-doc {
-      border: 1px solid #e3ecf9;
-      border-radius: 8px;
-      background: #ffffff;
-      padding: 10px;
-      display: grid;
-      gap: 8px;
-    }
-    .spec-doc h3,
-    .spec-doc h4,
-    .spec-doc h5 {
-      margin: 0;
-    }
-    .spec-doc p {
-      margin: 0;
-      font-size: 13px;
-      line-height: 1.4;
-      color: #2d496a;
-    }
-    .spec-doc ul {
-      margin: 0;
-      padding-left: 18px;
-      display: block;
-      list-style: disc;
-      color: #2d496a;
-      font-size: 13px;
-      line-height: 1.35;
-    }
-    .spec-doc li {
-      margin: 0 0 4px;
-    }
-    .spec-doc li:last-child {
-      margin-bottom: 0;
-    }
-    .spec-doc li > ul {
-      margin-top: 4px;
-      padding-left: 18px;
-      list-style-type: circle;
-    }
-    .spec-doc li > ul > li > ul {
-      list-style-type: square;
-    }
-    .spec-doc code {
-      background: #f3f6fb;
-      border: 1px solid #d9e6fa;
-      border-radius: 4px;
-      padding: 0 4px;
-    }
-    .spec-table-scroll {
-      overflow-x: auto;
-      border: 1px solid #dbe6f7;
-      border-radius: 8px;
-      background: #f8fbff;
-    }
-    .spec-table {
-      width: 100%;
-      min-width: 640px;
-      border-collapse: collapse;
-      font-size: 12px;
-      line-height: 1.35;
-      color: #2d496a;
-      background: #ffffff;
-    }
-    .spec-table th,
-    .spec-table td {
-      padding: 8px 10px;
-      vertical-align: top;
-      text-align: left;
-      border-bottom: 1px solid #dbe6f7;
-      border-right: 1px solid #e3ecf9;
-    }
-    .spec-table th:last-child,
-    .spec-table td:last-child {
-      border-right: 0;
-    }
-    .spec-table thead th {
-      background: #f1f6ff;
-      color: #1f3b5b;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-    .spec-table tbody tr:last-child td {
-      border-bottom: 0;
-    }
+    __ODYLITH_REGISTRY_SPEC_READING_CSS__
     __ODYLITH_REGISTRY_CODE_TYPOGRAPHY__
     .answers {
       border: 1px solid #dbeafe;
@@ -905,7 +777,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     }
     .context-count {
       text-align: right;
-      line-height: 1;
       padding-top: 2px;
     }
     .context-values {
@@ -926,6 +797,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       margin: 0;
     }
     __ODYLITH_REGISTRY_FORENSIC_EVIDENCE_CSS__
+    __ODYLITH_REGISTRY_COMPONENT_IDENTITY_CSS__
     .diagnostics {
       border: 1px solid var(--warn-line);
       border-radius: 10px;
@@ -986,6 +858,10 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       }
     }
     @media (max-width: 760px) {
+      .registry-filters-shell {
+        position: static;
+        top: auto;
+      }
       .registry-controls {
         grid-template-columns: 1fr;
       }
@@ -996,7 +872,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         grid-template-columns: 1fr;
       }
       .context-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
       .context-count {
         text-align: left;
@@ -1012,8 +888,8 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     <section class="registry-hero">
       <p class="hero-overline">Component Ownership and Evidence Map</p>
       <h1 class="registry-title">Component Registry</h1>
-      <p class="registry-subtitle">See what exists, who owns it, and which specs, workstreams, and diagrams back it.</p>
-      <div class="kpis" id="kpis"></div>
+      <p class="registry-subtitle">Components and responsibilities</p>
+      <details><summary id="registryActivitySummary">Activity and coverage</summary><div class="kpis" id="kpis"></div></details>
     </section>
 
     <section class="registry-filters-shell">
@@ -1057,6 +933,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
   </main>
 
   <script id="registryData" type="application/json">__DATA__</script>
+  <script>__GOVERNANCE_FRAME_BRIDGE__</script>
   <script>
     const DATA = JSON.parse(document.getElementById("registryData").textContent || "{}");
     const payload = DATA;
@@ -1076,7 +953,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     const allComponents = Array.isArray(payload.components) ? payload.components.slice() : [];
     const REGISTRY_LIST_WINDOW_THRESHOLD = 160;
     const REGISTRY_LIST_OVERSCAN = 20;
-    const REGISTRY_LIST_ROW_HEIGHT = 86;
+    const REGISTRY_LIST_ROW_HEIGHT = 104;
     const REGISTRY_LIST_HEADER_HEIGHT = 30;
     let latestRenderedComponents = [];
     let latestListWindowKey = "";
@@ -1236,6 +1113,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       return `${raw.slice(0, cut).replace(/[ ,;:-]+$/, "")}...`;
     }
 
+    __ODYLITH_REGISTRY_COMPONENT_IDENTITY_RUNTIME__
     function normalizedEventKind(event) {
       return String(event && event.kind || "").trim().toLowerCase();
     }
@@ -1592,9 +1470,9 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 
     function productLayerDescription(layer) {
       const token = String(layer || "").trim().toLowerCase();
-      if (token === "shell_host") return "Owns the top-level Odylith shell and host routing surface.";
+      if (token === "shell_host") return "Owns top-level Odylith shell and host routing surface.";
       if (token === "evidence_surface") return "Owns one of the operator-facing evidence and inspection surfaces.";
-      if (token === "memory_retrieval") return "Owns the derived local memory, sparse recall, packet compaction, and dense-context diagnostics substrate.";
+      if (token === "memory_retrieval") return "Owns derived local memory, sparse recall, packet compaction, and dense-context diagnostics substrate.";
       if (token === "intelligence") return "Owns case-building, reasoning, or remediation intelligence inside Odylith.";
       if (token === "agent_execution") return "Owns bounded agent routing, orchestration, or host-execution behavior.";
       if (token === "cli_bootstrap") return "Owns install, bootstrap, or operator command-entry boundaries for Odylith.";
@@ -1671,11 +1549,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       if (next !== `${window.location.pathname}${window.location.search}`) {
         window.history.replaceState(null, "", next);
       }
-      if (window.parent && window.parent !== window) {
-        const state = { component };
-        window.parent.postMessage({ type: "odylith-registry-navigate", state }, "*");
-        window.parent.postMessage({ type: "odylith-registry-navigate", state }, "*");
-      }
     }
 
     function countMapFromPayload(key) {
@@ -1715,12 +1588,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         { label: "Visible Components", value: Number(visibleCount || 0), tooltip: "Components visible under current search and filters." },
         { label: "All Components", value: Number(counts.components || 0), tooltip: "Total first-class component inventory size." },
         { label: "Events", value: Number(counts.events || 0), tooltip: "Codex stream events visible to Registry." },
-        { label: "Meaningful", value: Number(counts.meaningful_events || 0), tooltip: "Governance-relevant events." },
-        { label: "Mapped Meaningful", value: Number(counts.mapped_meaningful_events || 0), tooltip: "Meaningful events with mapped components." },
+        { label: "Governance Events", value: Number(counts.meaningful_events || 0), tooltip: "Governance-relevant events." },
+        { label: "Events Linked to Components", value: Number(counts.mapped_meaningful_events || 0), tooltip: "Meaningful events with mapped components." },
       ];
       if (Number(counts.unmapped_meaningful_events || 0) > 0) {
         rows.push({
-          label: "Unmapped Meaningful",
+          label: "Events Missing Component Links",
           value: Number(counts.unmapped_meaningful_events || 0),
           tooltip: "Meaningful events without mapped components.",
           warn: true,
@@ -1733,6 +1606,10 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           tooltip: "Unresolved component tokens pending curated review.",
         });
       }
+      const missingLinks = Number(counts.unmapped_meaningful_events || 0);
+      document.getElementById("registryActivitySummary").textContent = missingLinks > 0
+        ? `Activity and coverage · ${missingLinks} ${missingLinks === 1 ? "event needs" : "events need"} component links`
+        : "Activity and coverage";
       kpisEl.innerHTML = rows
         .map((row) => (
           `<article class="kpi-card${row.warn ? " warn" : ""}" data-tooltip="${escapeHtml(row.tooltip || "")}">`
@@ -1848,9 +1725,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     function selectDefault(items, requested) {
       if (!items.length) return "";
       const token = String(requested || "").trim().toLowerCase();
-      if (token && items.some((row) => String(row.component_id || "").toLowerCase() === token)) {
-        return token;
-      }
+      if (token) return items.some((row) => String(row.component_id || "").toLowerCase() === token) ? token : "";
       return String(items[0].component_id || "").trim().toLowerCase();
     }
 
@@ -1964,22 +1839,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           blocks.push(`<li class="group-head">${escapeHtml(humanizeToken(item.category))} · ${item.count}</li>`);
           return;
         }
-        const row = item.row;
-          const categoryToken = String(row.category || "").trim().toLowerCase();
-          const toneClass = toneClassForCategory(categoryToken);
-          const coverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};
-        blocks.push(`
-          <li>
-            <button type="button" class="component-btn${row.component_id === selectedId ? " active" : ""}" data-component="${escapeHtml(row.component_id)}">
-              <span class="component-card-title">${escapeHtml(row.name || row.component_id)}</span>
-              <span class="component-meta">${escapeHtml(row.component_id)} · ${escapeHtml(humanizeToken(row.kind))} · ${escapeHtml(humanizeToken(row.status || "active"))} · ${escapeHtml(forensicCoverageLabel(coverage))} · ${escapeHtml(Number(row.timeline_count || 0))} events</span>
-              <span class="inline">
-                <span class="label ${escapeHtml(toneClass)}">${escapeHtml(humanizeToken(categoryToken))}</span>
-                <span class="label">${escapeHtml(humanizeToken(row.qualification || "curated"))}</span>
-              </span>
-            </button>
-          </li>
-        `);
+        blocks.push(renderComponentListButton(item.row, selectedId));
       });
       if (windowed.afterPx > 0) {
         blocks.push(`<li class="list-spacer" aria-hidden="true" style="height:${windowed.afterPx}px"></li>`);
@@ -2038,11 +1898,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       return `<span class="label" data-tooltip="${escapeHtml(tooltip || "")}">${escapeHtml(label)}</span>`;
     }
 
-    function artifactChip(item, tooltip, className = "artifact") {
+    function artifactChip(item, tooltip, className = "artifact", labelOverride = "") {
       const path = String(item && item.path || "").trim();
       const href = String(item && item.href || path).trim();
       if (!path || !href) return "";
-      return `<a class="${escapeHtml(className)}" href="${escapeHtml(href)}" target="_top" data-tooltip="${escapeHtml(tooltip || "Artifact evidence path.")}">${escapeHtml(path)}</a>`;
+      const label = String(labelOverride || path).trim() || "artifact";
+      return `<a class="${escapeHtml(className)}" href="${escapeHtml(href)}" target="_top" data-tooltip="${escapeHtml(tooltip || path || "Artifact evidence path.")}">${escapeHtml(label)}</a>`;
     }
 
     function renderSpecLinkGroup(title, items, emptyLabel, tooltip) {
@@ -2441,10 +2302,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     }
 
     function renderDetail(row) {
-      if (!row) {
-        detailEl.innerHTML = "";
-        return;
-      }
       const workstreams = Array.isArray(row.workstreams) ? row.workstreams : [];
       const diagrams = Array.isArray(row.diagrams) ? row.diagrams : [];
       const diagramDetails = Array.isArray(row.diagram_details) ? row.diagram_details : [];
@@ -2482,7 +2339,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const syntheticExecutiveEvents = windowEvents.filter((event) => isSyntheticTimelineEvent(event));
       const baselineExecutiveEvents = windowEvents.filter((event) => isBaselineTimelineEvent(event));
       const primaryWorkstream = workstreamPreview[0] || "";
-      const componentName = String(row.name || row.component_id || "This component").trim() || "This component";
+      const componentName = componentCompactName(row, 72);
       const confidence = intelligenceConfidence(
         explicitExecutiveEvents.length,
         syntheticExecutiveEvents.length,
@@ -2514,11 +2371,11 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         specDeveloperDocs: Array.isArray(row.spec_developer_docs) ? row.spec_developer_docs : [],
       };
       const metadata = [
+        staticLabel(`ID: ${row.component_id}`, "Exact component identifier."),
         staticLabel(`Category: ${humanizeToken(row.category)}`, categoryDescription(row.category)),
         staticLabel(`Qualification: ${humanizeToken(row.qualification)}`, qualificationDescription(row.qualification)),
         staticLabel(`Kind: ${humanizeToken(row.kind)}`, "Component structure class."),
         staticLabel(`Owner: ${row.owner || "unknown"}`, "Declared ownership for governance routing."),
-        staticLabel(`Status: ${humanizeToken(row.status || "unknown")}`, "Lifecycle state of this component record."),
       ].join("");
 
       const wsLinks = workstreams.length
@@ -2588,7 +2445,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         ? `<p class="desc">${escapeHtml(forensicCoverageLabel(forensicCoverage))}. ${escapeHtml(emptyReasons.length ? ensureSentence(naturalList(emptyReasons)) : "No mapped forensic evidence channels are currently attached.")}</p>`
         : `<p class="desc">${escapeHtml(forensicCoverageSummary(forensicCoverage))}</p>`;
 
+      const whyTracked = String(row.why_tracked || "").trim();
+      const rawWhatItIs = String(row.what_it_is || "").trim();
+      const whatItIs = compactRegistryNarrative(rawWhatItIs, row);
       const rows = [
+        whatItIs !== rawWhatItIs ? contextRow("Registry description", 1, `<p class="desc">${escapeHtml(rawWhatItIs)}</p>`, "Exact stored description; the header omits only generated scaffolding.", true) : "",
+        contextRow("Why tracked", whyTracked ? 1 : 0, `<p class="desc">${escapeHtml(whyTracked)}</p>`, "Declared delivery or governance rationale.", true),
         contextRow("Forensic Coverage", Number(row.timeline_count || 0), forensicCoverageBody, "Registry coverage truth derived from explicit Compass events, recent path matches, and mapped workstream evidence.", true),
         contextRow("Metadata", 5, metadata, "Category, qualification, and ownership qualifiers."),
         contextRow("Product Layer", productLayer ? 1 : 0, productLayerBody, "Odylith product-layer placement for this component."),
@@ -2600,10 +2462,11 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         contextRow("Path Prefixes", pathPrefixes.length, pathLabels, "Artifact prefixes used in event mapping."),
       ].join("");
 
-      const displayName = String(row.name || row.component_id || "").trim();
+      const displayName = componentRawName(row);
+      const fullIdentity = componentFullIdentity(row);
       const fallbackToken = String(row.component_id || "").trim();
       const specPath = String(row.spec_ref || "").trim();
-      const specLastUpdated = String(row.spec_last_updated || "").trim() || "Unknown";
+      const specLastUpdated = String(row.spec_last_updated || "").trim();
       const specHistory = Array.isArray(row.spec_feature_history) ? row.spec_feature_history : [];
       const specMarkdown = String(row.spec_markdown || "").trim();
       const specRunbooks = Array.isArray(row.spec_runbooks) ? row.spec_runbooks : [];
@@ -2623,15 +2486,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
             </div>
           </details>
         `
-        : '<p class="summary-row"><strong>Triggers:</strong> No trigger phrases documented.</p>';
+        : "";
 
       detailEl.innerHTML = `
-        <h2 class="component-name">${escapeHtml(displayName || fallbackToken)}</h2>
+        <div class="component-identity"><h2 class="component-name" title="${escapeHtml(fullIdentity)}">${escapeHtml(displayName || fallbackToken)}</h2>${staticLabel(humanizeToken(row.status || "unknown"), "Lifecycle state of this component record.")}</div>
         <div class="summary-strip">
-          <p class="summary-row"><strong>What it is:</strong> ${escapeHtml(row.what_it_is || "Not documented.")}</p>
-          <p class="summary-row"><strong>Why tracked:</strong> ${escapeHtml(row.why_tracked || "Not documented.")}</p>
-          ${productLayer ? `<p class="summary-row"><strong>Product layer:</strong> ${escapeHtml(productLayerLabel(productLayer))}</p>` : ""}
-          <p class="summary-row"><strong>Forensic coverage:</strong> ${escapeHtml(forensicCoverageSummary(forensicCoverage))}</p>
+          <p class="summary-row component-purpose">${escapeHtml(whatItIs || "Purpose not documented.")}</p>
           ${triggerBlock}
         </div>
         <details class="spec-expand">
@@ -2640,12 +2500,13 @@ def _render_html(*, payload: dict[str, Any]) -> str:
               <p class="detail-disclosure-title spec-summary-title">Current Spec</p>
             </div>
             <span class="spec-summary-meta">
-              <span class="label">Last updated ${escapeHtml(specLastUpdated)}</span>
+              ${specLastUpdated ? `<span class="label">Last updated ${escapeHtml(specLastUpdated)}</span>` : ""}
               <span class="label">Feature entries ${escapeHtml(String(specHistory.length))}</span>
             </span>
           </summary>
           <div class="spec-expand-body">
-            <p class="summary-row"><strong>Spec source:</strong> ${escapeHtml(specPath || "Not documented.")}</p>
+            ${specLastUpdated ? "" : summaryTextRow("Last updated", "Not documented.")}
+            ${specPath ? summaryArtifactRow("Spec source", specPath, compactPathLabel(specPath, "Component spec")) : '<p class="summary-row"><strong>Spec source:</strong> Not documented.</p>'}
             ${renderSpecLinkGroup(
               "Runbooks",
               specRunbooks,
@@ -2681,38 +2542,31 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 
     __ODYLITH_REGISTRY_FORENSIC_EVIDENCE_RUNTIME__
 
-    async function renderSelectedComponent(selectedId, filtered) {
-      const selectedSummary = filtered.find((row) => String(row.component_id || "").toLowerCase() === String(selectedId || "").toLowerCase()) || null;
-      if (!selectedSummary) {
-        detailEl.dataset.selectedComponent = "";
-        renderDetail(null);
-        renderTimeline(null);
-        return;
-      }
-      const expectedSelected = String(selectedId || "").trim().toLowerCase();
-      detailEl.dataset.selectedComponent = expectedSelected;
-      detailEl.innerHTML = "";
-      timelineCountEl.textContent = "";
-      timelineEl.innerHTML = "";
-      const loadedDetail = await registryDataSource.loadDetail(selectedId);
-      if (String(detailEl.dataset.selectedComponent || "") !== expectedSelected) {
-        return;
-      }
-      const selected = loadedDetail && typeof loadedDetail === "object"
-        ? { ...selectedSummary, ...loadedDetail }
-        : selectedSummary;
-      renderDetail(selected);
-      renderTimeline(selected);
-    }
+    __ODYLITH_REGISTRY_SELECTION_RUNTIME__
+    const requestedRoute = { tab: "registry", ...readState() };
+    let frameSnapshot = { requested: requestedRoute, rendered: null, outcome: "loading" };
+    const frameBridge = window.OdylithFrameBridge.surface({ readSnapshot: () => frameSnapshot });
+    const renderSelectedComponent = createRegistrySelection({
+      detail: detailEl, timeline: timelineEl, timelineCount: timelineCountEl,
+      sourceCount: allComponents.length,
+      loadDetail: id => registryDataSource.loadDetail(id), renderDetail, renderTimeline,
+      onOutcome: ({ id, outcome }) => {
+        frameSnapshot = { requested: requestedRoute, rendered: { tab: "registry", component: id }, outcome };
+        frameBridge.publish();
+      },
+    });
 
     function applyState(requestedId, options = {}) {
+      if (options.push) {
+        frameBridge.navigate({ route: { tab: "registry", component: requestedId }, replaceDocument: false });
+        writeState(requestedId);
+      }
       renderFilterControls();
       const filtered = filteredComponents();
       renderKpis(filtered.length);
       const selectedId = selectDefault(filtered, requestedId);
       renderList(filtered, selectedId, { preserveListScroll: Boolean(options.preserveListScroll) });
       void renderSelectedComponent(selectedId, filtered);
-      if (options.push) writeState(selectedId);
     }
 
     searchEl.addEventListener("input", () => {
@@ -2758,6 +2612,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         kicker_selector=".hero-overline",
         title_selector=".registry-title",
         subtitle_selector=".registry-subtitle",
+        title_letter_spacing_em=0.0,
         subtitle_max_width="100%",
         mobile_breakpoint_px=760,
         mobile_title_size_px=22,
@@ -2789,29 +2644,9 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     control_label_css = dashboard_ui_primitives.control_label_css(
         selector=".control-title",
     )
-    brief_section_label_css = dashboard_ui_primitives.control_label_css(
-        selector=".answers-head",
-        color="#1f4868",
-        size_px=12,
-        letter_spacing_em=0.06,
-        line_height=1.2,
-    )
-    content_copy_css = dashboard_ui_primitives.content_copy_css(
-        selectors=(
-            ".trigger-list",
-            ".trigger-list li",
-            ".spec-doc p",
-            ".spec-doc ul",
-            ".spec-doc li",
-        ),
-    )
-    detail_identity_css = dashboard_ui_primitives.detail_identity_typography_css(
-        title_selector=".component-name",
-        subtitle_selector=".component-subtitle-unused",
-        title_size_px=24,
-        medium_title_size_px=22,
-        small_title_size_px=19,
-    )
+    brief_section_label_css = registry_typography_ui.brief_section_label_css()
+    content_copy_css = registry_typography_ui.content_copy_css()
+    detail_identity_css = registry_typography_ui.detail_identity_css()
     kpi_grid_css = dashboard_ui_primitives.kpi_grid_layout_css(
         container_selector=".kpis",
         gap_px=8,
@@ -2823,9 +2658,16 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     kpi_typography_css = dashboard_ui_primitives.governance_kpi_label_value_css(
         label_selector=".kpi-label",
         value_selector=".kpi-value",
+        value_letter_spacing_em=0.0,
     )
     workspace_layout_css = dashboard_ui_primitives.split_detail_workspace_css(
         selector=".workspace",
+    )
+    component_card_surface_css = governance_surface_theme.selection_card_surface_css(
+        selector=".component-btn",
+    )
+    summary_stack_surface_css = governance_surface_theme.narrative_stack_surface_css(
+        selector=".summary-strip",
     )
     label_surface_css = dashboard_ui_primitives.label_surface_css(
         selector=".label",
@@ -2847,14 +2689,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         background="#f8efe2",
         border_color="#ead3b6",
         color="#8a6137",
-    )
-    summary_row_typography_css = dashboard_ui_primitives.inline_label_value_copy_css(
-        row_selectors=(".summary-row",),
-        label_selectors=(".summary-row strong",),
-        size_px=15,
-        line_height=1.55,
-        color="#27445e",
-        label_color="#22496f",
     )
     action_chip_css = dashboard_ui_primitives.detail_action_chip_css(
         selector=".action-chip",
@@ -2909,164 +2743,11 @@ def _render_html(*, payload: dict[str, Any]) -> str:
             ),
         )
     )
-    registry_secondary_typography_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.section_heading_css(
-                selector=".pane-head",
-                color="#2a5078",
-                size_px=13,
-                line_height=1.2,
-                letter_spacing_em=0.045,
-                margin="0",
-            ),
-            dashboard_ui_primitives.auxiliary_heading_css(
-                selector=".group-head",
-                color="#547196",
-                size_px=11,
-                line_height=1.2,
-                letter_spacing_em=0.07,
-                margin="0",
-            ),
-            dashboard_ui_primitives.card_title_typography_css(
-                selector=".component-card-title",
-                color="#28496d",
-                size_px=14,
-                line_height=1.2,
-                letter_spacing_em=0.0,
-                margin="0",
-            ),
-            dashboard_ui_primitives.detail_disclosure_title_css(
-                selector=".detail-disclosure-title",
-                color="#22496f",
-                size_px=15,
-                line_height=1.55,
-                weight=700,
-                letter_spacing_em=0.0,
-                margin="0",
-            ),
-            dashboard_ui_primitives.caption_typography_css(
-                selector=".component-meta",
-                color="var(--muted)",
-                size_px=12,
-                line_height=1.25,
-            ),
-            dashboard_ui_primitives.card_title_typography_css(
-                selector=".context-count",
-                color="#2f4563",
-                size_px=13,
-                line_height=1.0,
-                letter_spacing_em=0.0,
-                weight=800,
-                margin="0",
-            ),
-            summary_row_typography_css,
-            dashboard_ui_primitives.card_title_typography_css(
-                selector=".spec-doc h3",
-                color="#21466d",
-                size_px=15,
-                line_height=1.15,
-                letter_spacing_em=0.0,
-                margin="0",
-            ),
-            dashboard_ui_primitives.card_title_typography_css(
-                selector=".spec-doc h4",
-                color="#21466d",
-                size_px=14,
-                line_height=1.15,
-                letter_spacing_em=0.0,
-                margin="0",
-            ),
-            dashboard_ui_primitives.card_title_typography_css(
-                selector=".spec-doc h5",
-                color="#21466d",
-                size_px=13,
-                line_height=1.15,
-                letter_spacing_em=0.0,
-                margin="0",
-            ),
-        )
-    )
-    registry_code_typography_css = dashboard_ui_primitives.code_typography_css(
-        selector=".spec-doc code",
-        color="inherit",
-        size_px=12,
-        line_height=1.2,
-        font_family='ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-    )
-    context_heading_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.section_heading_css(
-                selector=".context-title",
-                color="#4b6283",
-                size_px=11,
-                line_height=1.2,
-                letter_spacing_em=0.06,
-                margin="0",
-            ),
-            dashboard_ui_primitives.auxiliary_heading_css(
-                selector=".timeline-head",
-                color="#34597f",
-                size_px=11,
-                line_height=1.0,
-                letter_spacing_em=0.07,
-                margin="0",
-            ),
-        )
-    )
-    auxiliary_button_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.details_disclosure_caret_css(
-                details_selector=".trigger-expand",
-                label_selector=".trigger-summary-title",
-                color="#64748b",
-                size_px=11,
-                gap_px=6,
-            ),
-            dashboard_ui_primitives.details_disclosure_caret_css(
-                details_selector=".spec-expand",
-                label_selector=".spec-summary-title",
-                color="#64748b",
-                size_px=11,
-                gap_px=6,
-            ),
-            dashboard_ui_primitives.details_disclosure_caret_css(
-                details_selector=".context-section",
-                label_selector=".context-toggle-label",
-                color="#64748b",
-                size_px=11,
-                gap_px=6,
-            ),
-            dashboard_ui_primitives.button_typography_css(
-                selector=".diagnostics > summary",
-                color="#8a4b00",
-                size_px=12,
-                line_height=1.35,
-                letter_spacing_em=0.01,
-            ),
-        )
-    )
-    auxiliary_copy_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.content_copy_css(
-                selectors=(".desc",),
-                size_px=13,
-                line_height=1.45,
-                color="#2b4667",
-            ),
-            dashboard_ui_primitives.supporting_copy_typography_css(
-                selector=".empty",
-                color="var(--muted)",
-                size_px=13,
-                line_height=1.4,
-            ),
-            dashboard_ui_primitives.supporting_copy_typography_css(
-                selector=".diag-item",
-                color="#7a4100",
-                size_px=12,
-                line_height=1.35,
-            ),
-        )
-    )
+    registry_secondary_typography_css = registry_typography_ui.detail_panel_typography_css()
+    registry_code_typography_css = registry_typography_ui.code_typography_css()
+    context_heading_css = registry_typography_ui.context_heading_css()
+    auxiliary_button_css = registry_typography_ui.auxiliary_button_typography_css()
+    auxiliary_copy_css = registry_typography_ui.auxiliary_copy_css()
     tooltip_surface_css, tooltip_runtime_js = dashboard_ui_runtime_primitives.quick_tooltip_bundle(
         excluded_closest_selectors=(".component-btn",),
     )
@@ -3081,6 +2762,8 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         .replace("__ODYLITH_REGISTRY_CONTROL_LABEL__", control_label_css)
         .replace("__ODYLITH_REGISTRY_BRIEF_LABELS__", brief_section_label_css)
         .replace("__ODYLITH_REGISTRY_WORKSPACE_LAYOUT__", workspace_layout_css)
+        .replace("__ODYLITH_REGISTRY_COMPONENT_CARD_SURFACE__", component_card_surface_css)
+        .replace("__ODYLITH_REGISTRY_SUMMARY_STACK_SURFACE__", summary_stack_surface_css)
         .replace("__ODYLITH_REGISTRY_DETAIL_IDENTITY_TYPOGRAPHY__", detail_identity_css)
         .replace("__ODYLITH_REGISTRY_KPI_GRID__", kpi_grid_css)
         .replace("__ODYLITH_REGISTRY_KPI_CARD_SURFACE__", kpi_card_surface_css)
@@ -3094,6 +2777,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         .replace("__ODYLITH_REGISTRY_DETAIL_ACTION_TONES__", detail_action_chip_semantic_css)
         .replace("__ODYLITH_REGISTRY_SECONDARY_TYPOGRAPHY__", registry_secondary_typography_css)
         .replace("__ODYLITH_REGISTRY_CODE_TYPOGRAPHY__", registry_code_typography_css)
+        .replace("__ODYLITH_REGISTRY_SPEC_READING_CSS__", registry_spec_reading_ui.css())
         .replace("__ODYLITH_REGISTRY_CONTEXT_HEADINGS__", context_heading_css)
         .replace("__ODYLITH_REGISTRY_AUX_BUTTON_TYPOGRAPHY__", auxiliary_button_css)
         .replace("__ODYLITH_REGISTRY_AUX_COPY__", auxiliary_copy_css)
@@ -3101,8 +2785,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         .replace("__ODYLITH_REGISTRY_QUICK_TOOLTIP_RUNTIME__", tooltip_runtime_js)
         .replace("__ODYLITH_REGISTRY_CONTENT_COPY__", content_copy_css)
         .replace("__ODYLITH_REGISTRY_FORENSIC_EVIDENCE_CSS__", registry_forensic_evidence_ui.css())
+        .replace("__ODYLITH_REGISTRY_COMPONENT_IDENTITY_CSS__", registry_component_identity_ui.css())
         .replace("__ODYLITH_REGISTRY_FORENSIC_EVIDENCE_MARKUP__", registry_forensic_evidence_ui.markup())
         .replace("__ODYLITH_REGISTRY_FORENSIC_EVIDENCE_RUNTIME__", registry_forensic_evidence_ui.runtime_js())
+        .replace("__ODYLITH_REGISTRY_SELECTION_RUNTIME__", registry_selection_ui.runtime_js())
+        .replace("__GOVERNANCE_FRAME_BRIDGE__", governance_frame_bridge.runtime_js())
+        .replace("__ODYLITH_REGISTRY_COMPONENT_IDENTITY_RUNTIME__", registry_component_identity_ui.runtime_js())
         .replace("__ODYLITH_BRAND_HEAD__", str(payload.get("brand_head_html", "")).strip())
         .replace("__DATA__", data_json)
     )
@@ -3165,15 +2853,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         stream_path=stream_path,
         runtime_mode=str(args.runtime_mode),
     )
-    component_rows = [
-        row
-        for row in payload.get("components", [])
-        if isinstance(row, dict)
-    ]
+    component_rows = [row for row in payload.get("components", []) if isinstance(row, dict)]
     detail_rows = {
-        str(row.get("component_id", "")).strip().lower(): _build_registry_detail_row(row)
+        component_id: _build_registry_detail_row(row)
         for row in component_rows
-        if str(row.get("component_id", "")).strip()
+        if (component_id := str(row.get("component_id", "")).strip().lower())
     }
     detail_manifest, detail_shards = _chunk_registry_items(
         items=detail_rows,
@@ -3184,9 +2868,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     payload["detail_manifest"] = detail_manifest
     payload["brand_head_html"] = brand_assets.render_brand_head_html(repo_root=repo_root, output_path=output_path)
     payload["data_source"] = {
-        "preferred_backend": (
-            "runtime" if str(args.runtime_mode).strip().lower() != "standalone" else "staticSnapshot"
-        ),
+        "preferred_backend": "runtime" if str(args.runtime_mode).strip().lower() != "standalone" else "staticSnapshot",
         "available_backends": ["runtime", "staticSnapshot"],
         "runtime_base_url": "",
     }
@@ -3204,10 +2886,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         global_name="__ODYLITH_REGISTRY_DATA__",
         payload=payload,
     )
-    payload["generated_local_date"] = dashboard_time.pacific_display_date_from_utc_token(
-        payload["generated_utc"],
-        default="-",
-    )
+    payload["generated_local_date"] = dashboard_time.pacific_display_date_from_utc_token(payload["generated_utc"], default="-")
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     bundled_html, payload_js, control_js = dashboard_surface_bundle.externalize_surface_bundle(
@@ -3222,9 +2901,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             allow_missing_embedded_json=True,
             shell_tab="registry",
             shell_frame_id="frame-registry",
-            query_passthrough=(
-                ("component", ("component",)),
-            ),
+            query_passthrough=(("component", ("component",)),),
         ),
     )
     odylith_context_cache.write_text_if_changed(

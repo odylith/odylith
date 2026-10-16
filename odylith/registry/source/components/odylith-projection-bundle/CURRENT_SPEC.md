@@ -1,8 +1,6 @@
 # Odylith Projection Bundle
-Last updated: 2026-04-07
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-07
 
 ## Purpose
 Odylith Projection Bundle is the compiler-owned JSONL read model that writes

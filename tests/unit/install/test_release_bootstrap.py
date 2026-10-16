@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import io
+import hashlib
 import json
 import os
 import subprocess
@@ -10,6 +11,8 @@ import zipfile
 from pathlib import Path
 
 from odylith.install.managed_runtime import managed_runtime_platform_by_slug, supported_managed_runtime_feature_packs
+
+from tests.unit.install.test_hosted_release_custody import hosted_transport, canonical_package
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -21,6 +24,45 @@ def _load_module():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def test_publish_release_asset_download_uses_a_bounded_identified_request(monkeypatch, tmp_path: Path) -> None:
+    module = _load_module()
+    payload = b"managed-runtime"
+    destination = tmp_path / "runtime.tar.gz"
+    observed: dict[str, object] = {}
+
+    class _Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self, size: int) -> bytes:
+            offset = int(observed.get("offset", 0))
+            observed["offset"] = offset + size
+            return payload[offset : offset + size]
+
+    def _fake_urlopen(request, timeout: int):  # noqa: ANN001
+        observed["request"] = request
+        observed["timeout"] = timeout
+        return _Response()
+
+    monkeypatch.setattr(module.urllib.request, "urlopen", _fake_urlopen)
+
+    result = module._download(
+        "https://github.com/astral-sh/python-build-standalone/releases/download/example/runtime.tar.gz",
+        destination,
+        sha256=hashlib.sha256(payload).hexdigest(),
+    )
+
+    assert result == destination
+    assert destination.read_bytes() == payload
+    assert observed["timeout"] == module.RELEASE_DOWNLOAD_TIMEOUT_SECONDS
+    request = observed["request"]
+    assert request.full_url.startswith("https://github.com/")
+    assert request.headers["User-agent"] == "odylith-release-assets"
 
 
 def _extract_shell_function(script_text: str, name: str, next_name: str) -> str:
@@ -171,6 +213,7 @@ def _run_generated_install_decision(
                 'state_root="$repo_root/.odylith"',
                 'release_version="1.2.3"',
                 'version_root="$state_root/runtime/versions/$release_version"',
+                'bootstrap_python="$version_root/bin/python"',
                 "say() { :; }",
                 decision_block,
             ]
@@ -361,8 +404,19 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert 'progress_done "setup" "Local runtime ready."' in text
     assert 'say "setup  Writing repo files and launchers."' in text
     assert 'migration_state_dir="$repo_root/.odylith/state/migrations"' in text
+    assert 'previous_active_version=""' in text
+    assert 'previous_active_version="$("$bootstrap_python" -c' in text
+    assert 'previous_active_version="$(basename "$(readlink "$state_root/runtime/current")")"' in text
+    assert "install_child_env=(" in text
+    assert '"ODYLITH_REASONING_MODE=disabled"' in text
+    assert '"ODYLITH_REASONING_PROVIDER=auto-local"' in text
+    assert '"ODYLITH_REASONING_TIMEOUT_SECONDS=1"' in text
+    assert '"ODYLITH_REASONING_CODEX_BIN=/usr/bin/false"' in text
+    assert '"ODYLITH_REASONING_CLAUDE_BIN=/usr/bin/false"' in text
+    assert '"ODYLITH_COMPASS_STANDUP_BACKGROUND_DISABLE=1"' in text
+    assert '"ODYLITH_NO_BROWSER=1"' not in text
     assert 'rm -rf "$migration_state_dir"' in text
-    assert 'ODYLITH_INSTALL_COMPACT=1 ODYLITH_BOOTSTRAP_RUNTIME_PRESTAGED=1 "$version_root/bin/python" -m odylith.cli install' in text
+    assert 'env "${install_child_env[@]}" ODYLITH_INSTALL_PREVIOUS_ACTIVE_VERSION="$previous_active_version" ODYLITH_INSTALL_COMPACT=1 ODYLITH_BOOTSTRAP_RUNTIME_PRESTAGED=1 "$version_root/bin/python" -m odylith.cli install' in text
     assert 'say "done   Install finished."' in text
     assert "runtime-members.txt" in text
     assert "managed runtime bundle contains unexpected member path" in text
@@ -376,6 +430,8 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert "validate_release.py" in text
     assert "expected_supported_platforms" in text
     assert "runtime_asset_to_slug" in text
+    assert "release manifest migration_required must be a boolean" in text
+    assert "migration-marked releases require an explicit maintainer adoption flow" not in text
     assert "re.fullmatch(rf'odylith-{re.escape(version)}-.*\\.whl', name)" in text
     assert "release manifest supported_platforms mismatch" in text
     assert "managed runtime bundle metadata python version mismatch" in text
@@ -385,7 +441,9 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert "write_runtime_trust.py" in text
     assert "from odylith.install.runtime_integrity import write_managed_runtime_trust" in text
     assert "\"$version_root/bin/python\" \"$tmpdir/write_runtime_trust.py\" \"$repo_root\" \"$version_root\"" in text
-    assert "rm -rf \"$version_root\"" in text
+    assert "remove_runtime_version_root() {" in text
+    assert 'remove_runtime_version_root "$version_root"' in text
+    assert "rm -rf \"$version_root\"" not in text
     assert "mkdir -p \"$state_root/runtime/versions\" \"$state_root/bin\"" in text
     assert "mv \"$bootstrap_runtime\" \"$version_root\"" in text
     assert "-m sigstore verify identity" in text
@@ -399,7 +457,7 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert 'customer_tree_path="$repo_root/odylith/AGENTS.md"' in text
     assert 'if [[ -f "$pin_path" && -f "$install_state_path" && -f "$customer_tree_path" ]]; then' in text
     assert (
-        '"$version_root/bin/python" -m odylith.cli upgrade --repo-root "$repo_root" --to "$release_version" --write-pin'
+        'env "${install_child_env[@]}" "$version_root/bin/python" -m odylith.cli upgrade --repo-root "$repo_root" --to "$release_version" --write-pin'
         in text
     )
     assert "read_install_versions.py" not in text
@@ -422,6 +480,52 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert text.index("unset VIRTUAL_ENV") < text.index("bootstrap_python=\"$bootstrap_runtime/bin/python\"")
     assert text.index("detect_repo_root") < text.index("fetch_asset \"$release_base_url/$runtime_asset_name\"")
     assert "AGENTS.md not found" not in text
+
+
+def test_generated_install_script_removes_stale_runtime_root_with_sidecar_retry(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    text = output_path.read_text(encoding="utf-8")
+    assert 'remove_runtime_version_root "$version_root"' in text
+    assert "find \"$target\" \\( -name '.DS_Store' -o -name '._*' \\)" in text
+
+    remove_runtime_version_root = _extract_shell_function(text, "remove_runtime_version_root", "detect_repo_root")
+    helper = tmp_path / "remove-runtime-root.sh"
+    helper.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                remove_runtime_version_root,
+                'remove_runtime_version_root "$1"',
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    helper.chmod(0o755)
+    version_root = tmp_path / ".odylith" / "runtime" / "versions" / "1.2.3"
+    (version_root / "lib").mkdir(parents=True)
+    (version_root / ".DS_Store").write_text("finder\n", encoding="utf-8")
+    (version_root / "lib" / "._odylith").write_text("appledouble\n", encoding="utf-8")
+
+    completed = subprocess.run(
+        ["bash", str(helper), str(version_root)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert not version_root.exists()
 
 
 def test_generated_install_script_requires_explicit_flag_for_localhost_http_assets(tmp_path: Path) -> None:
@@ -588,8 +692,10 @@ def test_generated_install_script_upgrades_only_complete_existing_install(tmp_pa
         repo_root=repo_root,
     )
 
+    script_text = output_path.read_text(encoding="utf-8")
     command_log = (tmp_path / "command.log").read_text(encoding="utf-8")
     assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert 'say "upgrade Running upgrade lifecycle and refreshing dashboard."' in script_text
     assert "-m odylith.cli upgrade --repo-root" in command_log
     assert "-m odylith.cli install --repo-root" not in command_log
     assert install_state.exists()
@@ -1075,9 +1181,66 @@ def test_release_manifest_tracks_third_party_attribution_asset(tmp_path: Path) -
     assert "THIRD_PARTY_ATTRIBUTION.md" in payload
 
 
+def test_release_manifest_carries_registered_migration_policy(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "release-manifest.json"
+    wheel = tmp_path / "odylith-0.1.15-py3-none-any.whl"
+    install_sh = tmp_path / "install.sh"
+    provenance = tmp_path / "build-provenance.v1.json"
+    sbom = tmp_path / "odylith.sbom.spdx.json"
+    attribution = tmp_path / "THIRD_PARTY_ATTRIBUTION.md"
+    runtime_bundle = tmp_path / "odylith-runtime-linux-x86_64.tar.gz"
+
+    wheel.write_bytes(b"wheel")
+    install_sh.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    provenance.write_text("{}", encoding="utf-8")
+    sbom.write_text("{}", encoding="utf-8")
+    attribution.write_text("# attribution\n", encoding="utf-8")
+    runtime_bundle.write_bytes(b"runtime")
+
+    module._write_release_manifest(  # noqa: SLF001
+        output_path=output_path,
+        tag="v0.1.15",
+        repo="odylith/odylith",
+        wheel=wheel,
+        install_sh=install_sh,
+        provenance=provenance,
+        sbom=sbom,
+        third_party_attribution=attribution,
+        feature_packs=[],
+        runtime_bundles=[
+            (
+                next(
+                    item
+                    for item in module.supported_managed_runtime_platforms()
+                    if item.slug == "linux-x86_64"
+                ),
+                runtime_bundle,
+            )
+        ],
+    )
+
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["version"] == "0.1.15"
+    assert payload["migration_required"] is True
+    assert payload["repo_schema_version"] == 1
+
+
 def test_local_provenance_defaults_to_authoritative_actor_for_canonical_repo(tmp_path: Path, monkeypatch) -> None:
     module = _load_module()
     monkeypatch.delenv("GITHUB_ACTOR", raising=False)
+    monkeypatch.delenv("GITHUB_SHA", raising=False)
+
+    def fake_git_output(args) -> str:
+        if tuple(args) == ("rev-parse", "HEAD"):
+            return "abc123localhead"
+        if tuple(args) == ("branch", "--show-current"):
+            return "2026/freedom/provenance"
+        if tuple(args) == ("status", "--porcelain"):
+            return " M odylith/casebook/example.md\n"
+        return ""
+
+    monkeypatch.setattr(module, "_git_output", fake_git_output)
 
     output_path = tmp_path / "build-provenance.v1.json"
     wheel = tmp_path / "odylith-1.2.3-py3-none-any.whl"
@@ -1107,6 +1270,13 @@ def test_local_provenance_defaults_to_authoritative_actor_for_canonical_repo(tmp
 
     payload = json.loads(output_path.read_text(encoding="utf-8"))
     assert payload["actor"] == "freedom-research"
+    assert payload["workflow"]["sha"] == "abc123localhead"
+    assert payload["source_tree"] == {
+        "branch": "2026/freedom/provenance",
+        "dirty": True,
+        "dirty_file_count": 1,
+        "head": "abc123localhead",
+    }
 
 
 def test_publish_release_assets_uses_supported_macos_wheel_tags() -> None:
@@ -1214,136 +1384,15 @@ def test_extract_wheel_into_site_packages_preserves_extra_metadata(tmp_path: Pat
     assert (site_packages / attribution_path).read_text(encoding="utf-8") == "# attribution\n"
 
 
-def test_release_upload_artifacts_include_raw_runtime_bundles_and_attribution(tmp_path: Path) -> None:
-    module = _load_module()
-    wheel = tmp_path / "odylith-1.2.3-py3-none-any.whl"
-    install_sh = tmp_path / "install.sh"
-    release_manifest = tmp_path / "release-manifest.json"
-    provenance = tmp_path / "build-provenance.v1.json"
-    sbom = tmp_path / "odylith.sbom.spdx.json"
-    sha256sums = tmp_path / "SHA256SUMS"
-    attribution = tmp_path / "THIRD_PARTY_ATTRIBUTION.md"
-    runtime_bundle = tmp_path / "odylith-runtime-linux-x86_64.tar.gz"
-    signature_bundle = tmp_path / "odylith-runtime-linux-x86_64.tar.gz.sigstore.json"
-
-    artifacts = module._release_upload_artifacts(  # noqa: SLF001
-        wheel=wheel,
-        install_sh=install_sh,
-        release_manifest=release_manifest,
-        provenance=provenance,
-        sbom=sbom,
-        sha256sums=sha256sums,
-        third_party_attribution=attribution,
-        feature_packs=[],
-        runtime_bundles=[
-            (
-                next(
-                    item
-                    for item in module.supported_managed_runtime_platforms()
-                    if item.slug == "linux-x86_64"
-                ),
-                runtime_bundle,
-            )
-        ],
-        signature_bundles=[signature_bundle],
-    )
-
-    names = [path.name for path in artifacts]
+def test_release_upload_artifacts_include_raw_runtime_bundles_and_attribution(hosted_transport) -> None:
+    value = hosted_transport
+    names = [row['name'] for row in value['state']['assets'].values()]
     assert "THIRD_PARTY_ATTRIBUTION.md" in names
     assert "odylith-runtime-linux-x86_64.tar.gz" in names
     assert "SHA256SUMS" in names
     assert "odylith-runtime-linux-x86_64.tar.gz.sigstore.json" in names
-
-
-def test_release_preflight_uses_isolated_temp_dist_dir() -> None:
-    text = (REPO_ROOT / "bin" / "release-preflight").read_text(encoding="utf-8")
-    shared = (REPO_ROOT / "bin" / "_odylith.sh").read_text(encoding="utf-8")
-
-    assert 'preflight_root="$(mktemp -d "${TMPDIR:-/tmp}/odylith-release-preflight.XXXXXX")"' in text
-    assert 'dist_dir="$preflight_root/dist"' in text
-    assert 'trap \'rm -rf "$preflight_root"\' EXIT' in text
-    assert 'run_release_proof_steps "$resolved_version" "$dist_dir"' in text
-    assert 'run_release_proof_steps() {' in shared
-    assert '"$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . sync' in shared
-    assert '"$odylith_python" -m hatch build --target wheel "$dist_dir"' in shared
-    assert '--dist-dir "$dist_dir" --allow-local' in shared
-    assert 'ODYLITH_RELEASE_PREFLIGHT_DIST_DIR="$dist_dir"' in shared
-    assert 'glob.glob(os.path.join(dist_dir, "*.whl"))' in shared
-    assert 'scripts/release/local_release_smoke.py --version "$resolved_version" --dist-dir "$dist_dir"' in shared
-
-
-def test_local_release_assets_target_builds_maintainer_installable_assets() -> None:
-    text = (REPO_ROOT / "bin" / "local-release-assets").read_text(encoding="utf-8")
-    makefile = (REPO_ROOT / "Makefile").read_text(encoding="utf-8")
-    help_text = (REPO_ROOT / "bin" / "help").read_text(encoding="utf-8")
-
-    assert "local-release-assets:" in makefile
-    assert './bin/local-release-assets "$(VERSION)" "$(DIST)"' in makefile
-    assert 'requested_version="${1:-${VERSION:-$(current_source_version)}}"' in text
-    assert 'dist_dir="${TMPDIR:-/tmp}/odylith-local-release-${requested_version}"' in text
-    assert 'rm -rf "$dist_dir"' in text
-    assert '"$odylith_python" -m hatch build --target wheel "$dist_dir"' in text
-    assert 'scripts/release/publish_release_assets.py \\' in text
-    assert '--tag "v${requested_version}"' in text
-    assert '--dist-dir "$dist_dir"' in text
-    assert "--allow-local" in text
-    assert "ODYLITH_RELEASE_BASE_URL=http://127.0.0.1:8123" in text
-    assert 'ODYLITH_RELEASE_MAINTAINER_ROOT="${odylith_repo_root}"' in text
-    assert "make local-release-assets" in help_text
-
-
-def test_release_candidate_is_pr_safe_non_publishing_current_checkout_lane() -> None:
-    text = (REPO_ROOT / "bin" / "release-candidate").read_text(encoding="utf-8")
-    makefile = (REPO_ROOT / "Makefile").read_text(encoding="utf-8")
-    help_text = (REPO_ROOT / "bin" / "help").read_text(encoding="utf-8")
-
-    assert 'resolved_version="${requested_version:-${VERSION:-$(current_source_version)}}"' in text
-    assert "candidate proof must evaluate the checked-out source tree" in text
-    assert "git restore -- AGENTS.md CLAUDE.md .agents .claude .codex odylith/compass/runtime" in text
-    assert "git clean -fd -- .agents .claude .codex odylith/compass/runtime" in text
-    assert 'require_clean_worktree' in text
-    assert 'run_release_proof_steps "$resolved_version" "$dist_dir"' in text
-    assert 'benchmark_override_mode="$(release_benchmark_override_mode "$resolved_version")"' in text
-    assert "skip_proof_and_compare" in text
-    assert "tracked maintainer override marks benchmark proof advisory for this exact release" in text
-    assert 'benchmark compare --repo-root . --baseline last-shipped' in text
-    assert 'release_version_session.py' not in text
-    assert 'release_worktree.py' not in text
-    assert 'release-candidate:' in makefile
-    assert './bin/release-candidate "$(VERSION)"' in makefile
-    assert "make release-candidate" in help_text
-
-
-def test_release_candidate_benchmark_override_is_version_scoped() -> None:
-    helper = (REPO_ROOT / "bin" / "_odylith.sh").read_text(encoding="utf-8")
-    overrides = json.loads(
-        (REPO_ROOT / "odylith" / "runtime" / "source" / "release-maintainer-overrides.v1.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    bundled_overrides = json.loads(
-        (
-            REPO_ROOT
-            / "src"
-            / "odylith"
-            / "bundle"
-            / "assets"
-            / "odylith"
-            / "runtime"
-            / "source"
-            / "release-maintainer-overrides.v1.json"
-        ).read_text(encoding="utf-8")
-    )
-
-    assert "release_benchmark_override_mode() {" in helper
-    assert "release-maintainer-overrides.v1.json" in helper
-    assert "benchmark_proof_overrides" in helper
-    rows = {row["version"]: row for row in overrides["benchmark_proof_overrides"]}
-    bundled_rows = {row["version"]: row for row in bundled_overrides["benchmark_proof_overrides"]}
-    assert rows["0.1.12"]["mode"] == "skip_proof_and_compare"
-    assert rows["0.1.12"]["owner"] == "freedom-research"
-    assert "CB-116" in rows["0.1.12"]["reason"]
-    assert bundled_rows["0.1.12"] == rows["0.1.12"]
+    assert set(names) == {path.name for path in value['dist'].iterdir()}
+    assert all(row['bytes'] == (value['dist'] / row['name']).read_bytes() for row in value['state']['assets'].values())
 
 
 def test_lane_show_wraps_lane_status() -> None:
@@ -1355,20 +1404,6 @@ def test_lane_show_wraps_lane_status() -> None:
     assert "lane-show:" in makefile
     assert "./bin/lane-show" in makefile
     assert "make lane-show" in help_text
-
-
-def test_release_candidate_workflow_is_manual_to_avoid_duplicate_pr_full_proof() -> None:
-    text = (REPO_ROOT / ".github" / "workflows" / "release-candidate.yml").read_text(encoding="utf-8")
-
-    assert "pull_request:" not in text
-    assert "workflow_dispatch:" in text
-    assert "make lane-show" in text
-    assert "make release-candidate" in text
-    assert "permissions:" in text
-    assert "contents: read" in text
-    assert "make dogfood-activate" not in text
-    assert "gh release create" not in text
-    assert "publish_release_assets.py" not in text
 
 
 def test_ga_checklist_does_not_duplicate_consumer_rehearsal() -> None:

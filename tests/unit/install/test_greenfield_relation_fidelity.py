@@ -1,0 +1,562 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pytest
+
+from tests.unit.install import test_greenfield_semantic_release_score as support
+
+
+import greenfield_relation_fidelity as relation_module
+from greenfield_relation_fidelity import annotation_relation_evidence
+from greenfield_relation_fidelity import _annotation_context_keys
+from greenfield_relation_fidelity import snapshot_relation_evidence
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    GreenfieldAuthoredSemanticsError,
+    authored_relation_set_sha256,
+    combined_prompt_evidence_source,
+    validate_first_path_context_relations,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_atomic_projection import (
+    derive_model_atomic_claims,
+)
+
+
+score_module = support.score_module
+FLOORS = support.FLOORS
+_rich_relation_bundle = support._rich_relation_bundle
+_refresh_relation_hash = support._refresh_relation_hash
+_case = support._case
+_commit_result = support._commit_result
+_commit_annotation = support._commit_annotation
+_clarification_annotation = support._clarification_annotation
+_clarification_result = support._clarification_result
+_repeated_relation_evidence = support._repeated_relation_evidence
+_RELATION_REGRESSION_FIXTURE = json.loads(
+    (Path(__file__).parents[2] / "fixtures/greenfield-release-corpus/relation-fidelity-regressions.v1.json")
+    .read_text(encoding="utf-8")
+)
+_RELATION_FAILURE_CASES = tuple(
+    (row["mutation"], set(row["expected_categories"]))
+    for row in _RELATION_REGRESSION_FIXTURE["cases"]
+    if row["expected_outcome"] == "reject" and row["mutation"] != "wrong_recovery_path"
+)
+
+
+@pytest.fixture(autouse=True)
+def _isolate_structural_scoring(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(score_module, "require_atomic_fact_ledger", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(relation_module, "require_atomic_fact_ledger", lambda *_args, **_kwargs: None)
+
+
+@pytest.mark.parametrize("version,graph_key", [(19, "source_event_relations"), (18, "first_path_relations")])
+def test_observed_semantic_universe_uses_only_the_exact_version_owned_source_graph(version, graph_key):
+    case = _case("observed-source-graph", expectation="transaction_committed")
+    snapshot = _commit_result(case).evidence["preconfirm_dry_run"]["semantic_snapshot"]
+    semantics = snapshot["authored_semantics"]
+    graph = semantics.pop("source_event_relations")
+    semantics["version"] = f"odylith.greenfield.authored-semantics.v{version}"
+    semantics[graph_key] = graph
+    snapshot["authored_relation_set_sha256"] = authored_relation_set_sha256(
+        graph, semantics["component_responsibility_relations"],
+        first_path_context_relations=semantics["first_path_context_relations"],
+        source_precedence=semantics["source_precedence"], source_duty=semantics["source_duty"],
+        provisional_design=semantics["provisional_design"], semantics_version=semantics["version"],
+    )
+    universe = relation_module.observed_semantic_universe(case=case, snapshot=snapshot)
+    event_path = f"/authored_semantics/{graph_key}/0"
+    assert universe[event_path]["kind"] == "main_event"
+    assert universe[event_path]["destination_sha256"] == relation_module.canonical_evidence_sha256(graph[0])
+    other_key = "first_path_relations" if version == 19 else "source_event_relations"
+    assert not any(path.startswith(f"/authored_semantics/{other_key}/") for path in universe)
+
+
+def test_relation_fidelity_reports_exact_family_and_worst_slice_evidence() -> None:
+    case, annotation, result = _rich_relation_bundle("relations-pass")
+
+    report = score_module.evaluate_semantic_release(
+        cases=(case,),
+        annotations={case.case_id: annotation},
+        results=(result,),
+        floors=FLOORS,
+        _include_model_profiles=False,
+        _allow_not_applicable_metrics=True,
+    )
+
+    relation = report["metrics"]["relation_fidelity"]
+    assert report["passed"] is True
+    assert report["relation_sample_count"] == 8
+    assert relation["correct_count"] == 8
+    assert (relation["rate"], relation["point_estimate"]) == (1.0, 1.0)
+    assert relation["confidence_interval_95"]["method"] == "wilson"
+    assert {
+        family: metric["sample_count"]
+        for family, metric in report["relation_fidelity_by_family"].items()
+    } == {
+        "first_path_events": 3,
+        "context_relations": 4,
+        "component_responsibility_relations": 1,
+    }
+    assert report["worst_relation_slice"]["point_estimate"] == 1.0
+    assert "valid-independent-context" in {
+        row["id"] for row in _RELATION_REGRESSION_FIXTURE["cases"]
+    }
+
+
+@pytest.mark.parametrize("verifier_hash", (None, "invalid-hash"))
+def test_relation_fidelity_rejects_missing_or_invalid_verifier_receipt(
+    verifier_hash: str | None,
+) -> None:
+    case, annotation, result = _rich_relation_bundle("relations-verifier-receipt")
+    snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
+    host_candidate = snapshot["operating_envelope"]["model_contract"]["observed"]["host_candidate"]
+    if verifier_hash is None:
+        del host_candidate["source_duty_verifier_task_sha256"]
+    else:
+        host_candidate["source_duty_verifier_task_sha256"] = verifier_hash
+
+    report = score_module.evaluate_semantic_release(
+        cases=(case,),
+        annotations={case.case_id: annotation},
+        results=(result,),
+        floors=FLOORS,
+        _include_model_profiles=False,
+        _allow_not_applicable_metrics=True,
+    )
+
+    assert report["passed"] is False
+    assert "release_evidence" in report["case_outcomes"][0]["failed_dimensions"]
+    assert any(
+        "host_candidate" in issue for issue in report["release_evidence_issues"]
+    )
+
+
+def test_snapshot_accepts_current_authored_semantics_source_precedence() -> None:
+    case, _annotation, result = _rich_relation_bundle("current-source-precedence")
+    snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
+
+    evidence = snapshot_relation_evidence(case=case, snapshot=snapshot)
+
+    assert snapshot["authored_semantics"]["source_precedence"] == []
+    assert evidence.issues == ()
+    assert evidence.sample_count == 8
+
+
+def test_empty_source_component_family_is_not_credited_as_ownership_evidence() -> None:
+    case = _case("optional-source-components", expectation="transaction_committed")
+    annotation = _commit_annotation()
+    result = _commit_result(case)
+    snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
+
+    expected = annotation_relation_evidence(case=case,
+        value=annotation["relation_fidelity"], atom_rows=annotation["atoms"])
+    actual = snapshot_relation_evidence(case=case, snapshot=snapshot)
+    for evidence in (expected, actual):
+        assert not evidence.issues
+        assert evidence.keys["component_responsibility_relations"] == ()
+        assert evidence.minimum_samples["component_responsibility_relations"] == 0
+
+    report = score_module.evaluate_semantic_release(cases=(case,),
+        annotations={case.case_id: annotation}, results=(result,), floors=FLOORS,
+        _include_model_profiles=False, _allow_not_applicable_metrics=True)
+    family = report["relation_fidelity_by_family"]["component_responsibility_relations"]
+    assert family["status"] == "not_applicable"
+    assert family["sample_count"] == 0
+    assert family["confidence_interval_95"] is None
+    family_floor = next(row for row in report["confidence_checks"]
+        if row["name"] == "relation_fidelity:component_responsibility_relations")
+    assert family_floor["status"] == "not_applicable"
+    assert report["metrics"]["relation_fidelity"]["status"] == "measured"
+    assert report["metrics"]["relation_fidelity"]["correct_count"] == 1
+    assert report["metrics"]["relation_fidelity"]["sample_count"] == 1
+    assert next(row for row in report["acceptance_checks"]
+        if row["name"] == "relation_fidelity")["status"] == "passed"
+
+
+def test_relation_fidelity_rejects_retired_actor_annotation_contract() -> None:
+    case, annotation, _result = _rich_relation_bundle("relations-retired-annotation")
+    relation = annotation["relation_fidelity"]
+    relation["version"] = "odylith.greenfield.relation-fidelity-annotation.v3"
+
+    evidence = annotation_relation_evidence(
+        case=case,
+        value=relation,
+        atom_rows=annotation["atoms"],
+    )
+
+    assert evidence.issues == (
+        "relation_fidelity must declare odylith.greenfield.relation-fidelity-annotation.v4",
+    )
+
+
+def test_snapshot_rejects_target_only_adjacent_in_selected_fact() -> None:
+    case, _annotation, result = _rich_relation_bundle("relations-bound-target")
+    snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
+    facts = snapshot["facts"]
+    relations = snapshot["authored_semantics"]["source_event_relations"]
+    event = relations[0]["event_quote"]
+    target = "review queue"
+    facts["customer"] = target
+    facts["product_story"] = f"The {event} for the {target}"
+    relations[0]["target_quote"] = target
+
+    _refresh_relation_hash(result)
+    issues = snapshot_relation_evidence(case=case, snapshot=snapshot).issues
+
+    assert issues == (
+        "Greenfield authoring returned ungrounded first-path relations",
+    )
+
+
+def test_snapshot_accepts_selected_actor_and_terminal_result_from_source_fact() -> None:
+    case, _annotation, result = _rich_relation_bundle("relations-selected-actor")
+    snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
+    facts = snapshot["facts"]
+    relations = snapshot["authored_semantics"]["source_event_relations"]
+    relations[1].update(
+        {
+            "actor_kind": "human",
+            "actor_fact_path": "/human_actors/0",
+            "actor_fact_quote": "Reviewer",
+        }
+    )
+    relations[-1]["visible_result_quote"] = facts["proof_boundary"]
+
+    _refresh_relation_hash(result)
+    issues = snapshot_relation_evidence(case=case, snapshot=snapshot).issues
+
+    assert issues == ()
+
+
+def test_snapshot_rejects_retired_actor_surface_fields() -> None:
+    case, _annotation, result = _rich_relation_bundle("relations-retired-actor-surface")
+    snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
+    relations = snapshot["authored_semantics"]["source_event_relations"]
+    relations[0]["actor_quote"] = "Reviewer"
+
+    issues = snapshot_relation_evidence(case=case, snapshot=snapshot).issues
+
+    assert issues == ("Greenfield authoring returned invalid first-path relations",)
+
+
+def test_event_actor_atom_uses_only_its_selected_actor_fact() -> None:
+    actor = {
+        "field": "human_actors",
+        "quote": "Reviewer",
+        "projection_path": "/human_actors/0",
+        "source_start_byte": 0,
+        "projection_start_byte": 0,
+    }
+    path = {
+        "field": "first_path",
+        "quote": "records one receipt",
+        "projection_path": "/first_path",
+        "source_start_byte": 9,
+        "source_end_byte": 28,
+        "projection_start_byte": 0,
+    }
+    relation = {
+        "order": 1,
+        "source_start_byte": 9,
+        "source_end_byte": 28,
+        "event_start_byte": 0,
+        "actor_fact_path": "/human_actors/0",
+        "actor_fact_quote": "Reviewer",
+        "event_quote": "records one receipt",
+        "action_verb_quote": "records",
+        "target_quote": "one receipt",
+        "visible_result_quote": "",
+    }
+
+    claims = derive_model_atomic_claims(
+        intent={"human_actors": ["Reviewer"], "first_path": "records one receipt"},
+        selected_facts=(actor, path),
+        first_path_relations=(relation,),
+        terminal_result_fact=None,
+    )
+
+    event_actor = next(row for row in claims if row["relation_role"] == "actor_fact_quote")
+    assert (event_actor["quote"], event_actor["projection_path"]) == (
+        "Reviewer",
+        "/human_actors/0",
+    )
+    assert (event_actor["source_start_byte"], event_actor["relation_order"]) == (0, 1)
+    damaged = dict(relation, actor_fact_quote="Invented actor")
+    with pytest.raises(GreenfieldAuthoredSemanticsError, match="ungrounded atomic actor"):
+        derive_model_atomic_claims(
+            intent={"human_actors": ["Reviewer"], "first_path": "records one receipt"},
+            selected_facts=(actor, path),
+            first_path_relations=(damaged,),
+            terminal_result_fact=None,
+        )
+
+    with pytest.raises(GreenfieldAuthoredSemanticsError, match="terminal custody without one visible result"):
+        derive_model_atomic_claims(
+            intent={"human_actors": ["Reviewer"], "first_path": "records one receipt"},
+            selected_facts=(actor, path),
+            first_path_relations=(relation,),
+            terminal_result_fact={},
+        )
+
+
+def test_snapshot_rejects_removed_recovery_classification() -> None:
+    case, _annotation, result = _rich_relation_bundle("relations-removed-recovery")
+    snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
+    relations = snapshot["authored_semantics"]["source_event_relations"]
+    relations[0]["recovery_path"] = True
+
+    issues = snapshot_relation_evidence(case=case, snapshot=snapshot).issues
+
+    assert issues == ("Greenfield authoring returned invalid first-path relations",)
+
+
+@pytest.mark.parametrize(
+    ("damage", "expected_categories"),
+    _RELATION_FAILURE_CASES,
+)
+def test_relation_fidelity_rejects_structurally_valid_wrong_relations(
+    damage: str,
+    expected_categories: set[str],
+) -> None:
+    case, annotation, result = _rich_relation_bundle(f"relations-{damage}")
+    snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
+    semantics = snapshot["authored_semantics"]
+    if damage == "wrong_product_owner":
+        event = semantics["source_event_relations"][2]
+        event.update(
+            {
+                "actor_fact_path": "/internal_systems/1",
+                "actor_fact_quote": "Backup Engine",
+                "owner_system_path": "/internal_systems/1",
+                "owner_system_quote": "Backup Engine",
+            }
+        )
+        semantics["component_responsibility_relations"][0].update(
+            {
+                "owner_system_path": "/internal_systems/1",
+                "owner_system_quote": "Backup Engine",
+            }
+        )
+    elif damage == "wrong_external_actor":
+        semantics["source_event_relations"][1].update(
+            {
+                "actor_fact_path": "/external_systems/1",
+                "actor_fact_quote": "Archive API",
+            }
+        )
+    elif damage == "wrong_actor_fact":
+        semantics["source_event_relations"][1].update(
+            {
+                "actor_fact_path": "/external_systems/1",
+                "actor_fact_quote": "Archive API",
+            }
+        )
+    elif damage == "wrong_existing_context_event":
+        semantics["first_path_context_relations"][0]["first_path_event_order"] = 3
+    elif damage == "false_independence":
+        semantics["first_path_context_relations"][1]["first_path_event_order"] = 0
+    elif damage == "wrong_action":
+        semantics["source_event_relations"][2]["action_verb_quote"] = "show"
+    elif damage == "wrong_target":
+        semantics["source_event_relations"][2]["target_quote"] = "accepted receipt"
+    elif damage == "mutual_context_omission":
+        semantics["first_path_context_relations"] = []
+        annotation["relation_fidelity"]["context_relations"] = []
+    elif damage == "mutual_component_omission":
+        semantics["component_responsibility_relations"] = []
+        annotation["relation_fidelity"]["component_responsibility_relations"] = []
+    else:
+        semantics["component_responsibility_relations"][0].update(
+            {
+                "responsibility_path": "/first_path",
+                "responsibility_quote": "accepted receipt",
+                "responsibility_source": "terminal_visible_result",
+            }
+        )
+    _refresh_relation_hash(result)
+
+    report = score_module.evaluate_semantic_release(
+        cases=(case,),
+        annotations={case.case_id: annotation},
+        results=(result,),
+        floors=FLOORS,
+        _include_model_profiles=False,
+        _allow_not_applicable_metrics=True,
+    )
+
+    categories = {row["category"] for row in report["p1_findings"]}
+    relation = report["metrics"]["relation_fidelity"]
+    relation_floor = next(
+        row for row in report["confidence_checks"] if row["name"] == "relation_fidelity"
+    )
+    assert report["passed"] is False
+    assert report["metrics"]["atomic_semantic_fidelity"]["rate"] == 1.0
+    assert (
+        relation["sample_count"] > relation["correct_count"]
+        or report["relation_evidence_issues"]
+    )
+    assert relation["confidence_interval_95"] is not None
+    assert expected_categories <= categories
+    assert relation_floor["observed"] == relation["confidence_interval_95"]["lower"]
+    assert next(
+        row for row in report["acceptance_checks"]
+        if row["name"] == "no_observed_p1_relation_defect"
+    )["status"] == "failed"
+    assert report["worst_relation_slice"]["point_estimate"] < 1.0
+    if damage == "mutual_context_omission":
+        context_metric = report["relation_fidelity_by_family"]["context_relations"]
+        assert (context_metric["sample_count"], context_metric["correct_count"]) == (4, 0)
+    if damage == "mutual_component_omission":
+        component_metric = report["relation_fidelity_by_family"][
+            "component_responsibility_relations"
+        ]
+        assert relation["correct_count"] == 0
+        assert (component_metric["sample_count"], component_metric["correct_count"]) == (1, 0)
+
+
+@pytest.mark.parametrize("damage", ("missing", "digest", "order"))
+def test_relation_fidelity_rejects_missing_or_digest_mismatched_sealed_authority(
+    damage: str,
+) -> None:
+    case = _case(f"relation-custody-{damage}", expectation="transaction_committed")
+    result = _commit_result(case)
+    snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
+    if damage == "missing":
+        snapshot.pop("authored_semantics")
+        snapshot.pop("authored_relation_set_sha256")
+    elif damage == "digest":
+        snapshot["authored_relation_set_sha256"] = "f" * 64
+    else:
+        snapshot["authored_semantics"]["source_event_relations"][0]["order"] = "one"
+        with pytest.raises(ValueError):
+            _refresh_relation_hash(result)
+
+    report = score_module.evaluate_semantic_release(
+        cases=(case,),
+        annotations={case.case_id: _commit_annotation()},
+        results=(result,),
+        floors=FLOORS,
+        _include_model_profiles=False,
+        _allow_not_applicable_metrics=True,
+    )
+
+    assert report["passed"] is False
+    assert report["metrics"]["atomic_semantic_fidelity"]["rate"] == 1.0
+    assert report["metrics"]["relation_fidelity"]["rate"] < 1.0
+    assert "relation_custody_invalid" in {
+        row["category"] for row in report["p1_findings"]
+    }
+    assert report["relation_evidence_issues"]
+
+
+@pytest.mark.parametrize("allow_not_applicable", (False, True))
+def test_zero_of_zero_relation_evidence_is_never_reported_as_a_pass(
+    allow_not_applicable: bool,
+) -> None:
+    case = _case("relation-zero", expectation="clarification_required")
+
+    report = score_module.evaluate_semantic_release(
+        cases=(case,),
+        annotations={case.case_id: _clarification_annotation()},
+        results=(_clarification_result(case),),
+        floors=FLOORS,
+        _allow_not_applicable_metrics=allow_not_applicable,
+    )
+
+    relation = report["metrics"]["relation_fidelity"]
+    relation_floor = next(
+        row for row in report["confidence_checks"] if row["name"] == "relation_fidelity"
+    )
+    worst_floor = next(
+        row
+        for row in report["confidence_checks"]
+        if row["name"] == "worst_relation_slice_fidelity"
+    )
+    assert relation["status"] == "not_applicable"
+    assert relation["sample_count"] == 0
+    assert relation["confidence_interval_95"] is None
+    assert relation["evidence"]
+    assert relation_floor["status"] == "unproven"
+    assert worst_floor["status"] == "unproven"
+    assert relation_floor["status"] != "passed"
+    assert worst_floor["status"] != "passed"
+    assert report["passed"] is False
+    assert report["model_profiles"][0]["passed"] is False
+    profile_relation_floor = next(
+        row
+        for row in report["model_profiles"][0]["confidence_checks"]
+        if row["name"] == "relation_fidelity"
+    )
+    assert profile_relation_floor["status"] == "unproven"
+
+
+def test_repeated_identical_events_keep_distinct_source_and_projection_identity() -> None:
+    case, annotation, snapshot = _repeated_relation_evidence()
+
+    expected = annotation_relation_evidence(
+        case=case,
+        value=annotation["relation_fidelity"],
+        atom_rows=annotation["atoms"],
+    )
+    actual = snapshot_relation_evidence(case=case, snapshot=snapshot)
+
+    assert expected.issues == ()
+    assert actual.issues == ()
+    assert expected.keys == actual.keys
+    assert len(actual.keys["first_path_events"]) == 2
+    assert actual.keys["first_path_events"][0] != actual.keys["first_path_events"][1]
+    assert "repeated-identical-source-distinct-events" in {
+        row["id"] for row in _RELATION_REGRESSION_FIXTURE["cases"]
+    }
+
+
+def test_state_object_without_one_overlapping_event_uses_independent_order_zero() -> None:
+    source = b"prior state. Reviewer submits one permit."
+    quote = "prior state"
+    event_quote = "Reviewer submits one permit"
+    event_start = source.index(event_quote.encode("utf-8"))
+    first_path_relations = (
+        {
+            "order": 1,
+            "source_start_byte": event_start,
+            "source_end_byte": event_start + len(event_quote.encode("utf-8")),
+        },
+    )
+    context_start = source.index(quote.encode("utf-8"))
+    source_range = {
+        "source_start_byte": context_start,
+        "source_end_byte": context_start + len(quote.encode("utf-8")),
+        "first_path_event_order": 0,
+    }
+    digest = support._sha(quote)
+
+    _annotation_keys, annotation_issues = _annotation_context_keys(
+        (
+            {
+                "context_kind": "state_object",
+                "fact_path": "/state_object",
+                "fact_sha256": digest,
+                **source_range,
+            },
+        ),
+        source_bytes=source,
+        first_path_relations=first_path_relations,
+        projection_identities=frozenset({("/state_object", digest)}),
+    )
+    snapshot_rows = validate_first_path_context_relations(
+        (
+            {
+                "context_kind": "state_object",
+                "fact_path": "/state_object",
+                "fact_quote": quote,
+                **source_range,
+            },
+        ),
+        intent={"state_object": quote},
+        first_path_relations=first_path_relations,
+    )
+
+    assert annotation_issues == ()
+    assert len(snapshot_rows) == 1
+    assert snapshot_rows[0]["first_path_event_order"] == 0

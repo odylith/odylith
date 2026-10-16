@@ -303,6 +303,7 @@ def confirm_assistant_chat_delivery(
     session_id: str,
     last_assistant_message: str,
     render_surface: str,
+    defer: bool = False,
 ) -> list[dict[str, Any]]:
     return visibility_broker.confirm_assistant_chat_delivery(
         repo_root=repo_root,
@@ -310,6 +311,7 @@ def confirm_assistant_chat_delivery(
         session_id=session_id,
         last_assistant_message=last_assistant_message,
         render_surface=render_surface,
+        defer=defer,
     )
 
 
@@ -320,11 +322,14 @@ def compose_checkpoint_system_message(
 ) -> str:
     live = visible_delivery_runtime.canonical_visible_delivery_text(live_intervention)
     governance = _normalize_block_string(governance_status)
-    if live:
-        if governance and any(token in governance.lower() for token in ("failed", "skipped")):
-            return f"{live}\n\n{governance}".strip()
-        return live
-    return governance
+    if governance_status_requires_attention(governance):
+        return governance
+    return live or governance
+
+
+def governance_status_requires_attention(value: str) -> bool:
+    lowered = _normalize_string(value).casefold()
+    return any(token in lowered for token in ("failed", "failure", "error", "skipped"))
 
 
 def codex_post_tool_payload(
@@ -373,8 +378,7 @@ def codex_prompt_payload(
     return payload
 
 
-def stop_payload(*, system_message: str = "", block_for_visible_delivery: bool = False) -> dict[str, Any]:
-    del block_for_visible_delivery
+def stop_payload(*, system_message: str = "") -> dict[str, Any]:
     message = visible_delivery_runtime.canonical_visible_delivery_text(system_message)
     if not message:
         return {}

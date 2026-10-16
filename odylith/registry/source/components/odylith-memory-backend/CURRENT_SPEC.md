@@ -7,10 +7,8 @@
 - Retention classes include `hot_recent`, `durable_practice`,
   `casebook_failure`, `benchmark_pressure`, `tribunal_doctrine_candidate`, and
   `noise_suppressed`, with decay and suppression preserved.
-Last updated: 2026-04-13
+Last updated: 2026-10-13
 
-
-Last updated (UTC): 2026-04-13
 
 ## Purpose
 Odylith Memory Backend is the local-first derived memory substrate that stores
@@ -56,6 +54,35 @@ Context Engine.
   raw thread retention.
 
 ## Runtime Contract
+### Evidence authority metadata
+
+The shared compiler-table document builder carries Context Engine's
+`memory_record.v1` through existing document provenance into LanceDB/Tantivy.
+Indexed retrieval and compiler fallback apply the same authority-first
+selection policy; the backend does not invent another authority or decay
+model. Source witness/fingerprint, evidence and observation time, validity and
+derivation provenance survive transport. Current tracked truth takes precedence
+over historical learning, while relevant failed mechanisms remain retrievable.
+Judgment continuity is admitted by the Context Engine source owner before it
+can influence routing confidence. Backend readiness is separate from evidence
+truth and from demonstrated retrieval accuracy.
+
+The frozen source diagnostic activates the actual local index with no
+repository-scan fallback. This readiness result does not qualify retrieval
+accuracy or the diagnostic's HOLD quality status. Historical H1 latency deltas
+remain in source history, but their original primary witnesses are unavailable
+and cannot support fresh release claims.
+
+Fresh source proof at clean checkpoint `51c6a379f` passes 60 existing checks
+with zero failures, errors or skips. It exercises actual compiler-to-snapshot
+and LanceDB/Tantivy indexed/fallback retrieval, authority and decay, useful
+failure recall, source-checked continuity, session-intent non-replay, final
+guidance actionability and existing packet caps. Independent source/evidence
+review inspected the actual log and JUnit. No memory source or test changed.
+These are bounded source controls; same-package installed/upgrade proof,
+complete current regression and full native benchmark qualification remain open.
+Remote retrieval stays opt-in.
+
 ### Runtime inputs
 - `.odylith/runtime/odylith-compiler/projection-manifest.v1.json`
 - `.odylith/runtime/odylith-compiler/documents.v1.jsonl`

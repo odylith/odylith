@@ -12,6 +12,7 @@ from typing import Sequence
 
 from odylith.runtime.governance import authoring_execution_policy
 from odylith.runtime.governance import casebook_release_closeout
+from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import release_planning_contract
 from odylith.runtime.governance import release_planning_view_model
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
@@ -86,18 +87,26 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _load_governed_documents(*, repo_root: Path) -> tuple[dict[str, Any], list[dict[str, Any]], dict[str, backlog_contract.IdeaSpec]]:
+def _load_governed_documents(
+    *,
+    repo_root: Path,
+    idea_specs: Mapping[str, backlog_contract.IdeaSpec] | None = None,
+) -> tuple[dict[str, Any], list[dict[str, Any]], dict[str, backlog_contract.IdeaSpec]]:
     registry_path = release_planning_contract.releases_registry_path(repo_root=repo_root)
     event_log_path = release_planning_contract.release_assignment_event_log_path(repo_root=repo_root)
     registry_document, registry_errors = release_planning_contract.load_registry_document(path=registry_path)
     event_documents, event_errors = release_planning_contract.load_assignment_event_documents(path=event_log_path)
-    idea_specs, idea_errors = backlog_contract._validate_idea_specs(  # noqa: SLF001
-        repo_root.joinpath("odylith/radar/source/ideas")
-    )
+    if idea_specs is None:
+        resolved_idea_specs, idea_errors = backlog_contract._validate_idea_specs(  # noqa: SLF001
+            repo_root.joinpath("odylith/radar/source/ideas")
+        )
+    else:
+        resolved_idea_specs = dict(idea_specs)
+        idea_errors = []
     all_errors = [*registry_errors, *event_errors, *idea_errors]
     if all_errors:
         raise ValueError("\n".join(all_errors))
-    return registry_document, event_documents, idea_specs
+    return registry_document, event_documents, resolved_idea_specs
 
 
 def _render_release_payload(*, payload: Mapping[str, Any]) -> str:
@@ -260,6 +269,32 @@ def _print_or_json(*, payload: Mapping[str, Any], as_json: bool) -> None:
         print(f"- active workstreams: {', '.join(workstreams) if workstreams else '-'}")
         return
     print(_render_release_payload(payload=payload), end="")
+
+
+def _post_write_refresh_surfaces(payload: Mapping[str, Any]) -> tuple[str, ...]:
+    command = str(payload.get("command", "")).strip()
+    if command not in {"create", "update", "add", "remove", "move"} or bool(payload.get("dry_run")):
+        return ()
+    surfaces = ["compass"]
+    closeout = payload.get("casebook_release_closeout")
+    if isinstance(closeout, Mapping) and closeout.get("changed_paths"):
+        surfaces.append("casebook")
+    return tuple(dict.fromkeys(surfaces))
+
+
+def _apply_post_write_refresh(*, repo_root: Path, payload: dict[str, Any]) -> None:
+    surfaces = _post_write_refresh_surfaces(payload)
+    if not surfaces:
+        return
+    owned_surface_refresh.raise_for_failed_refreshes(
+        repo_root=repo_root,
+        surfaces=surfaces,
+        operation_label="Release planning authoring",
+    )
+    payload["refresh"] = {
+        "status": "passed",
+        "surfaces": list(surfaces),
+    }
 
 
 def _event_payload(
@@ -601,11 +636,14 @@ def add_workstreams_to_release(
     note: str = "",
     idea_specs: Mapping[str, backlog_contract.IdeaSpec] | None = None,
     dry_run: bool = False,
+    allow_existing: bool = False,
 ) -> dict[str, Any]:
     """Assign one or more known workstreams to a release after full preflight."""
     root = Path(repo_root).resolve()
-    registry_document, event_documents, loaded_idea_specs = _load_governed_documents(repo_root=root)
-    effective_idea_specs = dict(idea_specs if idea_specs is not None else loaded_idea_specs)
+    registry_document, event_documents, effective_idea_specs = _load_governed_documents(
+        repo_root=root,
+        idea_specs=idea_specs,
+    )
     state, _payload = _validated_state(
         repo_root=root,
         registry_document=registry_document,
@@ -616,22 +654,36 @@ def add_workstreams_to_release(
     if release.terminal:
         raise ValueError(f"cannot add workstreams to terminal release `{release.release_id}`")
     normalized_ids: list[str] = []
+    existing_ids: list[str] = []
     for raw_id in workstream_ids:
         workstream_id = str(raw_id or "").strip().upper()
         if not workstream_id:
             continue
-        if workstream_id in normalized_ids:
+        if workstream_id in normalized_ids or workstream_id in existing_ids:
             raise ValueError(f"duplicate workstream id `{workstream_id}` in release assignment request")
         if workstream_id not in effective_idea_specs:
             raise ValueError(f"unknown workstream `{workstream_id}`")
         if workstream_id in state.active_release_by_workstream:
             current_release = state.active_release_by_workstream[workstream_id]
+            if allow_existing and current_release == release.release_id:
+                existing_ids.append(workstream_id)
+                continue
             raise ValueError(
                 f"`{workstream_id}` already targets `{current_release}`; use `odylith release move` instead"
             )
         normalized_ids.append(workstream_id)
     if not normalized_ids:
-        raise ValueError("release assignment requires at least one workstream id")
+        return {
+            "command": "add",
+            "dry_run": bool(dry_run),
+            "events": [],
+            "workstream_ids": existing_ids,
+            "new_workstream_ids": [],
+            "existing_workstream_ids": existing_ids,
+            "release": next(row for row in _payload["catalog"] if row["release_id"] == release.release_id),
+            "event_log_path": str(state.event_log_path),
+            "execution_engine": {},
+        }
 
     recorded_at = release_planning_contract.utc_now_iso()
     events = [
@@ -665,7 +717,9 @@ def add_workstreams_to_release(
         "command": "add",
         "dry_run": bool(dry_run),
         "events": events,
-        "workstream_ids": normalized_ids,
+        "workstream_ids": [*existing_ids, *normalized_ids],
+        "new_workstream_ids": normalized_ids,
+        "existing_workstream_ids": existing_ids,
         "release": next(row for row in next_payload["catalog"] if row["release_id"] == release.release_id),
         "event_log_path": str(next_state.event_log_path),
         "execution_engine": governance.to_dict(),
@@ -683,17 +737,21 @@ def ensure_release_selector(
     name: str = "",
     notes: str = "",
     aliases: Sequence[str] = (),
+    idea_specs: Mapping[str, backlog_contract.IdeaSpec] | None = None,
     dry_run: bool = False,
 ) -> dict[str, Any]:
     """Create a release target when a requested selector is not defined yet."""
 
     root = Path(repo_root).resolve()
-    registry_document, event_documents, idea_specs = _load_governed_documents(repo_root=root)
+    registry_document, event_documents, resolved_idea_specs = _load_governed_documents(
+        repo_root=root,
+        idea_specs=idea_specs,
+    )
     state, payload = _validated_state(
         repo_root=root,
         registry_document=registry_document,
         event_documents=event_documents,
-        idea_specs=idea_specs,
+        idea_specs=resolved_idea_specs,
     )
     try:
         release = state.release_for_selector(selector)
@@ -748,7 +806,7 @@ def ensure_release_selector(
         repo_root=root,
         registry_document=document,
         event_documents=event_documents,
-        idea_specs=idea_specs,
+        idea_specs=resolved_idea_specs,
     )
     governance = _release_governance_decision(
         repo_root=root,
@@ -838,6 +896,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     except ValueError as exc:
         print(str(exc))
         return 2
+    try:
+        _apply_post_write_refresh(repo_root=Path(args.repo_root).resolve(), payload=payload)
+    except RuntimeError as exc:
+        print(str(exc))
+        return 1
     _print_or_json(payload=payload, as_json=bool(getattr(args, "as_json", False)))
     return 0
 

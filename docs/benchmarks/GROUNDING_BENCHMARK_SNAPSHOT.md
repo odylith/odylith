@@ -1,35 +1,42 @@
-# Grounding Benchmark Snapshot
+# Internal Diagnostic Benchmark Snapshot
 
-This note carries the fuller interpretation behind the short Grounding Benchmark summary
+This note carries the fuller interpretation behind the short diagnostic summary
 published in the root [README](../../README.md).
 
 ## Current Result
 
-Current Grounding Benchmark report: `9dcae95d5bb62c75` from `2026-04-25T11:20:25Z` with status `provisional_pass`.
+Current Internal Diagnostic Benchmark report: `b75f850362a680d2` from `2026-10-15T19:31:51Z` with status `hold`.
 
-The latest Grounding Benchmark ran `82` seeded scenarios on cache profile(s) `warm` comparing `odylith_on` versus `odylith_off` on packet and prompt construction only.
-Across the `82` Grounding Benchmark pairs, wall clock was `22.540 ms` median, `46.680 ms` at `p95`, and `1.86s` total.
+The latest internal diagnostic benchmark ran `82` seeded scenarios on cache profile(s) `cold` comparing `odylith_on` versus `odylith_off` on packet and prompt construction only.
+Across the `82` diagnostic pairs, wall clock was `58.529 ms` median, `211.377 ms` at `p95`, and `6.67s` total.
 
-Current Grounding Benchmark posture is local-first on the Odylith Memory Substrate. Remote retrieval is `disabled` in the selected report. Local memory-backed retrieval ready: `True`.
+Current diagnostic posture is local-first on `lance_local_columnar` plus `tantivy_sparse_recall`. Remote retrieval is `disabled` in the selected report. Local memory-backed retrieval ready: `True`.
 
 ## Headline Movement
 
 Compared with the `odylith_off` prompt bundle, Odylith moved:
 
-- required-path recall by `0.326`
-- required-path precision by `0.049`
-- hallucinated-surface rate by `0.000`
-- validation-success proxy by `0.689`
-- critical required-path recall by `0.278`
-- critical validation-success proxy by `0.613`
-- expectation-success proxy by `0.951`
-- median prompt-bundle input tokens by `+834`
-- median total prompt-bundle payload tokens by `+1,076`
-- median packet time by `+23 ms`
+- required-path recall by `0.316`
+- required-path precision by `0.047`
+- hallucinated-surface rate by `0.002`
+- validation-success proxy by `0.648`
+- critical required-path recall by `0.256`
+- critical validation-success proxy by `0.548`
+- expectation-success proxy by `0.823`
+- median prompt-bundle input tokens by `+871`
+- median total prompt-bundle payload tokens by `+1,124`
+- median packet time by `+59 ms`
 
 ## Publication Read
 
-There are no hard-gate blockers on this report.
+The current report is on `hold` because these hard-gate blockers remain:
+- observed-surface drift is worse than the raw baseline
+- selected cache profiles do not all clear the hard quality gate
+
+Secondary guardrail blockers:
+- median latency exceeds the +15 ms guardrail
+- median prompt cost exceeds the +64-token guardrail
+- median total payload exceeds the +96-token guardrail
 
 - fairness contract passed: `True`
 - corpus seriousness floor passed: `True`
@@ -39,10 +46,12 @@ There are no hard-gate blockers on this report.
 - correctness-critical scenarios in tracked corpus: `31`
 - mechanism-heavy operating-policy ratio: `0.29`
 
+Current diagnostic weak families:
+- `architecture`
+
 ## Reading Notes
 
-- `odylith_off` is the raw prompt-bundle control for this mechanism-evidence
-  view.
+- `odylith_off` is the raw prompt-bundle control for this mechanism-evidence view.
 - Prompt-visible path credit and Turn Gate evidence must remain explicit in the report contract.
-- Current Grounding Benchmark posture is local-first on the Odylith Memory Substrate. Remote retrieval is `disabled` in the selected report. Local memory-backed retrieval ready: `True`.
-- Grounding Benchmark gains only matter if they preserve or improve the live proof lane.
+- Current diagnostic posture is local-first on `lance_local_columnar` plus `tantivy_sparse_recall`. Remote retrieval is `disabled` in the selected report. Local memory-backed retrieval ready: `True`.
+- Diagnostic gains only matter if they preserve or improve the live proof lane.

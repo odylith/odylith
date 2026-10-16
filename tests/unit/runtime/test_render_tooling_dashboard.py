@@ -5,6 +5,9 @@ from pathlib import Path
 import time
 
 from odylith.install.state import write_install_state, write_upgrade_spotlight, write_version_pin
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
+    _canonical_model_authored_greenfield_fixture as _authored_greenfield_fixture,
+)
 from odylith.runtime.surfaces import render_tooling_dashboard as renderer
 from odylith.runtime.surfaces import tooling_dashboard_shell_presenter
 
@@ -268,10 +271,12 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "shellRecoveryDock" in html
     assert "shellRuntimeStatus" in html
     assert "shellRuntimeStatusKicker" in html
+    assert "shellRuntimeStatusDetails" in html
+    assert "Technical details" in html
     assert "shellRuntimeStatusReload" in html
     assert "shellRuntimeStatusDismiss" in html
     assert "runtimeStatusReopen" not in html
-    assert "The shell refreshes itself as Odylith updates local surfaces." in html
+    assert "Reopen the dashboard after Odylith refreshes local surfaces." in html
     assert "Add a workstream file under" not in html
     assert "welcome-record-grid" not in html
     assert "Open Radar view" not in html
@@ -297,15 +302,18 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "Create a Registry component" in html
     assert "Create an Atlas diagram" in html
     assert "Create a Casebook bug" in html
-    assert "Payments boundary cleanup" in html
+    assert "Component boundary cleanup" in html
     assert "Create a Registry component named" in html
-    assert "Create an Atlas diagram for the payments component." in html
-    assert "Duplicate payment capture after webhook retry" in html
-    assert "Release planning: pick the ship target" in html
-    assert "Program/wave planning: sequence umbrella execution" in html
-    assert "Release planning picks the ship target for one workstream" in html
-    assert "Program/wave planning picks execution order under one umbrella" in html
-    assert "A workstream can belong to both." in html
+    assert "Create an Atlas diagram for the example-component." in html
+    assert "Duplicate state transition after provider retry" in html
+    assert "Create a target release" in html
+    assert "Assign a workstream to a release" in html
+    assert "Create programs and waves" in html
+    assert "Release planning creates a target release before workstreams are assigned." in html
+    assert "Program and wave planning sets execution order under one umbrella." in html
+    assert "Examples below use placeholder names and IDs; replace them with records from this repository." in html
+    assert "Create target release 0.1.15" in html
+    assert "odylith release create release-v0-1-15" in html
     assert "Add B-067 to release 0.1.11." in html
     assert "odylith release add B-067 0.1.11 --repo-root ." in html
     assert "For umbrella workstream B-021, create a 3-wave execution program." in html
@@ -320,15 +328,14 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "odylith compass watch-transactions --repo-root ." in html
     assert "Add a developer note" in html
     assert "Open Radar for workstream B-025." in html
-    assert "Open Registry for the payments component." in html
-    assert "Start Odylith and ground me in src/payments/service.py." in html
+    assert "Open Registry for the example-component." in html
+    assert "Start Odylith and ground me in src/example_component/service.py." in html
     assert "Map a component or workstream in Atlas" in html
-    assert "Map the payments component in Atlas." in html
+    assert "Map the example-component in Atlas." in html
     assert "Find the Atlas diagram for workstream B-025." in html
     assert "Open a known component or workstream" in html
-    assert "Show me the files and records for the payments component." in html
-    assert "component like payments or a workstream id like B-025" in html
-    assert "Odylith scopes to the tied files and governed records." in html
+    assert "Show me the files and records for example-component." in html
+    assert "Use this when you already know a component or workstream and want its files, plans, bugs, and diagrams." in html
     assert "Validate plan bindings before closing workstream B-025." in html
     assert "Show the critical risks for workstream B-025." in html
     assert "What should I work on next after workstream B-025?" in html
@@ -488,10 +495,20 @@ def test_render_tooling_dashboard_includes_self_host_payload(tmp_path: Path, mon
     assert '"runtime_source": "pinned_runtime"' in payload_js
     assert '"shell_repo_name": "odylith"' in payload_js
     assert '"shell_version_label": "v0.1.0"' in payload_js
+    assert '"version_state_href": ""' in payload_js
+    assert '"status_snapshot":' in payload_js
     assert '"compass_href": "compass/compass.html?v=' in payload_js
+    version_state = json.loads(
+        (tmp_path / ".odylith" / "runtime" / "odylith-version-state.v1.json").read_text(encoding="utf-8")
+    )
+    assert version_state["source"] == "odylith version"
+    assert version_state["authoritative_version"] == "0.1.0"
+    assert version_state["authoritative_label"] == "v0.1.0"
+    version_state_js = (tmp_path / ".odylith" / "runtime" / "odylith-version-state.v1.js").read_text(encoding="utf-8")
+    assert "window[\"__ODYLITH_VERSION_STATE__\"]" in version_state_js
 
 
-def test_render_tooling_dashboard_enables_passive_live_refresh_for_consumer_repo(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_render_tooling_dashboard_enables_passive_live_refresh_for_direct_consumer_export(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     monkeypatch.setattr(
         renderer.delivery_surface_payload_runtime,
@@ -501,18 +518,18 @@ def test_render_tooling_dashboard_enables_passive_live_refresh_for_consumer_repo
     monkeypatch.setattr(
         renderer.agent_governance_intelligence,
         "collect_git_changed_paths",
-        lambda **kwargs: ["src/payments/service.py", "odylith/registry/registry-payload.v1.js"],
+        lambda **kwargs: ["src/example_component/service.py", "odylith/registry/registry-payload.v1.js"],
     )
 
-    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/export/index.html"])
 
     assert rc == 0
-    payload_js = _load_externalized_payload_js(tmp_path / "odylith" / "tooling-payload.v1.js")
+    payload_js = _load_externalized_payload_js(tmp_path / "odylith/export/tooling-payload.v1.js")
     live_refresh = dict(payload_js["live_refresh"])
     assert live_refresh["enabled"] is True
     assert live_refresh["mode"] == "passive_runtime_probe"
     assert live_refresh["policy_id"] == "balanced"
-    assert live_refresh["state_href"] == "../.odylith/runtime/odylith-context-engine-state.v1.js"
+    assert live_refresh["state_href"] == "../../.odylith/runtime/odylith-context-engine-state.v1.js"
     assert live_refresh["reloadable_tabs"] == ["radar", "registry", "compass", "casebook"]
     assert live_refresh["surface_policies"]["compass"]["auto_reload"] is True
     assert live_refresh["surface_policies"]["atlas"]["auto_reload"] is False
@@ -650,17 +667,17 @@ def test_render_tooling_dashboard_projects_failed_compass_refresh_into_shell_sta
     payload_js = _load_externalized_payload_js(tmp_path / "odylith" / "tooling-payload.v1.js")
     compass_status = dict(payload_js["surface_runtime_status"]["compass"])
     assert compass_status["tone"] == "warning"
-    assert compass_status["title"] == "Showing prior Compass snapshot"
+    assert compass_status["title"] == "Showing the previous Compass snapshot"
     assert compass_status["body"] == (
-        "Requested Compass refresh failed before a fresh payload was written. "
-        "Showing the prior runtime snapshot from 2026-04-07T17:06:12Z."
+        "Compass did not refresh. You are viewing the previous snapshot; "
+        "refresh Compass when you are ready to update it."
     )
     assert "Snapshot: 2026-04-07T17:06:12Z" in compass_status["meta"]
     assert "Attempted: 2026-04-07T17:17:57Z" in compass_status["meta"]
     assert "Next: odylith dashboard refresh --repo-root . --surfaces compass" in compass_status["meta"]
 
 
-def test_render_tooling_dashboard_disables_live_refresh_for_product_repo(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_render_tooling_dashboard_disables_live_refresh_for_direct_product_export(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     _seed_product_repo_posture(tmp_path)
     monkeypatch.setattr(
@@ -673,10 +690,10 @@ def test_render_tooling_dashboard_disables_live_refresh_for_product_repo(tmp_pat
         "collect_git_changed_paths",
         lambda **kwargs: (_ for _ in ()).throw(AssertionError("product repo live refresh should stay benchmark-frozen")),
     )
-    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/export/index.html"])
 
     assert rc == 0
-    payload_js = _load_externalized_payload_js(tmp_path / "odylith" / "tooling-payload.v1.js")
+    payload_js = _load_externalized_payload_js(tmp_path / "odylith/export/tooling-payload.v1.js")
     live_refresh = dict(payload_js["live_refresh"])
     assert live_refresh["enabled"] is False
     assert live_refresh["policy_id"] == "proof_frozen"
@@ -702,7 +719,7 @@ def test_render_tooling_dashboard_shows_detached_product_repo_version_readout(tm
     assert '"shell_version_label": "source-local"' in payload_js
 
 
-def test_render_tooling_dashboard_enables_balanced_live_refresh_for_detached_source_local(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_render_tooling_dashboard_enables_balanced_live_refresh_for_direct_detached_export(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     _seed_product_repo_source_local_posture(tmp_path)
     monkeypatch.setattr(
@@ -715,17 +732,17 @@ def test_render_tooling_dashboard_enables_balanced_live_refresh_for_detached_sou
         "collect_git_changed_paths",
         lambda **kwargs: ["src/odylith/runtime/surfaces/render_tooling_dashboard.py"],
     )
-    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/export/index.html"])
 
     assert rc == 0
-    payload_js = _load_externalized_payload_js(tmp_path / "odylith" / "tooling-payload.v1.js")
+    payload_js = _load_externalized_payload_js(tmp_path / "odylith/export/tooling-payload.v1.js")
     live_refresh = dict(payload_js["live_refresh"])
     assert live_refresh["enabled"] is True
     assert live_refresh["policy_id"] == "balanced"
     assert live_refresh["reloadable_tabs"] == ["radar", "registry", "compass", "casebook"]
 
 
-def test_render_tooling_dashboard_allows_explicit_full_dev_live_refresh_override(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_render_tooling_dashboard_allows_explicit_full_dev_live_refresh_for_direct_export(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     source_path = tmp_path / "odylith" / "runtime" / "source" / "tooling_shell.v1.json"
     payload = json.loads(source_path.read_text(encoding="utf-8"))
@@ -742,10 +759,10 @@ def test_render_tooling_dashboard_allows_explicit_full_dev_live_refresh_override
         lambda **kwargs: [],
     )
 
-    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/export/index.html"])
 
     assert rc == 0
-    payload_js = _load_externalized_payload_js(tmp_path / "odylith" / "tooling-payload.v1.js")
+    payload_js = _load_externalized_payload_js(tmp_path / "odylith/export/tooling-payload.v1.js")
     live_refresh = dict(payload_js["live_refresh"])
     assert live_refresh["enabled"] is True
     assert live_refresh["policy_id"] == "full_dev"
@@ -767,6 +784,10 @@ def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switche
     assert rc == 0
     control_js = (tmp_path / "odylith" / "tooling-app.v1.js").read_text(encoding="utf-8")
     assert "const tabStateMemory =" in control_js
+    assert 'project: "Project",' in control_js
+    assert 'project: document.getElementById("tab-project")' in control_js
+    assert 'project: document.getElementById("pane-project")' in control_js
+    assert 'navigation.selectTab("project");' in control_js
     assert "function sanitizeShellState(rawState)" in control_js
     assert "function buildTabActivationState(tab)" in control_js
     assert "const hasOdylithDrawer = Boolean(" in control_js
@@ -777,11 +798,12 @@ def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switche
     assert "const welcomeReopen = document.getElementById(\"welcomeReopen\");" in control_js
     assert "const runtimeStatusReopen = document.getElementById(\"runtimeStatusReopen\");" not in control_js
     assert "const runtimeStatusKicker = document.getElementById(\"shellRuntimeStatusKicker\");" in control_js
+    assert "const runtimeStatusDetails = document.getElementById(\"shellRuntimeStatusDetails\");" in control_js
     assert "const runtimeStatusDismiss = document.getElementById(\"shellRuntimeStatusDismiss\");" in control_js
     assert "const upgradeReopen = document.getElementById(\"upgradeReopen\");" in control_js
     assert "initToolingShellCheatsheetDrawer" in control_js
     assert "const searchInput = root.querySelector(\"[data-cheatsheet-search]\");" in control_js
-    assert "const UPGRADE_SPOTLIGHT_MAX_AGE_MS = 30 * 60 * 1000;" in control_js
+    assert "const UPGRADE_SPOTLIGHT_MAX_AGE_MS = 10 * 60 * 1000;" in control_js
     assert "function resolveUpgradeSpotlightExpiryMs(rawPayload) {" in control_js
     assert "function hasUpgradeSpotlight() {" in control_js
     assert "const shouldDeferWelcomeUntilUpgradeCloses = Boolean(" in control_js
@@ -808,7 +830,13 @@ def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switche
     assert "function runtimeAutoReloadReadyForTab(tab)" in control_js
     assert "function buildRuntimeStatusFingerprint(posture) {" in control_js
     assert "const initialSurfaceRuntimeStatus = payload && payload.surface_runtime_status" in control_js
+    assert "const versionStateHref = String(payload.version_state_href || \"\").trim();" in control_js
+    assert "function buildShellVersionDriftPosture(versionState) {" in control_js
+    assert "Dashboard stale" in control_js
+    assert "odylith dashboard refresh --repo-root . --force" in control_js
+    assert "scheduleVersionStateProbe(300);" in control_js
     assert "const surfaceRuntimeStatus = runtimeState && runtimeState.surface_runtime_status" in control_js
+    assert "const shellPosture = normalizeRuntimePosture(surfaceRuntimeStatus.shell, fallbackPosture);" in control_js
     assert "const rawPosture = surfaceRuntimeStatus[currentTab];" in control_js
     assert "function mergeRuntimeStatusState(runtimeState) {" in control_js
     assert "function runtimeStatusDismissed() {" in control_js
@@ -820,12 +848,25 @@ def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switche
     assert "visible: false," in control_js
     assert "applyRuntimeStatus(latestRuntimeStatusState || {});" in control_js
     assert "applyRuntimeStatus(mergeRuntimeStatusState(payload));" in control_js
-    assert 'applyTab(buildTabActivationState("atlas"), { pushHistory: true });' in control_js
-    assert 'applyTab(buildTabActivationState("radar"), { pushHistory: true });' in control_js
+    assert 'navigation.selectTab("atlas");' in control_js
+    assert 'navigation.selectTab("radar");' in control_js
+    assert 'activate(buildTabActivationState(tab), { historyMode: "push" });' in control_js
+    assert 'function readRadarStateFromFrame' not in control_js
+    assert 'function frameAlreadyAtHref' not in control_js
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
+    assert 'id="tab-project"' in html
+    assert 'id="pane-project"' in html
+    assert "Project not defined yet" in html
+    assert "Start with the project" in html
+    assert '<section class="project-panel project-scenario">' not in html
+    assert "Current orienting work" not in html
+    assert "Who participates in" not in html
+    assert "Product scenario journey" not in html
     assert 'id="upgradeReopen"' in html
     assert 'id="runtimeStatusReopen"' not in html
     assert 'id="shellRuntimeStatusKicker"' in html
+    assert 'id="shellRuntimeStatusDetails"' in html
+    assert '<summary>Technical details</summary>' in html
     assert 'id="shellRuntimeStatusDismiss"' in html
     assert 'id="shellRecoveryDock"' in html
     assert 'id="agentCheatsheetSearch"' in html
@@ -855,7 +896,7 @@ def test_render_tooling_dashboard_hides_welcome_state_once_truth_exists(tmp_path
     assert '"show": false' in payload_js
 
 
-def test_render_tooling_dashboard_shows_compact_legacy_upgrade_notice(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_render_tooling_dashboard_does_not_show_notice_modal_once_truth_exists(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     _seed_existing_odylith_truth(tmp_path)
     _seed_legacy_consumer_launcher(tmp_path)
@@ -869,10 +910,12 @@ def test_render_tooling_dashboard_shows_compact_legacy_upgrade_notice(tmp_path: 
 
     assert rc == 0
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
-    assert "Odylith needs attention in this repository" in html
-    assert "Legacy upgrade path detected" in html
-    assert "Copy rescue install" in html
-    assert "https://odylith.ai/install.sh | bash" in html
+    payload_js = (tmp_path / "odylith" / "tooling-payload.v1.js").read_text(encoding="utf-8")
+    assert "Odylith needs attention in this repository" not in html
+    assert "Odylith Notice" not in html
+    assert "Legacy upgrade path detected" not in html
+    assert "Copy rescue install" not in html
+    assert "https://odylith.ai/install.sh | bash" in payload_js
     assert "Odylith is live in this repository" not in html
 
 
@@ -900,7 +943,11 @@ def test_render_tooling_dashboard_shows_release_spotlight_for_recent_upgrade(tmp
     assert "v1.2.2 -&gt; v1.2.3" in html
     assert "upgrade-spotlight-list" in html
     assert "Upgrade complete. v1.2.3 is live in this repo, and the full release note is ready on the right." not in html
-    assert "The shell refreshes immediately after upgrade so you stay on the current contract." not in html
+    detail = "The shell refreshes immediately after upgrade so you stay on the current contract."
+    assert html.count(detail) == 1
+    details_start = html.index('<details class="upgrade-spotlight-details">')
+    assert details_start < html.index(detail) < html.index("</details>", details_start)
+    assert '<details class="upgrade-spotlight-details" open' not in html
     assert '<p class="toolbar-version">v1.2.3</p>' in html
     assert 'id="toolbarVersionStoryLink"' not in html
     assert "What changed since v1.2.2?" not in html
@@ -1029,10 +1076,13 @@ def test_render_tooling_dashboard_release_note_prefers_highlights_over_full_body
     assert rc == 0
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
     assert "Highlight one." in html
-    assert long_paragraph not in html
+    assert html.count(long_paragraph) == 1
+    details_start = html.index('<details class="upgrade-spotlight-details">')
+    assert details_start < html.index(long_paragraph) < html.index("</details>", details_start)
+    assert '<details class="upgrade-spotlight-details" open' not in html
 
 
-def test_render_tooling_dashboard_includes_version_in_authored_release_hero_title(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_render_tooling_dashboard_preserves_version_in_authored_release_details(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     _seed_existing_odylith_truth(tmp_path)
     _seed_consumer_upgrade_spotlight(tmp_path)
@@ -1062,8 +1112,10 @@ def test_render_tooling_dashboard_includes_version_in_authored_release_hero_titl
 
     assert rc == 0
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
-    assert '<span class="upgrade-spotlight-title-copy">Trusted In Public</span>' in html
-    assert '<span class="upgrade-spotlight-title-version">v1.2.3</span>' in html
+    assert '<h2 id="upgradeSpotlightTitle" class="upgrade-spotlight-title">Trusted In Public</h2>' in html
+    assert '<details class="upgrade-spotlight-details"><summary>What changed</summary>' in html
+    assert "v1.2.2 -&gt; v1.2.3" in html
+    assert "upgrade-spotlight-title-version" not in html
 
 
 def test_render_tooling_dashboard_prunes_stale_release_note_pages(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -1318,6 +1370,53 @@ def test_render_tooling_dashboard_skips_noop_writes_when_bundle_is_unchanged(
 
     second_mtimes = {path: path.stat().st_mtime_ns for path in tracked_paths}
     assert second_mtimes == first_mtimes
+
+
+def test_render_tooling_dashboard_rebuilds_when_greenfield_project_is_accepted(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    _seed_inputs(tmp_path)
+    _seed_compass_runtime_snapshot(tmp_path, generated_utc="2026-04-07T17:06:12Z")
+    monkeypatch.setattr(
+        renderer.delivery_surface_payload_runtime,
+        "load_delivery_surface_payload",
+        lambda **kwargs: {},
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    assert rc == 0
+    first_html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
+    assert "Project not defined yet" in first_html
+
+    proposal = _authored_greenfield_fixture(tmp_path)
+    accepted_path = tmp_path / "odylith" / "runtime" / "source" / "accepted-project.v1.json"
+    accepted_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "odylith.accepted_project.v1",
+                "origin": "greenfield",
+                "evidence_tier": "user_intent",
+                "accepted_at": "2026-05-11T10:20:00-07:00",
+                "proposal": proposal,
+                "validation_gate": {"status": "passed", "visible_actors": []},
+                "created": {},
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    assert rc == 0
+    html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
+    payload_js = (tmp_path / "odylith" / "tooling-payload.v1.js").read_text(encoding="utf-8")
+
+    assert "Project overview" in html
+    assert "Accepted evidence excerpt:" in html
+    assert "Commerce Launch System" in payload_js
+    assert "Project not defined yet" not in html
 
 
 def test_render_tooling_dashboard_warns_but_renders_with_missing_child_surfaces(

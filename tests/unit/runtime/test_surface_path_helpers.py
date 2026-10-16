@@ -89,6 +89,22 @@ def test_path_link_returns_empty_href_for_missing_paths_without_opt_in(tmp_path:
     }
 
 
+def test_path_link_does_not_stat_prose_sized_tokens(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    output_path = repo_root / "odylith" / "casebook" / "casebook.html"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text("casebook\n", encoding="utf-8")
+    prose_token = " ".join(["this is governance prose and not a filesystem path"] * 40)
+
+    row = surface_path_helpers.path_link(
+        repo_root=repo_root,
+        output_path=output_path,
+        token=prose_token,
+    )
+
+    assert row == {"path": prose_token, "href": ""}
+
+
 def test_path_links_skip_whitespace_only_tokens(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     output_path = repo_root / "odylith" / "registry" / "registry.html"

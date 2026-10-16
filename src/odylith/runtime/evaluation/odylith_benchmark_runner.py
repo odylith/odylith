@@ -126,7 +126,7 @@ _FAMILY_ALIASES = {
     "odylith-discipline": "discipline",
     "odylith_discipline": "discipline",
 }
-_LOCAL_ONLY_QUICK_FAMILIES = frozenset({"guidance_behavior", "discipline"})
+_LOCAL_ONLY_QUICK_FAMILIES = frozenset({"guidance_behavior", "discipline", "execution_engine"})
 _MIN_BENCHMARK_RUNTIME_FREE_BYTES = 256 * 1024 * 1024
 _VALID_PACKET_SOURCES = frozenset({"adaptive", "impact", "governance_slice", "session_brief", "bootstrap_session"})
 _ANALYSIS_FAMILIES = frozenset({"analysis", "architecture", "broad_shared_scope"})
@@ -359,6 +359,7 @@ _BENCHMARK_RUNTIME_TEMP_DIRECTORY_PREFIXES: tuple[str, ...] = (
     _BENCHMARK_LIVE_WORKTREE_MARKER,
     "odylith-benchmark-codex-",
     "odylith-benchmark-codex-home-",
+    "odylith-benchmark-host-",
 )
 _VALIDATION_COMPANION_FILE_SUFFIXES = frozenset(
     {
@@ -1749,7 +1750,7 @@ def _prune_stale_benchmark_progress(*, repo_root: Path, clear_shared_progress: b
     shared_running = bool(isinstance(shared_payload, Mapping) and str(shared_payload.get("status", "")).strip() == "running")
     shared_stale = bool(
         clear_shared_progress
-        or (shared_running and shared_pid > 0 and not _process_exists(shared_pid) and not active_runtime_present)
+        or (shared_running and shared_pid > 0 and not _process_exists(shared_pid))
         or (shared_running and shared_pid <= 0 and not active_runtime_present)
     )
     if shared_stale and isinstance(shared_payload, Mapping) and not _history_report_exists_for_progress(repo_root=root, progress=shared_payload):

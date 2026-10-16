@@ -67,3 +67,27 @@ def test_customer_bootstrap_guidance_carries_live_proof_claim_gate() -> None:
     assert "Hook `systemMessage` or `additionalContext` generation is not proof of chat-visible UX" in guidance
     assert "reports `Activation: ready` and a chat-visibility line is confirmed" in guidance
     assert "Treat recorded-only and waiting-for-chat states as partial proof" in guidance
+    assert "then seals ProductCreateTransaction" in guidance
+    assert "greenfield prepare --repo-root ." in guidance
+    assert "authority gate, source-duty inventory, source-only verifier, and one candidate" in guidance
+    assert "Clarification: show one question and stop; no candidate or transaction" in guidance
+    assert "No full-candidate reviewer, parser/regex, repair, retry, fallback or model ladder" in guidance
+    assert "660s diagnostic parent" in guidance
+    assert "Chat/hooks cannot authorize create" in guidance
+    assert "odylith greenfield decide" in guidance
+    assert "CONFIRM/REJECT remain model-free" in guidance
+    assert "For EDIT, `odylith greenfield prepare --transaction-hash HASH --completion-receipt PATH" in guidance
+    assert "old/equal seals retain their original receipt" in guidance
+    assert "stored digest/diagnostic records cannot authorize" in guidance
+    assert "lost receipts cannot be reissued" in guidance
+    assert "verifies receipt, hash, and preconditions" in guidance
+    assert "without model, generation, or repair" in guidance
+    assert "Markdown is view, not truth" in guidance
+    assert "90/120/150s advisory" in guidance
+    assert "Standard shares 300s gate/candidate plus 15s completion" in guidance
+    assert "confirmed-intent.json" not in guidance
+    assert "greenfield compile-transaction" not in guidance
+    assert "ProductCreateTransaction" in guidance
+    assert "--transaction-file" in guidance
+    assert "--transaction-hash" in guidance
+    assert "rollback guard" in guidance

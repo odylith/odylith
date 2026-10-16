@@ -1,4 +1,4 @@
-%% Reviewed 2026-04-17 for v0.1.11 to align the Execution Engine with Context Engine handshake v1, host parity, shared snapshot reuse, visible interventions, and accuracy-first benchmark proof.
+%% Reviewed 2026-09-15: preserve the host-portable execution contract while updating current Codex role defaults.
 flowchart LR
     Truth["Repo truth<br/>Radar + Plans + Registry + Casebook + Atlas"] --> Context["Context Engine<br/>grounded packets + entity context"]
     Context --> Handshake["Handshake v1<br/>canonical execution-engine identity<br/>packet kind + packet quality<br/>turn context + target resolution<br/>presentation policy + route readiness"]
@@ -11,7 +11,7 @@ flowchart LR
 
     subgraph Engine["Execution Engine"]
         Host --> Policy["Admissibility Policy<br/>admit / deny / defer"]
-        Host --> Ladder["Runtime Profile Ladder<br/>(host_family, profile) &rarr; (model, reasoning_effort)<br/>Codex: gpt-5.4-mini / spark / codex / gpt-5.4<br/>Claude: haiku / sonnet / opus"]
+        Host --> Ladder["Runtime Profile Ladder<br/>(host_family, profile) &rarr; (model, reasoning_effort)<br/>Codex: Luna / Spark / Terra / Sol<br/>Claude: Haiku / Sonnet / Opus"]
         Contract --> Policy
         Policy --> Frontier
         Frontier --> Closure["Resource Closure<br/>safe / incomplete / destructive"]

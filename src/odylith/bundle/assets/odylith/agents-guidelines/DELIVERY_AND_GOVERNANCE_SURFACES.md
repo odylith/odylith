@@ -7,6 +7,12 @@
 - Surface updates should be driven from grounded packet output, not freehand heuristics.
 - The right goal is truthful closeout with less operator effort, not more narration.
 - If a surface lacks enough evidence, keep the fail-closed posture and ask the operator to widen.
+- Human-visible governance copy must be simple, grammatical, and directly
+  useful before it is clever or voiceful. Radar, Registry, Atlas, Compass,
+  Casebook, technical plans, release notes, prompts, and CLI messages must
+  explain the work, boundary, evidence, risk, and next action in human terms;
+  surface names, IDs, lifecycle states, and internal control-plane terms cannot
+  stand in for that explanation.
 
 ## Source Contracts
 - Use the local source contracts under `odylith/` as the operational authority for their surfaces:
@@ -32,6 +38,36 @@
 - Treat this as the default for substantive grounded repo work when the slice is repo-owned or maintainer-authorized Odylith work.
 - Do not wait for explicit bookkeeping instructions before checking Radar, technical plans, Registry, Atlas, Casebook, Compass, and session context.
 - Start by searching for the existing workstream, active plan, related bugs, related components, related diagrams, and recent Compass or session context for the slice.
+- Governance-learning is fail-closed across maintainer, pinned dogfood,
+  detached `source-local`, installed consumer repos, Codex, Claude Code, and
+  bundled/generated guidance. Every durable error, escaped defect, failed
+  mechanism, failed simulation, live repro, bad generated artifact, semantic drift,
+  quality-gate failure, latency breach, architecture decision, validation
+  result, or release-risk learning must update the appropriate governed
+  artifact before the agent continues, commits, builds, releases, or claims
+  completion.
+- Route that learning by artifact ownership: Casebook for escaped defects,
+  regressions, failed simulations, live repros, validator misses, and
+  quality-gate false positives or false negatives; Radar or technical plans
+  for planned fixes, rearchitecture scope, recurring failure classes, and
+  release-risk work; Registry for changed component contracts, semantic
+  compiler paths, repair loops, validators, renderers, host integrations, and
+  release installers; Atlas for changed flows, topology, post-confirm paths,
+  repair loops, governance-write paths, host lanes, or projection boundaries;
+  Compass for important execution decisions, proof checkpoints, failed
+  simulation classes, validation results, release posture, and stable
+  checkpoints.
+- Search existing governance truth first and update, reopen, or consolidate it
+  when appropriate. Avoid duplicate Casebook bugs, use Odylith CLI paths where
+  they exist, and never treat chat memory, final-answer summaries, or local
+  notes as durable governance truth.
+- Before fixing a bug, search the existing Casebook database and the related
+  Radar, technical-plan, Registry, Atlas, and Compass records. Read prior
+  failed mechanisms, failed fix attempts, rejected approaches, guardrails, and
+  validation history before editing. Do not repeat a fix path that the
+  governed record already says failed; update the record with the new
+  hypothesis and mechanism-level learning instead so Odylith learns
+  cumulatively from every iteration.
 - Extend, consolidate, or reopen existing truth before creating parallel records; in consumer Odylith-fix requests, use that evidence to hand off instead of mutating Odylith truth.
 - If no matching workstream exists and the slice is repo-owned or maintainer-authorized Odylith work, create one and bind a plan before continuing non-trivial implementation; otherwise capture the missing workstream, plan, or bug as maintainer-ready feedback.
 - If the slice is genuinely multi-lane or umbrella-shaped, add child workstreams or execution waves instead of hiding separate streams inside one backlog note.
@@ -147,6 +183,9 @@
   - `odylith/radar/source/releases/release-assignment-events.v1.jsonl`
 - `release_id` is the immutable source key. `version`, `tag`, and `name` are optional metadata. `current` and `next` are explicit aliases owned by source truth, not inferred from semver or dates.
 - One workstream may have at most one active target release at a time. Carry-forward belongs in append-only `move` history or explicit child workstreams, not simultaneous active multi-release membership.
+- Changing a release alias is not a bulk retarget operation. Preserve older
+  release membership and move only explicit workstream ids that are genuinely
+  part of the current release slice.
 - Use the release authoring CLI instead of inventing prose-only release ownership:
   - `odylith release list`
   - `odylith release show current`

@@ -367,6 +367,8 @@ def _memory_summary_is_material(memory: Mapping[str, Any]) -> bool:
     return bool(
         memory.get("visibility_complaint")
         or _int(memory.get("recent_event_count")) > 0
+        or _int(memory.get("pending_summary_count")) > 0
+        or bool(memory.get("pending_memory_error"))
         or any(_string_list(memory.get(key), limit=1) for key in _LIST_MEMORY_KEYS)
     )
 

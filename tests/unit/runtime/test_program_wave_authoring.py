@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from odylith.runtime.governance import program_wave_authoring
 
 
@@ -26,6 +28,17 @@ _SECTIONS = (
     "Test Strategy",
     "Open Questions",
 )
+
+
+@pytest.fixture(autouse=True)
+def refresh_calls(monkeypatch) -> list[dict[str, object]]:  # noqa: ANN001
+    calls: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        program_wave_authoring.owned_surface_refresh,
+        "raise_for_failed_refreshes",
+        lambda **kwargs: calls.append(dict(kwargs)),
+    )
+    return calls
 
 
 def _idea_text(
@@ -159,7 +172,10 @@ def _seed_program_repo(repo_root: Path) -> None:
     _write_plan(repo_root / child_two_plan)
 
 
-def test_program_create_scaffolds_program_and_updates_execution_model(tmp_path: Path) -> None:
+def test_program_create_scaffolds_program_and_updates_execution_model(
+    tmp_path: Path,
+    refresh_calls: list[dict[str, object]],
+) -> None:
     _seed_program_repo(tmp_path)
 
     rc = program_wave_authoring.run_program(["--repo-root", str(tmp_path), "create", "B-201"])
@@ -178,6 +194,13 @@ def test_program_create_scaffolds_program_and_updates_execution_model(tmp_path: 
     assert payload["waves"][0]["status"] == "active"
     assert payload["waves"][0]["primary_workstreams"] == ["B-202"]
     assert payload["waves"][1]["depends_on"] == ["W1"]
+    assert refresh_calls == [
+        {
+            "repo_root": tmp_path.resolve(),
+            "surfaces": ("radar", "compass"),
+            "operation_label": "Program create",
+        }
+    ]
 
 
 def test_program_update_accepts_legacy_key_value_idea_header(tmp_path: Path) -> None:
@@ -243,9 +266,13 @@ def test_program_status_and_next_fail_closed_when_program_file_is_missing(
     assert next_payload["next_command"] == "odylith program create B-201"
 
 
-def test_wave_assign_and_gate_add_round_trip_program_file(tmp_path: Path) -> None:
+def test_wave_assign_and_gate_add_round_trip_program_file(
+    tmp_path: Path,
+    refresh_calls: list[dict[str, object]],
+) -> None:
     _seed_program_repo(tmp_path)
     assert program_wave_authoring.run_program(["--repo-root", str(tmp_path), "create", "B-201"]) == 0
+    refresh_calls.clear()
 
     assert program_wave_authoring.run_wave(["--repo-root", str(tmp_path), "unassign", "B-201", "W2", "B-203"]) == 0
     assert (
@@ -284,6 +311,12 @@ def test_wave_assign_and_gate_add_round_trip_program_file(tmp_path: Path) -> Non
             "label": "Policy middleware gate",
         }
     ]
+    assert [call["operation_label"] for call in refresh_calls] == [
+        "Wave unassign",
+        "Wave assign",
+        "Wave gate-add",
+    ]
+    assert all(call["surfaces"] == ("radar", "compass") for call in refresh_calls)
 
 
 def test_program_status_reports_active_missing_gate_workstreams(
@@ -314,9 +347,61 @@ def test_wave_assign_rejects_non_child_workstream(tmp_path: Path, capsys) -> Non
 
     assert rc == 2
     output = capsys.readouterr().out
-    assert "action `mutate_wave_assign` is `deny`" in output
-    assert "violated precondition: required_scope:HC-authoritative-governed-scope" in output
-    assert "nearest admissible alternative: odylith program status B-201" in output
+    assert "`B-299` belongs to `B-999`, not umbrella `B-201`" in output
+    assert "choose a workstream already listed in the umbrella's `workstream_children`" in output
+
+
+def test_program_adopt_sets_reciprocal_parent_links(tmp_path: Path) -> None:
+    _seed_program_repo(tmp_path)
+    ideas_root = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04"
+    ideas_root.joinpath("2026-04-09-b-204.md").write_text(
+        _idea_text(
+            idea_id="B-204",
+            title="Orphan child candidate",
+            workstream_type="standalone",
+            workstream_parent="",
+        ),
+        encoding="utf-8",
+    )
+
+    rc = program_wave_authoring.run_program(["--repo-root", str(tmp_path), "adopt", "B-201", "B-204"])
+
+    assert rc == 0
+    umbrella_text = ideas_root.joinpath("2026-04-09-b-201.md").read_text(encoding="utf-8")
+    child_text = ideas_root.joinpath("2026-04-09-b-204.md").read_text(encoding="utf-8")
+    assert "workstream_children: B-202, B-203, B-204" in umbrella_text
+    assert "workstream_type: child" in child_text
+    assert "workstream_parent: B-201" in child_text
+
+
+def test_wave_assign_adopt_closes_orphan_child_loop(tmp_path: Path) -> None:
+    _seed_program_repo(tmp_path)
+    assert program_wave_authoring.run_program(["--repo-root", str(tmp_path), "create", "B-201"]) == 0
+    ideas_root = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04"
+    ideas_root.joinpath("2026-04-09-b-204.md").write_text(
+        _idea_text(
+            idea_id="B-204",
+            title="Orphan child candidate",
+            workstream_type="standalone",
+            workstream_parent="",
+        ),
+        encoding="utf-8",
+    )
+
+    rc = program_wave_authoring.run_wave(
+        ["--repo-root", str(tmp_path), "assign", "B-201", "W1", "B-204", "--role", "primary", "--adopt"]
+    )
+
+    assert rc == 0
+    payload = json.loads(
+        (tmp_path / "odylith" / "radar" / "source" / "programs" / "B-201.execution-waves.v1.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    wave_one = next(wave for wave in payload["waves"] if wave["wave_id"] == "W1")
+    assert "B-204" in wave_one["primary_workstreams"]
+    umbrella_text = ideas_root.joinpath("2026-04-09-b-201.md").read_text(encoding="utf-8")
+    assert "workstream_children: B-202, B-203, B-204" in umbrella_text
 
 
 def test_program_update_defers_activation_until_dependencies_are_complete(

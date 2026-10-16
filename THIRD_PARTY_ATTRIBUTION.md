@@ -12,8 +12,8 @@ Do not hand-edit it; rerun the generator when the runtime dependency closure or 
 ## Current Status
 
 - Result: no disallowed or commercial/proprietary licenses detected in the current audited runtime closure.
-- Direct runtime dependencies: 6
-- Transitive runtime dependencies: 47
+- Direct runtime dependencies: 7
+- Transitive runtime dependencies: 46
 - Bundled runtime artifacts: 2
 - Allowed license families in the current policy: 0BSD, Apache-2.0, BSD, BSD-2-Clause, BSD-3-Clause, CC0-1.0, ISC, MIT, MPL-2.0, PSF-2.0, Unlicense, Zlib.
 - Explicitly blocked families include: GPL/AGPL/LGPL, SSPL, BUSL/Business Source, PolyForm, Elastic License, and commercial/proprietary terms.
@@ -32,6 +32,7 @@ Do not hand-edit it; rerun the generator when the runtime dependency closure or 
 | `httpx` | `0.28.1` | `BSD-3-Clause` | [project](https://github.com/encode/httpx) | `metadata:License` |
 | `Jinja2` | `3.1.6` | `BSD-3-Clause` | [project](https://github.com/pallets/jinja/) | `metadata:License-File` |
 | `lancedb` | `0.30.0` | `Apache-2.0` | [project](https://github.com/lancedb/lancedb) | `metadata:Classifier` |
+| `markdown-it-py` | `4.0.0` | `MIT` | [project](https://github.com/executablebooks/markdown-it-py) | `metadata:Classifier` |
 | `sigstore` | `3.6.7` | `Apache-2.0` | [project](https://github.com/sigstore/sigstore-python) | `metadata:Classifier` |
 | `tantivy` | `0.25.1` | `MIT` | [project](https://github.com/quickwit-oss/tantivy-py) | `metadata:License-File` |
 | `watchdog` | `6.0.0` | `Apache-2.0` | [project](https://github.com/gorakhargosh/watchdog/) | `policy:platform-union-override` |
@@ -58,7 +59,6 @@ Do not hand-edit it; rerun the generator when the runtime dependency closure or 
 | `idna` | `3.11` | `BSD-3-Clause` | [project](https://github.com/kjd/idna) | `metadata:License-Expression` |
 | `lance-namespace` | `0.6.1` | `Apache-2.0` | [project](https://github.com/lance-format/lance-namespace) | `metadata:License` |
 | `lance-namespace-urllib3-client` | `0.6.1` | `Apache-2.0` | [project](https://github.com/lance-format/lance-namespace) | `metadata:License` |
-| `markdown-it-py` | `4.0.0` | `MIT` | [project](https://github.com/executablebooks/markdown-it-py) | `metadata:Classifier` |
 | `MarkupSafe` | `3.0.3` | `BSD-3-Clause` | [project](https://github.com/pallets/markupsafe/) | `metadata:License-Expression` |
 | `mdurl` | `0.1.2` | `MIT` | [project](https://github.com/executablebooks/mdurl) | `metadata:Classifier` |
 | `multidict` | `6.7.1` | `Apache-2.0` | [project](https://github.com/aio-libs/multidict) | `metadata:License` |

@@ -1,10 +1,15 @@
+import os
 from pathlib import Path
 import time
 from types import SimpleNamespace
 
 from odylith.runtime.context_engine import odylith_context_engine
 from odylith.runtime.governance import agent_governance_intelligence as governance
+from odylith.runtime.governance import dashboard_refresh_contract
+from odylith.runtime.governance import sync_generated_outputs
 from odylith.runtime.governance import sync_session
+from odylith.runtime.governance import sync_surface_render_batch
+from odylith.runtime.governance import sync_command_execution
 from odylith.runtime.governance import sync_workstream_artifacts
 from odylith.runtime.surfaces import compass_dashboard_runtime
 from odylith.runtime.surfaces import render_backlog_ui
@@ -256,33 +261,6 @@ def test_context_engine_defaults_to_current_runtime_without_workspace_opt_in(tmp
     assert Path(preferred).resolve() == Path(odylith_context_engine.sys.executable).resolve()
 
 
-def test_run_command_absolutizes_pythonpath_for_cross_repo_sync(tmp_path: Path, monkeypatch) -> None:
-    commands: dict[str, object] = {}
-
-    def _fake_run(args, cwd, env, check):  # noqa: ANN001
-        commands["args"] = list(args)
-        commands["cwd"] = cwd
-        commands["env"] = dict(env)
-        commands["check"] = check
-
-        class _Completed:
-            returncode = 0
-
-        return _Completed()
-
-    monkeypatch.setenv("PYTHONPATH", "src")
-    monkeypatch.setattr(sync_workstream_artifacts.subprocess, "run", _fake_run)
-
-    rc = sync_workstream_artifacts._run_command(  # noqa: SLF001
-        repo_root=tmp_path,
-        args=("python", "-m", "odylith.runtime.governance.normalize_plan_risk_mitigation", "--repo-root", str(tmp_path)),
-    )
-
-    assert rc == 0
-    assert commands["args"][0] == sync_workstream_artifacts.sys.executable
-    assert commands["cwd"] == str(tmp_path)
-    assert commands["check"] is False
-    assert commands["env"]["PYTHONPATH"] == str((Path.cwd() / "src").resolve())
 
 
 def test_run_callable_with_heartbeat_preserves_active_sync_session(tmp_path: Path) -> None:
@@ -524,7 +502,7 @@ def test_force_sync_runs_component_spec_requirements_after_atlas_mutations(tmp_p
                 "unlinked_meaningful_event_count": 0,
             }
 
-    def _fake_run_command(*, repo_root: Path, args: tuple[str, ...], heartbeat_label: str = "") -> int:  # noqa: ARG001
+    def _fake_run_command(*, repo_root: Path, args: tuple[str, ...], heartbeat_label: str = "", **_: object) -> int:  # noqa: ARG001
         executed.append(tuple(args))
         return 0
 
@@ -544,7 +522,7 @@ def test_force_sync_runs_component_spec_requirements_after_atlas_mutations(tmp_p
         "collect_meaningful_activity_evidence",
         lambda **_: _Meaningful(),
     )
-    monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
+    monkeypatch.setattr(sync_command_execution, "run_command", _fake_run_command)
 
     rc = sync_workstream_artifacts.main(["--repo-root", str(tmp_path), "--force"])
 
@@ -573,7 +551,7 @@ def test_force_sync_reruns_final_component_spec_refresh_after_generated_surfaces
                 "unlinked_meaningful_event_count": 0,
             }
 
-    def _fake_run_command(*, repo_root: Path, args: tuple[str, ...], heartbeat_label: str = "") -> int:  # noqa: ARG001
+    def _fake_run_command(*, repo_root: Path, args: tuple[str, ...], heartbeat_label: str = "", **_: object) -> int:  # noqa: ARG001
         executed.append(tuple(args))
         return 0
 
@@ -593,7 +571,7 @@ def test_force_sync_reruns_final_component_spec_refresh_after_generated_surfaces
         "collect_meaningful_activity_evidence",
         lambda **_: _Meaningful(),
     )
-    monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
+    monkeypatch.setattr(sync_command_execution, "run_command", _fake_run_command)
 
     rc = sync_workstream_artifacts.main(["--repo-root", str(tmp_path), "--force"])
 
@@ -641,30 +619,61 @@ def test_build_sync_execution_plan_defers_runtime_backed_renders_until_after_del
         runtime_mode="auto",
     )
 
-    modules = [
-        command[2]
-        for step in plan.steps
-        if step.command is not None and len(step.command) >= 3 and step.command[:2] == ("python", "-m")
-        for command in (step.command,)
-    ]
-    atlas_update_index = modules.index("odylith.runtime.surfaces.auto_update_mermaid_diagrams")
-    atlas_render_index = modules.index("odylith.runtime.surfaces.render_mermaid_catalog_refresh")
-    registry_sync_index = modules.index("odylith.runtime.governance.sync_component_spec_requirements")
-    delivery_index = modules.index("odylith.runtime.governance.delivery_intelligence_refresh")
-    compass_index = modules.index("odylith.runtime.surfaces.render_compass_dashboard")
-    radar_index = modules.index("odylith.runtime.surfaces.render_backlog_ui")
-    registry_render_index = modules.index("odylith.runtime.surfaces.render_registry_dashboard")
-    casebook_render_index = modules.index("odylith.runtime.surfaces.render_casebook_dashboard")
-    tooling_render_index = modules.index("odylith.runtime.surfaces.render_tooling_dashboard")
+    module_step_indexes: dict[str, int] = {}
+    for index, step in enumerate(plan.steps):
+        if step.command is not None and len(step.command) >= 3 and step.command[:2] == ("python", "-m"):
+            module_step_indexes.setdefault(step.command[2], index)
+    labels = [step.label for step in plan.steps]
+    batch_index = labels.index("Render selected dashboard surfaces in a bounded batch after Atlas/Registry truth settles.")
+    batch_step = plan.steps[batch_index]
 
-    assert atlas_update_index < atlas_render_index
-    assert atlas_render_index < registry_sync_index
-    assert registry_sync_index < delivery_index
-    assert delivery_index < compass_index
-    assert compass_index < radar_index
-    assert radar_index < registry_render_index
-    assert registry_render_index < casebook_render_index
-    assert casebook_render_index < tooling_render_index
+    assert module_step_indexes["odylith.runtime.surfaces.auto_update_mermaid_diagrams"] < module_step_indexes[
+        "odylith.runtime.surfaces.render_mermaid_catalog_refresh"
+    ]
+    assert module_step_indexes["odylith.runtime.surfaces.render_mermaid_catalog_refresh"] < module_step_indexes[
+        "odylith.runtime.governance.sync_component_spec_requirements"
+    ]
+    assert module_step_indexes["odylith.runtime.governance.sync_component_spec_requirements"] < module_step_indexes[
+        "odylith.runtime.governance.delivery_intelligence_refresh"
+    ]
+    assert module_step_indexes["odylith.runtime.governance.delivery_intelligence_refresh"] < batch_index
+    assert batch_step.action is not None
+    for surface in ("compass", "radar", "registry", "casebook", "tooling_shell"):
+        for output in sync_generated_outputs.surface_render_outputs(surface, repo_root=tmp_path):
+            assert output in batch_step.paths
+
+
+def test_sync_surface_batch_parallelizes_child_surfaces_and_renders_shell_last(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    calls: list[tuple[str, tuple[str, ...]]] = []
+
+    def _fake_parallel(**kwargs) -> list[dict[str, object]]:
+        selected = tuple(kwargs["selected"])
+        calls.append(("parallel", selected))
+        return [{"surface": surface, "status": "passed", "rc": 0} for surface in selected]
+
+    def _fake_worker(**kwargs) -> tuple[str, dict[str, object]]:
+        surface = str(kwargs["surface"])
+        calls.append(("single", (surface,)))
+        return "", {"surface": surface, "status": "passed", "rc": 0}
+
+    monkeypatch.setattr(sync_surface_render_batch, "_refresh_sync_surfaces_parallel", _fake_parallel)
+    monkeypatch.setattr(sync_surface_render_batch, "_run_sync_surface_worker", _fake_worker)
+
+    rc = sync_workstream_artifacts._run_sync_surface_render_batch(  # noqa: SLF001
+        repo_root=tmp_path,
+        surfaces=("compass", "radar", "registry", "casebook", "tooling_shell"),
+        runtime_mode="auto",
+    )
+
+    assert rc == 0
+    assert calls == [
+        ("single", ("compass",)),
+        ("parallel", ("radar", "registry", "casebook")),
+        ("single", ("tooling_shell",)),
+    ]
 
 
 def test_check_only_sync_skips_runtime_fast_path_and_warmup(tmp_path: Path, monkeypatch) -> None:
@@ -702,7 +711,7 @@ def test_check_only_sync_skips_runtime_fast_path_and_warmup(tmp_path: Path, monk
         "collect_meaningful_activity_evidence",
         lambda **_: _Meaningful(),
     )
-    monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
+    monkeypatch.setattr(sync_command_execution, "run_command", _fake_run_command)
     monkeypatch.setattr(
         sync_workstream_artifacts,
         "odylith_context_engine_store",
@@ -805,7 +814,7 @@ def test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh(tm
         return 0
 
     monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
-    monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
+    monkeypatch.setattr(sync_command_execution, "run_command", _fake_run_command)
     monkeypatch.setattr(
         sync_workstream_artifacts.compass_dashboard_refresh_inputs.compass_refresh_runtime,
         "run_refresh",
@@ -849,6 +858,37 @@ def test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh(tm
     assert "odylith.runtime.surfaces.render_registry_dashboard" not in modules
 
 
+def test_dashboard_refresh_runs_atlas_sync_after_mutating_surfaces(tmp_path: Path, monkeypatch) -> None:
+    calls: list[tuple[str, tuple[str, ...]]] = []
+
+    def _fake_parallel(**kwargs) -> list[dict[str, object]]:  # noqa: ANN003
+        selected = tuple(str(surface) for surface in kwargs["selected"])
+        calls.append(("parallel", selected))
+        return [{"surface": surface, "status": "passed", "fallback_used": False} for surface in selected]
+
+    def _fake_single(**kwargs) -> tuple[str, dict[str, object]]:  # noqa: ANN003
+        surface = str(kwargs["surface"])
+        calls.append(("single", (surface,)))
+        return "", {"surface": surface, "status": "passed", "fallback_used": False}
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_refresh_surfaces_parallel", _fake_parallel)
+    monkeypatch.setattr(sync_workstream_artifacts, "_run_surface_worker", _fake_single)
+
+    rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
+        repo_root=tmp_path,
+        surfaces=("radar", "registry", "atlas", "compass", "tooling_shell"),
+        runtime_mode="auto",
+        atlas_sync=True,
+    )
+
+    assert rc == 0
+    assert calls == [
+        ("parallel", ("radar", "registry", "compass")),
+        ("single", ("atlas",)),
+        ("single", ("tooling_shell",)),
+    ]
+
+
 def test_dashboard_refresh_bootstraps_upgrade_residue_before_shell_render(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001
@@ -883,7 +923,7 @@ def test_dashboard_refresh_bootstraps_upgrade_residue_before_shell_render(
         }
 
     monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
-    monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
+    monkeypatch.setattr(sync_command_execution, "run_command", _fake_run_command)
     monkeypatch.setattr(sync_workstream_artifacts.compass_dashboard_refresh_inputs.compass_refresh_runtime, "run_refresh", _fake_compass_refresh)
     monkeypatch.setattr(
         render_tooling_dashboard.delivery_surface_payload_runtime,
@@ -906,7 +946,7 @@ def test_dashboard_refresh_bootstraps_upgrade_residue_before_shell_render(
     assert not (repo_root / "odylith" / "atlas" / "atlas.html").exists()
 
 
-def test_dashboard_refresh_casebook_migrates_bug_ids_during_refresh(tmp_path: Path, monkeypatch) -> None:
+def test_dashboard_refresh_casebook_normalizes_index_before_render(tmp_path: Path, monkeypatch) -> None:
     executed: list[tuple[str, ...]] = []
     casebook_sync_calls: list[bool] = []
 
@@ -925,7 +965,7 @@ def test_dashboard_refresh_casebook_migrates_bug_ids_during_refresh(tmp_path: Pa
         return repo_root / "odylith" / "casebook" / "bugs" / "INDEX.md"
 
     monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
-    monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
+    monkeypatch.setattr(sync_command_execution, "run_command", _fake_run_command)
     monkeypatch.setattr(
         sync_workstream_artifacts.sync_casebook_bug_index,
         "sync_casebook_bug_index",
@@ -965,8 +1005,8 @@ def test_dashboard_refresh_uses_in_process_runtime_for_single_surface_fast_path(
     monkeypatch.setattr(sync_workstream_artifacts, "_runtime_fast_path_prerequisites_met", lambda _repo_root: True)
     monkeypatch.setattr(sync_workstream_artifacts, "_run_command_in_process", _fake_run_command_in_process)
     monkeypatch.setattr(
-        sync_workstream_artifacts,
-        "_run_command",
+        sync_command_execution,
+        "run_command",
         lambda **kwargs: (_ for _ in ()).throw(AssertionError("single-surface fast path should not shell out")),
     )
 
@@ -1002,8 +1042,8 @@ def test_dashboard_refresh_reuses_fingerprint_when_surface_is_unchanged(
         ),
     )
     monkeypatch.setattr(
-        sync_workstream_artifacts,
-        "_run_command",
+        sync_command_execution,
+        "run_command",
         lambda **kwargs: (_ for _ in ()).throw(AssertionError("unchanged surface should not rerender")),
     )
 
@@ -1022,8 +1062,8 @@ def test_dashboard_refresh_reuses_fingerprint_when_surface_is_unchanged(
 def test_dashboard_refresh_dry_run_accepts_shell_alias_without_running_commands(tmp_path: Path, monkeypatch, capsys) -> None:
     monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
     monkeypatch.setattr(
-        sync_workstream_artifacts,
-        "_run_command",
+        sync_command_execution,
+        "run_command",
         lambda **kwargs: (_ for _ in ()).throw(AssertionError("dashboard refresh should not execute commands during --dry-run")),
     )
 
@@ -1038,6 +1078,68 @@ def test_dashboard_refresh_dry_run_accepts_shell_alias_without_running_commands(
     assert rc == 0
     assert "dashboard refresh dry-run" in output
     assert "tooling_shell" in output
+
+
+def test_dashboard_refresh_force_bypasses_generated_refresh_guard(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
+
+    def fake_worker(**kwargs):  # noqa: ANN003
+        assert os.environ.get("ODYLITH_SYNC_SKIP_GENERATED_REFRESH_GUARD") == "1"
+        return "", {"surface": kwargs["surface"], "status": "passed"}
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_run_surface_worker", fake_worker)
+
+    rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
+        repo_root=tmp_path,
+        surfaces=("registry",),
+        runtime_mode="auto",
+        force=True,
+    )
+
+    assert rc == 0
+    assert os.environ.get("ODYLITH_SYNC_SKIP_GENERATED_REFRESH_GUARD") is None
+
+
+def test_dashboard_refresh_force_bypasses_surface_fingerprint_reuse(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    executed: list[tuple[str, ...]] = []
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
+    monkeypatch.setattr(
+        sync_workstream_artifacts.surface_refresh_fingerprint_dag,
+        "can_reuse_surface_refresh",
+        lambda **_: (True, {"reason": "fixture cache hit"}),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts.surface_refresh_fingerprint_dag,
+        "record_surface_refresh",
+        lambda **_: None,
+    )
+
+    def fake_run_command(*, repo_root: Path, args: tuple[str, ...], heartbeat_label: str = "", **_: object) -> int:  # noqa: ARG001
+        executed.append(tuple(args))
+        return 0
+
+    monkeypatch.setattr(sync_command_execution, "run_command", fake_run_command)
+
+    rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
+        repo_root=tmp_path,
+        surfaces=("registry",),
+        runtime_mode="standalone",
+        force=True,
+    )
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert executed
+    assert "fingerprint reuse" not in output
+    assert "Render Registry without re-running broader governance reconciliation." in output
 
 
 def test_dashboard_refresh_normalizes_legacy_radar_source_before_render(
@@ -1064,7 +1166,7 @@ def test_dashboard_refresh_normalizes_legacy_radar_source_before_render(
         render_seen["called"] = True
         return 0
 
-    monkeypatch.setattr(sync_workstream_artifacts, "_run_command", fake_run_command)
+    monkeypatch.setattr(sync_command_execution, "run_command", fake_run_command)
 
     rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
         repo_root=repo_root,
@@ -1321,6 +1423,7 @@ def test_build_sync_execution_plan_appends_source_bundle_mirror_step(tmp_path: P
     ]
     assert len(mirror_steps) == 1
     assert mirror_steps[0].action is not None
+    assert {"odylith/AGENTS.md", "odylith/README.md", "odylith/SECURITY_POSTURE.md"} <= set(mirror_steps[0].paths)
 
 
 def test_build_sync_execution_plan_runs_final_registry_reconcile_after_bundle_mirror(tmp_path: Path) -> None:
@@ -1390,8 +1493,12 @@ def test_build_sync_execution_plan_uses_owned_surface_selective_lane_for_governa
 
     assert plan.headline == "Sync only the governed truth for the explicit selective slice in `standalone` mode."
     assert "Normalize legacy Radar backlog sections for the touched selective slice before validation." in labels
-    assert "Normalize and validate Casebook bugs before rerendering the Casebook dashboard." in labels
-    assert "Render Casebook for the updated bug index." in labels
+    index_label = "Validate Casebook source and refresh its index before selected readers."
+    render_label = "Render Casebook from validated source."
+    assert index_label in labels
+    assert render_label in labels
+    assert labels.index(index_label) < labels.index(render_label)
+    assert plan.steps[labels.index(index_label)].paths == ("odylith/casebook/bugs/INDEX.md",)
     assert "Render Radar without widening into the full governance sync pipeline." in labels
     assert "Render Registry without re-running broader governance reconciliation." in labels
     assert "Mirror the touched source-truth docs into the shipped bundle asset tree." not in labels
@@ -1471,10 +1578,16 @@ def test_build_sync_execution_plan_refreshes_atlas_for_catalog_only_selective_sl
     )
 
     labels = [step.label for step in plan.steps]
+    atlas_auto_update_step = next(
+        step
+        for step in plan.steps
+        if step.label == "Refresh stale Atlas Mermaid diagrams before rerendering the Atlas surface."
+    )
 
     assert "Refresh stale Atlas Mermaid diagrams before rerendering the Atlas surface." in labels
     assert "Render Atlas from the current Mermaid catalog state." in labels
     assert "Render the top-level Odylith shell after the selected surfaces settle." not in labels
+    assert atlas_auto_update_step.timeout_seconds == dashboard_refresh_contract.DEFAULT_ATLAS_REFRESH_TIMEOUT_SECONDS
 
 
 def test_build_sync_execution_plan_validates_radar_for_backlog_only_selective_slice(tmp_path: Path) -> None:
@@ -1506,6 +1619,47 @@ def test_build_sync_execution_plan_validates_radar_for_backlog_only_selective_sl
 
     assert "Normalize legacy Radar backlog sections for the touched selective slice before validation." in labels
     assert "Validate Radar backlog contract for the touched selective slice." in labels
+    assert "Refresh Radar traceability graph when governed source truth changed." in labels
+    assert "Render Radar without widening into the full governance sync pipeline." in labels
+
+
+def test_release_assignment_events_are_sync_relevant_and_refresh_traceability(tmp_path: Path) -> None:
+    changed_path = "odylith/radar/source/releases/release-assignment-events.v1.jsonl"
+
+    assert sync_workstream_artifacts._requires_sync(  # noqa: SLF001
+        repo_root=tmp_path,
+        changed_paths=(changed_path,),
+        force=False,
+    )
+
+    plan = sync_workstream_artifacts.build_sync_execution_plan(
+        repo_root=tmp_path,
+        args=SimpleNamespace(
+            check_only=False,
+            force=False,
+            impact_mode="selective",
+            registry_policy_mode="advisory",
+            enforce_deep_skills=False,
+            no_traceability_autofix=False,
+            proceed_with_overlap=False,
+            dry_run=False,
+        ),
+        changed_paths=(changed_path,),
+        impact=SimpleNamespace(
+            atlas=False,
+            radar=True,
+            compass=False,
+            registry=False,
+            casebook=False,
+        ),
+        impact_tooling_shell=True,
+        runtime_mode="standalone",
+    )
+
+    labels = [step.label for step in plan.steps]
+
+    assert "Validate Radar backlog contract for the touched selective slice." in labels
+    assert "Refresh Radar traceability graph when governed source truth changed." in labels
     assert "Render Radar without widening into the full governance sync pipeline." in labels
 
 
@@ -1596,6 +1750,29 @@ def test_execute_plan_runs_change_followups_only_when_watched_inputs_mutate(tmp_
     assert executed == ["primary", "followup"]
 
 
+def test_execute_plan_accepts_structured_action_results(tmp_path: Path) -> None:
+    plan = sync_workstream_artifacts.ExecutionPlan(
+        headline="structured action",
+        steps=(
+            sync_workstream_artifacts.ExecutionStep(
+                label="Structured action",
+                action=lambda: {"rc": 0, "status": "passed"},
+            ),
+        ),
+        dirty_overlap=(),
+    )
+
+    rc = sync_workstream_artifacts._execute_plan(  # noqa: SLF001
+        repo_root=tmp_path,
+        plan_name="workstream sync",
+        plan=plan,
+        run_impl=lambda **_: 0,
+        runtime_fallback_used=False,
+    )
+
+    assert rc == 0
+
+
 def test_dashboard_refresh_retries_auto_surface_with_standalone_fallback(tmp_path: Path, monkeypatch, capsys) -> None:
     executed: list[tuple[str, ...]] = []
 
@@ -1603,7 +1780,7 @@ def test_dashboard_refresh_retries_auto_surface_with_standalone_fallback(tmp_pat
         executed.append(tuple(args))
         return 124 if "--runtime-mode" not in args else 0
 
-    monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
+    monkeypatch.setattr(sync_command_execution, "run_command", _fake_run_command)
 
     rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
         repo_root=tmp_path,
@@ -1629,7 +1806,7 @@ def test_dashboard_refresh_continues_after_surface_failure_and_returns_non_zero(
             return 1
         return 0
 
-    monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
+    monkeypatch.setattr(sync_command_execution, "run_command", _fake_run_command)
     monkeypatch.setattr(
         sync_workstream_artifacts.compass_dashboard_refresh_inputs.compass_refresh_runtime,
         "run_refresh",
@@ -1665,8 +1842,8 @@ def test_dashboard_refresh_compass_waits_for_shared_engine_and_reports_failure(
 ) -> None:
     refresh_calls: list[dict[str, object]] = []
     monkeypatch.setattr(
-        sync_workstream_artifacts,
-        "_run_command",
+        sync_command_execution,
+        "run_command",
         lambda **kwargs: (_ for _ in ()).throw(AssertionError("Compass compatibility path should not shell out directly")),
     )
     monkeypatch.setattr(
@@ -1708,8 +1885,8 @@ def test_dashboard_refresh_compass_waits_for_shared_engine_and_reports_failure(
 def test_dashboard_refresh_compass_waits_for_terminal_success(tmp_path: Path, monkeypatch, capsys) -> None:
     refresh_calls: list[dict[str, object]] = []
     monkeypatch.setattr(
-        sync_workstream_artifacts,
-        "_run_command",
+        sync_command_execution,
+        "run_command",
         lambda **kwargs: (_ for _ in ()).throw(AssertionError("Compass compatibility path should not shell out directly")),
     )
     monkeypatch.setattr(
@@ -1747,92 +1924,8 @@ def test_dashboard_refresh_compass_waits_for_terminal_success(tmp_path: Path, mo
     assert "- compass: queued" not in output
 
 
-def test_run_command_terminates_timed_out_child_process(tmp_path: Path, monkeypatch, capsys) -> None:
-    class _FakeProcess:
-        def __init__(self) -> None:
-            self.terminated = False
-            self.killed = False
-            self.wait_calls: list[int | None] = []
-
-        def poll(self) -> int | None:
-            return None
-
-        def terminate(self) -> None:
-            self.terminated = True
-
-        def wait(self, timeout: int | None = None) -> int:
-            self.wait_calls.append(timeout)
-            return 0
-
-        def kill(self) -> None:
-            self.killed = True
-
-    process = _FakeProcess()
-    perf_counter_values = iter([0.0, 0.0, 1.2])
-
-    monkeypatch.setattr(sync_workstream_artifacts.subprocess, "Popen", lambda *args, **kwargs: process)
-    monkeypatch.setattr(sync_workstream_artifacts.time, "perf_counter", lambda: next(perf_counter_values))
-    monkeypatch.setattr(sync_workstream_artifacts.time, "sleep", lambda _seconds: None)
-
-    rc = sync_workstream_artifacts._run_command(  # noqa: SLF001
-        repo_root=tmp_path,
-        args=("python", "-m", "odylith.runtime.surfaces.render_backlog_ui"),
-        heartbeat_label="radar",
-        timeout_seconds=1.0,
-    )
-    output = capsys.readouterr().out
-
-    assert rc == 124
-    assert process.terminated is True
-    assert process.killed is False
-    assert process.wait_calls == [5]
-    assert "timeout: radar exceeded 1s; terminating" in output
 
 
-def test_run_command_terminates_process_group_for_timed_out_child(tmp_path: Path, monkeypatch, capsys) -> None:
-    class _FakeProcess:
-        def __init__(self) -> None:
-            self.pid = 4321
-            self.terminated = False
-            self.killed = False
-            self.wait_calls: list[int | None] = []
-
-        def poll(self) -> int | None:
-            return None
-
-        def terminate(self) -> None:
-            self.terminated = True
-
-        def wait(self, timeout: int | None = None) -> int:
-            self.wait_calls.append(timeout)
-            return 0
-
-        def kill(self) -> None:
-            self.killed = True
-
-    process = _FakeProcess()
-    perf_counter_values = iter([0.0, 0.0, 1.2])
-    killed_groups: list[tuple[int, int]] = []
-
-    monkeypatch.setattr(sync_workstream_artifacts.subprocess, "Popen", lambda *args, **kwargs: process)
-    monkeypatch.setattr(sync_workstream_artifacts.time, "perf_counter", lambda: next(perf_counter_values))
-    monkeypatch.setattr(sync_workstream_artifacts.time, "sleep", lambda _seconds: None)
-    monkeypatch.setattr(sync_workstream_artifacts.os, "killpg", lambda pid, sig: killed_groups.append((pid, int(sig))))
-
-    rc = sync_workstream_artifacts._run_command(  # noqa: SLF001
-        repo_root=tmp_path,
-        args=("python", "-m", "odylith.runtime.surfaces.render_backlog_ui"),
-        heartbeat_label="radar",
-        timeout_seconds=1.0,
-    )
-    output = capsys.readouterr().out
-
-    assert rc == 124
-    assert killed_groups == [(4321, int(sync_workstream_artifacts.signal.SIGTERM))]
-    assert process.terminated is False
-    assert process.killed is False
-    assert process.wait_calls == [5]
-    assert "timeout: radar exceeded 1s; terminating" in output
 
 
 def test_sync_dry_run_prints_plan_without_running_commands(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -1864,8 +1957,8 @@ def test_sync_dry_run_prints_plan_without_running_commands(tmp_path: Path, monke
         lambda **_: _Meaningful(),
     )
     monkeypatch.setattr(
-        sync_workstream_artifacts,
-        "_run_command",
+        sync_command_execution,
+        "run_command",
         lambda **kwargs: (_ for _ in ()).throw(AssertionError("sync should not execute commands during --dry-run")),
     )
 
@@ -1874,12 +1967,12 @@ def test_sync_dry_run_prints_plan_without_running_commands(tmp_path: Path, monke
 
     assert rc == 0
     assert "workstream sync dry-run" in output
-    assert "Render Compass before Radar" in output
+    assert "Render selected dashboard surfaces in a bounded batch" in output
 
 
 def test_run_callable_with_heartbeat_reports_progress(monkeypatch, capsys) -> None:
     monkeypatch.setattr(sync_workstream_artifacts, "_HEARTBEAT_START_DELAY_SECONDS", 0.01)
-    monkeypatch.setattr(sync_workstream_artifacts, "_HEARTBEAT_INTERVAL_SECONDS", 0.01)
+    monkeypatch.setattr(sync_command_execution, "HEARTBEAT_INTERVAL_SECONDS", 0.01)
 
     rc = sync_workstream_artifacts._run_callable_with_heartbeat(  # noqa: SLF001
         label="slow-step",
@@ -1893,7 +1986,7 @@ def test_run_callable_with_heartbeat_reports_progress(monkeypatch, capsys) -> No
 
 def test_run_callable_with_heartbeat_stays_quiet_for_fast_steps(monkeypatch, capsys) -> None:
     monkeypatch.setattr(sync_workstream_artifacts, "_HEARTBEAT_START_DELAY_SECONDS", 0.05)
-    monkeypatch.setattr(sync_workstream_artifacts, "_HEARTBEAT_INTERVAL_SECONDS", 0.01)
+    monkeypatch.setattr(sync_command_execution, "HEARTBEAT_INTERVAL_SECONDS", 0.01)
 
     rc = sync_workstream_artifacts._run_callable_with_heartbeat(  # noqa: SLF001
         label="fast-step",
@@ -2011,13 +2104,72 @@ def test_sync_blocks_large_dirty_overlap_without_explicit_ack(monkeypatch, tmp_p
         "_execute_plan",
         lambda **_: (_ for _ in ()).throw(AssertionError("blocked sync should not execute plan")),
     )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "normalize_legacy_backlog_index",
+        lambda **_: (_ for _ in ()).throw(AssertionError("dirty-overlap block must run before Radar normalization")),
+    )
 
-    rc = sync_workstream_artifacts.main(["--repo-root", str(tmp_path), "--force"])
+    rc = sync_workstream_artifacts.main(["--repo-root", str(tmp_path)])
     output = capsys.readouterr().out
 
     assert rc == 2
     assert "workstream sync blocked" in output
-    assert "--proceed-with-overlap" in output
+    assert "- writes: none (dirty-overlap gate ran before tracked mutations)" in output
+    assert "- next: odylith sync --repo-root . --force" in output
+    assert "- narrow_refresh: odylith dashboard refresh --repo-root . --force" in output
+
+
+def test_sync_allows_large_dirty_overlap_with_force(monkeypatch, tmp_path: Path) -> None:
+    class _Meaningful:
+        def as_dict(self) -> dict[str, int]:
+            return {
+                "linked_meaningful_event_count": 0,
+                "unlinked_meaningful_event_count": 0,
+            }
+
+    executed = {"value": False}
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_effective_changed_paths", lambda **_: ("odylith/radar/source/INDEX.md",))
+    monkeypatch.setattr(sync_workstream_artifacts, "_requires_sync", lambda **_: True)
+    monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "build_dashboard_impact",
+        lambda **_: SimpleNamespace(
+            radar=False,
+            atlas=False,
+            compass=False,
+            registry=False,
+            casebook=False,
+            tooling_shell=False,
+        ),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "collect_meaningful_activity_evidence",
+        lambda **_: _Meaningful(),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "build_sync_execution_plan",
+        lambda **_: sync_workstream_artifacts.ExecutionPlan(
+            headline="preview",
+            steps=(),
+            dirty_overlap=tuple(f"M path-{index}" for index in range(50)),
+            notes=(),
+        ),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "_execute_plan",
+        lambda **_: executed.__setitem__("value", True) or 0,
+    )
+
+    rc = sync_workstream_artifacts.main(["--repo-root", str(tmp_path), "--force"])
+
+    assert rc == 0
+    assert executed["value"] is True
 
 
 def test_sync_allows_large_dirty_overlap_with_explicit_ack(monkeypatch, tmp_path: Path) -> None:
@@ -2066,7 +2218,7 @@ def test_sync_allows_large_dirty_overlap_with_explicit_ack(monkeypatch, tmp_path
         lambda **_: executed.__setitem__("value", True) or 0,
     )
 
-    rc = sync_workstream_artifacts.main(["--repo-root", str(tmp_path), "--force", "--proceed-with-overlap"])
+    rc = sync_workstream_artifacts.main(["--repo-root", str(tmp_path), "--proceed-with-overlap"])
 
     assert rc == 0
     assert executed["value"] is True
@@ -2141,8 +2293,8 @@ def test_sync_auto_normalizes_legacy_backlog_before_continuing(monkeypatch, tmp_
         lambda **_: _Meaningful(),
     )
     monkeypatch.setattr(
-        sync_workstream_artifacts,
-        "_run_command",
+        sync_command_execution,
+        "run_command",
         lambda **kwargs: (_ for _ in ()).throw(AssertionError("sync should not execute commands during --dry-run")),
     )
 
@@ -2154,19 +2306,17 @@ def test_sync_auto_normalizes_legacy_backlog_before_continuing(monkeypatch, tmp_
     ).read_text(encoding="utf-8")
 
     assert rc == 0
-    assert "workstream sync legacy normalization" in output
-    assert "- added_sections: " in output
-    assert "- idea_schema_updates: 2" in output
-    assert "- table_schema_updates: 3" in output
-    assert "- source: odylith/radar/source/INDEX.md" in output
+    assert "Normalize legacy Radar backlog sections before validation and render." in output
+    assert "workstream sync legacy normalization" not in output
     assert "odylith sync did not complete." not in output
     assert "workstream sync dry-run" in output
-    assert "impacted_lanes" not in backlog_index
-    assert "impacted_lanes" not in queued_idea
-    assert "- expected outcome: clearer product truth and faster follow-on implementation planning." in backlog_index
-    assert "- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins." in backlog_index
-    assert "- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream." in backlog_index
-    assert "- ranking basis: score-based rank; no manual priority override." in backlog_index
+    assert "dry-run mode: no files written" in output
+    assert "impacted_lanes" in backlog_index
+    assert "impacted_lanes" in queued_idea
+    assert "- expected outcome: clearer product truth and faster follow-on implementation planning." not in backlog_index
+    assert "- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins." not in backlog_index
+    assert "- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream." not in backlog_index
+    assert "- ranking basis: score-based rank; no manual priority override." not in backlog_index
 
 
 def test_sync_truth_only_selective_slice_skips_broad_preflight_and_runtime_packet(

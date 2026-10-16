@@ -50,11 +50,13 @@
       version readouts, or any other UI artifact there
     - keep onboarding, release-note, maintainer-note, and adjacent shell UX
       affordances out of the header
-  - branch safety posture:
-    - the Git `main` branch is read-only for authoring in this maintainer lane
-    - never work directly on `main`; this rule is non-negotiable
-    - if the current branch is `main`, create and switch to a new branch before any code or tracked-file edit
-    - if work is already on a non-`main` branch, keep using that branch
+  - product-repo authoring posture:
+    - Git branch, authorship, and release-publishing restrictions belong only
+      in Odylith product-repo root or maintainer guidance
+    - consumer-installed guidance must not tell downstream projects which
+      branch name, commit identity, or product release command to use
+    - when working in a consumer repo, follow that repo's own Git policy and
+      native validation policy after Odylith has narrowed the slice
   - source-file discipline posture:
     - follow [CODING_STANDARDS.md](./CODING_STANDARDS.md) for the shared
       consumer-safe documentation, reuse, robustness, and focused-validation
@@ -67,10 +69,18 @@
 - `**Odylith Observation**` and `Odylith Proposal` are shipped product
   surfaces, not host-local flourishes. The same shared core must power them on
   Codex and Claude.
+- Human-visible product surface copy has a minimum clarity floor. Every
+  visible card, heading, status, explanation, prompt, note, and fallback must
+  answer what this is, why it matters, and what the reader should do or trust
+  next in plain language before it tries to be expressive. If the grammar is
+  broken, a title is clipped, Markdown markers leak, or the text depends on
+  internal surface names instead of human meaning, the renderer or generator
+  failed.
 - The live mid-turn hot path for teaser, Observation, and Proposal belongs to
   the intervention engine. `Odylith Chatter` owns the broader narration
-  posture and the evidence-backed `Odylith Assist:` closeout or explicit
-  visibility-feedback fallback instead of recomputing the hook-time surface.
+  posture and the evidence-backed `Odylith Assist:` closeout, concrete
+  decision/proof-boundary prompt, or explicit visibility-feedback fallback
+  instead of recomputing the hook-time surface.
 - The lane may change what evidence is available or whether apply is allowed,
   but it must not fork the labels, confirmation phrase, or overall markdown UX
   across detached `source-local`, pinned dogfood, and consumer pinned-runtime
@@ -136,10 +146,10 @@
   source; anchor context and assistant-render fallback stay in the separate
   `prompt-context` JSON `additionalContext` hook. On Codex, the earned teaser
   stays in hook `systemMessage` plus `hookSpecificOutput.additionalContext`,
-  with the same assistant-render fallback for chat visibility. For normal
-  non-passthrough prompts, both hosts also carry the shared prompt-visible
-  `Odylith Assist:` line; if no teaser is earned, Assist alone keeps Odylith
-  visible without inventing a stronger Observation.
+  with the same assistant-render fallback for chat visibility. Normal
+  non-passthrough prompts stay quiet unless a concrete decision or
+  proof-boundary, Observation, Proposal, validation result, or visibility
+  failure earns a premium visible note.
 - Hook output generation is not chat visibility. The shipped contract is:
   hooks produce structured evidence and model/developer context; hosts may
   render hook `systemMessage` or stdout when they support it; if not, the
@@ -166,6 +176,10 @@
   visible-intervention` are the shared manual escape hatches when a host keeps
   hook output hidden. They render plain Markdown, not JSON, and agents should
   show that output directly instead of rewriting it.
+- Visible-intervention recovery must be useful on its face. Generic receipts
+  such as "Odylith has activity but no note reached chat" are blocked; the
+  rendered note must name the real blocker, preserve silence for routine
+  turns, and state the concrete condition that earned visibility.
 - `odylith codex intervention-status` and `odylith claude
   intervention-status` are the shared low-latency activation probes. They read
   static host wiring plus the Compass-derived delivery ledger so operators can

@@ -1,0 +1,96 @@
+{
+  "status": "PASS",
+  "qualification": "source_only_no_native_or_release_credit",
+  "case_count": 4,
+  "atom_count": 405,
+  "first_path_relations": 58,
+  "source_span_occurrences": 1009,
+  "formal_v2_runs": [
+    {
+      "name": "A",
+      "path": "/private/tmp/odylith-new-high4-independent-source-annotation-a-20261010/source-predeclaration.json",
+      "sha256": "a69b5d154077b8a56c45198c1af3dcde4839287542aff2bfb8dac2dd463d9a0b",
+      "annotation_count": 4,
+      "issues": []
+    },
+    {
+      "name": "B",
+      "path": "/private/tmp/odylith-new-high4-independent-source-annotation-b-20261010/predeclaration-b.json",
+      "sha256": "632df5e71a22f720b5299a0f8f595d7ae95588da7b23f3195ca1f48a4bc5d635",
+      "annotation_count": 4,
+      "issues": []
+    },
+    {
+      "name": "final-original-path",
+      "path": "/private/tmp/odylith-new-high4-source-adjudication-20261010/final-predeclaration.json",
+      "sha256": "c0c4800ab6094bc5f694e93d529dc507b78d14175b13d864642546fd2e817c3a",
+      "annotation_count": 4,
+      "issues": []
+    },
+    {
+      "name": "final-repath-preview",
+      "path": "/private/tmp/odylith-new-high4-source-adjudication-20261010/final-predeclaration.json",
+      "sha256": "c0c4800ab6094bc5f694e93d529dc507b78d14175b13d864642546fd2e817c3a",
+      "annotation_count": 4,
+      "issues": []
+    }
+  ],
+  "custody_inputs_unchanged": {
+    "/private/tmp/odylith-new-high4-source-design-20261010/sourcecases-draft.json": "5da8ec8a344d3097ad5a65a14e4f0af0756943a03d6a22e4ff8557e67694e485",
+    "/private/tmp/odylith-new-high4-source-design-20261010/canonical-source-frames.json": "3020f24efae67a669b72574a24ed4f4146b235449180e91854faae32633a7c4a",
+    "/private/tmp/odylith-new-high4-independent-source-annotation-a-20261010/source-predeclaration.json": "a69b5d154077b8a56c45198c1af3dcde4839287542aff2bfb8dac2dd463d9a0b",
+    "/private/tmp/odylith-new-high4-independent-source-annotation-a-20261010/census-capacity.json": "3ee499907f56a15de24dfd1f51287d0e2e8742d77d2c210fbb95717ead98b05b",
+    "/private/tmp/odylith-new-high4-independent-source-annotation-a-20261010/REPORT.md": "9c1bd2c9755c8920b8498184efc73244bb0a9b54580506e208ebb4b518bbd67b",
+    "/private/tmp/odylith-new-high4-independent-source-annotation-a-20261010/validation.json": "87bc6e9e906ef31a793266c1438e0c5a46caeca50ec7b85abb7cf1c7ca48555a",
+    "/private/tmp/odylith-new-high4-independent-source-annotation-a-20261010/freeze-manifest.json": "f38f50b19e4d82f4b42cf6063ee33bb9b5e0d55f44ae64495119a5194221e00f",
+    "/private/tmp/odylith-new-high4-independent-source-annotation-b-20261010/predeclaration-b.json": "632df5e71a22f720b5299a0f8f595d7ae95588da7b23f3195ca1f48a4bc5d635",
+    "/private/tmp/odylith-new-high4-independent-source-annotation-b-20261010/census-capacity-b.json": "5d338f253fff743cbb6ca2ffef41499ace3cb3a2a755ce718280bc2aff563db2",
+    "/private/tmp/odylith-new-high4-independent-source-annotation-b-20261010/validation-b.json": "4d291733cd45987fb6f7fed9229e0551c4150fa509a2174c2789f257b1ab117d",
+    "/private/tmp/odylith-new-high4-independent-source-annotation-b-20261010/pins-b.json": "ba1f90ff3a8c362ec2f3942976472ffa71534357cfd44c99fc1f1567abd09f8d",
+    "/private/tmp/odylith-new-high4-source-adjudication-20261010/independent-census-before-annotations.json": "88fe10307d89a41bb5ae45658064496d40aee8d50f26b79bff77d5814e1df3d8"
+  },
+  "canonical_owner_pins": {
+    "/Volumes/FREEDOM_RESEARCH/research-code/odylith/scripts/release/greenfield_semantic_case_score.py": "48923eeef92a6836b16b703e24fc4c969b69f58179a9793a2a1e17860aad05b5",
+    "/Volumes/FREEDOM_RESEARCH/research-code/odylith/scripts/release/greenfield_matrix_case_file.py": "74b639d52a5ced1b9405f98920bf8bceacec7323101edeefd4f4b9c8a4ded72b",
+    "/Volumes/FREEDOM_RESEARCH/research-code/odylith/src/odylith/runtime/domain_intelligence/greenfield_source_duty_ledger.py": "d68c014bb84fee47e36018fa59bf624e6d5e45395af9968c59bb11140a58aee6",
+    "/Volumes/FREEDOM_RESEARCH/research-code/odylith/src/odylith/runtime/domain_intelligence/greenfield_operating_envelope.py": "8bae30945d9b961a467d2aff4c032bf16a126e6816aad8d1da129c44c3a0ecf3"
+  },
+  "metadata_repath_case_identity": [
+    {
+      "case_id": "prospective-edit-climate-heat-response-window-20261010",
+      "same_all_semantic_fields": true,
+      "original_source_file": "/private/tmp/odylith-new-high4-source-design-20261010/sourcecases-draft.json",
+      "preview_source_file": "/private/tmp/odylith-new-high4-source-adjudication-20261010/repath-preview/tests/fixtures/greenfield-release-corpus/source-annotations/high4-20261010/source-cases.json"
+    },
+    {
+      "case_id": "prospective-edit-healthcare-trial-site-activation-20261010",
+      "same_all_semantic_fields": true,
+      "original_source_file": "/private/tmp/odylith-new-high4-source-design-20261010/sourcecases-draft.json",
+      "preview_source_file": "/private/tmp/odylith-new-high4-source-adjudication-20261010/repath-preview/tests/fixtures/greenfield-release-corpus/source-annotations/high4-20261010/source-cases.json"
+    },
+    {
+      "case_id": "prospective-edit-open-data-river-federation-transfer-20261010",
+      "same_all_semantic_fields": true,
+      "original_source_file": "/private/tmp/odylith-new-high4-source-design-20261010/sourcecases-draft.json",
+      "preview_source_file": "/private/tmp/odylith-new-high4-source-adjudication-20261010/repath-preview/tests/fixtures/greenfield-release-corpus/source-annotations/high4-20261010/source-cases.json"
+    },
+    {
+      "case_id": "prospective-edit-security-isolated-recovery-rehearsal-20261010",
+      "same_all_semantic_fields": true,
+      "original_source_file": "/private/tmp/odylith-new-high4-source-design-20261010/sourcecases-draft.json",
+      "preview_source_file": "/private/tmp/odylith-new-high4-source-adjudication-20261010/repath-preview/tests/fixtures/greenfield-release-corpus/source-annotations/high4-20261010/source-cases.json"
+    }
+  ],
+  "section_caps_pass": true,
+  "h0_moderate6_h1_high7_all_four": true,
+  "source_family_input_style_exact": true,
+  "original_source_documents_unchanged": true,
+  "only_synthetic_source_claim": true,
+  "provider_native_build_calls": 0,
+  "repo_writes": 0,
+  "additional_census_span_occurrences": 310,
+  "additional_census_spans_utf8_hash_exact": true,
+  "final_annotation_sha256": "c0c4800ab6094bc5f694e93d529dc507b78d14175b13d864642546fd2e817c3a",
+  "final_census_sha256": "99caa7900360ae69e66787ca9a5f3b9c1977e65dfbf70c0fdc27882dc828cc7b",
+  "terminal_formal_v2_issues": []
+}

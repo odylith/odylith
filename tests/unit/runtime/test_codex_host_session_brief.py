@@ -3,7 +3,9 @@ from __future__ import annotations
 import io
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
+from odylith.runtime.surfaces import codex_host_shared
 from odylith.runtime.surfaces import codex_host_session_brief
 
 
@@ -54,6 +56,39 @@ def test_render_codex_session_brief_degrades_without_snapshot(tmp_path: Path) ->
     assert "Active workstreams: (not present in Compass runtime snapshot)" in rendered
     assert "Odylith startup substrate:" in rendered
     assert "cached runtime fast path" not in rendered
+
+
+def test_render_codex_session_brief_sanitizes_start_narrowing_output() -> None:
+    rendered = codex_host_session_brief.render_codex_session_brief(
+        payload_override={},
+        start_summary_override="odylith start\n- lane: fallback\n- reason: Need one code path.\n",
+    )
+
+    assert "Startup: needs a narrower target before implementation." in rendered
+    assert "Name one code path, workstream, component, bug, or file." in rendered
+    assert "fallback" not in rendered.casefold()
+    assert "Need one code path" not in rendered
+
+
+def test_codex_start_payload_requests_json_packet(monkeypatch, tmp_path: Path) -> None:
+    calls: list[tuple[str, list[str], int]] = []
+
+    def _fake_run_odylith(**kwargs: object) -> SimpleNamespace:
+        calls.append(
+            (
+                str(kwargs["project_dir"]),
+                list(kwargs["args"]),  # type: ignore[arg-type]
+                int(kwargs["timeout"]),
+            )
+        )
+        return SimpleNamespace(stdout='odylith start\n- lane: bootstrap\n{"packet_kind":"bootstrap_session"}')
+
+    monkeypatch.setattr(codex_host_shared, "run_odylith", _fake_run_odylith)
+
+    payload = codex_host_shared.start_payload(tmp_path)
+
+    assert payload == {"packet_kind": "bootstrap_session"}
+    assert calls == [(str(tmp_path), ["start", "--repo-root", ".", "--json"], 20)]
 
 
 def test_render_codex_session_brief_uses_substrate_without_start(tmp_path: Path, monkeypatch) -> None:

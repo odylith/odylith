@@ -47,7 +47,9 @@ def main(argv: list[str] | None = None) -> int:
     session_id = claude_host_shared.hook_session_id(payload)
     if host_intervention_support.suppress_prompt_live_narration(prompt=prompt):
         return 0
-    if not host_intervention_support.prompt_needs_live_bundle(prompt=prompt):
+    if not host_intervention_support.prompt_needs_live_bundle(
+        prompt=prompt, repo_root=repo_root, session_id=session_id, host_family="claude"
+    ):
         return 0
     bundle = claude_host_prompt_context._prompt_conversation_bundle(  # noqa: SLF001
         repo_root=repo_root,

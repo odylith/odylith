@@ -31,8 +31,8 @@ _APP_READY_TEACHING = (
 )
 _CHEATSHEET_HINT = "For more examples, open `odylith/index.html` and use the Cheatsheet."
 _GREENFIELD_PROMPT = (
-    "Draft a greenfield Odylith proposal for <project, architecture, or research goal> "
-    "with backlog, planned Registry components, and Atlas topology. Do not write until I confirm."
+    "Draft a product-first greenfield proposal for <project, architecture, or research goal>. "
+    "Show the interpretation and direction choices first. Do not write records until I confirm."
 )
 _SCENARIO_TEACHING = {
     "empty": "Odylith did not find app-source evidence yet, so source-backed records stay blocked; it can still draft a confirmation-gated greenfield proposal from your intent.",

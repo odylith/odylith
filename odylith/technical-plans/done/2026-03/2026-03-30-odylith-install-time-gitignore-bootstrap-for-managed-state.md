@@ -59,14 +59,11 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [x] Risk: creating `.gitignore` before Git exists could feel unexpected.
-  - [x] Mitigation: keep the entry minimal and preserve the existing Git-missing
-    caveat in CLI output.
+  - [x] Mitigation: keep the entry minimal and preserve the existing Git-missing caveat in CLI output.
 - [x] Risk: helper changes could regress idempotency and duplicate the ignore
-  - [ ] Mitigation: TODO (add explicit mitigation).
-    rule.
+  - [ ] Mitigation: TODO (add explicit mitigation). rule.
 - [ ] Risk: Unspecified risk (legacy backfill).
-  - [x] Mitigation: retain exact-pattern duplicate detection and cover it with
-    focused integration tests.
+  - [x] Mitigation: retain exact-pattern duplicate detection and cover it with focused integration tests.
 
 ## Validation/Test Plan
 - [x] `PYTHONPATH=src python -m pytest -q tests/integration/install/test_manager.py`

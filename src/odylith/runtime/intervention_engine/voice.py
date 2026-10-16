@@ -42,23 +42,11 @@ class _VoiceProposition:
     action: str
 
 
-def _compact_text(value: Any, *, max_chars: int = 220) -> str:
-    text = _normalize_string(value)
-    if len(text) <= max_chars:
-        return text
-    window = text[: max_chars + 1]
-    for separator in (". ", "; ", ", "):
-        index = window.rfind(separator)
-        if index >= max_chars // 2:
-            return window[: index + 1].strip()
-    return f"{window[:max_chars].rstrip()}..."
-
-
 def _deduped_sentences(values: Sequence[Any], *, limit: int) -> list[str]:
     rows: list[str] = []
     seen: set[str] = set()
     for value in values:
-        sentence = _sentence(_compact_text(value))
+        sentence = _sentence(value)
         token = _sentence_token(sentence)
         if not sentence or token in seen:
             continue

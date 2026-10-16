@@ -5,6 +5,8 @@ from __future__ import annotations
 import math
 from typing import Any
 
+from odylith.runtime.context_engine import memory_record_policy
+from odylith.runtime.context_engine import judgment_memory_records
 from odylith.runtime.context_engine import odylith_context_engine_packet_runtime_support
 from odylith.runtime.context_engine import odylith_context_engine_packet_summary_runtime
 
@@ -386,30 +388,10 @@ def _memory_snapshot_status_from_counts(counts: Mapping[str, Any]) -> str:
     return "unknown"
 
 def _freshness_bucket_for_age_hours(age_hours: float | None) -> str:
-    if age_hours is None:
-        return "unknown"
-    if age_hours <= 24.0:
-        return "fresh"
-    if age_hours <= 72.0:
-        return "recent"
-    if age_hours <= 24.0 * 14.0:
-        return "stale"
-    return "cold"
+    return memory_record_policy.freshness_bucket(age_hours)
 
 def _freshness_payload(*, updated_utc: str) -> dict[str, Any]:
-    parsed = context_engine_store._parse_iso_utc(updated_utc)
-    if parsed is None:
-        return {
-            "bucket": "unknown",
-            "updated_utc": str(updated_utc or "").strip(),
-            "newest_age_hours": None,
-        }
-    age_hours = max(0.0, (context_engine_store.dt.datetime.now(context_engine_store.dt.timezone.utc) - parsed).total_seconds() / 3600.0)
-    return {
-        "bucket": _freshness_bucket_for_age_hours(age_hours),
-        "updated_utc": parsed.replace(microsecond=0).isoformat().replace("+00:00", "Z"),
-        "newest_age_hours": round(age_hours, 3),
-    }
+    return memory_record_policy.freshness(confirmed_utc=updated_utc)
 
 def _latest_updated_utc(*values: str) -> str:
     best: tuple[dt.datetime, str] | None = None
@@ -454,6 +436,7 @@ def _judgment_memory_item(
         "surfaces": [str(token).strip() for token in surfaces if str(token).strip()],
     }
     payload["freshness"] = _freshness_payload(updated_utc=str(payload.get("recorded_utc", "")).strip())
+    payload["memory_record"] = memory_record_policy.record(role="historical_learning" if kind in {"done_plan", "finished_workstream", "proof_outcome", "open_bug", "historical_failure"} else "observation", source_ref=source_path, evidence_utc=recorded_utc)
     return payload
 
 def _judgment_memory_area(
@@ -796,32 +779,9 @@ def _load_judgment_workstream_hint(
     repo_root: Path,
     changed_paths: Sequence[str],
 ) -> dict[str, Any]:
-    root = context_engine_store.Path(repo_root).resolve()
-    normalized_paths = context_engine_store._normalize_changed_path_list(repo_root=root, values=changed_paths)
-    if not normalized_paths:
-        return {}
-    snapshot = _judgment_memory_snapshot_cached(repo_root=root)
-    starter_slice = dict(snapshot.get("starter_slice", {})) if isinstance(snapshot.get("starter_slice"), context_engine_store.Mapping) else {}
-    workstream_id = _workstream_token(str(starter_slice.get("workstream_id", "")).strip())
-    starter_path = context_engine_store._normalize_repo_token(str(starter_slice.get("path", "")).strip(), repo_root=root)
-    if not workstream_id or not starter_path:
-        return {}
-    matched_paths = [
-        path
-        for path in normalized_paths
-        if _repo_paths_overlap(repo_root=root, left=path, right=starter_path)
-    ]
-    if not matched_paths:
-        return {}
-    starter_status = str(starter_slice.get("status", "")).strip()
-    return {
-        "workstream_id": workstream_id,
-        "slice_path": starter_path,
-        "matched_paths": matched_paths[:4],
-        "status": starter_status,
-        "confidence": "high" if starter_status == "established" else "medium",
-        "reason": f"Durable slice memory already ties `{starter_path}` to `{workstream_id}`.",
-    }
+    return judgment_memory_records.load_workstream_hint(
+        store=context_engine_store, root=context_engine_store.Path(repo_root).resolve(), changed_paths=changed_paths,
+    )
 
 def _repo_scan_degraded_reason(packet: Mapping[str, Any]) -> str:
     full_scan_reason = str(packet.get("full_scan_reason", "")).strip()

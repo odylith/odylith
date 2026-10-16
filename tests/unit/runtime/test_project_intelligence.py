@@ -1,0 +1,948 @@
+from __future__ import annotations
+
+import ast
+import json
+import re
+from html.parser import HTMLParser
+from pathlib import Path
+
+from odylith.runtime.project_intelligence import assets, builder, deeplinks, focus, presenter, product_story
+from odylith.runtime.project_intelligence.participants import participant_title
+from odylith.runtime.project_intelligence.utils import complete_text, short, tidy_fragment
+from odylith.runtime.surfaces import dashboard_shell_links
+
+
+def _write_json(path: Path, payload: object) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+
+def test_project_short_preserves_one_long_public_sentence() -> None:
+    value = (
+        "Needs the product to record stunt cues, map performer clearance evidence, track prop inspection exceptions, "
+        "coordinate medical standby signoff, and publish rehearsal readiness before opening night and keep the "
+        "result visible and reviewable"
+    )
+
+    assert short(value, limit=145) == value
+
+
+def test_project_complete_text_never_cuts_a_single_public_sentence() -> None:
+    value = (
+        "An engineer submits one request, the product routes each subtask to an appropriate model, and the product "
+        "returns validated runnable code plus complete automated tests."
+    )
+
+    assert complete_text(value, limit=70) == value
+
+
+def test_project_participant_titles_preserve_lower_first_source_symbols() -> None:
+    assert participant_title("mRNA Stability Batch proof reviewer") == "mRNA Stability Batch proof reviewer"
+    assert tidy_fragment("mRNA Stability Batch desired state") == "mRNA Stability Batch desired state"
+
+
+def test_project_participant_titles_use_sentence_case_without_lowering_domain_symbols() -> None:
+    assert participant_title("Scientific Manuscript Author") == "Scientific manuscript author"
+    assert participant_title("Scientific QBER Reviewer") == "Scientific QBER reviewer"
+    assert participant_title("GitHub Submission Reviewer") == "GitHub submission reviewer"
+
+
+def test_project_short_preserves_long_sentence_instead_of_inventing_a_terminal_period() -> None:
+    value = (
+        "This slice preserves review context, publishes decision evidence, and recovers cleanly from a bad or incomplete attempt."
+    )
+
+    assert short(value, limit=100) == value
+    assert short("The review status is final before handoff proof.", limit=34) == (
+        "The review status is final before handoff proof."
+    )
+
+
+def test_project_presenter_never_character_clips_public_copy() -> None:
+    value = (
+        "The expected outcome keeps the complete model-routing decision, validation result, automated test proof, "
+        "and implementation handoff visible to the engineer who must act on it."
+    )
+
+    assert presenter._compact_sentence(value, limit=72) == value
+
+
+def test_project_intelligence_blank_install_starts_with_minimal_project_state(tmp_path: Path) -> None:
+    payload = builder.build_project_intelligence_payload(
+        repo_root=tmp_path,
+        shell_payload={
+            "shell_repo_name": "mockrepo",
+            "welcome_state": {
+                "starter_prompt": "Odylith, show me what you can do.",
+                "repo_readout": ["Odylith has not inferred one grounded slice yet."],
+            },
+        },
+    )
+    html = presenter.render_project_html({"project_intelligence": payload})
+
+    assert payload["mode"] == "blank"
+    assert payload["sections"] == ["empty_state"]
+    assert payload["title"] == "Mockrepo"
+    assert payload.get("answers", []) == []
+    assert "Project not defined yet" in html
+    assert "Start with the project" in html
+    assert "odylith greenfield prepare --repo-root ." in html
+    assert "odylith greenfield propose" not in html
+    assert "Odylith, show me what you can do." in html
+    assert "Product story" in html
+    assert "Governance spine" in html
+    assert "Execution boundary" in html
+    assert "Who participates" not in html
+    assert "Current orienting work" not in html
+    assert "No active release detected" not in html
+    assert "State evidence" not in html
+    assert "Evidence gap" not in html
+    assert "Compass shows state" not in html
+    assert "Operator" not in html
+    assert "Maintainer" not in html
+    assert "Reviewer" not in html
+
+
+def test_project_intelligence_blank_install_ignores_generic_orienting_next_action(tmp_path: Path) -> None:
+    _write_json(
+        tmp_path / "odylith" / "compass" / "runtime" / "current.v1.json",
+        {
+            "generated_utc": "2026-05-11T17:13:00Z",
+            "next_actions": [
+                {
+                    "title": "Define the project first",
+                    "action": "Define the project before implementation starts.",
+                    "source": "compass",
+                }
+            ],
+        },
+    )
+
+    payload = builder.build_project_intelligence_payload(repo_root=tmp_path, shell_payload={"shell_repo_name": "mockrepo"})
+    html = presenter.render_project_html({"project_intelligence": payload})
+
+    assert payload["mode"] == "blank"
+    assert "Project not defined yet" in html
+    assert "Current orienting work" not in html
+    assert "Define the project first" not in html
+
+
+def test_existing_project_uses_source_workstream_without_registration_or_release_claims(tmp_path: Path) -> None:
+    registry_path = tmp_path / "odylith" / "registry" / "source" / "component_registry.v1.json"
+    component = {
+        "component_id": "archive-copier",
+        "name": "Archive Copier",
+        "what_it_is": (
+            "Logical component registered through `odylith component register` with "
+            "`tools/copy_record.py` as its initial evidence anchor."
+        ),
+        "why_tracked": (
+            "Registered so agent sessions can see Archive Copier as a named ownership boundary "
+            "from the initial evidence anchor; path prefixes seed the intended boundary and can "
+            "be tightened as the contract becomes clearer."
+        ),
+    }
+    _write_json(registry_path, {"components": [component]})
+    radar_index = tmp_path / "odylith" / "radar" / "source" / "INDEX.md"
+    radar_index.parent.mkdir(parents=True)
+    radar_index.write_text(
+        "## Ranked Active Backlog\n"
+        "| rank | idea_id | title | priority | status |\n"
+        "| --- | --- | --- | --- | --- |\n"
+        "| 1 | B-001 | Preserve archive record permissions during copies | P1 | queued |\n",
+        encoding="utf-8",
+    )
+
+    payload = builder.build_project_intelligence_payload(
+        repo_root=tmp_path, shell_payload={"shell_repo_name": "archive-copier"},
+    )
+    html = presenter.render_project_html({"project_intelligence": payload})
+    assert payload["title"] == "Archive Copier"
+    assert payload["intro"] == ""
+    assert payload["desired"] == ""
+    assert "scenario" not in payload["sections"]
+    assert payload["scenario"] == []
+    assert payload["scenario_note"] == ""
+    assert payload["jobs_title"] == "What work is recorded?"
+    assert payload["product_story"]["paragraphs"] == [
+        "Current work: Preserve archive record permissions during copies."
+    ]
+    assert "No active release detected" in payload["current"]
+    assert "No active release detected" not in " ".join(payload["product_story"]["paragraphs"])
+    assert "Logical component registered" not in html
+    assert "first usable workflow" not in html
+    assert "is coherent when" not in html
+    assert "Desired state" not in html
+    assert "<strong>to</strong>" not in html
+    assert "No current source-backed item found" not in html
+    assert "Current release: No active release detected" in html
+
+    component["what_it_is"] = "Copies selected archive records while retaining their original access rules."
+    _write_json(registry_path, {"components": [component]})
+    authored_purpose = builder.build_project_intelligence_payload(repo_root=tmp_path)
+    assert authored_purpose["intro"] == component["what_it_is"]
+
+    component["what_it_is"] = "Logical component registered through `odylith component register`."
+    component["why_tracked"] = "Tracks ownership of archive record copies."
+    _write_json(registry_path, {"components": [component]})
+    fallback_purpose = builder.build_project_intelligence_payload(repo_root=tmp_path)
+    assert fallback_purpose["intro"] == component["why_tracked"]
+
+
+def test_source_story_never_promotes_a_workstream_id_to_product_narrative() -> None:
+    story = product_story.build_source_product_story(
+        active_workstreams=[],
+        backlog={"queued": [
+            {"idea_id": "B-001"},
+            {"idea_id": "B-002", "title": "Verify copied record permissions"},
+        ]},
+        components=[], atlas={}, evidence_sources=[], blockers=[],
+    )
+    assert story["paragraphs"] == ["Current work: Verify copied record permissions."]
+    assert any("B-001" in row and "Verify copied record permissions" in row
+               for row in story["supporting_records"])
+
+    untitled = product_story.build_source_product_story(
+        active_workstreams=[], backlog={"queued": [{"idea_id": "B-001"}]},
+        components=[], atlas={}, evidence_sources=[], blockers=[],
+    )
+    assert untitled["paragraphs"] == []
+    assert any("B-001" in row for row in untitled["supporting_records"])
+
+
+def test_project_answer_summary_renders_as_full_table_without_markdown_noise() -> None:
+    long_body = (
+        "The project owner needs the system to keep the full operational explanation visible, including the "
+        "last sentence that used to disappear when the answer strip was rendered as fixed-width cards."
+    )
+    html = presenter.render_project_html(
+        {
+            "project_intelligence": {
+                "mode": "greenfield",
+                "title": "Example Project",
+                "eyebrow": "Project type: example",
+                "intro": "A small project summary.",
+                "chips": [],
+                "product_story_title": "Product Story",
+                "product_story": {"headline": "Example story", "paragraphs": ["Example story body."]},
+                "sections": ["product_story"],
+                "answers": [
+                    ("Who uses it?", "**Account owner**", long_body),
+                    ("What proves it?", "Reviewer-visible release evidence", "Evidence stays visible in the table."),
+                ],
+            }
+        }
+    )
+
+    assert 'class="project-panel project-answer-strip"' in html
+    assert 'class="project-answer-table"' in html
+    assert "<table><tbody>" in html
+    assert "project-answer-card" not in html
+    assert "**" not in html
+    assert "Who uses it?" in html
+    assert "Account owner" in html
+    assert "last sentence that used to disappear" in html
+    assert "Supporting details" not in html
+    assert "title=" not in html
+
+
+def test_operating_project_purpose_and_next_action_have_one_visible_owner() -> None:
+    purpose = "Cerulean helps reviewers understand the complete launch evidence."
+    next_action = "Publish the complete mRNA & QBER evidence for review."
+    role_body = "The maintainer preserves mRNA & QBER source evidence."
+    risk = "The consent evidence remains unverified."
+    story = product_story.build_source_product_story(
+        active_workstreams=[], backlog={}, components=[],
+        atlas={}, evidence_sources=["Registry component records"],
+        blockers=[("Consent review", risk, "Reviewer")],
+    )
+    project = {
+        "title": "Cerulean", "intro": purpose, "focus": "Review the launch evidence",
+        "sources": {"registry": "odylith/registry/source/component_registry.v1.json"},
+        "product_story_title": "Product Story", "product_story": story,
+        "actors": [("", "Maintainer", role_body)], "participants_title": "Who participates?",
+        "answers": [("What matters now?", "Publish evidence", next_action)],
+        "scenario_title": "Current review work",
+        "scenario": ["Current work", "Cerulean", "0.8 review work", "One review remains open.", risk],
+        "scenario_details": [("Next move", next_action), ("Open risk", risk)],
+        "next_title": "What should move next?", "recommendation": next_action,
+        "jobs_title": "Current work", "jobs": [
+            ("Publish evidence", next_action, "Next action", ""),
+            ("Preserve custody", "Keep the complete source records.", "Current release", "B-321"),
+        ],
+        "sections": ["product_story", "participants", "scenario", "jobs", "next"],
+    }
+    rendered = presenter.render_project_html({"project_intelligence": project})
+
+    class VisibleText(HTMLParser):
+        def __init__(self) -> None:
+            super().__init__()
+            self.details_depth = 0
+            self.text: list[str] = []
+
+        def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+            if tag == "details":
+                self.details_depth += 1
+
+        def handle_endtag(self, tag: str) -> None:
+            if tag == "details":
+                self.details_depth -= 1
+
+        def handle_data(self, data: str) -> None:
+            if not self.details_depth:
+                self.text.append(data)
+
+    parsed = VisibleText()
+    parsed.feed(rendered)
+    visible = " ".join(parsed.text)
+    assert visible.count(purpose) == 1
+    assert visible.count(next_action) == 1
+    assert "Maintainer" in visible
+    assert "Preserve custody" in visible and "Keep the complete source records." in visible
+    assert "Publish evidence" not in visible
+    assert role_body not in visible
+    assert "Current review work" not in visible
+    assert "One review remains open." not in visible
+    assert "Consent review" not in visible
+    assert '<details class="project-evidence-excerpt"><summary>Supporting details</summary>' in rendered
+    assert "The maintainer preserves mRNA &amp; QBER source evidence." in rendered
+    assert "Current review work" in rendered and "One review remains open." in rendered
+    assert risk in rendered
+    assert "Publish evidence" in rendered and "Next action" in rendered
+    assert 'href="?tab=radar&amp;workstream=B-321"' in rendered
+    assert all(row in rendered for row in story["supporting_records"])
+    assert story["headline"] == ""
+    assert purpose not in story["paragraphs"]
+    assert all(next_action not in row for row in story["paragraphs"])
+
+    with_contract = {**project, "product_story": {**story, "release_contract": [
+        {"label": "Outcome", "body": "The supported outcome remains visible."},
+    ]}}
+    contract_html = presenter.render_project_html({"project_intelligence": with_contract})
+    assert "The supported outcome remains visible." in contract_html
+    assert "Supporting details" in contract_html
+    assert "The maintainer preserves mRNA &amp; QBER source evidence." in contract_html
+    assert "Current review work" in contract_html and "One review remains open." in contract_html
+    assert risk in contract_html and "Next action" in contract_html
+    assert all(row in contract_html for row in story["supporting_records"])
+
+    # A caller that omits the story still retains its displayed role/context evidence.
+    without_story = {**project, "sections": ["participants", "scenario", "next"]}
+    standalone = presenter.render_project_html({"project_intelligence": without_story})
+    assert "Supporting details" not in standalone
+    assert "The maintainer preserves mRNA &amp; QBER source evidence." in standalone
+    assert "Current review work" in standalone
+
+
+def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path: Path) -> None:
+    _write_json(
+        tmp_path / "odylith" / "registry" / "source" / "component_registry.v1.json",
+        {
+            "version": "v1",
+            "components": [
+                {
+                    "component_id": "odylith",
+                    "name": "Odylith",
+                    "category": "governance_engine",
+                    "status": "active",
+                    "what_it_is": "Source-backed governance product for coding agents.",
+                    "subcomponents": ["dashboard", "odylith-context-engine", "execution-engine"],
+                },
+                {
+                    "component_id": "odylith-context-engine",
+                    "name": "Context Engine",
+                    "category": "governance_engine",
+                    "product_layer": "memory_retrieval",
+                    "status": "active",
+                    "what_it_is": "Narrows repo truth before work starts.",
+                },
+                {
+                    "component_id": "execution-engine",
+                    "name": "Execution Engine",
+                    "category": "governance_engine",
+                    "product_layer": "agent_execution",
+                    "status": "active",
+                    "what_it_is": "Admits or defers the next bounded move.",
+                },
+            ],
+        },
+    )
+    (tmp_path / "odylith" / "radar" / "source").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "odylith" / "radar" / "source" / "INDEX.md").write_text(
+        "\n".join(
+            (
+                "# Backlog Index",
+                "## Ranked Active Backlog",
+                "| rank | idea_id | title | priority | status | link |",
+                "| --- | --- | --- | --- | --- | --- |",
+                "| 1 | B-200 | Source-backed Project tab | P0 | queued | [item](item.md) |",
+                "",
+                "## In Planning/Implementation",
+                "| rank | idea_id | title | priority | status | link |",
+                "| --- | --- | --- | --- | --- | --- |",
+                "| - | B-201 | Dynamic Project intelligence | P0 | implementation | [item](item.md) |",
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "odylith" / "technical-plans" / "INDEX.md").parent.mkdir(parents=True, exist_ok=True)
+    (tmp_path / "odylith" / "technical-plans" / "INDEX.md").write_text(
+        "\n".join(
+            (
+                "# Plan Index",
+                "## Active Plans",
+                "| Plan | Status | Created | Updated | Backlog |",
+                "| --- | --- | --- | --- | --- |",
+                "| `plan.md` | In progress | 2026-05-09 | 2026-05-09 | `B-201` |",
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    _write_json(
+        tmp_path / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json",
+        {"version": "v1", "diagrams": [{"diagram_id": "D-001", "title": "Human Project Entry Map", "status": "active"}]},
+    )
+    _write_json(
+        tmp_path / "odylith" / "compass" / "runtime" / "current.v1.json",
+        {
+            "generated_utc": "2026-05-09T22:00:00Z",
+            "execution_focus": {
+                "global": {
+                    "headline": "Project tab now compiles from source records",
+                    "last_event_iso": "2026-05-09T15:00:00-07:00",
+                    "workstreams": ["B-201"],
+                }
+            },
+            "release_summary": {
+                "current_release": {
+                    "version": "0.2.0",
+                    "display_label": "0.2.0",
+                    "effective_name": "Human Project Entry",
+                    "active_workstreams": ["B-201"],
+                    "active_workstream_count": 1,
+                    "completed_workstream_count": 0,
+                }
+            },
+            "next_actions": [
+                {
+                    "idea_id": "B-201",
+                    "title": "Dynamic Project intelligence",
+                    "action": "Bind Project tab content to current source records.",
+                    "source": "plan",
+                }
+            ],
+            "risks": {
+                "bugs": [
+                    {
+                        "title": "Project tab can drift from evidence",
+                        "severity": "P1",
+                        "status": "Open",
+                        "components": "dashboard",
+                        "is_open_critical": True,
+                    }
+                ]
+            },
+        },
+    )
+    _write_json(
+        tmp_path / "odylith" / "compass" / "runtime" / "history" / "index.v1.json",
+        {"dates": ["2026-05-09", "2026-05-08"]},
+    )
+    _write_json(
+        tmp_path / "odylith" / "compass" / "runtime" / "history" / "2026-05-08.v1.json",
+        {
+            "generated_utc": "2026-05-08T22:00:00Z",
+            "execution_focus": {"global": {"headline": "Project tab was still static", "workstreams": []}},
+        },
+    )
+
+    payload = builder.build_project_intelligence_payload(
+        repo_root=tmp_path,
+        shell_payload={
+            "shell_repo_name": "odylith",
+            "self_host": {
+                "repo_role": "product_repo",
+                "posture": "detached_source_local",
+                "active_version": "source-local",
+                "pinned_version": "0.1.15",
+            },
+            "live_refresh": {"worktree": {"status": "mixed", "meaningful_changed_count": 2, "generated_changed_count": 1}},
+        },
+    )
+
+    assert payload["title"] == "Odylith"
+    assert payload["intro"] == (
+        "Odylith helps repository operators keep coding-agent work grounded, "
+        "governed, and remembered across sessions."
+    )
+    assert "packages" not in payload["intro"]
+    assert "behind one CLI" not in payload["intro"]
+    assert payload["eyebrow"] == "Project type: coding-agent governance"
+    assert "Project tab now compiles from source records" in payload["focus"]
+    assert payload["chips"][:2] == ["coding-agent governance", "Source-backed runtime"]
+    assert payload["chips"][2].endswith("complexity")
+    assert payload["sections"][0] == "product_story"
+    assert payload["governance_titles"]["B-201"] == "Dynamic Project intelligence"
+    assert payload["governance_titles"]["D-001"] == "Human Project Entry Map"
+    assert payload["product_story_title"] == "Product Story"
+    assert payload["product_story_note"] == ""
+    assert payload["product_story"]["headline"] == ""
+    assert payload["product_story"]["standfirst"] == ""
+    assert payload["intro"] not in payload["product_story"]["paragraphs"]
+    assert payload["product_story"]["paragraphs"] == ["Current work: Dynamic Project intelligence."]
+    assert all("The next move" not in row for row in payload["product_story"]["paragraphs"])
+    source_records = payload["product_story"]["supporting_records"]
+    assert any("Project tab can drift from evidence" in row for row in source_records)
+    assert all("is coherent when" not in row for row in source_records)
+    assert any("Evidence is bounded by" in row for row in source_records)
+    assert any("Radar carries" in row and "B-201" in row for row in source_records)
+    assert any("Registry names the owned boundaries" in row for row in source_records)
+    assert any("Atlas gives reviewers" in row for row in source_records)
+    assert payload["answers"][0] == (
+        "Who uses it?",
+        "repository operators and coding agents",
+        "Operators request repo work; agents execute it under Odylith controls.",
+    )
+    assert payload["answers"][1] == (
+        "What changes?",
+        "coding-agent work",
+        "Work moves from request to action with grounding, governance, and memory.",
+    )
+    assert payload["answers"][2][0] == "What matters now?"
+    assert payload["answers"][4] == (
+        "What proves it?",
+        "State, work, shape, and risk evidence",
+        "Compass shows state; Radar shows active work; Registry and Atlas show shape and topology; Casebook shows open risks.",
+    )
+    assert all("Governance Engine" not in " ".join(card) for card in payload["answers"])
+    assert all("Source role:" not in " ".join(card) for card in payload["answers"])
+    assert all("back the current claims" not in " ".join(card) for card in payload["answers"])
+    assert "decision" not in payload
+    assert "decision_label" not in payload
+    assert payload["recommendation"] == "Bind Project tab content to current source records."
+    assert "build" not in payload
+    assert any("Project tab can drift from evidence" in item for item in payload["unknown"])
+    assert any("Focus" in item for item in payload["known"])
+    assert payload["projection"]["origin"] == "source-local"
+    assert payload["projection"]["work_mode"] == "Implementing"
+    assert payload["projection"]["refreshed_at"] == "2026-05-09T22:00:00Z"
+    assert any(row["claim"] == "Current focus" and row["evidence"] == "operational" for row in payload["claim_evidence"])
+    assert any(row["surface"] == "Registry" and row["coverage"] == "covered" for row in payload["artifact_coverage"])
+    assert any(row["link"] == "Radar -> Plans" and row["health"] == "covered" for row in payload["topology_spine"])
+    assert any("Focus changed" in item for item in payload["delta"])
+    assert any("missing subcomponent dashboard" in item for item in payload["contradictions"])
+    assert any(row["posture"] == "Recommendation proof" for row in payload["validation_posture"])
+    assert any(row["risk"] == "Uncommitted change" for row in payload["risk_classes"])
+    assert any(row["role"] == "Maintainer" for row in payload["audience_emphasis"])
+    assert any("missing subcomponent dashboard" in item for item in payload["degraded_state"])
+    assert payload["actors"] == [
+        ("", "Operator", "Moves implementing work forward by choosing the next action and clearing blockers."),
+        ("", "Maintainer", "Changes source or governance records only after checking Registry, Radar, Compass, Atlas, and Casebook evidence."),
+        ("", "Reviewer", "Checks risk ownership, validation gaps, and contradiction paths."),
+    ]
+    assert any(row[1] == "Maintainer" for row in payload["actors"])
+    assert any(row[0] == "Dynamic Project intelligence" and row[2] == "Current release" for row in payload["jobs"])
+    assert any(row[2] == "Open risk" for row in payload["jobs"])
+    assert payload["scenario"][0] == "Current work"
+    assert payload["scenario"][1] == "Odylith"
+    assert payload["scenario"][2] == "0.2.0: Human Project Entry implementing work"
+    assert payload["scenario"][3] == "1 active workstream; 1 runtime action; 1 critical blocker."
+    assert payload["scenario"][4] == (
+        "For 0.2.0: Human Project Entry, Odylith is in implementing mode; the active focus is project tab now compiles from "
+        "source records. The next move is to bind Project tab content to current source records. "
+        "1 critical blocker remains open, so proof must stay attached to source records."
+    )
+    assert "Focus:" not in payload["scenario"][4]
+    assert "Next action:" not in payload["scenario"][4]
+    assert "Evidence:" not in payload["scenario"][4]
+    assert "..." not in payload["scenario"][4]
+    assert payload["scenario_details"] == [
+        ("Active work", "Project tab now compiles from source records"),
+        ("Next move", "Bind Project tab content to current source records."),
+        ("Proof boundary", "Compass runtime state, Radar workstreams, Registry component records, Atlas topology records, and Casebook risk records"),
+        ("Open risk", "1 critical blocker remains open."),
+    ]
+    assert payload["scenario_title"] == "Current implementing work"
+    assert payload["jobs_title"] == "What is active for 0.2.0: Human Project Entry?"
+    assert payload["boundary_title"] == "What is inside the current implementing boundary?"
+    assert payload["claim_evidence_title"] == "What can be trusted right now?"
+    assert payload["state_title"] == "Where does this stand?"
+    assert payload["next_title"] == "What should move next?"
+    assert payload["included_label"] == "In current slice"
+    assert any("B-201: Dynamic Project intelligence" in item for item in payload["included"])
+    assert any("missing subcomponent dashboard" in item for item in payload["excluded"])
+
+    html = presenter.render_project_html({"project_intelligence": payload})
+    assert "project-focus-card" not in html
+    assert "project-open-card" in html
+    assert "project-decision-card" not in html
+    assert "project-decision-grid" not in html
+    assert "Decision now" not in html
+    assert "What must be decided?" not in html
+    assert "What should move next?" in html
+    assert html.split("</header>", 1)[0].count(payload["intro"]) == 1
+    supporting = html.split('<summary>Supporting details</summary>', 1)[1].split("</details>", 1)[0]
+    assert 'project-proof-grid' in supporting
+    assert "Project tab now compiles from source records" in supporting
+    assert "Where does this stand?" in supporting
+    assert payload["intro"] in supporting
+    assert "<h3>How Odylith helps" not in html
+    assert '<details class="project-evidence-excerpt"><summary>Supporting details</summary>' in html
+    assert '<p>Bind Project tab content to current source records.</p>' in html
+    assert "What can be trusted about Odylith right now?" not in html
+    assert "Observed now" not in html
+    assert "Proof gaps" not in html
+    assert "View claim audit" not in html
+    assert "Is the Odylith governance spine healthy?" not in html
+    assert "What source coverage exists for Odylith?" not in html
+    assert "What changed or conflicts?" in html
+    assert "What risk matters?" in html
+    assert "What is inside the current implementing boundary?" not in html
+    assert "In current slice" not in html
+    assert "What matters now?" in html
+    assert "What decision matters for Odylith?" not in html
+    assert "Governance Engine" not in html
+    assert "Source role:" not in html
+    assert "AI agent governance scenario" not in html
+    assert "0.2.0: Human Project Entry. Evidence:" not in html
+    assert "Evidence boundary: Registry" not in html
+    assert '<article class="project-scenario-cover"><strong>' in html
+    assert '<article class="project-scenario-cover"><p>' not in html
+    assert "Current implementing work" in html
+    assert "Current focus:" not in html
+    assert "Evidence boundary:" not in html
+    assert '<div class="project-prose-lines"><p>Project tab now compiles from source records.</p><p>Current release: 0.2.0: Human Project Entry.</p><p>Worktree: mixed with 2 meaningful and 1 generated changed paths.</p></div>' in html
+    assert (
+        '<a class="project-workstream-chip project-deeplink project-id-deeplink" target="_top" href="?tab=radar&amp;workstream=B-201" '
+        'data-tooltip="Dynamic Project intelligence" aria-label="Open B-201 in Radar">B-201</a>'
+    ) in html
+    assert "<em>" not in html
+    assert '<a class="project-deeplink" target="_top" href="?tab=casebook">Casebook</a>' not in html
+    assert '<a class="project-deeplink" target="_top" href="?tab=registry">Registry</a>' not in html
+    assert "Casebook" in html
+    assert "Registry" in html
+    assert "<b>Active work</b>" in html
+    assert "<b>Next move</b>" in html
+    assert "<b>Proof boundary</b>" in html
+    assert "Human-first comprehension" not in html
+    assert "A maintainer opens" not in html
+    assert "How does Odylith move work from request to proof?" not in html
+    assert "Ground request" not in html
+    assert "Replacing Radar, Registry, Atlas, Compass, or Casebook" not in html
+    assert "<h3>Odylith helps repository operators" not in html
+    assert "Showing a generic intake template" not in html
+    assert "Running background sync from the Project page" not in html
+    assert "Systems and evidence surfaces" not in html
+    assert "Maintainer" in html
+    assert "AUDIENCE" not in html
+    assert "Systems and evidence surfaces" not in html
+    assert "Context Engine" in html
+    assert "Summarized from 0.2.0: Human Project Entry, 1 active workstream, 1 runtime action, and 5 evidence sources." in html
+    assert "project-projection-strip" not in html
+    assert '<article class="project-card"><p></p>' not in html
+
+    for observation in ({}, {"status": "unknown", "meaningful_changed_count": 0, "generated_changed_count": 0}):
+        missing = builder.build_project_intelligence_payload(
+            repo_root=tmp_path, shell_payload={"live_refresh": {"worktree": observation}},
+        )
+        assert "Working tree information is unavailable." in missing["current"]
+        assert "0 meaningful" not in missing["current"]
+        assert "0 generated" not in missing["current"]
+    observed_clean = builder.build_project_intelligence_payload(
+        repo_root=tmp_path,
+        shell_payload={"live_refresh": {"worktree": {
+            "status": "clean", "meaningful_changed_count": 0, "generated_changed_count": 0,
+        }}},
+    )
+    assert "Worktree: clean with 0 meaningful and 0 generated changed paths." in observed_clean["current"]
+
+
+def test_project_focus_uses_release_workstreams_when_runtime_headline_is_generic() -> None:
+    backlog = {
+        "execution": [
+            {"idea_id": "B-100", "title": "Discharge checklist review", "priority": "P1", "status": "implementation"},
+            {"idea_id": "B-101", "title": "Follow-up ownership proof", "priority": "P1", "status": "implementation"},
+        ]
+    }
+
+    assert focus.project_focus_text(
+        "Updated product code and 3 other areas",
+        active_workstreams=["B-100", "B-101"],
+        backlog=backlog,
+        release_label="0.3.0",
+        fallback="Fallback focus",
+    ) == "Discharge checklist review; Follow-up ownership proof"
+
+
+def test_project_intelligence_presenter_renders_fallback_without_payload() -> None:
+    html = presenter.render_project_html({})
+
+    assert "The Project view could not be loaded." in html
+    assert "odylith dashboard refresh --repo-root . --surfaces tooling_shell" in html
+    assert html.count('class="project-empty-action"') == 1
+    assert "project-empty-preview" not in html
+    assert "<h3></h3>" not in html
+    assert "project-proof-grid" not in html
+    assert "project-signal-grid" not in html
+    assert "Project source payload missing" not in html
+    assert "project-side" not in html
+    assert "Main blockers" not in html
+
+
+def test_project_intelligence_deeplink_renderer_links_governance_references() -> None:
+    html = deeplinks.inline_deeplink_html(
+        "Use B-321, CB-654, D-987, Registry, radar, and odylith/technical-plans/in-progress/demo.md.",
+        titles={
+            "B-321": "Customer intake workflow",
+            "CB-654": "Rollback owner missing",
+            "D-987": "First slice flow",
+        },
+    )
+
+    assert 'href="?tab=radar&amp;workstream=B-321" data-tooltip="Customer intake workflow"' in html
+    assert 'href="?tab=casebook&amp;bug=CB-654" data-tooltip="Rollback owner missing"' in html
+    assert 'href="?tab=atlas&amp;diagram=D-987" data-tooltip="First slice flow"' in html
+    assert 'title="Customer intake workflow"' not in html
+    assert 'href="?tab=registry">Registry</a>' not in html
+    assert 'href="?tab=radar">radar</a>' not in html
+    assert "Registry, radar" in html
+    assert 'href="technical-plans/in-progress/demo.md"' in html
+    assert 'href="?tab=registry" data-tooltip=' not in html
+
+
+def test_shell_text_linkifier_keeps_surface_names_plain_and_links_ids(tmp_path: Path) -> None:
+    html = dashboard_shell_links.linkify_shell_text(
+        "Radar and Registry mention B-321, D-987, and odylith/technical-plans/in-progress/demo.md.",
+        repo_root=tmp_path,
+        output_path=tmp_path / "odylith" / "index.html",
+        preferred_scope_key="demo",
+    )
+
+    assert "Radar and Registry mention" in html
+    assert 'href="?tab=radar">Radar</a>' not in html
+    assert 'href="?tab=registry">Registry</a>' not in html
+    assert 'href="?tab=radar&amp;workstream=B-321">B-321</a>' in html
+    assert 'href="?tab=atlas&amp;workstream=B-321&amp;diagram=D-987">D-987</a>' in html
+
+
+def test_project_intelligence_presenter_links_project_jobs_to_radar_workstreams() -> None:
+    html = presenter.render_project_html(
+        {
+            "project_intelligence": {
+                "title": "Fixture project",
+                "intro": "Fixture intro.",
+                "chips": [],
+                "sections": ["jobs"],
+                "jobs_title": "What is proposed?",
+                "jobs_note": "Fixture jobs note.",
+                "jobs": [
+                    ("Prove first capability", "Owns the first release capability.", "Inferred", "B-321"),
+                ],
+                "governance_titles": {"B-321": "Prove first capability"},
+            }
+        }
+    )
+
+    assert 'class="project-job-title-link" target="_top" href="?tab=radar&amp;workstream=B-321"' in html
+    assert 'href="?tab=radar&amp;workstream=B-321" data-tooltip="Prove first capability"' in html
+    assert 'title="Prove first capability"' not in html
+
+
+def test_project_intelligence_presenter_uses_payload_narration_labels() -> None:
+    payload = {
+        "project_intelligence": {
+            "eyebrow": "fixture lens",
+            "title": "Fixture project",
+            "intro": "Fixture project intro.",
+            "chips": ["fixture"],
+            "focus_label": "Fixture focus label",
+            "focus": "Fixture focus",
+            "open_label": "Fixture open label",
+            "open": ["Fixture open item"],
+            "answers": [],
+            "scenario": ["Fixture scenario", "Fixture project", "Fixture headline", "Fixture caption", "Fixture body"],
+            "scenario_title": "Fixture scenario title",
+            "scenario_note": "Fixture scenario note",
+            "participants_title": "Fixture participant title",
+            "participants_note": "Fixture participant note",
+            "actors": [],
+            "jobs_title": "Fixture jobs title",
+            "jobs_note": "Fixture jobs note",
+            "jobs": [],
+            "claim_evidence_title": "Fixture claim evidence title",
+            "claim_evidence_note": "Fixture claim evidence note",
+            "claim_evidence_columns": [("claim", "Fixture claim column")],
+            "claim_evidence": [{"claim": "Fixture claim row"}],
+            "topology_spine_title": "Fixture spine title",
+            "topology_spine_note": "Fixture spine note",
+            "topology_spine_columns": [("link", "Fixture link column")],
+            "topology_spine": [{"link": "Fixture spine row"}],
+            "artifact_coverage_title": "Fixture coverage title",
+            "artifact_coverage_note": "Fixture coverage note",
+            "artifact_coverage_columns": [("surface", "Fixture surface column")],
+            "artifact_coverage": [{"surface": "Fixture coverage row"}],
+            "trust_title": "Fixture trust title",
+            "trust_note": "Fixture trust note",
+            "delta_label": "Fixture delta label",
+            "contradictions_label": "Fixture contradiction label",
+            "degraded_label": "Fixture degraded label",
+            "delta": [],
+            "contradictions": [],
+            "degraded_state": [],
+            "posture_title": "Fixture posture title",
+            "posture_note": "Fixture posture note",
+            "validation_label": "Fixture validation label",
+            "risk_label": "Fixture risk label",
+            "validation_posture": [],
+            "risk_classes": [],
+            "audience_emphasis": [],
+            "boundary_title": "Fixture boundary title",
+            "boundary_note": "Fixture boundary note",
+            "included_label": "Fixture included label",
+            "excluded_label": "Fixture excluded label",
+            "included": [],
+            "excluded": [],
+            "work_state_kicker": "Fixture status kicker",
+            "state_title": "Fixture state title",
+            "state_note": "Fixture state note",
+            "current_state_label": "Fixture current label",
+            "desired_state_label": "Fixture desired label",
+            "current": "Fixture current state",
+            "desired": "Fixture desired state",
+            "next_title": "Fixture next title",
+            "next_note": "Fixture next note",
+            "next_owner_label": "Fixture owner label",
+            "next_output_label": "Fixture output label",
+            "next_precondition_label": "Fixture precondition label",
+            "next_risk_label": "Fixture risk-if-delayed label",
+            "next": ["Fixture next item", "Fixture detail", "Fixture owner", "Fixture output", "Fixture precondition", "Fixture delay risk"],
+            "proof_title": "Fixture proof title",
+            "proof_note": "Fixture proof note",
+            "known_label": "Fixture known label",
+            "unknown_label": "Fixture unknown label",
+            "confidence_label": "Fixture confidence label",
+            "known": [],
+            "unknown": [],
+            "confidence": "Medium",
+            "sections": ["next", "proof"],
+        }
+    }
+
+    html = presenter.render_project_html(payload)
+
+    assert "Fixture claim evidence title" not in html
+    assert "Fixture participant title" not in html
+    assert "Fixture jobs title" not in html
+    assert "Fixture state title" not in html
+    assert "Fixture spine title" not in html
+    assert "Fixture coverage title" not in html
+    assert "Fixture next title" in html
+    assert "Fixture known label" in html
+    assert "What is the evidence maturity per claim?" not in html
+    assert "Where does the project stand?" not in html
+
+
+def test_project_intelligence_hero_rail_labels_do_not_repeat_project_title() -> None:
+    project_title = "Long Consumer Product Title That Already Appears In The Hero"
+    payload = {
+        "project_intelligence": {
+            "eyebrow": "fixture lens",
+            "title": project_title,
+            "intro": "Fixture project intro.",
+            "chips": ["fixture"],
+            "focus_label": f"Accepted {project_title} focus",
+            "focus": "Promote only after proof passes.",
+            "open_label": f"Open {project_title} questions",
+            "open": ["Which input path proves the first release?"],
+            "sections": [],
+        }
+    }
+
+    html = presenter.render_project_html(payload)
+
+    assert f"Accepted {project_title} focus" not in html
+    assert f"Open {project_title} questions" not in html
+    assert "<p>Accepted focus</p>" in html
+    assert "<p>Open questions</p>" in html
+
+
+def test_project_intelligence_source_does_not_embed_demo_project_language() -> None:
+    source_root = Path(__file__).resolve().parents[3] / "src" / "odylith" / "runtime" / "project_intelligence"
+    banned = {
+        "AI agent governance",
+        "demo lending",
+        "Human-first comprehension",
+        "Product scenario journey",
+        "A maintainer opens",
+        "Ground request",
+        "Evidence: Registry",
+        "Existing product repo",
+        "governance engine lens",
+    }
+    strings: list[str] = []
+    for path in source_root.glob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        strings.extend(node.value for node in ast.walk(tree) if isinstance(node, ast.Constant) and isinstance(node.value, str))
+
+    leaked = [text for text in strings for phrase in banned if phrase in text]
+
+    assert leaked == []
+
+
+def test_project_intelligence_css_uses_shared_surface_typography() -> None:
+    css = assets.load_project_tab_css()
+
+    assert "font-family: inherit;" in css
+    assert "--project-type-label-size: var(--surface-workstream-button-font-size, 12px);" in css
+    assert "--project-type-label-weight: var(--surface-workstream-button-font-weight, 500);" in css
+    assert "--project-type-chip-size: var(--surface-identifier-font-size, 14px);" in css
+    assert "--project-type-chip-weight: var(--surface-identifier-font-weight, 500);" in css
+    assert "--project-type-content-size: var(--project-type-body-size);" in css
+    assert "--project-type-title-size: 42px;" in css
+    assert "--project-type-intro-size: 22px;" in css
+    assert "--project-type-hero-eyebrow-size: 15px;" in css
+    assert ".project-answer-table table" in css
+    assert ".project-answer-table th" in css
+    assert ".project-answer-table td strong" in css
+    assert ".project-answer-table td p" in css
+    assert ".project-risk-card" in css
+    assert ".project-risk-grid" in css
+    assert ".project-workstream-chip" in css
+    assert "var(--surface-workstream-button-padding, 1px 8px)" in css
+    assert "var(--surface-workstream-button-font-size, 12px)" in css
+    assert ".project-label-chip" in css
+    assert ".project-label-chip-success" in css
+    assert ".project-label-chip-warning" in css
+    assert ".project-job-card em" not in css
+    assert ".project-chips span:nth-child" not in css
+    assert ".project-job-workstream .project-deeplink" not in css
+    assert "-webkit-line-clamp" not in css
+    assert ".project-story-contract-card" in css
+    assert "grid-template-columns: minmax(150px, 220px) minmax(0, 1fr);" in css
+    assert "repeat(auto-fit, minmax(190px, 1fr))" not in css
+    assert "grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(240px, 0.58fr);" in css
+    assert ".project-proof-grid article > p" in css
+    assert ".project-proof-grid li" in css
+    assert ".project-orientation" not in css
+    assert ".project-build-card" not in css
+    assert ".project-next-grid" not in css
+    assert ".project-scenario .project-panel-head h2" in css
+    assert ".project-scenario-cover strong" in css
+    assert ".project-scenario-copy .project-scenario-prose" in css
+    assert ".project-hero-main-single" in css
+    assert ".project-empty-action-grid" in css
+    assert ".project-empty-preview-grid" in css
+    assert ".project-prose-lines" in css
+    assert ".project-host-prompt-grid {\n  display: grid;\n  grid-template-columns: minmax(0, 1fr);" in css
+    assert ".project-host-prompt {\n  display: grid;\n  grid-template-columns: minmax(0, 1fr);" in css
+    assert "font-size: 22px;" in css
+    assert "font-size: 18px;" in css
+    assert ".project-actor-grid" in css
+    assert ".project-system-grid" not in css
+    assert ".project-flow-grid" not in css
+    assert "font-size: var(--project-type-content-size);" in css
+    assert "font-weight: 800" not in css
+    assert "clamp(" not in css
+    assert "letter-spacing: -" not in css

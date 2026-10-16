@@ -44,6 +44,12 @@ def test_surface_workstream_button_chip_css_keeps_box_model_and_typography_bound
         f"padding: var({ui.SURFACE_WORKSTREAM_BUTTON_PADDING_CSS_VAR}, "
         f"{ui.STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING});"
     ) in css
+    assert f"--chip-link-border: {ui.STANDARD_SURFACE_WORKSTREAM_BUTTON_BORDER_COLOR};" in css
+    assert f"--chip-link-bg: {ui.STANDARD_SURFACE_WORKSTREAM_BUTTON_BACKGROUND};" in css
+    assert f"--chip-link-text: {ui.STANDARD_SURFACE_WORKSTREAM_BUTTON_COLOR};" in css
+    assert f"--chip-link-border-hover: {ui.STANDARD_SURFACE_WORKSTREAM_BUTTON_HOVER_BORDER_COLOR};" in css
+    assert f"--chip-link-bg-hover: {ui.STANDARD_SURFACE_WORKSTREAM_BUTTON_HOVER_BACKGROUND};" in css
+    assert f"--chip-link-text-hover: {ui.STANDARD_SURFACE_WORKSTREAM_BUTTON_HOVER_COLOR};" in css
     assert (
         f"font-size: var({ui.SURFACE_WORKSTREAM_BUTTON_FONT_SIZE_CSS_VAR}, "
         f"{ui.STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_SIZE});"

@@ -1,67 +1,129 @@
-flowchart LR
-    subgraph intent_lane["Intent + shallow evidence"]
-      direction TB
-      prompt["Greenfield prompt<br/>build, govern, plan, architect"]
-      host["Host model surfaces<br/>thin CLI routing only"]
-      source["Shallow repo evidence<br/>empty, thin, metadata,<br/>docs, app-ready"]
-      catalog["Domain archetype catalog<br/>product, infra, data,<br/>science/math lenses"]
+flowchart TB
+    subgraph evidence_lane["Evidence and interpretation"]
+      direction LR
+      request["Greenfield request and EDIT evidence<br/>Untrusted input with exact source custody"]
+      prepare["Product-owned Greenfield prepare<br/>One monotonic parent spans contract acquisition,<br/>four host passes and preparation certification"]
+      guardian["Independent deadline guardian<br/>Cancel blocked work and owned child groups;<br/>660 seconds remains diagnostic and unqualified"]
+      baseline["Complete installed baseline<br/>Immutable view exists before proposal admission"]
+      contract["Public candidate contract<br/>Sealed source context and typed schema"]
+      prior_lifecycle["EDIT comparison from the prior seal<br/>Every prior duty needs a disposition;<br/>preserved duties keep their component and workstream owners"]
+      model_pass["Normalized source-duty ledger<br/>Identity, performers, actions and targets;<br/>people and systems outside the workflow keep their own types"]
+      typed_graph["Closed source result<br/>Inventory with exact inline citations<br/>or one material question"]
+      identity_check["Source identity and citation preflight<br/>Check exact quotes and explicit outside-participant mentions;<br/>compiler assigns references for later stages"]
+      source_custody["Source-only verifier and canonical ledger<br/>Verify duties, complete path, order, result and proof;<br/>retain exact participant identity and every prior EDIT duty"]
+      private_diagnostics["Optional private diagnostic retention<br/>Exact inputs and returned streams before refusal or cleanup;<br/>same deadline and stable private parent;<br/>no admission authority"]
+      candidate_author["One candidate authoring pass<br/>Propose architecture and lifecycle allocations;<br/>explain the accepted run without selecting it again"]
+      ambiguity{"Material meaning complete?"}
+      clarify["One focused clarification<br/>No transaction or governed write"]
+      request --> prepare --> contract --> model_pass --> typed_graph --> identity_check
+      identity_check -- "valid inventory" --> source_custody
+      identity_check -- "valid question" --> clarify
+      source_custody -- "affirmative and bound" --> candidate_author --> ambiguity
+      source_custody -- "no, uncertain or invalid" --> invalid_candidate
+      prepare -. "whole journey supervision" .-> guardian
+      prepare -. "explicit diagnostic destination" .-> private_diagnostics
+      baseline -. "required" .-> contract
+      prior_lifecycle -. "comparison only; current correction takes precedence" .-> model_pass
+      prior_lifecycle -. "required per-prior judgment; compound carriers allowed" .-> source_custody
+      ambiguity -- "no" --> clarify
     end
 
-    subgraph reasoning_lane["Domain intelligence compiler"]
-      direction TB
-      compiler["Greenfield proposal compiler<br/>greenfield_proposals.py"]
-      planning["Program/release/UX planner<br/>proposal_planning.py"]
-      rendering["Proposal rendering<br/>operator text + apply commands"]
-      proposal["Proposal payload<br/>classification, backlog, waves,<br/>release plan, components,<br/>diagrams, risks, validation"]
+    subgraph projection_lane["Deterministic package construction"]
+      direction LR
+      custody["Deterministic candidate admission<br/>Build one complete graph from verified duties;<br/>a verified whole-product action does not create a subsystem"]
+      source_views["Three views of the same source graph<br/>Declared workflow keeps its verified roles;<br/>complete run includes required prerequisites and system consequences;<br/>recurring safeguards retain guards and proof outside that run"]
+      invalid_candidate["Unverified source duties or invalid candidate<br/>Stop with no further model, repair, retry,<br/>fallback, transaction, or governed write"]
+      projections["Deterministic source and design projections<br/>Proportional Radar, owned Registry and distinct Atlas views<br/>Exact release membership and dependency-ready task"]
+      staged_surfaces["Temporary-root surface rendering<br/>Shared read lock holds the validated baseline<br/>No detached narration queue or worker"]
+      delivery_proof["Staged Delivery Intelligence proof<br/>v4 artifact validated before sealing"]
+      quality["Pre-confirm complete-package gates<br/>Host canonical receipt and zero post-receipt semantic calls<br/>Independent release qualification remains open"]
+      execution_handoff["Typed Execution Engine handoff<br/>Canonical handshake, snapshot and validation bundle"]
+      intervention_fallback["Host-neutral intervention fallback<br/>Observation / Proposal / Assist remain distinct"]
+      timing["Shared phase budgets<br/>300-second gate and candidate window, 15-second completion reserve;<br/>source inventory and verifier use separate caps;<br/>every phase consumes the same whole deadline"]
+      custody -- "valid and hash-bound" --> source_views --> projections --> staged_surfaces --> delivery_proof --> quality --> execution_handoff --> intervention_fallback --> timing
+      custody -- "invalid or tampered" --> invalid_candidate
     end
 
-    subgraph confirmation_lane["Confirmation-gated apply"]
-      direction TB
-      confirm{"Operator confirms?"}
-      radar["Radar apply<br/>owned backlog authoring"]
-      registry["Registry apply<br/>planned user_intent components"]
-      atlas["Atlas apply<br/>draft topology diagrams"]
-      release["Release targeting<br/>next/current selector"]
+    subgraph status_lane["Shell status acquisition: first install and later packages"]
+      direction LR
+      bundle_scope["Renderer classifies the complete shell bundle<br/>HTML, payload and controls<br/>Before canonical output mapping"]
+      captured_status["Managed shell snapshot<br/>Version state and Context Engine last-update provenance<br/>Captured in sealed tooling payload; no live status probes"]
+      live_telemetry["Independent live telemetry<br/>Remains mutable outside the managed package"]
+      direct_live["Isolated direct-live export<br/>Retains live status probes"]
+      bundle_scope -- "any bundle member is managed" --> captured_status
+      bundle_scope -- "no bundle member is managed" --> direct_live
+      live_telemetry -- "capture at render time" --> captured_status
+      live_telemetry -- "live status" --> direct_live
     end
 
-    subgraph memory_lane["Clean runtime memory"]
-      direction TB
-      intervention["Intervention Engine<br/>routes without raw<br/>Observation chatter"]
-      compass["Compass + memory<br/>accepted proposal context<br/>and clean timeline"]
+    subgraph transaction_lane["Sealed transaction boundary"]
+      direction LR
+      write_set["Sealed repository write set<br/>Complete after-image and preconditions<br/>Write-set hash addresses the generation"]
+      generation_manifest["Pre-confirm generation manifest<br/>Exact bytes bound to the write set<br/>No enclosing transaction hash"]
+      entry["Sole sealed HTML publication entry<br/>Write-set and manifest identity<br/>No second JSON selector"]
+      sealed["Sealed ProductCreateTransaction<br/>Write set, manifest and entry bytes<br/>Verify distinct confirmation hash, then release read lock"]
+      quarantine["Bounded-route pending seal<br/>Quarantine holds a completion digest;<br/>stored state alone cannot permit confirmation"]
+      finalize["Complete the owned journey<br/>Retain, clean, finish observer and completion-record I/O;<br/>certify only within the final whole and proposal deadlines"]
+      receipt["Deliver the completion receipt<br/>Private nonce issued only after certification;<br/>receipt delivery follows measured preparation"]
+      cancelled["Expired or interrupted journey<br/>Keep new seals unconfirmable;<br/>preserve old EDIT seals and recovery journals"]
+      decision["Validated preview with three terminal commands<br/>Hash-bound CONFIRM, EDIT and REJECT<br/>Ordinary chat approval is not qualified"]
+      edit["EDIT from retained untrusted source and correction<br/>Same pinned profile and a new canonical hash<br/>Preserve the old immutable package"]
+      reject["REJECT exact pending hash under lock<br/>No governed writes; preserve recovery evidence"]
+      confirm["Explicit terminal CONFIRM<br/>Verify delivered receipt and exact sealed hash;<br/>no model, parser, generation, or repair"]
+      publish["Publish exact sealed HTML entry<br/>Journal retains admitted transaction evidence<br/>Readers pin immutable shell and child resources"]
+      observed["Opened or historical snapshot<br/>Pinned package and captured status<br/>No automatic successor discovery"]
+      navigate["Navigate the canonical entry<br/>Resolve the current published package"]
+      later["Successful later update<br/>Require no pending working-file restoration<br/>Recover creates and verify working bytes<br/>Publish a complete immutable successor"]
+      recovery["Recovery boundary<br/>Rollback snapshot, journal,<br/>interrupt cleanup, and safe retry"]
+      write_set --> generation_manifest --> entry --> sealed --> quarantine --> finalize --> receipt --> decision
+      guardian -- "deadline or cancellation" --> cancelled
+      decision -- "explicit terminal CONFIRM" --> confirm --> publish
+      decision -- "explicit terminal EDIT" --> edit
+      edit --> request
+      edit --> prior_lifecycle
+      decision -- "explicit terminal REJECT" --> reject
+      publish --> later
+      later -. "fresh predecessor-bound transition" .-> publish
+      publish --> observed
+      observed -- "new canonical-entry navigation" --> navigate
+      navigate -- "published successor, when available" --> observed
+      confirm -. "failure or interruption" .-> recovery
     end
 
-    prompt --> host
-    host --> compiler
-    source --> compiler
-    catalog --> compiler
-    compiler --> planning --> proposal
-    compiler --> rendering --> proposal
-    proposal --> intervention
-    proposal --> confirm
-    confirm -- "no" --> proposal
-    confirm -- "yes" --> radar
-    confirm -- "yes" --> registry
-    confirm -- "yes" --> atlas
-    confirm -- "yes" --> release
-    radar --> compass
-    registry --> compass
-    atlas --> compass
-    release --> compass
-    intervention -. "zero-file narration filtered" .-> compass
+    subgraph proof_lane["Release evidence"]
+      direction LR
+      owners["Product semantic owners<br/>Canonical graph and Mermaid parser"]
+      evaluator["Detached independent semantic and UX evaluator<br/>Checks frozen source predicates and forward/reverse coverage;<br/>reads immutable outputs without changing consumer transactions"]
+      acceptance["Independent semantic, transaction and UX gates<br/>Qualify or block the pinned release profile<br/>Report advisory target overruns<br/>Separate commit gate under 60 seconds"]
+      confidence["Confidence report<br/>Intervals stay separate<br/>from hard acceptance"]
+      retained["Retained raw and browser proof<br/>Captured before temporary cleanup"]
+      drift{"Utility improved without<br/>new failure, latency, or complexity?"}
+      replace["Replace the losing mechanism<br/>Keep outcomes and invariants fixed"]
+      owners --> evaluator --> acceptance --> confidence --> retained --> drift
+      drift -- "no" --> replace
+    end
 
-    classDef input fill:#e8fbf7,stroke:#5bbfb2,color:#062f2b,stroke-width:1.2px;
-    classDef intelligence fill:#eaf3ff,stroke:#77a9ef,color:#102f5f,stroke-width:1.2px;
-    classDef decision fill:#ffece7,stroke:#df8f7d,color:#5c2418,stroke-width:1.3px;
-    classDef apply fill:#f4ebff,stroke:#ad8ae6,color:#31135f,stroke-width:1.2px;
-    classDef memory fill:#ebf9e8,stroke:#7ec373,color:#0f3a24,stroke-width:1.2px;
-    class prompt,host,source,catalog input;
-    class compiler,planning,rendering,proposal intelligence;
-    class confirm decision;
-    class radar,registry,atlas,release apply;
-    class intervention,compass memory;
+    ambiguity -- "yes" --> custody
+    baseline -. "status acquisition" .-> bundle_scope
+    staged_surfaces -. "status acquisition" .-> bundle_scope
+    timing --> write_set
+    quality --> evaluator
+    publish --> retained
 
-    style intent_lane fill:#effcf9,stroke:#9bd8cf,stroke-width:1px,color:#062f2b
-    style reasoning_lane fill:#f1f7ff,stroke:#a8c7f7,stroke-width:1px,color:#102f5f
-    style confirmation_lane fill:#fff3f0,stroke:#efb3a4,stroke-width:1px,color:#5c2418
-    style memory_lane fill:#f2fbef,stroke:#a9d69e,stroke-width:1px,color:#0f3a24
-    linkStyle default stroke:#647d96,stroke-width:1.45px
+    classDef primary fill:#EFF6FF,stroke:#BFD7FE,color:#132033,stroke-width:1px;
+    classDef execution fill:#ECFDFB,stroke:#A7E9E3,color:#132033,stroke-width:1px;
+    classDef governance fill:#F5F3FF,stroke:#DDD6FE,color:#132033,stroke-width:1px;
+    classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1px;
+    classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
+    class request,prepare,guardian,baseline,contract,prior_lifecycle,model_pass,typed_graph,identity_check,source_custody,candidate_author,private_diagnostics primary;
+    class custody,source_views,projections,staged_surfaces,delivery_proof,quality,execution_handoff,intervention_fallback,timing,bundle_scope,live_telemetry,direct_live execution;
+    class write_set,generation_manifest,entry,sealed,quarantine,finalize,receipt,decision,edit,reject,confirm,publish,observed,navigate,captured_status,later,recovery,owners,evaluator,acceptance,confidence,retained governance;
+    class ambiguity,drift constraint;
+    class clarify,invalid_candidate,cancelled,replace invalid;
+
+    style evidence_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
+    style projection_lane fill:#F8FFFE,stroke:#A7E9E3,stroke-width:1px,color:#293D52
+    style status_lane fill:#F8FFFE,stroke:#A7E9E3,stroke-width:1px,color:#293D52
+    style transaction_lane fill:#FCFBFF,stroke:#DDD6FE,stroke-width:1px,color:#293D52
+    style proof_lane fill:#FFFCF3,stroke:#F6D98B,stroke-width:1px,color:#293D52
+    linkStyle default stroke:#9FB2C8,stroke-width:1.25px

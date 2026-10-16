@@ -6,10 +6,8 @@
   and release-gate posture, but should suppress weak Odylith Discipline noise.
 - Compass entries should preserve workstream ids B-110 through B-117 and the
   benchmark gates that feed future session priors.
-Last updated: 2026-04-17
+Last updated: 2026-10-14
 
-
-Last updated (UTC): 2026-04-17
 
 ## Purpose
 Compass is Odylith's execution, decision, and runtime-posture surface. It turns
@@ -18,8 +16,191 @@ of what changed, what is active, what risks or cases dominate, and what the
 standup-level summary should be.
 
 ## Scope And Non-Goals
+### Brief fallback facts
+
+Compass fallback Next and Watch copy uses a recorded action, risk, or checklist
+fact when available. If none exists, it omits the field; it does not invent a
+checkpoint or watch risk. Current, unknown narration, status warnings, and
+timeline facts remain visible.
+
+### Asynchronous result custody
+The maintenance worker owns detached process identity, request replacement and
+cleanup. It verifies native argument boundaries for the interpreter, module and
+repository before replacing a worker, and observes exit before launching another.
+Unknown process inventory or identity cannot authorize a signal or replacement.
+Current-runtime recognition also accepts the independently captured native
+executable of the observing process, covering framework launcher transitions
+without path patterns or candidate-derived trust. It does not infer executable
+aliases for a different previous runtime or authenticate a virtual environment.
+The process epoch describes loaded code, not a later disk edit. Its dependency
+set includes the shared structured-reasoning policy so a default-model change
+cannot silently leave an old policy loaded. Replacement preserves request and
+entry history; a same-fingerprint future retry remains on its existing backoff.
+
+Exact cached results are reusable before provider availability is checked. Busy
+or failed application retains the request, computed cache and recorded diagnostics;
+provider backoff polls request identity without repeatedly entering full repository
+publication. Completion consumes only the exact processed request, preserving a
+newer foreground replacement. Narration runs outside the repository writer lock.
+
+`compass_standup_brief_runtime_patch.py` is the sole asynchronous managed-result
+writer. It acquires the shared publication boundary before checking runtime identity,
+writes matching JSON and JavaScript, and publishes a complete immutable successor.
+Foreground request stamping changes only the pending request; inline result
+projection is pure inside the enclosing refresh. An identical result does not
+publish another generation. Failure before publication leaves the old view intact;
+an already observed successor must never be rolled back. Neither outcome authorizes
+adoption of partial working files.
+
+CB-305's bounded source proof passes 488 integrated controls and 73 independent
+lifecycle controls. Real Darwin children cover ambiguous sibling-directory names,
+wrong-root signal refusal and termination; Linux native reads have mocked coverage
+only. Provider-free real Compass/shell browser proof covers empty, ready and failed
+publications at desktop/mobile sizes over file and HTTP, including retained-brief
+readability and unchanged predecessors. This does not establish recovery of the
+preserved real failure, installed behavior, full governance UX or chat delivery.
+
+### Protected stream memory and append-once publication
+When an active immutable publication exists, bounded native hooks and read-only
+event callers without an admitted managed governance writer holding the
+repository lock queue their exact events in
+`.odylith/runtime/host-hooks/compass-events.v1.jsonl` under stable
+`host-event-<ID>` transactions. This rule includes Stop, PostToolUse and Claude
+SubagentStop. Subagent lifecycle records retain their metadata even when no
+meaningful summary exists. Only an
+admitted normal governance writer that owns the repository lock retains the
+canonical append and continuation path.
+
+Dirty-path checkpoints keep their existing `dirty-events.v1.jsonl` file.
+Separate file replacement prevents an older runtime's checkpoint clear from
+deleting unpublished session history, including a concurrent arrival.
+
+Codex and Claude Stop remain private memory producers. A meaningful assistant
+summary and any matching delivery-confirmation observation retain their exact
+host and session identity. Stop does not run sync, settle a continuation,
+publish a generation, or render or replay a visible intervention.
+
+A successful ordinary, non-hook `odylith compass log` or `odylith sync` may
+publish at most four retained events per maintenance pass through the normal
+repository mutation continuation. It acknowledges an event only after its
+immutable published bytes are read back. Remaining events stay queued. A later
+memory-maintenance failure does not turn the authored command into a failure;
+the history is reported separately as pending. Successful sync also retires
+only dirty-path records covered by that sync. No background service performs
+this publication or settlement.
+
+Publication proves event-byte custody. Automatically captured assistant
+summaries and delivery-confirmation observations remain historical observations
+with `UNKNOWN` semantic validity after publication; publication does not make
+their assertions current verified truth. Retained observations may support
+session and judgment memory while they are pending, but their historical
+authority remains unknown.
+
+Shared intervention loaders snapshot the private inbox before selecting the
+immutable published stream, then merge eligible pending intervention events.
+Publication precedes acknowledgment, so a concurrent publication cannot make
+an event disappear between those reads. Failed unpublished working appends
+remain invisible outside an admitted writer. Read selection checks the sealed
+manifest and selected path without scanning unrelated surfaces; full writer
+and release validation retain their existing byte checks. The cache key changes when either the stream or pending
+store changes, and exact transaction identities dedupe matching events. A
+pending event that differs from an existing canonical transaction refuses.
+Pending inclusion keeps intervention and memory engines available; it does not
+promote the pending record to canonical truth.
+
+After acknowledgment removes a private summary, canonical Context Engine
+projection and matching anchor context read its published event through the
+same bounded selector. Repository-root resolution must not duplicate the
+product-directory prefix. Retained assistant source, session and transaction
+identity support historical context; absent authority metadata remains
+reference-only.
+
+For a canonical `compass log` inside an active managed generation, the admitted
+repository writer prepares exact continuation custody before appending and
+fsyncing the event. Event preparation belongs to the log owner; refresh and
+publication remain with their existing owners. Direct API, custom-stream and
+unactivated writes retain their previous semantics without this receipt.
+
+`odylith compass log --repo-root . --complete` accepts no append payload or
+receipt path. It verifies the original repository, executing runtime, published
+base, exact stream prefix/event/mode, managed authored inputs and recorded
+working bytes. When the receipt is still prepared and the preimage is unchanged,
+completion performs the original first append; it never repeats an append already
+present. Automatic recovery resumes only the exact pending event that is still
+queued. An unrelated manual receipt blocks the normal writer and requires
+explicit completion. Unknown interruptions, foreign requests and changed inputs
+refuse, and an observed successor is never rolled back.
+
+The narrow retained-event publication route accepts either
+`odylith compass log --repo-root . --host-event ID` or
+`odylith compass log --repo-root . --host-event=ID`, with no other arguments
+besides the repository and retained event identity.
+
+An exact unpublished append in the `prepared`, `appended` or `rendering` phase, with no
+successor, may instead be retired with
+`compass log --abandon-restored <review hash> --receipt-hash <original SHA-256>`
+after the existing reviewed restoration restores only the canonical stream.
+This is abandonment, not cross-runtime completion. Under the repository writer
+lease, require unchanged publication, exact event/preimage custody, unchanged
+authored inventory, complete working equality and settled journals. A prepared
+receipt binds the restored working state; an appended or rendering receipt must bind
+the CLOSED restoration plan's exact pre-restoration fingerprint map. Both require
+the restored live tree to equal the unchanged publication. Archive the
+original receipt and abandonment witness durably before retiring the active
+receipt. No append, refresh, journal recovery or publication runs on this branch;
+the original event remains recoverable. Changed or newer custody refuses, and
+the same archived receipt identity cannot be prepared again. Independent review,
+309 earlier adjacent checks, 132 phase-aware module controls and both exact live
+recoveries support this bounded contract.
+
+CB-359 adds interrupted rendering to this existing archive path after exact
+restoration. If rendering changed derived outputs, restore those first through
+their reviewed receipt; the final restoration receipt must select only the
+canonical stream. Future runtime code identities exclude only exact `.DS_Store`
+basenames; actual code, resources, modes and runtime selection remain guarded.
+Root proof passes 139 continuation tests. The actual interrupted receipt was
+archived unchanged, the stream returned to its exact pre-append bytes, and the
+whole published generation remained valid. The original runtime code delta's
+sole cause is unproved. Installed release qualification remains pending.
+
+Refresh custody uses the actual originating request ID, terminal state, status,
+integer return code and non-coalesced provenance. Terminal `pid=0` is not foreign
+ownership. Result transport is opt-in; ordinary refresh callers retain their
+existing API. Capture setup failure may fall back before execution, but execution
+or teardown errors never trigger implicit replay. Exact delivered success remains
+rendered custody after a later capture error, preserving that exception; explicit
+completion then only seals, publishes and retires, without cache or render re-entry.
+
+CB-305's corrected source candidate passes 168 focused checks; independent proof
+repeats those and adds six actual-owner controls. Expensive rendering is replaced
+in these synthetic repositories. This is not installed/browser qualification,
+whole-environment custody, or authority to recover older receipt-less drift.
+If receipt removal succeeds but directory fsync fails, an already-published
+successor stays selected; another receipt-less completion refuses.
+
+### No-workstream evidence boundary
+The global fact packet and legacy outcome digest must not estimate an empty
+workstream mapping or invent a priority, direction or forcing function. Actual
+completion, plan actions and risk evidence remain independently visible; populated
+and queued workstreams retain their existing estimate policy. Narration
+availability copy belongs to `compass_standup_brief_status.py`; a deferred provider
+is not proof that a brief is being prepared. CB-330 changes no provider, cache,
+retry or model policy. It removes unsupported inputs before presentation.
+Freshness requires a real workstream or evidence timestamp. An empty repo uses
+the existing unknown bucket; genuine global evidence is labelled as repository
+evidence, not an invented lane. Worker-epoch inputs include the status owner so
+its copy changes invalidate an already-running maintenance worker.
+
 ### Compass owns
 - The local host/Odylith timeline stream.
+- Foreground publication of retained host events, including bounded selection,
+  append-once continuation, immutable-byte readback, acknowledgement, and
+  separately pending maintenance status.
+- Protected-stream routing and merged canonical-plus-pending reads with cache
+  invalidation and exact transaction deduplication.
+- Durable execution memory for governance-learning decisions, proof
+  checkpoints, failed mechanism classes, validation results, release posture,
+  and stable checkpoints.
 - Runtime snapshot generation and history retention.
 - Timeline grouping and transaction shaping.
 - The standup brief pipeline, including provider narration, exact-cache replay,
@@ -100,6 +281,10 @@ standup-level summary should be.
   those governance groupings, Compass must not duplicate it in the current
   table; explicit scoped selection is the exception and may still show the
   chosen workstream directly.
+- Every visible `B-###` identifier in `Current Workstreams`, including the
+  covered-preview branch used when programs or release targets already
+  represent the active work, must render as a keyboard-focusable Radar
+  deeplink button rather than an inert label.
 - In the default unscoped Compass view, `Release Targets` sections start
   collapsed. Do not auto-expand the current release, the next release, or a
   single visible release on initial render. Explicit scoped workstream
@@ -168,6 +353,8 @@ standup-level summary should be.
 
 ## Runtime Contract
 ### Runtime inputs
+- `.odylith/runtime/host-hooks/compass-events.v1.jsonl` as private pending host
+  memory, never canonical Compass truth before foreground publication
 - `odylith/compass/runtime/agent-stream.v1.jsonl`
 - `odylith/compass/runtime/codex-stream.v1.jsonl` as a legacy-compatible input
 - `odylith/radar/source/INDEX.md`
@@ -195,6 +382,22 @@ workstream list from traceability before the operator trusts the page.
 - `odylith/compass/runtime/history/embedded.v1.js`
 
 ### Owning modules
+- `src/odylith/runtime/surfaces/host_dirty_checkpoint.py`
+  Private host-hook dirty-event retention and bounded pending-record custody.
+- `src/odylith/runtime/common/compass_host_events.py`
+  Retained host-event selection, publication handoff, readback acknowledgement,
+  and pending-status reporting.
+- `src/odylith/runtime/common/agent_runtime_contract.py`
+  Shared bounded published-stream selection for intervention and Context Engine readers.
+- `src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py`
+  Repository-root stream resolution for canonical historical-event projection.
+- `src/odylith/runtime/common/compass_log_continuation.py`
+  Exact append and publication continuation receipts, recovery, and retirement.
+- `src/odylith/runtime/common/log_compass_timeline_event.py`
+  Canonical Compass event append owner and retained host-event publication route.
+- `src/odylith/runtime/intervention_engine/stream_state.py`
+  Protected intervention-event routing plus merged canonical and pending reads,
+  cache invalidation, and exact transaction deduplication.
 - `src/odylith/runtime/surfaces/compass_refresh_runtime.py`
   Shared Compass refresh engine, request-state lifecycle, wait/status contract,
   runtime-mode resolution, and failure recording.
@@ -225,7 +428,8 @@ Compass is exposed through the top-level CLI:
   hot state instead of paying fresh process/import costs for unchanged
   fingerprints.
 - `odylith compass log`
-  Append one timeline event.
+  Append one timeline event, complete an admitted append, or publish one exact
+  retained host event through the bounded foreground route.
 - `odylith compass update`
   Capture update statements into timeline and standup inputs.
 - `odylith compass restore-history`
@@ -308,6 +512,16 @@ Foreground Compass refresh stays provider-free under `shell-safe`.
 - the maintenance lane dedupes by runtime packet fingerprint and uses explicit
   provider failure classes plus slow wallet-safe backoff
 
+Temporary compiler-owned refresh roots cannot own asynchronous narration jobs.
+The existing refresh contract records that exact root's lifetime across surface
+worker threads; both queue creation and worker spawning honor it. Greenfield
+prewrite enters this scope before building its baseline and leaves it only after
+the joined surface refresh completes. All canonical readouts, exact narration
+cache validation and explicit unavailable states still render. This is not a
+second refresh profile, a fallback narrator or a global maintenance switch.
+Normal durable-repository refresh continues to warm narration. Compilation does
+not transfer a deferred job into Greenfield CONFIRM.
+
 ### 8. Reconcile stale runtime truth
 At page load, Compass compares the visible runtime snapshot against the live
 traceability release read model. If the active release id, targeted members,
@@ -342,6 +556,11 @@ Compass consumes that contract through the prompt, voice validator, cache
 epoch, renderer, copied brief text, and fail-closed runtime states:
 - Compass brief source states are only `provider`, exact `cache`, or explicit
   `unavailable`.
+- Batch provider failures enrich unavailable diagnostics with the current fact
+  packet's existing labeled local facts, matching foreground refresh. Global and
+  scoped retries preserve those diagnostics through state recording and runtime
+  patching. These facts are not ready narration, and a retry must not copy stale
+  facts from a different packet merely to keep the panel populated.
 - `LLM writes, local code thinks` is the governing implementation rule.
 - Deterministic or templated fallback narration is retired. If Compass cannot
   validate a provider-authored brief and no exact same-packet narrated brief
@@ -446,6 +665,22 @@ Compass distinguishes:
 Generated-only narrative noise is intentionally deprioritized so dashboard
 churn does not drown out meaningful implementation evidence.
 
+Timeline event details do not infer file ownership or discard supplied events.
+Two or more typed `local_change` events share an expandable uncommitted-change
+group, using the same renderer inside and outside transaction cards. Single
+changes remain directly visible. Decisions, failures and other event kinds stay
+outside that group. Expansion exposes the complete supplied event list, including
+customer governance edits and unfamiliar paths; the former 24-event tail cutoff
+and generated-filename suppression are removed from this presentation boundary.
+Event text wraps within each card, including long filename tokens on mobile;
+page-level overflow alone is not sufficient proof of readable card content.
+Standalone events remain visible beside transactions, without duplicating members
+of transaction cards that actually render in the selected window. Hidden internal
+transactions do not consume visible audit events. Upstream selection, narration
+ranking, source records and event counts are unchanged. CB-303 browser controls
+cover desktop/mobile, keyboard expansion, mixed and internal transactions, and
+empty/single-change states. This does not establish native chat delivery.
+
 ## Snapshot-Age Contract
 - Compass rolling windows, per-day timelines, and audit-hour detail are anchored
   to the loaded runtime snapshot timestamp, not the browser wall clock.
@@ -530,7 +765,7 @@ churn does not drown out meaningful implementation evidence.
 - When live provider narration is needed for Compass briefs or similar
   refresh-time brief enrichment, detect the active local host and stay on the
   bounded structured local ladder with `medium` reasoning only. On Codex that means
-  `gpt-5.3-codex-spark` first, then `gpt-5.3-codex`, then `gpt-5.4-mini` only
+  `gpt-5.3-codex-spark` first, then `gpt-5.6-luna`, then `gpt-5.6-terra` only
   if the cheaper rung is exhausted or unavailable. On Claude that means
   `haiku` first, then `sonnet` only if the cheaper rung is exhausted or
   unavailable. Do not keep retrying the same failed cheap rung indefinitely,
@@ -667,21 +902,26 @@ or component definitions.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-03-20 · Decision:** Successor created: B-255 reopens B-253 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/compass/CURRENT_SPEC.md +1 more
-- **2026-03-04 · Implementation:** Shipped Registry dashboard rendering plus governance and traceability sync updates, and refreshed generated Radar, Atlas, and Compass shells.
-  - Evidence: src/odylith/runtime/governance/sync_workstream_artifacts.py, src/odylith/runtime/surfaces/render_backlog_ui.py +2 more
-- **2026-03-04 · Decision:** Standardized governance visibility around Registry as the canonical component audit surface across Radar, Atlas, and Compass.
-  - Evidence: src/odylith/runtime/governance/sync_workstream_artifacts.py, src/odylith/runtime/surfaces/render_backlog_ui.py +2 more
-- **2026-03-03 · Implementation:** Implemented lineage fields and relation edges across validation, reciprocal backfill, traceability graph, and Radar/Compass rendering.
-  - Evidence: odylith/radar/source/INDEX.md, odylith/technical-plans/INDEX.md +2 more
-- **2026-03-03 · Decision:** kickoff B-034 lineage model with successor-first reopen policy and typed relation semantics.
-  - Evidence: odylith/radar/source/INDEX.md, odylith/technical-plans/INDEX.md +2 more
-- **2026-03-01 · Implementation:** Added Codex decision/implementation stream ingestion into Compass timeline audits and shipped logging skill contract.
-  - Evidence: odylith/skills/compass-timeline-stream/SKILL.md, src/odylith/runtime/common/log_compass_timeline_event.py
+- **2026-03-20 · Decision:** Decision evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/radar/source/INDEX.md`, `odylith/registry/source/components/compass/CURRENT_SPEC.md`, `odylith/technical-plans/INDEX.md`
+- **2026-03-04 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `src/odylith/runtime/governance/sync_workstream_artifacts.py`, `src/odylith/runtime/surfaces/render_backlog_ui.py`, `src/odylith/runtime/surfaces/render_compass_dashboard.py`, `src/odylith/runtime/surfaces/render_registry_dashboard.py`
+- **2026-03-04 · Decision:** Decision evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `src/odylith/runtime/governance/sync_workstream_artifacts.py`, `src/odylith/runtime/surfaces/render_backlog_ui.py`, `src/odylith/runtime/surfaces/render_compass_dashboard.py`, `src/odylith/runtime/surfaces/render_registry_dashboard.py`
+- **2026-03-03 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `odylith/radar/source/INDEX.md`, `odylith/technical-plans/INDEX.md`, `src/odylith/runtime/surfaces/render_backlog_ui.py`, `src/odylith/runtime/surfaces/render_compass_dashboard.py`
+- **2026-03-03 · Decision:** Decision evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `odylith/radar/source/INDEX.md`, `odylith/technical-plans/INDEX.md`, `src/odylith/runtime/surfaces/render_backlog_ui.py`, `src/odylith/runtime/surfaces/render_compass_dashboard.py`
+- **2026-03-01 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
+  - Evidence: `odylith/skills/compass-timeline-stream/SKILL.md`, `src/odylith/runtime/common/log_compass_timeline_event.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-10-14: Extended the protected Compass stream rule to every bounded native hook and read-only event caller without an admitted managed writer under an active immutable publication. Pending intervention events remain available through cache-aware, transaction-deduped merged reads without becoming canonical truth. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Bug: `CB-305`)
+- 2026-10-14: Bound native Stop to private retained memory and moved canonical publication to foreground non-hook writers with bounded acknowledgement, append-once continuation, and explicit `UNKNOWN` semantic validity for automatically captured historical observations. Linked Compass to D-032 and D-038. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Bug: `CB-305`)
+- 2026-10-06: Fallback-fact proof passes 70 checks: recorded action/risk/checklist facts remain visible, unsupported Next/Watch prose is omitted. Installed and release proof remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+- 2026-09-08: Aligned batch provider-failure diagnostics with foreground local-fact fallback, preserving explicitly unavailable global/scoped states without another provider call. Recorded background-worker settlement as a distinct proof requirement. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+- 2026-09-07: Added explicit temporary refresh-root lifetime ownership to narration enqueue and spawn. Nested scopes and parallel surface threads preserve the guard; durable roots retain normal warming. Three pre-fix controls fail; the settled source passes 4311 runtime tests, 1101 install tests, native synthetic success/malformed/timeout controls and 34 staged-browser checks. Cold narration is explicitly unavailable, not fabricated or handed to CONFIRM. This is source-local lifecycle proof, not real-model quality or SLA qualification. (Plan: [B-142](../../../odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-04-17: Locked Compass `Programs` to release-like inner cards so each visible execution-wave program is a proper card inside the outer tinted Programs container, with unit and browser proof guarding against borderless flattening. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-14: Restored true rolling-window Timeline Audit rendering so Compass now shows every populated local day inside the active `24h` or `48h` window instead of collapsing to the selected `audit_day`; current-day future hours still stay clipped at the loaded runtime horizon. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-109`)
 - 2026-04-12: Tightened Compass live narration around the human-voice contract again: deterministic rules now explicitly govern evidence eligibility and fail-closed drift rejection, while the brief itself stays free-flowing. `Current execution` now prefers one live lane plus one concrete action, `Next planned` stays on the immediate next move, `Risks to watch` must name explicit seams, and thin evidence packets are expected to produce shorter output instead of broader portfolio prose. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
@@ -708,6 +948,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-08: Kept the current active release visible in Compass until an explicit `shipped` or `closed` transition, with a `No targeted workstreams.` empty state when the lane stays active but temporarily has no targeted members. (Plan: [B-065](odylith/radar/radar.html?view=plan&workstream=B-065))
 - 2026-04-08: Added a separate completed-members section for finished work closed in the active current release, so release closeout stays visible without reclassifying that work as active targeting. (Plan: [B-066](odylith/radar/radar.html?view=plan&workstream=B-066))
 - 2026-04-08: Bound Compass workstream buttons to the shared compact `B-###` button contract so release/member cards and current-workstream links stop drifting when broader identifier styling changes. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-05-07: Repaired the Current Workstreams covered-preview branch so its `B-###` ids use the same Radar deeplink button contract as ordinary current rows instead of rendering as passive labels. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-177`)
 - 2026-04-08: Elevated no-stock-framing Compass voice to a standing product invariant and required cache revalidation before warmed briefs can replay, so human standup tone survives refresh, reuse, and future narrator changes. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Locked `Release Targets` back to the operator-approved stacked format and prohibited shared shell CSS from reintroducing side-by-side or auto-fit release boards without explicit operator authorization. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-09: Hardened workstream progress truth so Compass counts only execution-relevant checklist sections, shows checklist-only state for active implementation lanes with zero checked execution tasks, and stops narrating those rows as fake `0% progress`. (Plan: [B-068](odylith/radar/radar.html?view=plan&workstream=B-068); Bug: `CB-087`)

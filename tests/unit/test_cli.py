@@ -1,7 +1,10 @@
 import argparse
+import fcntl
 import json
+import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -10,11 +13,25 @@ import pytest
 from odylith import cli
 from odylith.runtime.common import casebook_metadata
 from odylith.runtime.governance import bug_authoring
+from odylith.runtime.domain_intelligence.greenfield_repository_lock import (
+    GreenfieldRepositoryBusyError,
+    greenfield_repository_lock,
+)
 
 
 class _TTYStream:
     def isatty(self) -> bool:
         return True
+
+
+def _assert_held_repository_lock(repo_root: Path, descriptor: int) -> None:
+    assert type(descriptor) is int
+    lock_path = repo_root / ".odylith/runtime/greenfield/create.lock"
+    assert os.path.samestat(os.fstat(descriptor), lock_path.stat())
+    with pytest.raises(GreenfieldRepositoryBusyError):
+        with greenfield_repository_lock(repo_root):
+            pytest.fail("a competing writer acquired the supplied descriptor's lock")
+    fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
 
 
 def _write_casebook_bug(
@@ -65,7 +82,10 @@ def _bug_capture_kwargs(**overrides: object) -> dict[str, object]:
         "blast_radius": "Casebook bug truth, shared agent guidance, and automated casebook-create paths.",
         "slo_sla_impact": "Maintainer release-proof confidence drops because Casebook truth is visibly ungrounded.",
         "data_risk": "Low product-data risk, high governed-memory trust risk.",
-        "security_compliance": "None directly.",
+        "security_compliance": (
+            "Security/compliance posture: no credentials or regulated user data are exposed directly; "
+            "policy risk is untrusted AI-agent evidence entering durable Casebook memory."
+        ),
         "invariant_violated": "A newly captured bug must not publish placeholder evidence as authoritative Casebook truth.",
     }
     payload.update(overrides)
@@ -208,6 +228,15 @@ def test_capabilities_command_prints_host_agnostic_engine_inventory(capsys) -> N
     assert "Memory Substrate" in output
     assert "Reasoning Engine" in output
     assert "Surface DAGs" in output
+    assert "Topology Integrity" in output
+    assert "Taxonomies and FSMs" in output
+    assert "Operator Experience" in output
+    assert "odylith greenfield compile-transaction" not in output
+    assert "odylith greenfield create" in output
+    assert "odylith greenfield apply" not in output
+    assert "Activation:" in output
+    assert "attach the normalized execution handshake" in output
+    assert "deterministic admission and hash-verified publication of precompiled bytes" in output
     assert "Codex and Claude Code are adapters" in output
     assert "Use `odylith --help` for command syntax." in output
 
@@ -236,9 +265,30 @@ def test_capabilities_command_json_exposes_product_inventory(capsys) -> None:
         "Memory Substrate",
         "Reasoning Engine",
         "Surface DAGs",
+        "Topology Integrity",
+        "Taxonomies and FSMs",
+        "Operator Experience",
         "Codex Adapter",
         "Claude Code Adapter",
     } <= names
+    context_engine = next(
+        item
+        for group in payload["engine_groups"]
+        for item in group["items"]
+        if item["name"] == "Context Engine"
+    )
+    assert "activation" in context_engine
+    assert "execution handshakes" in context_engine["activation"]
+
+
+def test_validate_engine_integrity_command_is_exposed(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["validate", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "engine-integrity" in output
+    assert "Validate Odylith engine inventory" in output
 
 
 def test_compass_log_help_forwards_backend_flags(capsys) -> None:
@@ -267,12 +317,50 @@ def test_backlog_create_help_forwards_backend_flags(capsys) -> None:
     assert "--opportunity" in output
     assert "--product-view" in output
     assert "--success-metrics" in output
+    assert "--domain-risk" in output
+    assert "--security-posture" in output
     assert "--priority" in output
     assert "--sizing {XS,S,M,L,XL}" in output
     assert "--complexity {Low,Medium,High,VeryHigh}" in output
     assert "--release" in output
+    assert "--parent" in output
     assert "--dry-run" in output
     assert "--json" in output
+
+
+def test_program_create_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["program", "create", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith program create" in output
+    assert "umbrella_id" in output
+    assert "--dry-run" in output
+    assert "--json" in output
+
+
+def test_wave_create_and_assign_help_forward_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["wave", "create", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith wave create" in output
+    assert "umbrella_id" in output
+    assert "wave_id" in output
+    assert "--label" in output
+    assert "--depends-on" in output
+
+    with pytest.raises(SystemExit) as assign_excinfo:
+        cli.main(["wave", "assign", "--help"])
+
+    assign_output = capsys.readouterr().out
+    assert assign_excinfo.value.code == 0
+    assert "usage: odylith wave assign" in assign_output
+    assert "workstream_id" in assign_output
+    assert "--role" in assign_output
+    assert "--adopt" in assign_output
 
 
 def test_greenfield_propose_help_forwards_backend_flags(capsys) -> None:
@@ -284,6 +372,10 @@ def test_greenfield_propose_help_forwards_backend_flags(capsys) -> None:
     assert "usage: odylith greenfield propose" in output
     assert "--prompt" in output
     assert "--format" in output
+    assert "--edit" in output
+    assert "--edit-evidence" in output
+    assert "--confirm-intent" not in output
+    assert "--intent-file" not in output
 
 
 def test_greenfield_apply_help_forwards_backend_flags(capsys) -> None:
@@ -293,12 +385,84 @@ def test_greenfield_apply_help_forwards_backend_flags(capsys) -> None:
     output = capsys.readouterr().out
     assert excinfo.value.code == 0
     assert "usage: odylith greenfield apply" in output
+    assert "Legacy proposal apply is disabled" in output
+    assert "use propose, then choose a terminal decision" in " ".join(output.split())
     assert "--proposal-file" in output
     assert "--confirm" in output
     assert "--release" in output
 
 
-def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> None:
+def test_greenfield_create_help_forwards_commit_only_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["greenfield", "create", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith greenfield create" in output
+    assert "--confirm" in output
+    assert "--transaction-file" in output
+    assert "--transaction-hash" in output
+    assert "--transaction-json" not in output
+    assert "--prompt" not in output
+    assert "--intent-file" not in output
+    assert "--release" not in output
+    assert "--repair-tier" not in output
+
+
+def test_greenfield_propose_confirm_intent_json_is_provider_free(tmp_path: Path, monkeypatch, capsys) -> None:
+    from odylith.runtime.domain_intelligence import greenfield_proposals_cli
+    from odylith.runtime.reasoning import odylith_reasoning
+
+    def unexpected_work(*_args, **_kwargs):
+        pytest.fail("Retired intent refusal must precede authority, ledger, candidate, model, and compiler work")
+
+    for name in (
+        "_edit_evidence_from_args", "_authority_gate_from_args", "_source_duty_receipt_from_args",
+        "_host_candidate_from_args", "_compile_prompt_evidence_transaction",
+    ):
+        monkeypatch.setattr(greenfield_proposals_cli, name, unexpected_work)
+    monkeypatch.setattr(odylith_reasoning, "provider_from_config", unexpected_work)
+    gate_path = tmp_path.parent / f"{tmp_path.name}-unused-gate.json"
+    ledger_path = tmp_path.parent / f"{tmp_path.name}-unused-ledger.json"
+    assert not gate_path.exists()
+    assert not ledger_path.exists()
+    intent_file = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
+    intent_file.parent.mkdir(parents=True, exist_ok=True)
+    intent_file.write_text(
+        """Permit Review Workspace — Product Intent Confirmation
+
+Product story
+A city permitting team uses the Permit Review Workspace to review building applications without losing the connection between submitted documents, zoning checks, applicant revisions, reviewer comments, and final decisions. The product gives coordinators and supervisors one place to see what changed, what still blocks approval, and why a permit decision is defensible.
+
+State object that changes through the first journey
+A Permit Review File tracks the active application, submitted documents, zoning check status, applicant revisions, reviewer comments, unresolved blockers, decision state, and evidence supporting each approval or rejection.
+
+First complete path the product should prove before broader scope
+A coordinator imports one application, a reviewer records a zoning check, the applicant submits one revision, and a supervisor reviews the decision package.
+
+Human actors
+- Coordinator — intakes applications, keeps review work moving, and routes blockers to the right reviewer.
+- Zoning reviewer — records zoning checks, code references, comments, and pass or block outcomes.
+- Applicant — submits revised documents that respond to reviewer comments and unresolved blockers.
+- Supervisor — reviews the decision package and approves, blocks, or rejects the permit.
+
+External systems
+- Document portal — supplies application documents.
+- Parcel data source — supplies zoning context.
+
+Internal product systems
+- Permit file registry — owns permit identity, applicant metadata, active submitted documents, unresolved blockers, and decision state.
+- Zoning check ledger — records zoning checks, reviewer comments, rule references, and pass or block outcomes.
+- Revision tracker — links applicant revisions to the documents, comments, and checks they are meant to address.
+- Decision package review — assembles source documents, reviewer evidence, unresolved blockers, supervisor decision, and final approval state.
+
+Proof boundary
+Release 0.0.1 succeeds when a supervisor can inspect one permit review file, see the active documents, zoning result, applicant revision, reviewer comments, unresolved blockers, and final decision state, and trace every decision back to source documents and reviewer evidence.
+""",
+        encoding="utf-8",
+    )
+    baseline_paths = set(tmp_path.rglob("*"))
+    baseline_bytes = {path: path.read_bytes() for path in baseline_paths if path.is_file()}
     rc = cli.main(
         [
             "greenfield",
@@ -306,19 +470,29 @@ def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> 
             "--repo-root",
             str(tmp_path),
             "--prompt",
-            "Build an ecommerce site",
+            "Build a permit review workspace",
+            "--gate-file",
+            str(gate_path),
+            "--ledger-file",
+            str(ledger_path),
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--confirm-intent",
             "--format",
             "json",
         ]
     )
 
     payload = json.loads(capsys.readouterr().out)
-    assert rc == 0
-    assert payload["provider_calls"] == 0
-    assert payload["mode"] == "host_reasoned_proposal_request"
-    assert payload["intent"]["reasoning_mode"] == "host_model_required"
-    assert payload["classification"]["method"] == "open_world_host_reasoning"
-    assert "backlog" in payload["reasoning_contract"]["required_top_level_keys"]
+    assert rc == 2
+    assert payload["mode"] == "error"
+    assert "separate Product Intent confirmation flow is retired" in payload["error"]
+
+    assert set(tmp_path.rglob("*")) == baseline_paths
+    assert {path: path.read_bytes() for path in baseline_paths if path.is_file()} == baseline_bytes
+    assert not gate_path.exists()
+    assert not ledger_path.exists()
+    assert not (tmp_path / ".odylith/runtime/greenfield/pending").exists()
 
 
 def test_component_register_help_forwards_backend_flags(capsys) -> None:
@@ -332,6 +506,8 @@ def test_component_register_help_forwards_backend_flags(capsys) -> None:
     assert "--path" in output
     assert "--label" in output
     assert "--kind" in output
+    assert "--responsibility" in output
+    assert "--risk" in output
 
 
 def test_atlas_scaffold_help_forwards_backend_flags(capsys) -> None:
@@ -521,7 +697,7 @@ def test_bug_capture_prints_casebook_dashboard_handoff(tmp_path: Path, monkeypat
 
     output = capsys.readouterr().out
     assert rc == 0
-    assert "view: odylith/index.html?tab=casebook&bug=CB-001 (refresh if already open)" in output
+    assert "view: odylith/index.html?tab=casebook&bug=CB-001 (reload browser tab if already open)" in output
 
 
 def test_bug_capture_raises_when_casebook_refresh_fails(tmp_path: Path, monkeypatch) -> None:
@@ -819,6 +995,18 @@ def test_hosted_first_install_uses_compact_progress_labels(monkeypatch, tmp_path
     assert "Full Odylith is installed by default" not in output
 
 
+def test_install_progress_bar_does_not_glue_child_output_to_elapsed_seconds(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(cli, "_install_progress_bar_enabled", lambda: True)
+
+    with cli._install_progress_bar("write", "Adding Odylith files."):  # noqa: SLF001
+        time.sleep(0.02)
+        print("mermaid catalog render passed")
+
+    output = capsys.readouterr().out
+    assert "smermaid catalog render passed" not in output
+    assert "mermaid catalog render passed" in output
+
+
 def test_compact_install_reports_failure_without_traceback(monkeypatch, tmp_path: Path, capsys) -> None:
     monkeypatch.setenv("ODYLITH_INSTALL_COMPACT", "1")
     monkeypatch.setattr(
@@ -913,6 +1101,7 @@ def test_compact_existing_install_surface_failure_hides_sync_internals(
 
 
 def test_install_opens_dashboard_browser_on_successful_first_install(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.delenv("ODYLITH_NO_BROWSER", raising=False)
     launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
     opened: dict[str, object] = {}
     refresh_capture: dict[str, object] = {}
@@ -1080,6 +1269,7 @@ def test_compact_install_env_browser_opt_out_prints_dashboard_path_and_hint(monk
 
 
 def test_install_opens_dashboard_browser_on_successful_rematerialize(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.delenv("ODYLITH_NO_BROWSER", raising=False)
     launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
     install_state = tmp_path / ".odylith" / "install.json"
     install_state.parent.mkdir(parents=True, exist_ok=True)
@@ -1305,137 +1495,6 @@ def test_install_adopt_latest_clears_stale_upgrade_spotlight_when_no_version_cha
     assert "Dashboard refreshed." in output
 
 
-def test_refresh_dashboard_after_upgrade_reenters_through_fresh_launcher(monkeypatch, tmp_path: Path, capsys) -> None:
-    repo_root = tmp_path / "repo"
-    launcher_path = repo_root / ".odylith" / "bin" / "odylith"
-    launcher_path.parent.mkdir(parents=True, exist_ok=True)
-    launcher_path.write_text("#!/bin/sh\n", encoding="utf-8")
-    captured: dict[str, object] = {}
-
-    def fake_run(command, **kwargs):  # noqa: ANN001, ANN003
-        captured["command"] = command
-        captured["kwargs"] = kwargs
-        return SimpleNamespace(returncode=0, stdout="dashboard refresh completed\n", stderr="")
-
-    monkeypatch.setattr(cli.subprocess, "run", fake_run)
-
-    refreshed, message = cli._refresh_dashboard_after_upgrade(repo_root=repo_root)  # noqa: SLF001
-    output = capsys.readouterr()
-
-    assert refreshed is True
-    assert message == "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
-    assert captured["command"] == [
-        str(launcher_path.resolve()),
-        "dashboard",
-        "refresh",
-        "--repo-root",
-        str(repo_root),
-        "--surfaces",
-        "tooling_shell,radar,compass",
-    ]
-    assert captured["kwargs"] == {
-        "cwd": str(repo_root),
-        "check": False,
-        "capture_output": True,
-        "text": True,
-    }
-    assert "Refreshing Odylith dashboard surfaces so the local shell reflects the new release." in output.out
-    assert "dashboard refresh completed" in output.out
-
-
-def test_refresh_dashboard_after_upgrade_compact_hides_launcher_refresh_plan(
-    monkeypatch, tmp_path: Path, capsys
-) -> None:
-    repo_root = tmp_path / "repo"
-    launcher_path = repo_root / ".odylith" / "bin" / "odylith"
-    launcher_path.parent.mkdir(parents=True, exist_ok=True)
-    launcher_path.write_text("#!/bin/sh\n", encoding="utf-8")
-
-    monkeypatch.setattr(
-        cli.subprocess,
-        "run",
-        lambda *args, **kwargs: SimpleNamespace(  # noqa: ANN002, ANN003
-            returncode=0,
-            stdout="dashboard refresh plan\n- stage_timing.complete: 0.1s\ndashboard refresh completed\n",
-            stderr="",
-        ),
-    )
-
-    refreshed, message = cli._refresh_dashboard_after_upgrade(  # noqa: SLF001
-        repo_root=repo_root,
-        compact_output=True,
-    )
-    output = capsys.readouterr()
-
-    assert refreshed is True
-    assert message == "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
-    assert "draw   Refreshing dashboard." in output.out
-    assert "dashboard refresh plan" not in output.out
-    assert "stage_timing" not in output.out
-
-
-def test_refresh_dashboard_after_upgrade_returns_failure_when_launcher_refresh_fails(
-    monkeypatch, tmp_path: Path, capsys
-) -> None:
-    repo_root = tmp_path / "repo"
-    launcher_path = repo_root / ".odylith" / "bin" / "odylith"
-    launcher_path.parent.mkdir(parents=True, exist_ok=True)
-    launcher_path.write_text("#!/bin/sh\n", encoding="utf-8")
-
-    monkeypatch.setattr(
-        cli.subprocess,
-        "run",
-        lambda *args, **kwargs: SimpleNamespace(  # noqa: ANN002, ANN003
-            returncode=2,
-            stdout="dashboard refresh completed\n- outcome: failed\n",
-            stderr="compass failed\n",
-        ),
-    )
-
-    refreshed, message = cli._refresh_dashboard_after_upgrade(repo_root=repo_root)  # noqa: SLF001
-    output = capsys.readouterr()
-
-    assert refreshed is False
-    assert (
-        message
-        == "Odylith upgrade succeeded, but dashboard refresh failed. Retry with `./.odylith/bin/odylith dashboard refresh --repo-root .`."
-    )
-    assert "dashboard refresh completed" in output.out
-    assert "compass failed" in output.err
-
-
-def test_refresh_dashboard_after_upgrade_falls_back_to_in_process_refresh_when_launcher_is_missing(
-    monkeypatch, tmp_path: Path, capsys
-) -> None:
-    repo_root = tmp_path / "repo"
-    repo_root.mkdir()
-    captured: dict[str, object] = {}
-
-    monkeypatch.setattr(
-        cli.sync_workstream_artifacts,
-        "refresh_dashboard_surfaces",
-        lambda **kwargs: captured.update(kwargs) or 0,
-    )
-    monkeypatch.setattr(
-        cli.subprocess,
-        "run",
-        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("should use in-process fallback")),
-    )
-
-    refreshed, message = cli._refresh_dashboard_after_upgrade(repo_root=repo_root)  # noqa: SLF001
-    output = capsys.readouterr()
-
-    assert refreshed is True
-    assert message == "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
-    assert captured == {
-        "repo_root": repo_root,
-        "surfaces": ("tooling_shell", "radar", "compass"),
-        "runtime_mode": "auto",
-        "atlas_sync": False,
-    }
-    assert "Refreshing Odylith dashboard surfaces so the local shell reflects the new release." in output.out
-
-
 def test_install_align_pin_reports_repo_pin_update(monkeypatch, tmp_path: Path, capsys) -> None:
     launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
     install_state = tmp_path / ".odylith" / "install.json"
@@ -1481,6 +1540,176 @@ def test_install_align_pin_reports_repo_pin_update(monkeypatch, tmp_path: Path, 
         "align_pin": True,
     }
     assert "Repo pin updated to 1.2.4." in output
+
+
+def test_install_refreshes_dashboard_after_repo_state_migration(monkeypatch, tmp_path: Path, capsys) -> None:
+    launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
+    _seed_first_run_surfaces(tmp_path)
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        cli,
+        "plan_install_lifecycle",
+        lambda **kwargs: SimpleNamespace(command="install", headline="preview", steps=(), dirty_overlap=(), notes=()),
+    )
+    monkeypatch.setattr(
+        cli,
+        "install_bundle",
+        lambda **kwargs: SimpleNamespace(
+            version="1.2.4",
+            repo_root=tmp_path,
+            launcher_path=launcher_path,
+            repo_guidance_created=False,
+            git_repo_present=True,
+            gitignore_updated=False,
+            migration=SimpleNamespace(
+                already_migrated=False,
+                moved_paths=("odyssey/ -> odylith/",),
+                removed_paths=(),
+                stale_reference_audit=None,
+            ),
+        ),
+    )
+
+    def fake_refresh_dashboard_after_upgrade(**kwargs) -> tuple[bool, str]:  # noqa: ANN003
+        _assert_held_repository_lock(kwargs["repo_root"], kwargs["repository_lock_fd"])
+        captured.update(kwargs)
+        return True, "Dashboard refreshed."
+
+    monkeypatch.setattr(cli, "_refresh_dashboard_after_upgrade", fake_refresh_dashboard_after_upgrade)
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--version", "1.2.4", "--no-open"])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert captured == {
+        "repo_root": tmp_path,
+        "compact_output": False,
+        "repository_lock_fd": captured["repository_lock_fd"],
+    }
+    assert "Migrated legacy repo roots into the Odylith layout before continuing." in output
+    assert "Dashboard refreshed." in output
+
+
+def test_compact_install_refreshes_dashboard_after_repo_state_migration(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
+    _seed_first_run_surfaces(tmp_path)
+    captured: dict[str, object] = {}
+
+    monkeypatch.setenv("ODYLITH_INSTALL_COMPACT", "1")
+    monkeypatch.setenv("ODYLITH_INSTALL_PROGRESS", "0")
+    monkeypatch.setattr(
+        cli,
+        "plan_install_lifecycle",
+        lambda **kwargs: SimpleNamespace(command="install", headline="preview", steps=(), dirty_overlap=(), notes=()),
+    )
+    monkeypatch.setattr(
+        cli,
+        "install_bundle",
+        lambda **kwargs: SimpleNamespace(
+            version="1.2.4",
+            repo_root=tmp_path,
+            launcher_path=launcher_path,
+            repo_guidance_created=False,
+            git_repo_present=True,
+            gitignore_updated=False,
+            migration=SimpleNamespace(
+                already_migrated=False,
+                moved_paths=("odyssey/ -> odylith/",),
+                removed_paths=(),
+                stale_reference_audit=None,
+            ),
+        ),
+    )
+
+    def fake_refresh_dashboard_after_upgrade(**kwargs) -> tuple[bool, str]:  # noqa: ANN003
+        _assert_held_repository_lock(kwargs["repo_root"], kwargs["repository_lock_fd"])
+        captured.update(kwargs)
+        return True, "Dashboard refreshed."
+
+    monkeypatch.setattr(cli, "_refresh_dashboard_after_upgrade", fake_refresh_dashboard_after_upgrade)
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--version", "1.2.4", "--no-open"])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert captured == {
+        "repo_root": tmp_path,
+        "compact_output": True,
+        "repository_lock_fd": captured["repository_lock_fd"],
+    }
+    assert "done   Dashboard ready." in output
+
+
+def test_install_fallback_preserves_upgrade_spotlight_after_hosted_state_cleanup(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
+    _seed_first_run_surfaces(tmp_path)
+    captured: dict[str, object] = {}
+
+    monkeypatch.setenv("ODYLITH_INSTALL_PREVIOUS_ACTIVE_VERSION", "1.2.3")
+    monkeypatch.setattr(
+        cli,
+        "plan_install_lifecycle",
+        lambda **kwargs: SimpleNamespace(command="install", headline="preview", steps=(), dirty_overlap=(), notes=()),
+    )
+
+    def fake_install_bundle(**kwargs) -> SimpleNamespace:  # noqa: ANN003
+        cli._install_state().write_install_state(
+            repo_root=tmp_path,
+            payload={
+                "active_version": "1.2.4",
+                "activation_history": ["1.2.4"],
+                "installed_versions": {
+                    "1.2.4": {
+                        "runtime_root": str(tmp_path / ".odylith" / "runtime" / "versions" / "1.2.4"),
+                    }
+                },
+            },
+        )
+        return SimpleNamespace(
+            version="1.2.4",
+            repo_root=tmp_path,
+            launcher_path=launcher_path,
+            repo_guidance_created=False,
+            git_repo_present=True,
+            gitignore_updated=False,
+            migration=None,
+        )
+
+    def fake_refresh_dashboard_after_upgrade(**kwargs) -> tuple[bool, str]:  # noqa: ANN003
+        _assert_held_repository_lock(kwargs["repo_root"], kwargs["repository_lock_fd"])
+        captured.update(kwargs)
+        return True, "Dashboard refreshed."
+
+    monkeypatch.setattr(cli, "install_bundle", fake_install_bundle)
+    monkeypatch.setattr(cli, "_refresh_dashboard_after_upgrade", fake_refresh_dashboard_after_upgrade)
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--version", "1.2.4", "--no-open"])
+    output = capsys.readouterr().out
+    install_state = cli._install_state().load_install_state(repo_root=tmp_path)
+    spotlight_payload = json.loads(
+        (tmp_path / ".odylith" / "runtime" / "release-upgrade-spotlight.v1.json").read_text(encoding="utf-8")
+    )
+
+    assert rc == 0
+    assert install_state["activation_history"] == ["1.2.3", "1.2.4"]
+    assert spotlight_payload["from_version"] == "1.2.3"
+    assert spotlight_payload["to_version"] == "1.2.4"
+    assert spotlight_payload["release_tag"] == "v1.2.4"
+    assert spotlight_payload["release_url"] == "https://github.com/odylith/odylith/releases/tag/v1.2.4"
+    assert captured == {
+        "repo_root": tmp_path, "compact_output": False,
+        "repository_lock_fd": captured["repository_lock_fd"],
+    }
+    assert "Dashboard refreshed." in output
 
 
 def test_install_existing_complete_repo_routes_through_upgrade_lifecycle(
@@ -1838,31 +2067,17 @@ def test_upgrade_dry_run_prints_binding_target_metadata_and_verbose_paths(
     assert "+1 more" not in output
 
 
-def test_release_migration_gate_json_reports_registered_runtime(capsys) -> None:
-    repo_root = Path(__file__).resolve().parents[2]
 
-    rc = cli.main([
-        "release",
-        "migration-gate",
-            "--repo-root",
-            str(repo_root),
-            "--target-version",
-            "0.1.14",
-            "--json",
-        ])
-    payload = json.loads(capsys.readouterr().out)
 
-    assert rc == 0
-    assert payload["ok"] is True
-    assert payload["schema_version"] == "odylith.release-migration-gate.v1"
-    assert payload["fixture_matrix"]["v0.1.11-visible-intervention-value-engine"]["dry_run"] is True
-    assert payload["destructive_write_matrix"]["host.claude.preverified-settings"][
-        "test_install_bundle_preserves_host_settings_when_runtime_download_fails"
-    ] is True
-    assert payload["destructive_write_scenarios"]
-    assert payload["ungated_lifecycle_paths"] == []
-    assert payload["surface_migration_observer"]["schema_version"] == "odylith.surface-migration-observer.v1"
-    assert payload["surface_migration_observer"]["ok"] is True
+def test_release_group_help_includes_maintainer_commands(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["release", "--help"])
+
+    output = capsys.readouterr().out
+
+    assert excinfo.value.code == 0
+    assert "migration-gate" in output
+    assert "casebook-closeout" in output
 
 
 def test_release_migration_gate_blocks_consumer_repo_json(tmp_path: Path, capsys) -> None:
@@ -2053,6 +2268,7 @@ def test_radar_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: Path
         "atlas_sync": False,
         "dry_run": True,
         "verbose": False,
+        "force": False,
     }
 
 
@@ -2079,6 +2295,7 @@ def test_registry_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: P
         "atlas_sync": False,
         "dry_run": False,
         "verbose": False,
+        "force": False,
     }
 
 
@@ -2105,6 +2322,7 @@ def test_casebook_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: P
         "atlas_sync": False,
         "dry_run": False,
         "verbose": False,
+        "force": False,
     }
 
 
@@ -2131,6 +2349,7 @@ def test_atlas_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: Path
         "atlas_sync": True,
         "dry_run": False,
         "verbose": False,
+        "force": False,
     }
 
 
@@ -3369,6 +3588,83 @@ def test_start_bootstrap_lane_emits_payload(monkeypatch, tmp_path: Path, capsys)
 
     assert rc == 0
     assert "- lane: bootstrap" in captured
+    assert "- packet: bootstrap_session" in captured
+    assert "- json: rerun with --json for the full bootstrap packet" in captured
+    assert '"packet_kind": "bootstrap_session"' not in captured
+
+
+def test_start_bootstrap_lane_prints_recognized_target(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(
+        cli,
+        "evaluate_start_preflight",
+        lambda **kwargs: SimpleNamespace(
+            lane="bootstrap",
+            reason="healthy",
+            next_command="./.odylith/bin/odylith start --repo-root .",
+            healthy=True,
+            launcher_exists=True,
+            bootstrap_launcher_exists=True,
+            install_shape_present=True,
+            status=None,
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "_start_bootstrap_payload",
+        lambda args: {
+            "packet_kind": "bootstrap_session",
+            "narrowing_guidance": {"required": False, "reason": "grounded"},
+            "target_resolution": {
+                "candidate_targets": [
+                    {
+                        "path": "src/odylith/runtime/context_engine/new_startup_probe.py",
+                        "source": "path_scope",
+                        "writable": True,
+                    }
+                ],
+                "has_writable_targets": True,
+                "requires_more_consumer_context": False,
+            },
+        },
+    )
+
+    rc = cli.main(["start", "--repo-root", str(tmp_path)])
+    captured = capsys.readouterr().out
+
+    assert rc == 0
+    assert "- target: src/odylith/runtime/context_engine/new_startup_probe.py" in captured
+    assert "- packet: bootstrap_session" in captured
+
+
+def test_start_bootstrap_lane_emits_full_payload_with_json(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(
+        cli,
+        "evaluate_start_preflight",
+        lambda **kwargs: SimpleNamespace(
+            lane="bootstrap",
+            reason="healthy",
+            next_command="./.odylith/bin/odylith start --repo-root .",
+            healthy=True,
+            launcher_exists=True,
+            bootstrap_launcher_exists=True,
+            install_shape_present=True,
+            status=None,
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "_start_bootstrap_payload",
+        lambda args: {
+            "packet_kind": "bootstrap_session",
+            "narrowing_guidance": {"required": False, "reason": "grounded"},
+        },
+    )
+
+    rc = cli.main(["start", "--repo-root", str(tmp_path), "--json"])
+    captured = capsys.readouterr().out
+
+    assert rc == 0
+    assert "- lane: bootstrap" in captured
     assert '"packet_kind": "bootstrap_session"' in captured
 
 
@@ -3457,10 +3753,14 @@ def test_start_fallback_lane_prints_exact_next_command(monkeypatch, tmp_path: Pa
     captured = capsys.readouterr().out
 
     assert rc == 1
-    assert "- lane: fallback" in captured
+    assert "- lane: narrowing" in captured
+    assert "- status: needs target" in captured
+    assert "Name one code path, workstream, component, bug, or file before implementation." in captured
     assert "- next: rg --files | rg 'src/odylith/cli.py'" in captured
     assert "- followup: sed -n '1,200p' src/odylith/cli.py" in captured
     assert "- lane: bootstrap" not in captured
+    assert '"packet_kind": "bootstrap_session"' not in captured
+    assert "lane: fallback" not in captured
 
 
 def test_start_status_only_routes_to_version(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -3552,7 +3852,7 @@ def test_start_bootstrap_exception_prints_repair_guidance(monkeypatch, tmp_path:
     captured = capsys.readouterr().out
 
     assert rc == 1
-    assert "- lane: fallback" in captured
+    assert "- lane: repair" in captured
     assert "projection cache corrupted" in captured
     assert "- next: ./.odylith/bin/odylith doctor --repo-root . --repair" in captured
     assert "- followup: ./.odylith/bin/odylith bootstrap --repo-root . --no-working-tree" in captured
@@ -4074,10 +4374,13 @@ def test_upgrade_dispatches_to_upgrade_install(monkeypatch, tmp_path: Path, caps
     def fake_refresh_dashboard_after_upgrade(
         *,
         repo_root: Path,
+        repository_lock_fd: int,
         emit_output: bool = True,
         compact_output: bool = False,
         details: dict[str, object] | None = None,
     ) -> tuple[bool, str]:
+        _assert_held_repository_lock(repo_root, repository_lock_fd)
+        refresh_capture["repository_lock_fd"] = repository_lock_fd
         refresh_capture["repo_root"] = repo_root
         refresh_capture["emit_output"] = emit_output
         refresh_capture["compact_output"] = compact_output
@@ -4183,10 +4486,12 @@ def test_upgrade_json_writes_auditable_report_and_suppresses_refresh_stdout(
     def fake_refresh_dashboard_after_upgrade(
         *,
         repo_root: Path,
+        repository_lock_fd: int,
         emit_output: bool = True,
         compact_output: bool = False,
         details: dict[str, object] | None = None,
     ) -> tuple[bool, str]:
+        _assert_held_repository_lock(repo_root, repository_lock_fd)
         assert emit_output is False
         assert compact_output is False
         assert repo_root == tmp_path / "repo"

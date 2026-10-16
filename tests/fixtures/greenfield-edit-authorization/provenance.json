@@ -1,0 +1,17 @@
+{
+  "fixtures": {
+    "tests/fixtures/greenfield-edit-authorization/edit-v5-v8.json": "bc3eea3c8081b9adda1d9a9882edf81d3cd5e3f9e642ac3a4ca1368c988c305e",
+    "tests/fixtures/greenfield-edit-authorization/initial-v4-v7.json": "470939302fe338a3c240a9016254767e15ff0dae8782124bf933deae724ddd43"
+  },
+  "generated_by": "existing compiler owners before v51 implementation",
+  "inputs": {
+    "edit": "tests.unit.runtime.test_greenfield_edit_lifecycle_preservation._edit_case()",
+    "initial": "tests.unit.runtime.test_greenfield_source_lifecycle._case(dossier)"
+  },
+  "revision": "16a470d1b0afc20fb6ca22c40b7888332364a209",
+  "source_sha256": {
+    "src/odylith/runtime/domain_intelligence/greenfield_source_duty_entailment.py": "12c1c427b46611213aef34fd4a445d3133902f92e39acbcf97f3b251d4b43011",
+    "src/odylith/runtime/domain_intelligence/greenfield_source_duty_ledger.py": "04b999d431662d1858cd0e8830d0e1aa6f0e952d9e8e0ec08283e2e5ce1ebed3",
+    "tests/unit/runtime/test_greenfield_edit_lifecycle_preservation.py": "a6d71778eb9f9c8a87033bf6d8d1fcfab9336668e439ef9a35622584a6f211a0"
+  }
+}

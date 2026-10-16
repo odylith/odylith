@@ -105,11 +105,12 @@ def _workflow_has_release_authority_guard(*, workflow_path: Path) -> bool:
         f"ODYLITH_RELEASE_REPO: {AUTHORITATIVE_RELEASE_REPO}",
         f"ODYLITH_RELEASE_ACTOR: {AUTHORITATIVE_RELEASE_ACTOR}",
         f"ODYLITH_RELEASE_REF: {SIGNER_WORKFLOW_REF}",
-        '[[ "${GITHUB_REPOSITORY}" != "${ODYLITH_RELEASE_REPO}" ]]',
-        '[[ "${GITHUB_ACTOR}" != "${ODYLITH_RELEASE_ACTOR}" ]]',
-        '[[ "${GITHUB_REF}" != "${ODYLITH_RELEASE_REF}" ]]',
+        '[[ "$GITHUB_REPOSITORY" == "$ODYLITH_RELEASE_REPO" ]] || exit 2',
+        '[[ "$GITHUB_ACTOR" == "$ODYLITH_RELEASE_ACTOR" ]] || exit 2',
+        '[[ "$GITHUB_REF" == "$ODYLITH_RELEASE_REF" ]] || exit 2',
     )
-    return all(snippet in body for snippet in required_snippets)
+    lines = {line.strip() for line in body.splitlines()}
+    return all(snippet in lines for snippet in required_snippets)
 
 
 def _workflow_has_release_commit_guard(*, workflow_path: Path) -> bool:
@@ -118,11 +119,19 @@ def _workflow_has_release_commit_guard(*, workflow_path: Path) -> bool:
     body = workflow_path.read_text(encoding="utf-8")
     required_snippets = (
         "expected_sha:",
-        'tag_sha="$(git rev-parse "${{ inputs.tag }}^{commit}")"',
-        'if [[ "${GITHUB_SHA}" != "${{ inputs.expected_sha }}" ]]',
-        'if [[ "${tag_sha}" != "${{ inputs.expected_sha }}" ]]',
+        "RELEASE_TAG: ${{ inputs.tag }}",
+        "RELEASE_EXPECTED_SHA: ${{ inputs.expected_sha }}",
+        "RELEASE_OPERATION: ${{ inputs.operation }}",
+        r'[[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 2',
+        '[[ "$RELEASE_EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]] || exit 2',
+        '[[ "$RELEASE_OPERATION" == candidate || "$RELEASE_OPERATION" == promote ]] || exit 2',
+        '[[ "$GITHUB_SHA" == "$RELEASE_EXPECTED_SHA" ]] || exit 2',
+        '[[ "$(git rev-parse "${RELEASE_TAG}^{commit}")" == "$RELEASE_EXPECTED_SHA" ]] || exit 2',
+        '[[ "$(git rev-parse HEAD)" == "$RELEASE_EXPECTED_SHA" ]] || exit 2',
+        '[[ -z "$(git status --porcelain)" ]] || exit 2',
     )
-    return all(snippet in body for snippet in required_snippets)
+    lines = {line.strip() for line in body.splitlines()}
+    return all(snippet in lines for snippet in required_snippets)
 
 
 def validate_local_runtime(*, repo_root: Path) -> list[str]:

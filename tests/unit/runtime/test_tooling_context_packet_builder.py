@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+from odylith.runtime.context_engine import tooling_context_budgeting as budgeting
 from odylith.runtime.context_engine import tooling_context_packet_builder as builder
 from odylith.runtime.context_engine import tooling_context_packet_compaction as compaction
 from odylith.runtime.context_engine import tooling_context_packet_completion as completion
@@ -215,23 +216,23 @@ def test_hot_path_pruning_respects_internal_context_escape_hatch() -> None:
 
 
 def test_sync_packet_budget_truncation_preserves_retry_metadata_and_updates_truth() -> None:
+    metrics = budgeting.estimate_packet_metrics(
+        payload={"documents": "x" * 2048},
+        packet_kind="bootstrap",
+        packet_state="compact",
+        budget={"max_bytes": 1024, "max_tokens": 256},
+    )
     synced = finalization.sync_packet_budget_truncation(
         {"truncation": {"packet_budget": {"retry_index": 2, "steps": ["trim-docs"]}}},
-        packet_metrics={
-            "within_budget": False,
-            "estimated_bytes": 2048,
-            "estimated_tokens": 512,
-            "max_bytes": 1024,
-            "max_tokens": 256,
-        },
+        packet_metrics=metrics,
     )
 
     assert synced["truncation"]["packet_budget"] == {
         "retry_index": 2,
         "steps": ["trim-docs"],
         "within_budget": False,
-        "estimated_bytes": 2048,
-        "estimated_tokens": 512,
+        "estimated_bytes": metrics["estimated_bytes"],
+        "estimated_tokens": metrics["estimated_tokens"],
         "max_bytes": 1024,
         "max_tokens": 256,
     }

@@ -75,14 +75,11 @@ Related Bugs:
 ## Risks & Mitigations
 
 - [x] Risk: product-repo bootstrap overwrites source-owned guidance files.
-  - [x] Mitigation: consumer-only managed guidance refresh, plus product-repo
-    integration coverage.
+  - [x] Mitigation: consumer-only managed guidance refresh, plus product-repo integration coverage.
 - [x] Risk: consumer installs pick up maintainer-only content.
-  - [x] Mitigation: sync only consumer-safe bundle trees and assert the
-    maintainer overlay stays repo-root-only in product-repo tests.
+  - [x] Mitigation: sync only consumer-safe bundle trees and assert the maintainer overlay stays repo-root-only in product-repo tests.
 - [x] Risk: install copy promises more activation than the synced files
-  - [ ] Mitigation: TODO (add explicit mitigation).
-  actually provide.
+  - [ ] Mitigation: TODO (add explicit mitigation). actually provide.
 - [ ] Risk: Unspecified risk (legacy backfill).
   - [x] Mitigation: assert on installed file contents and CLI output directly.
 

@@ -1,0 +1,309 @@
+"""Project typed Greenfield semantics into exact atomic custody rows.
+
+The authoring model owns fact selection and typed relations. Atomic ledger rows
+repeat those choices with coordinates and hashes, so deterministic code owns
+that bookkeeping instead of asking the model to restate its semantics.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Mapping, Sequence
+import hashlib
+from typing import Any
+
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_RELATION_ROLES,
+    GreenfieldAuthoredSemanticsError,
+)
+from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
+    intent_text_at_path,
+)
+
+
+_FACT_ATOM_POLICY = {
+    "title": ("states", "affirmed"),
+    "product_story": ("outputs", "affirmed"),
+    "state_object": ("states", "affirmed"),
+    "first_path": ("actions", "affirmed"),
+    "supporting_events": ("actions", "affirmed"),
+    "proof_boundary": ("constraints", "required"),
+    "problem": ("states", "affirmed"),
+    "customer": ("actors", "affirmed"),
+    "opportunity": ("outputs", "affirmed"),
+    "product_view": ("outputs", "affirmed"),
+    "success_metrics": ("outputs", "affirmed"),
+    "evidence_requirements": ("constraints", "required"),
+    "operational_constraints": ("constraints", "required"),
+    "component_responsibilities": ("actions", "affirmed"),
+    "human_actors": ("actors", "affirmed"),
+    "external_systems": ("dependencies", "affirmed"),
+    "internal_systems": ("states", "affirmed"),
+    "non_goals": ("non_goals", "prohibited"),
+}
+_RELATION_ATOM_CATEGORY = {
+    "actor_fact_quote": "actors",
+    "action_verb_quote": "actions",
+    "target_quote": "states",
+    "visible_result_quote": "outputs",
+}
+
+
+def derive_model_atomic_claims(
+    *,
+    intent: Mapping[str, Any],
+    selected_facts: Sequence[Mapping[str, Any]],
+    first_path_relations: Sequence[Mapping[str, Any]],
+    terminal_result_fact: Mapping[str, Any] | None,
+) -> tuple[dict[str, Any], ...]:
+    """Derive redundant atomic custody from model-owned facts and relations."""
+
+    facts = tuple(selected_facts)
+    facts_by_path = {
+        str(fact.get("projection_path") or ""): fact
+        for fact in facts
+        if str(fact.get("projection_path") or "") != "/first_path"
+    }
+    visible_relations = tuple(
+        relation
+        for relation in first_path_relations
+        if str(relation.get("visible_result_quote") or "")
+    )
+    if terminal_result_fact is None:
+        if visible_relations:
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authoring returned a visible result without source terminal custody"
+            )
+    elif not isinstance(terminal_result_fact, Mapping) or len(visible_relations) != 1:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned terminal custody without one visible result"
+        )
+    rows = [_whole_fact_claim(intent=intent, fact=fact) for fact in facts]
+    for relation in first_path_relations:
+        for role in AUTHORED_RELATION_ROLES:
+            quote = str(relation.get(role) or "")
+            if not quote:
+                continue
+            if role == "actor_fact_quote" and relation.get("actor_kind") != "product_wide":
+                rows.append(
+                    _event_actor_claim(
+                        intent=intent,
+                        relation=relation,
+                        actor_fact=facts_by_path.get(
+                            str(relation.get("actor_fact_path") or "")
+                        ),
+                    )
+                )
+                continue
+            if role == "visible_result_quote":
+                assert terminal_result_fact is not None
+                rows.append(
+                    _terminal_result_claim(
+                        intent=intent,
+                        relation=relation,
+                        terminal_result_fact=terminal_result_fact,
+                    )
+                )
+                continue
+            rows.append(
+                _path_relation_claim(
+                    intent=intent,
+                    selected_facts=facts,
+                    relation=relation,
+                    role=role,
+                )
+            )
+    return tuple(rows)
+
+
+def _terminal_result_claim(
+    *,
+    intent: Mapping[str, Any],
+    relation: Mapping[str, Any],
+    terminal_result_fact: Mapping[str, Any],
+) -> dict[str, Any]:
+    quote = str(relation.get("visible_result_quote") or "")
+    if quote != str(terminal_result_fact.get("terminal_result_quote") or ""):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned an ungrounded terminal result"
+        )
+    return _claim(
+        intent=intent,
+        fact=terminal_result_fact,
+        quote=quote,
+        category="outputs",
+        polarity="affirmed",
+        source_start=_integer(
+            terminal_result_fact.get("terminal_result_source_start_byte")
+        ),
+        projection_start=_integer(
+            terminal_result_fact.get("terminal_result_projection_start_byte")
+        ),
+        relation_order=_integer(relation.get("order")),
+        relation_role="visible_result_quote",
+    )
+
+
+def _whole_fact_claim(
+    *,
+    intent: Mapping[str, Any],
+    fact: Mapping[str, Any],
+) -> dict[str, Any]:
+    field = str(fact.get("field") or "")
+    try:
+        category, polarity = _FACT_ATOM_POLICY[field]
+    except KeyError as exc:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned an unsupported typed fact"
+        ) from exc
+    projected_quote = str(fact.get("quote") or "")
+    normalized_action = fact.get("entailment_relationship") == "verified_source_action"
+    quote = str(fact.get("source_quote") or "") if normalized_action else projected_quote
+    return _claim(
+        intent=intent,
+        fact=fact,
+        quote=quote,
+        category=category,
+        polarity=polarity,
+        source_start=_integer(fact.get("source_start_byte")),
+        projection_start=_integer(fact.get("projection_start_byte")),
+        projection_quote=projected_quote if normalized_action else None,
+    )
+
+
+def _path_relation_claim(
+    *,
+    intent: Mapping[str, Any],
+    selected_facts: Sequence[Mapping[str, Any]],
+    relation: Mapping[str, Any],
+    role: str,
+) -> dict[str, Any]:
+    event = str(relation.get("event_quote") or "")
+    quote = str(relation.get(role) or "")
+    role_start = event.encode("utf-8").find(quote.encode("utf-8"))
+    if role_start < 0:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned an ungrounded atomic relation"
+        )
+    event_fact = next(
+        (
+            fact
+            for fact in selected_facts
+            if str(fact.get("field") or "") in {"first_path", "supporting_events"}
+            and _integer(fact.get("source_start_byte")) == _integer(relation.get("source_start_byte"))
+            and _integer(fact.get("source_end_byte")) == _integer(relation.get("source_end_byte"))
+            and str(fact.get("quote") or "") == event
+        ),
+        None,
+    )
+    if event_fact is None:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned an unbound atomic relation"
+        )
+    normalized_action = event_fact.get("entailment_relationship") == "verified_source_action"
+    if normalized_action:
+        verified_field = {"action_verb_quote": "verified_action", "target_quote": "verified_target", "actor_fact_quote": "verified_actor"}[role]
+        if event_fact.get(verified_field) != quote:
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield atomic relation differs from its verified source action"
+            )
+        source_quote = str(event_fact.get("source_quote") or "")
+        source_start = _integer(event_fact.get("source_start_byte"))
+    else:
+        source_quote = quote
+        source_start = _integer(relation.get("source_start_byte")) + role_start
+    return _claim(
+        intent=intent,
+        fact=event_fact,
+        quote=source_quote,
+        category=_RELATION_ATOM_CATEGORY[role],
+        polarity="affirmed",
+        source_start=source_start,
+        projection_start=_integer(event_fact.get("projection_start_byte")) + role_start,
+        relation_order=_integer(relation.get("order")),
+        relation_role=role,
+        projection_quote=quote if normalized_action else None,
+    )
+
+
+def _event_actor_claim(
+    *,
+    intent: Mapping[str, Any],
+    relation: Mapping[str, Any],
+    actor_fact: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    actor_fact_quote = str(relation.get("actor_fact_quote") or "")
+    if (
+        actor_fact is None
+        or actor_fact_quote != str(actor_fact.get("quote") or "")
+    ):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned an ungrounded atomic actor"
+        )
+    return _claim(
+        intent=intent,
+        fact=actor_fact,
+        quote=actor_fact_quote,
+        category="actors",
+        polarity="affirmed",
+        source_start=_integer(actor_fact.get("source_start_byte")),
+        projection_start=_integer(actor_fact.get("projection_start_byte")),
+        relation_order=_integer(relation.get("order")),
+        relation_role="actor_fact_quote",
+    )
+
+
+def _claim(
+    *,
+    intent: Mapping[str, Any],
+    fact: Mapping[str, Any],
+    quote: str,
+    category: str,
+    polarity: str,
+    source_start: int,
+    projection_start: int,
+    relation_order: int = 0,
+    relation_role: str = "",
+    projection_quote: str | None = None,
+) -> dict[str, Any]:
+    if not quote:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned an empty atomic fact"
+        )
+    field = str(fact.get("field") or "")
+    projection_path = str(fact.get("projection_path") or "")
+    projection_value = intent_text_at_path(intent, projection_path)
+    if not projection_value:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned an invalid atomic projection"
+        )
+    quote_bytes = quote.encode("utf-8")
+    projected_bytes = (projection_quote or quote).encode("utf-8")
+    return {
+        "field": field,
+        "category": category,
+        "polarity": polarity,
+        "source_start_byte": source_start,
+        "source_end_byte": source_start + len(quote_bytes),
+        "quote": quote,
+        "quote_sha256": hashlib.sha256(quote_bytes).hexdigest(),
+        "projection_path": projection_path,
+        "projection_start_byte": projection_start,
+        "projection_end_byte": projection_start + len(projected_bytes),
+        "projection_value_sha256": hashlib.sha256(
+            projection_value.encode("utf-8")
+        ).hexdigest(),
+        "relation_order": relation_order,
+        "relation_role": relation_role,
+        **({"projection_quote": projection_quote} if projection_quote is not None else {}),
+    }
+
+
+def _integer(value: Any) -> int:
+    if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield authoring returned invalid atomic coordinates"
+        )
+    return value
+
+
+__all__ = ["derive_model_atomic_claims"]

@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Mapping
 
 from odylith.runtime.governance import casebook_source_validation
+from odylith.runtime.governance import release_planning_contract
 from odylith.runtime.governance import sync_casebook_bug_index
 from odylith.runtime.governance.github_issue_models import CasebookMatch
 from odylith.runtime.governance.github_issue_models import DEFAULT_FIXED_VERSION
@@ -158,19 +159,47 @@ def set_casebook_fields(text: str, fields: Mapping[str, str]) -> str:
 
 def resolve_release(*, repo_root: Path, release: str) -> ReleaseInfo:
     payload = json.loads((repo_root / _RELEASES_RELATIVE).read_text(encoding="utf-8"))
+    selector = release_planning_contract.normalize_release_selector(release)
+    selector_key = _release_selector_key(selector)
     aliases = payload.get("aliases", {}) if isinstance(payload, Mapping) else {}
-    release_id = str(aliases.get(release, release))
+    alias_release_id = ""
+    for raw_alias, raw_release_id in aliases.items():
+        if _release_selector_key(str(raw_alias or "")) == selector_key:
+            alias_release_id = str(raw_release_id or "").strip()
+            break
+    matches: list[Mapping[str, object]] = []
     for item in payload.get("releases", []):
-        if isinstance(item, Mapping) and str(item.get("release_id", "")) == release_id:
-            version = str(item.get("version", "") or DEFAULT_FIXED_VERSION)
-            return ReleaseInfo(
-                release_id=release_id,
-                version=version,
-                tag=str(item.get("tag", "") or f"v{version}"),
-                status=str(item.get("status", "") or "unknown"),
-                shipped_utc=str(item.get("shipped_utc", "") or ""),
-                closed_utc=str(item.get("closed_utc", "") or ""),
-            )
+        if not isinstance(item, Mapping):
+            continue
+        release_id = str(item.get("release_id", "")).strip()
+        version = str(item.get("version", "")).strip()
+        tag = str(item.get("tag", "")).strip()
+        name = str(item.get("name", "")).strip()
+        tokens = {release_id, version, tag, name}
+        if alias_release_id and release_id == alias_release_id:
+            matches.append(item)
+        elif selector_key and selector_key in {_release_selector_key(token) for token in tokens if token}:
+            matches.append(item)
+    unique_matches = {
+        str(item.get("release_id", "")).strip(): item
+        for item in matches
+        if str(item.get("release_id", "")).strip()
+    }
+    if len(unique_matches) == 1:
+        item = next(iter(unique_matches.values()))
+        version = str(item.get("version", "") or DEFAULT_FIXED_VERSION)
+        release_id = str(item.get("release_id", "")).strip()
+        return ReleaseInfo(
+            release_id=release_id,
+            version=version,
+            tag=str(item.get("tag", "") or f"v{version}"),
+            status=str(item.get("status", "") or "unknown"),
+            shipped_utc=str(item.get("shipped_utc", "") or ""),
+            closed_utc=str(item.get("closed_utc", "") or ""),
+        )
+    if len(unique_matches) > 1:
+        release_ids = ", ".join(sorted(unique_matches))
+        raise GitHubPipelineError(f"ambiguous release selector `{release}` matches {release_ids}")
     if re.fullmatch(r"\d+\.\d+\.\d+", release):
         return ReleaseInfo(
             release_id=f"release-{release.replace('.', '-')}",
@@ -179,6 +208,10 @@ def resolve_release(*, repo_root: Path, release: str) -> ReleaseInfo:
             status="unknown",
         )
     raise GitHubPipelineError(f"unknown release selector: {release}")
+
+
+def _release_selector_key(value: str) -> str:
+    return str(value or "").strip().casefold()
 
 
 def linked_issues_for_release(*, repo_root: Path, repo: str, fixed_version: str) -> tuple[tuple[CasebookRecord, str], ...]:
