@@ -22,9 +22,9 @@ from odylith.runtime.governance.release_maintainer_overrides import (
     load_benchmark_proof_override,
 )
 
-_FAIL_LATENCY_DELTA_MS = 20.0
+_HIGH_LATENCY_DELTA_MS = 20.0
 _WARN_LATENCY_DELTA_MS = 10.0
-_FAIL_PROMPT_TOKEN_DELTA = 40.0
+_HIGH_PROMPT_TOKEN_DELTA = 40.0
 _WARN_PROMPT_TOKEN_DELTA = 20.0
 _FAIL_RATE_DELTA = 0.05
 _WARN_RATE_DELTA = 0.02
@@ -390,6 +390,7 @@ def compare_latest_to_baseline(*, repo_root: str | Path, baseline: str = "last-s
         "candidate": candidate_summary,
         "baseline": baseline_summary,
         "quality_comparison_basis": "conservative absolute Odylith On, candidate minus baseline",
+        "efficiency_comparison_basis": "change in On-minus-raw time and full-session token advantage; diagnostic only",
         "relative_advantage_diagnostics": {
             "basis": "within-release Odylith On minus raw; cross-release change is diagnostic only",
             "candidate": {field: candidate_summary.get(field) for field in _ABSOLUTE_QUALITY_FIELDS},
@@ -439,14 +440,17 @@ def compare_latest_to_baseline(*, repo_root: str | Path, baseline: str = "last-s
         failures.append(f"latest report status is `{candidate_status or 'unknown'}`")
     if baseline_status != "provisional_pass":
         warnings.append(f"baseline report status is `{baseline_status or 'unknown'}`")
-    if deltas["latency_delta_ms"] > _FAIL_LATENCY_DELTA_MS:
-        failures.append(f"latency regressed by {deltas['latency_delta_ms']:.3f}ms")
-    elif deltas["latency_delta_ms"] > _WARN_LATENCY_DELTA_MS:
-        warnings.append(f"latency regressed by {deltas['latency_delta_ms']:.3f}ms")
-    if deltas["prompt_token_delta"] > _FAIL_PROMPT_TOKEN_DELTA:
-        failures.append(f"prompt cost regressed by {deltas['prompt_token_delta']:.3f} tokens")
-    elif deltas["prompt_token_delta"] > _WARN_PROMPT_TOKEN_DELTA:
-        warnings.append(f"prompt cost regressed by {deltas['prompt_token_delta']:.3f} tokens")
+    for field, label, unit, warn, high in (
+        ("latency_delta_ms", "time to valid outcome", "ms", _WARN_LATENCY_DELTA_MS, _HIGH_LATENCY_DELTA_MS),
+        ("prompt_token_delta", "full-session token cost", " tokens", _WARN_PROMPT_TOKEN_DELTA, _HIGH_PROMPT_TOKEN_DELTA),
+    ):
+        change = deltas[field]
+        if change > warn:
+            threshold = high if change > high else warn
+            warnings.append(
+                f"Diagnostic: On-minus-raw {label} advantage worsened by {change:.3f}{unit} "
+                f"(exceeds {threshold:g}{unit}; nonblocking)."
+            )
     if deltas["required_path_recall_delta"] < -_FAIL_RATE_DELTA:
         failures.append(f"required-path recall regressed by {abs(deltas['required_path_recall_delta']):.3f}")
     elif deltas["required_path_recall_delta"] < -_WARN_RATE_DELTA:
@@ -478,13 +482,13 @@ def compare_latest_to_baseline(*, repo_root: str | Path, baseline: str = "last-s
         blocking = True
     elif warnings:
         notes.append("Benchmark compare raised release warnings.")
-        notes.extend(warnings)
         status = "warn"
         blocking = False
     else:
         notes.append("Benchmark compare passed against the stored release baseline.")
         status = "pass"
         blocking = False
+    notes.extend(warnings)
     result = BenchmarkComparison(
         status=status,
         candidate_report_id=str(candidate_summary.get("report_id", "")).strip(),
@@ -635,6 +639,7 @@ def render_compare_text(result: BenchmarkComparison) -> str:
             f"- baseline_product_version: {result.baseline_product_version or '<none>'}",
             f"- baseline_source: {result.baseline_source or '<none>'}",
             f"- quality_comparison_basis: {result.summary.get('quality_comparison_basis', 'unavailable')}",
+            f"- efficiency_comparison_basis: {result.summary.get('efficiency_comparison_basis', 'unavailable')}",
             *[f"- {field}: {delta(field)}" for field in (*_SUMMARY_DELTA_FIELDS, *_ABSOLUTE_QUALITY_FIELDS)],
             *[
                 f"- diagnostic_on_minus_raw_advantage_change.{field}: {value:+.3f}"

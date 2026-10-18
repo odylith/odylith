@@ -1,6 +1,21 @@
 # Release
 Last updated: 2026-10-16
 
+## Release benchmark acceptance classification (2026-10-17)
+
+Cross-release live-proof timing and full-session-token deltas keep their exact
+`10/20ms` and `20/40-token` threshold levels as visible warnings. They measure
+shared benchmark time and full host-session cost, so they do not block release
+acceptance. Absolute quality, fairness, completion, identity, candidate
+acceptance, and packet-backed `within_budget_rate >= 0.80` remain blocking.
+This prospective classification preserves the retained failed comparison and
+requires new H, CI, full B, and predecessor comparison before release work can
+continue.
+
+The bounded comparator implementation has 132 focused passing tests. It keeps
+the threshold values and relative measurements visible and preserves all stated
+blocking outcomes. This is not release qualification.
+
 ## Required hosted package custody (2026-10-16)
 
 CB-347 records the earlier hosted rebuild and sealed-signature replacement

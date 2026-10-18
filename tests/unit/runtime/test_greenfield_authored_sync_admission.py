@@ -693,6 +693,22 @@ NOTE_BEFORE = (
 NOTE_AFTER = NOTE_BEFORE.replace("Earlier release", "Clearer project views").replace(
     "Earlier project views.", "Project plans and diagrams are easier to read.",
 )
+CORPUS = "odylith/runtime/source/optimization-evaluation-corpus.v1.json"
+CORPUS_MIRROR = "src/odylith/bundle/assets/" + CORPUS
+OLD_CORPUS = CORPUS.replace(".v1.json", ".v0.json")
+OLD_CORPUS_MIRROR = "src/odylith/bundle/assets/" + OLD_CORPUS
+CORPUS_BEFORE = json.dumps({
+    "version": "v1",
+    "scenarios": [{
+        "case_id": "selected-runtime-contract",
+        "label": "Selected runtime contract",
+        "benchmark": {"prompt": "Verify the original runtime contract.", "paths": ["app.py"]},
+        "match": {"paths_all": ["app.py"]},
+        "expect": {"within_budget": True},
+    }],
+    "architecture_scenarios": [],
+}) + "\n"
+CORPUS_AFTER = CORPUS_BEFORE.replace("original runtime contract", "current runtime contract")
 
 
 @pytest.fixture
@@ -709,6 +725,10 @@ def release_note_repo(tmp_path):
         RELEASE_MIRROR: NOTE_BEFORE,
         OLD_RELEASE_NOTE: NOTE_BEFORE.replace("0.1.15", "0.1.14"),
         OLD_RELEASE_MIRROR: NOTE_BEFORE.replace("0.1.15", "0.1.14"),
+        CORPUS: CORPUS_BEFORE,
+        CORPUS_MIRROR: CORPUS_BEFORE,
+        OLD_CORPUS: CORPUS_BEFORE,
+        OLD_CORPUS_MIRROR: CORPUS_BEFORE,
         AUTHORED: BEFORE,
         OTHER_AUTHORED: BEFORE.replace("CB-001", "CB-002"),
         PLAN: PLAN_BEFORE,
@@ -893,3 +913,204 @@ def test_release_note_selected_with_casebook_through_real_cli_admission(release_
         assert (current.repository_root / token).read_bytes() == NOTE_AFTER.encode()
         assert (previous.repository_root / token).read_bytes() == NOTE_BEFORE.encode()
     assert (current.repository_root / AUTHORED).read_bytes() == EDITED.encode()
+
+
+def _edit_corpus(root, data=CORPUS_AFTER):
+    for token in (CORPUS, CORPUS_MIRROR):
+        (root / token).write_bytes(data.encode() if isinstance(data, str) else data)
+
+
+@pytest.mark.parametrize("mixed_records", [False, True])
+def test_maintainer_corpus_admits_exact_pair_with_selected_notes(release_note_repo, mixed_records):
+    root = release_note_repo
+    previous = generations.pin_active_greenfield_generation(root)
+    _edit_corpus(root)
+    selected = (CORPUS, AUTHORED, PLAN, SPEC, DIAGRAM) if mixed_records else (CORPUS,)
+    for token in selected[1:]:
+        target = root / token
+        target.write_text(target.read_text().replace("original", "selected").replace("Original", "Selected"))
+    assert _run(root, _tokens(*selected), lambda _fd: 0) == 0
+    current = generations.require_greenfield_working_generation(root)
+    assert current.write_set_hash != previous.write_set_hash
+    for token in (CORPUS, CORPUS_MIRROR):
+        assert (current.repository_root / token).read_bytes() == CORPUS_AFTER.encode()
+        assert (previous.repository_root / token).read_bytes() == CORPUS_BEFORE.encode()
+        assert (current.repository_root / token).stat().st_mode & 0o777 == 0o644
+    assert (current.repository_root / OLD_CORPUS).read_bytes() == CORPUS_BEFORE.encode()
+
+
+@pytest.mark.parametrize("lane", ["consumer", "pinned", "missing-runtime"])
+def test_corpus_admission_requires_detached_product_source_lane(release_note_repo, lane):
+    root = release_note_repo
+    _edit_corpus(root)
+    if lane == "consumer":
+        (root / "pyproject.toml").write_text('[project]\nname = "consumer"\nversion = "0.1.15"\n')
+    else:
+        current = root / ".odylith/runtime/current"
+        current.unlink()
+        if lane == "pinned":
+            target = root / ".odylith/runtime/versions/0.1.15"
+            target.mkdir()
+            current.symlink_to(target)
+    _assert_refused_without_dispatch(root, _tokens(CORPUS))
+
+
+@pytest.mark.parametrize("token", [CORPUS_MIRROR, OLD_CORPUS, OLD_CORPUS_MIRROR])
+def test_corpus_admission_refuses_direct_bundle_and_historical_selection(release_note_repo, token):
+    (release_note_repo / token).write_text(CORPUS_AFTER)
+    _assert_refused_without_dispatch(release_note_repo, _tokens(token))
+
+
+@pytest.mark.parametrize("defect", [
+    "invalid-json", "non-utf8", "not-object", "legacy", "mixed", "missing-collection",
+    "not-a-list", "ignored-row", "blank-identity", "duplicate-identity", "implicit-identity",
+    "invalid-benchmark", "invalid-expect", "invalid-match", "unnormalizable-paths", "empty", "version",
+])
+def test_corpus_admission_requires_canonical_explicit_normalizable_rows(release_note_repo, defect):
+    data = json.loads(CORPUS_AFTER)
+    row = data["scenarios"][0]
+    if defect == "legacy":
+        data["cases"] = data.pop("scenarios")
+    elif defect == "mixed":
+        data["cases"] = data["scenarios"]
+    elif defect == "missing-collection":
+        del data["architecture_scenarios"]
+    elif defect == "not-a-list":
+        data["scenarios"] = {"case_id": "wrong-collection"}
+    elif defect == "ignored-row":
+        data["scenarios"].append("silently discarded by the tolerant reader")
+    elif defect == "blank-identity":
+        row["case_id"] = " "
+    elif defect == "implicit-identity":
+        del row["case_id"]
+    elif defect == "duplicate-identity":
+        data["architecture_scenarios"].append(row)
+    elif defect.startswith("invalid-") and defect != "invalid-json":
+        row[defect.removeprefix("invalid-")] = []
+    elif defect == "unnormalizable-paths":
+        row["benchmark"]["paths"] = 42
+    elif defect == "empty":
+        data["scenarios"] = []
+    elif defect == "version":
+        data["version"] = "v0"
+    selected = {"invalid-json": b"{", "non-utf8": b"\xff", "not-object": b"[]"}.get(defect, json.dumps(data).encode())
+    _edit_corpus(release_note_repo, selected)
+    _assert_refused_without_dispatch(release_note_repo, _tokens(CORPUS))
+
+
+@pytest.mark.parametrize("token", [CORPUS, CORPUS_MIRROR])
+@pytest.mark.parametrize("defect", ["missing", "mode", "symlink"])
+def test_corpus_pair_requires_regular_confined_unchanged_modes(release_note_repo, token, defect):
+    root = release_note_repo
+    _edit_corpus(root)
+    target = root / token
+    if defect in {"missing", "symlink"}:
+        target.unlink()
+    if defect == "mode":
+        target.chmod(0o755)
+    elif defect == "symlink":
+        target.symlink_to(root / (CORPUS if token == CORPUS_MIRROR else OLD_CORPUS))
+    _assert_refused_without_dispatch(root, _tokens(CORPUS))
+
+
+def test_corpus_source_and_mirror_must_match_before_dispatch(release_note_repo):
+    (release_note_repo / CORPUS).write_text(CORPUS_AFTER)
+    _assert_refused_without_dispatch(release_note_repo, _tokens(CORPUS))
+
+
+@pytest.mark.parametrize("token", [OTHER_AUTHORED, PROJECTION, OLD_CORPUS_MIRROR])
+def test_corpus_pair_does_not_admit_unselected_drift(release_note_repo, token):
+    _edit_corpus(release_note_repo)
+    target = release_note_repo / token
+    target.write_bytes(target.read_bytes() + b"\nUnselected change.\n")
+    _assert_refused_without_dispatch(release_note_repo, _tokens(CORPUS))
+
+
+@pytest.mark.parametrize("token", [CORPUS, CORPUS_MIRROR])
+def test_corpus_final_selected_bytes_cannot_drift(release_note_repo, token):
+    root = release_note_repo
+    old = publication.read_active_publication(root)
+    _edit_corpus(root)
+    def mutate(_fd):
+        (root / token).write_text(CORPUS_AFTER + "\n")
+        return 0
+    with pytest.raises(RuntimeError, match="selected authored bytes or mode changed"):
+        _run(root, _tokens(CORPUS), mutate)
+    assert publication.read_active_publication(root) == old
+
+
+@pytest.mark.parametrize("phase", ["operation", "successor-capture"])
+@pytest.mark.parametrize("drift", ["consumer", "pinned"])
+def test_corpus_lane_is_rechecked_before_successor_publication(release_note_repo, monkeypatch, phase, drift):
+    root = release_note_repo
+    old = publication.read_active_publication(root)
+    _edit_corpus(root)
+    def change_lane():
+        if drift == "consumer":
+            (root / "pyproject.toml").write_text('[project]\nname = "consumer"\nversion = "0.1.15"\n')
+        else:
+            target = root / ".odylith/runtime/versions/0.1.15"
+            target.mkdir()
+            current = root / ".odylith/runtime/current"
+            current.unlink()
+            current.symlink_to(target)
+    if phase == "successor-capture":
+        materialize = generations.materialize_immutable_greenfield_generation
+        def intercept(**kwargs):
+            result = materialize(**kwargs)
+            change_lane()
+            return result
+        monkeypatch.setattr(generations, "materialize_immutable_greenfield_generation", intercept)
+    def operation(_fd):
+        if phase == "operation":
+            change_lane()
+        return 0
+    with pytest.raises(RuntimeError, match="detached source-local"):
+        _run(root, _tokens(CORPUS), operation)
+    assert publication.read_active_publication(root) == old
+
+
+def test_failed_corpus_sync_preserves_old_publication_and_authored_pair(release_note_repo):
+    root = release_note_repo
+    old = publication.read_active_publication(root)
+    _edit_corpus(root)
+    assert _run(root, _tokens(CORPUS), lambda _fd: 1) == 1
+    assert publication.read_active_publication(root) == old
+    for token in (CORPUS, CORPUS_MIRROR):
+        assert (root / token).read_bytes() == CORPUS_AFTER.encode()
+
+
+@pytest.mark.parametrize("with_casebook", [False, True])
+def test_corpus_selective_adoption_through_actual_cli_sync(release_note_repo, monkeypatch, with_casebook):
+    """Real parser, admission, narrow plan, mirror, optional renderer and publication."""
+    from odylith.runtime.reasoning import odylith_reasoning
+
+    def forbidden(*_args, **_kwargs):
+        pytest.fail("canonical corpus selective sync widened its upkeep or called a provider")
+
+    monkeypatch.setattr(odylith_reasoning, "provider_from_config", forbidden)
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "normalize_legacy_backlog_index", forbidden)
+    monkeypatch.setattr(cli.sync_workstream_artifacts.governance, "build_dashboard_impact", forbidden)
+    root = release_note_repo
+    previous = generations.pin_active_greenfield_generation(root)
+    _edit_corpus(root)
+    selected = [CORPUS]
+    if with_casebook:
+        (root / AUTHORED).write_text(EDITED)
+        selected.append(AUTHORED)
+    assert cli.main([
+        "sync", "--repo-root", str(root), "--impact-mode", "selective",
+        "--runtime-mode", "standalone", *selected,
+    ]) == 0
+    current = generations.require_greenfield_working_generation(root)
+    assert current.write_set_hash != previous.write_set_hash
+    for token in (CORPUS, CORPUS_MIRROR):
+        assert (current.repository_root / token).read_bytes() == CORPUS_AFTER.encode()
+        assert (previous.repository_root / token).read_bytes() == CORPUS_BEFORE.encode()
+    for token in (OLD_CORPUS, OLD_CORPUS_MIRROR, RELEASE_NOTE, RELEASE_MIRROR):
+        assert (current.repository_root / token).read_bytes() == (previous.repository_root / token).read_bytes()
+    if with_casebook:
+        assert (current.repository_root / AUTHORED).read_bytes() == EDITED.encode()
+        assert b"The reproduced failure rejects a selected narrative" in (root / "odylith/casebook/casebook-payload.v1.js").read_bytes()
+    else:
+        assert (current.repository_root / PROJECTION).read_bytes() == (previous.repository_root / PROJECTION).read_bytes()

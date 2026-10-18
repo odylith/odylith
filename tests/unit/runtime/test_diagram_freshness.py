@@ -86,3 +86,51 @@ def test_watched_path_fingerprints_ignore_python_bytecode_cache(tmp_path: Path) 
     )
 
     assert first == second
+
+
+def test_directory_fingerprints_ignore_finder_metadata_changes(tmp_path: Path) -> None:
+    watched_dir = tmp_path / "runtime"
+    nested_dir = watched_dir / "nested"
+    nested_dir.mkdir(parents=True)
+    module = watched_dir / "module.py"
+    module.write_text("value = 1\n", encoding="utf-8")
+
+    def fingerprint() -> str:
+        return diagram_freshness.ContentFingerprintCache().path_fingerprint(watched_dir)
+
+    original = fingerprint()
+    for metadata in (watched_dir / ".DS_Store", nested_dir / ".DS_Store"):
+        metadata.write_bytes(b"Finder metadata")
+        assert fingerprint() == original
+        metadata.write_bytes(b"Changed Finder metadata")
+        assert fingerprint() == original
+        metadata.unlink()
+        assert fingerprint() == original
+
+    module.write_text("value = 2\n", encoding="utf-8")
+    assert fingerprint() != original
+
+
+def test_directory_fingerprints_keep_similarly_named_source_entries(tmp_path: Path) -> None:
+    for index, source in enumerate((".DS_Store.json", ".hidden.py", ".DS_Store/module.py")):
+        watched_dir = tmp_path / str(index)
+        watched_dir.mkdir()
+        original = diagram_freshness.ContentFingerprintCache().path_fingerprint(watched_dir)
+        entry = watched_dir / source
+        entry.parent.mkdir(parents=True, exist_ok=True)
+        entry.write_text("value = 1\n", encoding="utf-8")
+
+        assert diagram_freshness.ContentFingerprintCache().path_fingerprint(watched_dir) != original
+
+
+def test_directory_fingerprints_keep_finder_named_symlinks(tmp_path: Path) -> None:
+    watched_dir = tmp_path / "runtime"
+    watched_dir.mkdir()
+    target = tmp_path / "source.py"
+    target.write_text("value = 1\n", encoding="utf-8")
+    (watched_dir / ".DS_Store").symlink_to(target)
+    original = diagram_freshness.ContentFingerprintCache().path_fingerprint(watched_dir)
+
+    target.write_text("value = 2\n", encoding="utf-8")
+
+    assert diagram_freshness.ContentFingerprintCache().path_fingerprint(watched_dir) != original

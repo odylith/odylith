@@ -1,5 +1,63 @@
 - Bug ID: CB-320
 
+## Approved canonical metadata correction (2026-10-16)
+
+The operator delegated the decision in response to the exact single-commit
+correction and temporary account-exception request. The strict-lease replacement
+completed: main now points to `9d3674c0a4384e76279d42985c862eaa712046f7`.
+Its tree `1363fd148b7ae7cb7369a0aa6a210e90fd401336`, parent, message and
+timestamps match the original merge; only maintainer author and committer
+identity changed. The original failed merge and identity refusal remain retained.
+
+Only the canonical maintainer account received a temporary ruleset exception.
+It was removed immediately after the push; independent readback confirms the
+original active rules, conditions and enforcement with an empty bypass list.
+An earlier preflight refused before mutation because the exact configured SSH
+alias was absent from its allowlist; fresh SSH authentication verified the
+canonical account before the corrected preflight proceeded.
+
+Execution custody is `canonical-merge-identity-approved-execution.json` in the
+release evidence directory. Both original source CI runs remain successful,
+each with 11,665 tests passed. Canonical main CI `39009177640` is running;
+full unfiltered benchmark is now running in the preserved proof checkout.
+Signed-package qualification is still required. No identity
+rule, historical cutoff or external contributor authorship was changed.
+This narrow correction does not close CB-320 or grant release qualification.
+
+## Fresh squash author refusal (2026-10-16)
+
+Both PR #34 test runs passed on `4c42a04335907f5b7262f30027c19001981a25d4`,
+each with 11,665 passed, 10 skipped and 12 warnings. The ordinary guarded
+GitHub squash merge created `ff509ef985d932f9a0e6b4233c6cce03ee9e5997`.
+The merge command returned HTTP 502 after acceptance; authenticated PR and
+main readback confirmed the merge, so the command was not repeated.
+
+GitHub selected the account display name for the maintainer author. The
+unchanged history guard correctly rejects that fresh alias beyond the
+historical cutoff. Local Git configuration and the authenticated account
+were canonical; those checks do not control GitHub's squash author name.
+The merged tree exactly matches the tested source tree, but this commit is
+ineligible for release. No benchmark or package qualification has started.
+Hosted main run `38894541984` confirms the same identity refusal; its dependent
+test and Claude asset jobs were skipped. The original two successful branch
+runs remain retained. The hosted failure log has SHA-256
+`faf8c800c45e4df96c205945e0238fcc361f86675f05a6c50c2a96df034c2cd1`.
+
+A replacement commit, `9d3674c0a4384e76279d42985c862eaa712046f7`, preserves
+the exact tree, parent and message with canonical maintainer author and
+committer fields. Its history check passes; the original check fails.
+The commit object is prepared locally, with no repair ref or remote change.
+Replacing the single published main commit requires explicit authorization
+and an exact lease against the original commit. That approval is pending.
+The original merge and refusal remain retained in
+`canonical-H-checkout.json` and `canonical-merge-identity-repair-proposal.json`
+in the release evidence directory.
+
+Do not advance the historical cutoff, weaken the fresh-author rule or rewrite
+external contributor authorship to admit this commit. Future maintainer
+merges must verify the raw authored identity before publication rather than
+assuming local Git identity determines a server-authored squash commit.
+
 ## Published history integration refusal (2026-10-10)
 
 The push of `7752855fdfcd30a39a2cf59b02a089dab3ef875c` is refused by the

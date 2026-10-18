@@ -43,12 +43,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 244,
-    "mapped_workstream_evidence_count": 189,
+    "explicit_event_count": 246,
+    "mapped_workstream_evidence_count": 191,
     "recent_path_match_count": 0,
     "spec_history_event_count": 1,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 244
+    "timeline_event_count": 246
   },
   "name": "Odylith Context Engine",
   "path_prefixes": [
@@ -57,6 +57,56 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "medium",
+      "event_index": 1691,
+      "explicit_components": [],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-remote-retrieval",
+        "release",
+        "subagent-orchestrator"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-10-17T20:51:06.238230+00:00",
+      "workstreams": [
+        "B-021"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "medium",
+      "event_index": 1687,
+      "explicit_components": [],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-remote-retrieval",
+        "release",
+        "subagent-orchestrator"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-10-17T01:43:56.047881+00:00",
+      "workstreams": [
+        "B-021"
+      ]
+    },
     {
       "artifact_count": 3,
       "artifacts": [

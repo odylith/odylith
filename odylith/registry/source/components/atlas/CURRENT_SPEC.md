@@ -8,6 +8,17 @@
   Memory, Intervention, Tribunal, Surfaces, and Benchmarks.
 Last updated: 2026-10-04
 
+## Finder-metadata fingerprint boundary (2026-10-18)
+
+CB-366 found that untracked Finder `.DS_Store` files can make a clean checkout
+report five stale diagrams even when tracked bytes match the primary workspace.
+Atlas directory fingerprints now ignore only an exact regular-file,
+non-symlink `.DS_Store`. Similarly named files, directories, symlinks, and
+meaningful source changes remain visible. The targeted suite moves from 1
+failed/6 passed to 7 passed, then 8 passed after an external-target symlink
+control. Clean exact-commit eight-check proof, 47 fresh/0 stale, and CI remain
+pending.
+
 
 ## Purpose
 Atlas is Odylith's architecture and diagram-governance surface. It manages the

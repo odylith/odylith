@@ -1,6 +1,65 @@
 Status: In progress
 
-## Current gate: preserve the qualified package through hosting (2026-10-16)
+## Atlas clean-checkout freshness blocker (2026-10-18)
+
+CB-366 isolates a Finder-metadata defect in the existing Atlas directory
+fingerprint predicate. Clean checkpoint `7b6cfaffb58f87003c815724c3b2f59e01d315e9`
+has tracked bytes matching primary but reports 42 fresh and 5 stale diagrams
+because `.DS_Store` exists in three watched directories. The minimal correction
+ignores only an exact regular-file, non-symlink `.DS_Store`; similarly named
+files, directories, symlinks, and meaningful changes remain visible. Targeted
+proof changes from 1 failed/6 passed to 7 passed, then to 8 passed after an
+independent review found that `is_file()` follows symlinks and added an
+external-target symlink control. The next proof is the clean exact-commit
+eight-check run with 47 fresh/0 stale, then CI; neither has run for this fix.
+
+## Current benchmark gate (2026-10-17)
+
+For CB-364, preserve the exact cross-release live-proof timing and full-session
+token measurements and their `10/20ms` and `20/40-token` threshold levels as
+visible warnings. They measure shared benchmark time and full host-session cost,
+so they do not decide release status. Absolute quality, fairness, completion,
+identity, candidate acceptance, and packet-backed `within_budget_rate >= 0.80`
+remain blockers. The retained failed comparison remains unchanged; the corrected
+source requires a new H, CI, full B, and actual-predecessor comparison.
+
+The bounded comparator implementation has 132 focused passing tests. It retains
+the exact threshold values and relative measurements as warnings and keeps
+quality, budget, fairness, identity, completion, stale-report, and
+incomplete-history failures blocking. This is implementation proof only.
+
+Canonical H `9d3674c0a4384e76279d42985c862eaa712046f7` passes complete
+CI with 11,665 tests. Full B `2a741e4ffa9ec90d` completes all 82 scenarios
+and 328 observations, with hard and secondary gates clear, validation success
+0.986 and within-budget rate 1.0. Its actual shipped-0.1.14 predecessor
+comparison correctly selects `a9e009b5d75cc51b` and fails the frozen timing
+rule: On-versus-raw advantage changes by +3,623.065 milliseconds. This is not
+an absolute 3.623-second product slowdown. CB-364 retains the existing
+latency/token checks; no timing override or benchmark rerun is authorized.
+
+CB-365 captures one concrete evaluator defect: two validation commands still
+point to a test's old module. The exact existing function at its moved owner
+passes unchanged (one test, 0.78 seconds). The two addresses and identical
+bundle mirror are now corrected. The moved test plus five existing canonical
+corpus checks pass: six tests in 0.75 seconds; normal loading retains all 82
+scenarios. All expectations, profiles, budgets and thresholds remain exact.
+The patch and its final proof note await supported source-publication adoption;
+no unsupported admission is attempted. This source is unreleased and receives
+no old H/B credit. The original proof and failed comparison remain unchanged; release
+preparation stays held.
+
+The bounded corpus-admission implementation passes 318 tests in 15.44 seconds
+across six existing modules, including supported CLI corpus-only and mixed
+Casebook admission/publication fixtures. Primary publication has not occurred,
+and this creates no new H/B credit.
+
+The blanket Claude sign-in prerequisite is withdrawn following the retained
+native-auth audit. Actual installed adapter, native visibility and fault-safety
+proof obligations remain. Signed-package, public 44, genuine EDIT4, protected
+final, hosted/consumer/GA, shipped-pinned proof and publication gates remain
+open. The protected final stays closed.
+
+## Prior gate: preserve the qualified package through hosting (2026-10-16)
 
 The corrected source builds and signs one canonical draft, acquires and seals
 its complete signed assets, then qualifies and promotes those exact hosted
@@ -19,10 +78,19 @@ The separate test-only Atlas readiness correction passes the complete fifteen-
 test UX module and independent review, preserving original assertions and the
 authentic failed CI result. CB-347 retains all evidence and boundaries.
 
-Finish current governance, push the combined checkpoint and require its complete
-CI before canonical H, full B and one signed D. Actual hosted, installed,
-native/public and protected-final gates remain open. No local mock or source
-test grants release credit. Independent custody review SHA-256:
+Both source CI runs on `4c42a04335907f5b7262f30027c19001981a25d4` pass
+11,665 tests each. The approved exact metadata correction establishes canonical
+main `9d3674c0a4384e76279d42985c862eaa712046f7` with the same tested tree
+`1363fd148b7ae7cb7369a0aa6a210e90fd401336`. The strict-lease push completed;
+the account-specific ruleset exception was immediately removed and the original
+protection independently verified. CB-320 retains the original merge/refusal,
+the pre-mutation SSH-alias preflight refusal and successful correction custody.
+Canonical main CI `39009177640` is running. Full unfiltered source proof
+(82 scenarios, 328 observations) is now running in the preserved proof checkout.
+Require its actual last-shipped comparison before one signed D. No B or D is qualified yet. Actual hosted, installed, native/public,
+genuine EDIT and protected-final gates remain open; the final stays closed until
+its prerequisites pass. No local mock or source test grants release credit.
+Independent custody review SHA-256:
 7bb128313379df5b618bf43eaacd5cf05b3709dd55a65467ebac9f1048667b56.
 
 ## Release benchmark order correction (2026-10-16)

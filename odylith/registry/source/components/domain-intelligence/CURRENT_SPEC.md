@@ -1,6 +1,21 @@
 # Domain Intelligence
 Last updated: 2026-10-15
 
+## Canonical corpus selective admission (2026-10-17)
+
+The existing authored-selective admission owner needs one bounded extension for
+the canonical optimization corpus and its exact bundle mirror. It applies only
+in the detached source-local product lane and requires explicit selection,
+regular files, unchanged modes, source/mirror equality, confinement, the
+existing strict delta fence, and a final lane and intent recheck. No broad
+bundle admission, force mode, repair path, reinstall path, new command, or
+manual publisher is allowed. The selected generation remains active until the
+normal successor switch succeeds. The bounded implementation passes 318 tests
+in 15.44 seconds across six existing modules, including supported CLI
+corpus-only and mixed-Casebook admission/publication fixtures. Primary
+publication remains pending under CB-365 and this proof creates no new H/B
+credit.
+
 
 ## Overview
 

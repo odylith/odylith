@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from odylith import cli
 from odylith.install.release_assets import ReleaseInfo
 from odylith.runtime.evaluation import benchmark_compare
 from odylith.runtime.evaluation import benchmark_metric_helpers
@@ -282,68 +283,130 @@ def test_resolve_baseline_report_falls_back_to_tracked_release_baseline(monkeypa
 
 
 def test_compare_latest_to_baseline_flags_blocking_regressions(monkeypatch, tmp_path: Path) -> None:
-    baseline_summary = {
-        **_summary_fields("baseline-1", "0.1.5"),
-        "report_id": "baseline-1",
-        "product_version": "0.1.5",
-        "status": "provisional_pass",
-        "latency_delta_ms": 0.0,
-        "prompt_token_delta": 0.0,
-        "required_path_recall_delta": 0.0,
-        "validation_success_delta": 0.0,
-        "critical_required_path_recall_delta": 0.0,
-        "critical_validation_success_delta": 0.0,
-        "hallucinated_surface_rate_delta": 0.0,
-        "unnecessary_widening_rate_delta": 0.0,
-        "absolute_odylith_on_quality": _quality(),
-    }
+    candidate = _report("candidate", "0.1.6")
+    candidate["published_mode_summaries"]["odylith_on"] = _quality(
+        required_path_recall_rate=0.87,
+        validation_success_rate=0.89,
+        critical_required_path_recall_rate=0.93,
+        critical_validation_success_rate=0.93,
+        hallucinated_surface_rate=0.13,
+        unnecessary_widening_rate=0.13,
+    )
+    candidate["published_comparison"].update(median_latency_delta_ms=24.0, median_prompt_token_delta=55.0)
 
-    monkeypatch.setattr(
-        benchmark_compare,
-        "product_source_version",
-        lambda **kwargs: "0.1.6",
-    )
-    monkeypatch.setattr(
-        benchmark_compare,
-        "_resolve_candidate_summary",
-        lambda **kwargs: (
-            {
-                **_summary_fields("candidate-1", "0.1.6", quality=_quality(
-                    required_path_recall_rate=0.87,
-                    validation_success_rate=0.89,
-                    critical_required_path_recall_rate=0.93,
-                    critical_validation_success_rate=0.93,
-                    hallucinated_surface_rate=0.13,
-                    unnecessary_widening_rate=0.13,
-                )),
-                "report_id": "candidate-1",
-                "product_version": "0.1.6",
-                "status": "provisional_pass",
-                "current_tree_identity_match": True,
-                "latency_delta_ms": 24.0,
-                "prompt_token_delta": 55.0,
-                "required_path_recall_delta": -0.08,
-                "validation_success_delta": -0.06,
-                "critical_required_path_recall_delta": -0.02,
-                "critical_validation_success_delta": -0.02,
-                "hallucinated_surface_rate_delta": 0.03,
-                "unnecessary_widening_rate_delta": 0.03,
-            },
-            "latest-runtime-report",
-        ),
-    )
-    monkeypatch.setattr(
-        benchmark_compare,
-        "_resolve_baseline_report",
-        lambda **kwargs: (baseline_summary, "last-shipped"),
-    )
-
-    result = benchmark_compare.compare_latest_to_baseline(repo_root=tmp_path)
+    result = _compare_reports(monkeypatch, tmp_path, candidate, _report("baseline", "0.1.5"))
 
     assert result.status == "fail"
     assert result.blocking is True
-    assert any("prompt cost regressed" in item for item in result.notes)
     assert any("required-path recall regressed" in item for item in result.notes)
+    assert any("Diagnostic: On-minus-raw time to valid outcome" in item for item in result.notes)
+    assert any("Diagnostic: On-minus-raw full-session token cost" in item for item in result.notes)
+
+
+@pytest.mark.parametrize("field,summary_field,warn,high,unit", [
+    ("median_latency_delta_ms", "latency_delta_ms", 10.0, 20.0, "ms"),
+    ("median_prompt_token_delta", "prompt_token_delta", 20.0, 40.0, " tokens"),
+])
+@pytest.mark.parametrize("boundary,extra", [("warn", 0.0), ("warn", 0.001), ("high", 0.0), ("high", 0.001)])
+def test_compare_preserves_efficiency_thresholds_as_diagnostics(
+    monkeypatch, tmp_path: Path, field, summary_field, warn, high, unit, boundary, extra,
+) -> None:
+    candidate = _report("candidate", "0.1.6")
+    baseline = _report("baseline", "0.1.5")
+    change = (warn if boundary == "warn" else high) + extra
+    baseline["published_comparison"][field] = -100.0
+    candidate["published_comparison"][field] = -100.0 + change
+
+    result = _compare_reports(monkeypatch, tmp_path, candidate, baseline)
+
+    assert result.status == ("warn" if change > warn else "pass")
+    assert result.blocking is False
+    assert result.deltas[summary_field] == pytest.approx(change)
+    diagnostics = [note for note in result.notes if note.startswith("Diagnostic:")]
+    if change > warn:
+        threshold = high if change > high else warn
+        assert len(diagnostics) == 1
+        assert f"{change:.3f}{unit}" in diagnostics[0]
+        assert f"exceeds {threshold:g}{unit}; nonblocking" in diagnostics[0]
+    else:
+        assert diagnostics == []
+
+
+@pytest.mark.parametrize("as_json", [False, True])
+@pytest.mark.parametrize("case,expected_status,expected_exit", [
+    ("diagnostics", "warn", 0),
+    ("budget", "fail", 2),
+    ("fairness", "fail", 2),
+    ("model", "fail", 2),
+    ("no-success", "fail", 2),
+    ("quality", "fail", 2),
+    ("missing-measurement", "unavailable", 1),
+    ("stale", "unavailable", 1),
+    ("incomplete", "unavailable", 1),
+])
+def test_cli_compare_keeps_diagnostics_nonblocking_and_real_gates_blocking(
+    monkeypatch, tmp_path: Path, capsys, as_json: bool, case: str, expected_status: str, expected_exit: int,
+) -> None:
+    candidate = _report("candidate", "0.1.6")
+    baseline = _report("baseline", "0.1.5")
+    candidate["published_comparison"].update(median_latency_delta_ms=24.0, median_prompt_token_delta=55.0)
+    modes = candidate["published_mode_summaries"]
+    for mode in modes.values():
+        mode.update(scenario_count=1, validation_backed_scenario_count=1, expectation_success_rate=1.0,
+                    packet_scenario_count=1, within_budget_rate=0.8)
+    modes["odylith_on"]["within_budget_rate"] = 0.799 if case == "budget" else 0.8
+    if case == "no-success":
+        modes["odylith_on"]["expectation_success_rate"] = 0.0
+    contracts = {"odylith_on": {"model": "same"}, "raw_agent_baseline": {"model": "same"}}
+    if case == "model":
+        contracts["raw_agent_baseline"]["model"] = "different"
+    candidate["acceptance"] = benchmark_compare.runner._acceptance(
+        mode_summaries=modes,
+        primary_comparison=candidate["published_comparison"],
+        family_summaries={},
+        corpus_summary={},
+        fairness_findings=["raw prompt attribution is missing"] if case == "fairness" else [],
+        execution_contracts=contracts,
+        comparison_contract=candidate["comparison_contract"],
+    )
+    failed_check = {
+        "budget": "tight_budget_behavior_healthy",
+        "fairness": "fairness_contract_passed",
+        "model": "live_execution_contract_match",
+        "no-success": "candidate_expectation_success_positive",
+    }.get(case)
+    if failed_check:
+        assert candidate["acceptance"]["checks"][failed_check] is False
+        assert candidate["acceptance"]["status"] == "hold"
+    else:
+        assert candidate["acceptance"]["status"] == "provisional_pass"
+    if case == "quality":
+        modes["odylith_on"]["critical_required_path_recall_rate"] = 0.93
+    elif case == "missing-measurement":
+        del modes["odylith_on"]["required_path_recall_rate"]
+    elif case == "incomplete":
+        candidate["published_scenarios"] = []
+    _compare_reports(monkeypatch, tmp_path, candidate, baseline)
+    if case == "stale":
+        monkeypatch.setattr(tree_identity_runtime, "benchmark_report_matches_current_tree", lambda **kwargs: False)
+
+    argv = ["benchmark", "compare", "--repo-root", str(tmp_path), "--baseline", "last-shipped"]
+    exit_code = cli.main([*argv, *(["--json"] if as_json else [])])
+    output = capsys.readouterr().out
+
+    assert exit_code == expected_exit
+    if as_json:
+        payload = json.loads(output)
+        assert payload["status"] == expected_status
+        assert payload["blocking"] is (expected_exit != 0)
+        notes = "\n".join(payload["notes"])
+    else:
+        assert f"- status: {expected_status}" in output
+        notes = output
+    if case == "diagnostics":
+        assert "On-minus-raw time to valid outcome advantage worsened by 24.000ms" in notes
+        assert "On-minus-raw full-session token cost advantage worsened by 55.000 tokens" in notes
+        assert "nonblocking" in notes
 
 
 def test_compare_latest_to_baseline_passes_when_metrics_hold(monkeypatch, tmp_path: Path) -> None:

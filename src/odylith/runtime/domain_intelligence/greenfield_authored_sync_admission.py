@@ -29,6 +29,7 @@ _CASEBOOK_METADATA = frozenset(name.casefold() for name in (
 ))
 _REGISTRY = "odylith/registry/source/component_registry.v1.json"
 _ATLAS = "odylith/atlas/source/catalog/diagrams.v1.json"
+_OPTIMIZATION_CORPUS = "odylith/runtime/source/optimization-evaluation-corpus.v1.json"
 
 
 def _refuse(reason: str) -> generations.GreenfieldWorkingGenerationDriftError:
@@ -52,7 +53,8 @@ class AuthoredSyncAdmission:
         for token, expected in self.selected.items():
             if _regular_file(root, token) != expected:
                 raise _refuse(f"selected authored bytes or mode changed during sync: {token}")
-            if Path(token).parent == Path("odylith/runtime/source/release-notes"):
+            if (token == _OPTIMIZATION_CORPUS
+                    or Path(token).parent == Path("odylith/runtime/source/release-notes")):
                 previous, _ = _regular_file(self.pinned.repository_root, token)
                 _require_authored_surface(root, self.pinned.repository_root, token, previous, expected[0])
 
@@ -216,6 +218,43 @@ def _requirements_region(text: str) -> str:
     return "".join(lines[start - 1:ends[0] + 1])
 
 
+def _require_product_source_lane(root: Path) -> None:
+    from odylith.install import bootstrap_assets, runtime
+
+    if (bootstrap_assets.product_repo_role(repo_root=root) != bootstrap_assets.PRODUCT_REPO_ROLE
+            or runtime.current_runtime_version(repo_root=root) != "source-local"):
+        raise _refuse("runtime source authoring requires the detached source-local product maintainer lane")
+
+
+def _require_optimization_corpus(text: str) -> None:
+    from odylith.runtime.common import odylith_benchmark_contract as contract
+    from odylith.runtime.evaluation import odylith_benchmark_runner as runner
+
+    try:
+        corpus = json.loads(text)
+        if (not isinstance(corpus, dict) or corpus.get("version") != "v1"
+                or contract.benchmark_corpus_contract(corpus)["status"] != "canonical"):
+            raise ValueError("the canonical v1 scenario collections are required")
+        identities: set[str] = set()
+        for key, architecture in (("scenarios", False), ("architecture_scenarios", True)):
+            # The shared reader tolerates discarded rows and default identities;
+            # authored admission requires every selected row to be explicit.
+            for row in corpus[key]:
+                if (not isinstance(row, dict) or not isinstance(row.get("case_id"), str)
+                        or not row["case_id"].strip()
+                        or any(not isinstance(row.get(field), dict) for field in ("benchmark", "match", "expect"))):
+                    raise ValueError("every scenario needs an explicit identity and object contracts")
+                scenario = runner._scenario_from_case(case=row, architecture=architecture)
+                identity = scenario["scenario_id"]
+                if identity in identities:
+                    raise ValueError("scenario identities must be unique")
+                identities.add(identity)
+        if not identities:
+            raise ValueError("at least one scenario is required")
+    except (ValueError, TypeError, KeyError, AttributeError) as exc:
+        raise _refuse(f"selected optimization corpus is invalid: {exc}") from exc
+
+
 def _require_authored_surface(root: Path, published: Path, token: str, before: bytes, after: bytes) -> str | None:
     try:
         old_text, new_text = before.decode("utf-8"), after.decode("utf-8")
@@ -237,13 +276,15 @@ def _require_authored_surface(root: Path, published: Path, token: str, before: b
             raise _refuse(f"generated Registry requirements changed: {token}")
     elif token.startswith("odylith/atlas/source/") and path.suffix == ".mmd":
         _require_mapping(published, _ATLAS, "diagrams", "source_mmd", token)
+    elif token == _OPTIMIZATION_CORPUS:
+        _require_product_source_lane(root)
+        _require_optimization_corpus(new_text)
+        return "src/odylith/bundle/assets/" + token
     elif path.parent == Path("odylith/runtime/source/release-notes"):
-        from odylith.install import bootstrap_assets, runtime
+        from odylith.install import bootstrap_assets
         from odylith.runtime import release_notes
 
-        if (bootstrap_assets.product_repo_role(repo_root=root) != bootstrap_assets.PRODUCT_REPO_ROLE
-                or runtime.current_runtime_version(repo_root=root) != "source-local"):
-            raise _refuse("release-note authoring requires the detached source-local product maintainer lane")
+        _require_product_source_lane(root)
         version = bootstrap_assets.product_source_version(repo_root=root)
         canonical = release_notes.release_notes_path(repo_root=root, version=version).relative_to(root).as_posix()
         if not version or token != canonical:
@@ -280,7 +321,7 @@ def require_authored_sync_admission(*, repo_root: Path, command_tokens: Sequence
             previous_mirror, previous_mirror_mode = _regular_file(pinned.repository_root, coupled)
             mirror, mirror_mode = _regular_file(repo_root, coupled)
             if previous_mirror != previous or mirror != current or mirror_mode != previous_mirror_mode:
-                raise _refuse(f"the exact release-note bundle mirror or its mode differs: {coupled}")
+                raise _refuse(f"the exact authored bundle mirror or its mode differs: {coupled}")
             selected[coupled] = (mirror, mirror_mode)
     delta = write_sets.compile_greenfield_repository_write_set(
         source_root=pinned.repository_root, staged_root=repo_root, publication_precondition=active,
