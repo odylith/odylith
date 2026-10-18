@@ -138,7 +138,10 @@ def _path_ignored_for_directory_fingerprint(*, node: Path, relative_path: str) -
     rel = PurePosixPath(relative_path)
     if any(part in _IGNORED_DIRECTORY_FINGERPRINT_PARTS for part in rel.parts):
         return True
-    if node.is_file() and rel.suffix in _IGNORED_DIRECTORY_FINGERPRINT_SUFFIXES:
+    if node.is_file() and (
+        (rel.name == ".DS_Store" and not node.is_symlink())
+        or rel.suffix in _IGNORED_DIRECTORY_FINGERPRINT_SUFFIXES
+    ):
         return True
     return False
 

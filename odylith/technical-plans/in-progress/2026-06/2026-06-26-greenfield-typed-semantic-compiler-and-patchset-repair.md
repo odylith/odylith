@@ -1,5 +1,18 @@
 Status: In progress
 
+## Atlas clean-checkout freshness blocker (2026-10-18)
+
+CB-366 isolates a Finder-metadata defect in the existing Atlas directory
+fingerprint predicate. Clean checkpoint `7b6cfaffb58f87003c815724c3b2f59e01d315e9`
+has tracked bytes matching primary but reports 42 fresh and 5 stale diagrams
+because `.DS_Store` exists in three watched directories. The minimal correction
+ignores only an exact regular-file, non-symlink `.DS_Store`; similarly named
+files, directories, symlinks, and meaningful changes remain visible. Targeted
+proof changes from 1 failed/6 passed to 7 passed, then to 8 passed after an
+independent review found that `is_file()` follows symlinks and added an
+external-target symlink control. The next proof is the clean exact-commit
+eight-check run with 47 fresh/0 stale, then CI; neither has run for this fix.
+
 ## Current benchmark gate (2026-10-17)
 
 For CB-364, preserve the exact cross-release live-proof timing and full-session

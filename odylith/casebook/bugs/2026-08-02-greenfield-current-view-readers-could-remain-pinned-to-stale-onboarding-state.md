@@ -1,5 +1,16 @@
 - Bug ID: CB-305
 
+## Casebook counter assets omitted from the checkpoint (2026-10-18)
+
+PR CI 39103627062 at `6fb646844` completed with 11,739 passes and two
+Casebook browser failures: the index required 269 open bugs while the page
+showed 268. The refreshed Casebook assets were left out of the source commit.
+Include the matching rendered payload, detail shards, HTML and bundled shell
+with the source/index changes. Require both existing count tests on the exact
+clean successor before fresh CI. Preserve the failed run and its assertions;
+do not change the expected counts or treat fallback as full detail. The
+separate Finder fingerprint correction is recorded in CB-366.
+
 - Missing Committed Casebook Detail (2026-10-15): Both hosted suites at `433f0e38a` pass 11,209 tests and fail two checks. The Casebook payload advertises CB-364 in detail shard 012, but that committed shard omits CB-364. CI therefore shows summary fallback with meaningful Capture Gaps content and no agent-link blocks. The browser test incorrectly equates no agent blocks with an empty section; its helper also deduplicates links before testing for duplicates. Regenerate and include the complete matching Casebook artifacts, preserve substantive disclosure-only content, check raw link occurrences, and require actual full detail rather than a summary title in the load audit. Missing selected entries must remain explicitly degraded. Do not hide useful gaps, normalize away duplicate evidence, or count fallback as a successful detail load. The separate omitted-forensics-owner failure is tracked in CB-270. Failed hosted logs and exact artifact diagnosis are retained in `/Users/freedom/.codex/odylith-release-evidence/2026-10-14/v52/post-volume-recovery-20261015T0458Z/casebook-CB364-CI-browser-diagnosis.md`. Focused browser validation and fresh hosted CI remain required; no installed-package or release qualification is claimed.
 
 - Current Full CI (2026-10-15): Both hosted push and PR suites for `37ef99829` pass 11,045 tests, with ten skips and no failures. This includes the corrected D-038 browser contract and queued-history isolation. The earlier failed run remains retained. Installed-package, native Claude and final release qualification remain open. Original logs are retained under `/Users/freedom/.codex/odylith-release-evidence/2026-10-14/v52/post-volume-recovery-20261015T0458Z/source37-PR-full-CI-pytest.log` and the corresponding push log.

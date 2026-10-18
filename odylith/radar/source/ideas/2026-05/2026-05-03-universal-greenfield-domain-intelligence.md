@@ -60,6 +60,19 @@ supersedes:
 
 superseded_by: 
 
+## Atlas clean-checkout freshness blocker (2026-10-18)
+
+CB-366 records a clean-checkout-only Atlas defect. At checkpoint
+`7b6cfaffb58f87003c815724c3b2f59e01d315e9`, tracked source bytes match the
+primary workspace, yet Finder `.DS_Store` files make five diagrams stale
+(`42` fresh/`5` stale instead of `47` fresh). The bounded fix ignores only an
+exact regular-file, non-symlink `.DS_Store` in the existing directory
+fingerprint predicate. The original targeted result is 1 failed and 6 passed;
+the first correction passed 7. Independent review found `is_file()` follows
+symlinks, so the final control adds an external-target symlink refusal and the
+targeted suite now passes 8 tests. A clean exact-commit run of all eight checks,
+47 fresh/0 stale, and CI remain required before release progress is claimed.
+
 ## Current benchmark gate (2026-10-17)
 
 The prospective CB-364 correction keeps the exact cross-release live-proof timing
