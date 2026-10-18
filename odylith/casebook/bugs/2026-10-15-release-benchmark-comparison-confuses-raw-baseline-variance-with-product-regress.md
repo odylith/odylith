@@ -44,9 +44,17 @@
 
 - Solution: Compare conservative absolute Odylith quality across releases with unchanged thresholds and directions. Retain On-minus-raw advantages and their change as labeled diagnostics, preserve all within-release gates and existing latency/token checks, and fail closed on missing absolute measurements. Exclude incomplete execution from eligible history while retaining completed HOLD observations.
 
+- Timing Classification: Cross-release live-proof timing and full-session-token deltas remain visible warnings at their existing `10/20ms` and `20/40-token` levels. They are not release failures because the matched pair measures shared benchmark time and full host-session cost, not solo-user latency or initial prompt size. This does not alter the values, thresholds, within-run measurements, or original failed comparison.
+
 - Rollback/Forward Fix: Forward fix in existing release settlement; final H/B proves corrected source.
 
 - Verification: The corrected five-file slice passes 148 focused tests and independent review. It covers unchanged On with improved raw, genuine On decline hidden by worse raw, missing or invalid measurements, interrupted history, completed HOLD, canonical publication round-trip, and in-range stored-score tampering. Canonical replay of unchanged A and actual14 reports with the original interrupted receipt present selects a9e009b5d75cc51b, exits0, and returns a nonblocking warning for baseline HOLD. Critical recall and overall recall changes are zero; validation success changes by +0.027. The original exit2 output is retained. Final H/B must prove the corrected source before release closure.
+
+- Independent Review: `release-timing-policy-independent-review.md` (SHA-256 `51beab4e39d2b5b81637c1327f5e53b47bb54b0fd29b48b3fa71ce331198af13`) confirms the policy conflict and the bounded correction: preserve absolute quality, fairness, completion, identity, candidate acceptance, and `within_budget_rate >= 0.80` as blockers; preserve timing/token measurements and thresholds as warnings. New H, CI, one full 82-scenario warm/cold B, and canonical predecessor comparison remain required. No override, threshold change, raw replay, or reinterpretation of the retained failed output is allowed.
+
+- Implementation Evidence: The bounded comparator change preserves the exact `10/20ms` and `20/40-token` thresholds and emits nonblocking diagnostic warnings for their cross-release breaches. `109` comparator tests, `10` CLI/lane tests, and `13` acceptance tests pass (`132` distinct focused tests). Quality decline, `within_budget_rate` below `0.80`, fairness findings, identity or completion failures, stale reports, invalid measurements, and incomplete history still block. The retained failed comparison remains SHA-256 `6bf85c84bf5072f56c0a9450dff746d394519afdb142e435d3515daaaf474ffc`; this focused proof is not new H, CI, or B credit.
+
+- Final Review: `release-comparison-policy-final-review.md` (SHA-256 `5a30ba7274827449fc05d9d523ab4cd29a3b2aa1285dcb8c3b41dbedccc73a7d`) reports no findings. It confirms the implementation keeps numeric thresholds and diagnostics visible while preserving quality, budget, fairness, identity, and completion blockers.
 
 - Agent Guardrails: Do not alter measurement bytes, timestamps, criteria or thresholds; do not filter completed quality failures or relabel the original comparison. A remains measured proof of a160 only. Preserve two-case/four-supporting-path corpus disclosure.
 

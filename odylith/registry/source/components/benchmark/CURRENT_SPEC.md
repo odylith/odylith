@@ -50,6 +50,20 @@ evidence, diagnostic advisories and prior failures remain separately visible.
 No quality, budget, corpus, model or identity rule changes. See the
 [release runbook](../../../../MAINTAINER_RELEASE_RUNBOOK.md).
 
+## Cross-release efficiency classification (2026-10-17)
+
+Cross-release live-proof timing and full-session-token deltas keep their exact
+`10/20ms` and `20/40-token` thresholds as visible warnings. The matched pair
+measures shared benchmark time and full host-session cost, so these checks do
+not decide release status. Absolute quality, fairness, completion, identity,
+candidate acceptance, and packet-backed `within_budget_rate >= 0.80` remain
+blocking. The old failed comparison is retained; only new H, CI, full B, and
+actual-predecessor comparison can qualify the corrected source.
+
+The bounded comparator implementation has 132 focused passing tests. It keeps
+the threshold values and relative measurements visible and preserves all stated
+blocking outcomes. This is not release qualification.
+
 ## Historical source433 benchmark evidence
 
 Full source-local report `ea0fbd0916ee9690` at `433f0e38a` completes 82 scenarios,

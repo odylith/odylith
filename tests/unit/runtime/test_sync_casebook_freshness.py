@@ -20,6 +20,41 @@ from odylith.runtime.surfaces import compass_dashboard_base
 from odylith.runtime.surfaces import render_casebook_dashboard as casebook
 
 
+@pytest.mark.parametrize("with_casebook", [False, True])
+def test_canonical_corpus_selective_plan_only_mirrors_source_and_selected_surface(tmp_path, monkeypatch, with_casebook):
+    corpus = "odylith/runtime/source/optimization-evaluation-corpus.v1.json"
+    selected = (corpus, "odylith/casebook/bugs/example.md") if with_casebook else (corpus,)
+    args = SimpleNamespace(impact_mode="selective", check_only=False, force=False)
+    assert sync._should_use_truth_only_selective_sync(args=args, changed_paths=selected)
+    assert sync._owned_surfaces_for_selective_slice(selected) == (("casebook",) if with_casebook else ())
+    mirrored = []
+    monkeypatch.setattr(sync, "_sync_changed_source_truth_bundle_mirrors", lambda **kwargs: mirrored.append(kwargs) or 0)
+    plan = sync._build_truth_only_selective_sync_plan(
+        repo_root=tmp_path, args=args, changed_paths=selected,
+        sync_failure_command="odylith sync --repo-root .", runtime_mode="standalone",
+    )
+    mirror_steps = [step for step in plan.steps if not step.surface and step.action is not None]
+    assert len(mirror_steps) == 1
+    assert mirror_steps[0].action() == 0
+    assert mirrored == [{"repo_root": tmp_path, "changed_paths": selected}]
+    assert {step.surface for step in plan.steps if step.surface} <= {"casebook"}
+    if not with_casebook:
+        assert len(plan.steps) == 1
+        assert not plan.steps[0].command
+
+
+@pytest.mark.parametrize("token", [
+    "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+    "odylith/runtime/source/optimization-evaluation-corpus.v0.json",
+    "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json",
+    "odylith/runtime/source/unowned.json",
+])
+def test_corpus_selective_owner_does_not_expand_to_bundle_or_other_runtime_source(token):
+    args = SimpleNamespace(impact_mode="selective", check_only=False, force=False)
+    assert sync._owned_surface_for_selective_changed_path(token) == ""
+    assert not sync._should_use_truth_only_selective_sync(args=args, changed_paths=(token,))
+
+
 @pytest.mark.parametrize("runtime_mode", ["standalone", "auto"])
 def test_selective_sync_readers_observe_reopened_casebook_source(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, runtime_mode: str

@@ -1,11 +1,12 @@
 # Bug Index
 
-Last updated (UTC): 2026-10-16
+Last updated (UTC): 2026-10-18
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-365 | 2026-10-17 | Benchmark session brief scenario invokes a moved pytest node | P1 | benchmark | Open | [2026-10-17-benchmark-session-brief-scenario-invokes-a-moved-pytest-node.md](2026-10-17-benchmark-session-brief-scenario-invokes-a-moved-pytest-node.md) |
 | CB-364 | 2026-10-15 | Release benchmark comparison confuses raw baseline variance with product regress | P1 | benchmark | Open | [2026-10-15-release-benchmark-comparison-confuses-raw-baseline-variance-with-product-regress.md](2026-10-15-release-benchmark-comparison-confuses-raw-baseline-variance-with-product-regress.md) |
 | CB-361 | 2026-10-13 | Live benchmark instruction discovery scans retained runtime generations | P2 | benchmark | Open | [2026-10-13-live-benchmark-instruction-discovery-scans-retained-runtime-generations.md](2026-10-13-live-benchmark-instruction-discovery-scans-retained-runtime-generations.md) |
 | CB-362 | 2026-10-13 | Benchmark validator replay omits required runtime inputs and carries dangling publication entry | P1 | benchmark | Open | [2026-10-13-benchmark-validator-replay-omits-required-runtime-inputs-and-carries-dangling-pu.md](2026-10-13-benchmark-validator-replay-omits-required-runtime-inputs-and-carries-dangling-pu.md) |

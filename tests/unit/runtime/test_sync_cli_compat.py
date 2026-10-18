@@ -1501,7 +1501,7 @@ def test_build_sync_execution_plan_uses_owned_surface_selective_lane_for_governa
     assert plan.steps[labels.index(index_label)].paths == ("odylith/casebook/bugs/INDEX.md",)
     assert "Render Radar without widening into the full governance sync pipeline." in labels
     assert "Render Registry without re-running broader governance reconciliation." in labels
-    assert "Mirror the touched source-truth docs into the shipped bundle asset tree." not in labels
+    assert "Mirror the touched source-truth files into the shipped bundle asset tree." not in labels
     assert "Validate Registry contract and deep-skill policy bindings." not in labels
     assert "Sync Registry component spec requirements after Atlas mutations settle." not in labels
     assert "Render the top-level Odylith shell after the selected surfaces settle." not in labels

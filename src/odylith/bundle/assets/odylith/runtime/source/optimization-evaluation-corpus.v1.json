@@ -181,10 +181,10 @@
           "odylith/skills/odylith-session-brief/SKILL.md"
         ],
         "validation_commands": [
-          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_session_brief_exact_path_hot_path_keeps_only_live_narrowing_signal"
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_benchmark_context_packet_contracts.py::test_session_brief_exact_path_hot_path_keeps_only_live_narrowing_signal"
         ],
         "focused_local_checks": [
-          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_session_brief_exact_path_hot_path_keeps_only_live_narrowing_signal"
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_benchmark_context_packet_contracts.py::test_session_brief_exact_path_hot_path_keeps_only_live_narrowing_signal"
         ],
         "allow_noop_completion": true,
         "acceptance_criteria": [

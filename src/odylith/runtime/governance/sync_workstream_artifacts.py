@@ -343,6 +343,8 @@ def _owned_surface_for_selective_changed_path(token: str) -> str:
     normalized = str(token or "").strip()
     if not normalized:
         return ""
+    if normalized == "odylith/runtime/source/optimization-evaluation-corpus.v1.json":
+        return "runtime_source"
     if normalized in _TRUTH_ONLY_SELECTIVE_EXACT_PATHS:
         return "casebook" if "casebook" in normalized else "radar"
     if normalized.startswith("odylith/casebook/bugs/") and normalized.endswith(".md"):
@@ -508,7 +510,7 @@ def _build_truth_only_selective_sync_plan(
     if any(_should_bundle_mirror_source_truth_path(token) for token in normalized):
         steps.append(
             _execution_step(
-                "Mirror the touched source-truth docs into the shipped bundle asset tree.",
+                "Mirror the touched source-truth files into the shipped bundle asset tree.",
                 action=lambda: _sync_changed_source_truth_bundle_mirrors(
                     repo_root=repo_root,
                     changed_paths=normalized,
