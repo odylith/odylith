@@ -35,12 +35,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 885,
-    "mapped_workstream_evidence_count": 823,
+    "explicit_event_count": 888,
+    "mapped_workstream_evidence_count": 826,
     "recent_path_match_count": 0,
     "spec_history_event_count": 8,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 885
+    "timeline_event_count": 888
   },
   "name": "Registry",
   "path_prefixes": [
@@ -50,6 +50,112 @@
   ],
   "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7",
+        "tests/unit/runtime/test_validate_self_host_posture.py"
+      ],
+      "confidence": "high",
+      "event_index": 1700,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release",
+        "security"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-10-24T09:44:44-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1699,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-10-24T09:25:41-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1696,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-10-24T09:21:43-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 3,
       "artifacts": [

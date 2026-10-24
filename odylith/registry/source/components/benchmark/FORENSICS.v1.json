@@ -23,12 +23,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 203,
-    "mapped_workstream_evidence_count": 195,
+    "explicit_event_count": 205,
+    "mapped_workstream_evidence_count": 197,
     "recent_path_match_count": 0,
     "spec_history_event_count": 15,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 203
+    "timeline_event_count": 205
   },
   "name": "Benchmark",
   "path_prefixes": [
@@ -41,6 +41,66 @@
   ],
   "spec_ref": "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1696,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-10-24T09:21:43-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "medium",
+      "event_index": 1698,
+      "explicit_components": [],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-remote-retrieval",
+        "release",
+        "subagent-orchestrator"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-10-19T04:07:45.548253+00:00",
+      "workstreams": [
+        "B-021"
+      ]
+    },
     {
       "artifact_count": 0,
       "artifacts": [],

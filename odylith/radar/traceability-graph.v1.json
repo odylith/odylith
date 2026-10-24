@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "5bad567419b37c33908c1e367cc4853f06f2dc883e7e06e275d35764fc9cc7a2",
+    "digest": "d0a9baa3a82b89b5e1fac71cc102b4c91bede0505754b6b6d8b5a8e4737e0e29",
     "file_count": 318,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -14051,7 +14051,8 @@
       ],
       "component_names": [
         "Sticky release session",
-        "Canonical publish lane",
+        "Hosted candidate custody",
+        "Exact hosted promotion",
         "Post-publish proof"
       ],
       "related_component_ids": [
@@ -26472,5 +26473,5 @@
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-10-16 09:28:06Z"
+  "generated_utc": "2026-10-24 16:56:47Z"
 }

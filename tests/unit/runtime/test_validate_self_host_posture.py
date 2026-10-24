@@ -246,3 +246,35 @@ def test_actual_workflow_authorization_shell_fails_before_later_actions(field, v
     assert result.returncode == (0 if field is None else 2)
     assert marker.exists() is (field is None)
     assert not (tmp_path / 'injected').exists()
+
+
+def test_hosted_checkout_detaches_canonical_h_before_governance(tmp_path, capsys):
+    from odylith import cli
+
+    _seed_product_repo(tmp_path)
+
+    def git(*args):
+        return subprocess.check_output([
+            'git', '-C', str(tmp_path), '-c', 'core.hooksPath=/dev/null',
+            '-c', 'user.name=freedom-research', '-c', 'user.email=freedom@freedompreetham.org',
+            *args,
+        ], text=True).strip()
+
+    git('init', '--initial-branch=main')
+    git('add', '--all')
+    git('commit', '-m', 'Synthetic hosted checkout')
+    revision = git('rev-parse', 'HEAD')
+    assert cli._guard_product_repo_main_branch(repo_root=tmp_path) == 2
+    assert 'Maintainer authoring on `main` is forbidden' in capsys.readouterr().err
+
+    workflow = (REPO_ROOT / '.github/workflows/release.yml').read_text()
+    checkout = workflow.split('- uses: actions/checkout@', 1)[1].split('      - ', 1)[0]
+    # A main workflow dispatch defaults checkout to the attached main branch.
+    checkout_ref = next((line.strip().removeprefix('ref: ') for line in checkout.splitlines()
+                         if line.strip().startswith('ref: ')), 'main')
+    git('checkout', checkout_ref.replace('${{ inputs.expected_sha }}', revision).removeprefix('refs/heads/'))
+
+    assert cli._guard_product_repo_main_branch(repo_root=tmp_path) == 0, capsys.readouterr().err
+    assert git('rev-parse', 'HEAD') == revision
+    assert git('branch', '--show-current') == ''
+    assert git('status', '--porcelain') == ''

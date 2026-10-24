@@ -1,5 +1,5 @@
 # Security
-Last updated: 2026-07-20
+Last updated: 2026-10-24
 
 
 ## Purpose
@@ -110,6 +110,9 @@ and process-lifetime discipline across consumer, pinned-dogfood, and detached
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-24 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7`, `tests/unit/runtime/test_validate_self_host_posture.py`
 - **2026-05-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-141
   - Evidence: `odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md`, `src/odylith/cli.py`, `src/odylith/install/manager.py`, `src/odylith/install/runtime.py`, plus 1 more
