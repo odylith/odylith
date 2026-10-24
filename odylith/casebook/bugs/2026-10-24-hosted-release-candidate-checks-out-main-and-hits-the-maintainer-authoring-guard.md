@@ -42,7 +42,7 @@
 
 - Solution: Pin the workflow checkout to inputs.expected_sha and prove the detached exact-commit contract without weakening authoring or custody guards.
 
-- Verification: The real-Git regression fails on the original attached-main checkout and passes with the exact commit detached. All 89 focused self-host, custody and dispatch controls pass; independent review has no findings. Actual hosted progression past self-host validation remains required.
+- Verification: The real-Git regression fails on the original attached-main checkout and passes with the exact commit detached. All 89 focused self-host, custody and dispatch controls pass; independent review has no findings. Clean checkpoint 368e03d21 also passes both Casebook count controls and all eight empty, filtered and invalid-record browser states (99 tests total). Its explicit governance check passes Registry and Atlas but rejects the omitted delivery snapshot as stale. Regenerate that snapshot from the complete clean commit and include it before the next clean check. Actual hosted progression past self-host validation remains required.
 
 - Prevention: Release checkout must explicitly bind the canonical expected commit.
 
