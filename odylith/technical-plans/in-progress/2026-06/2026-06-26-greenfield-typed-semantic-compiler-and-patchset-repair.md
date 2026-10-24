@@ -1,5 +1,18 @@
 Status: In progress
 
+## Hosted candidate checkout blocker (2026-10-24)
+
+CB-367 preserves the failed canonical candidate run `40111631851` at
+`6d249fbca9cd8c41d45e6e2e90a72745cd954ce6`: the security-version check passed,
+then implicit `actions/checkout` selected `main` and the self-host governance
+check correctly exited under the maintainer authoring guard. Build, signing, and
+staging were skipped. B `57bc87dcb7a1323e` completes 82 scenarios and 328
+observations, and the canonical predecessor comparison passes blocking checks;
+neither qualifies hosted package custody. The source correction pins checkout
+to `inputs.expected_sha`. The authentic before/after regression and 89 focused
+controls pass, and independent review has no findings. A fresh checkpoint, CI,
+and actual hosted progression past self-host validation remain required.
+
 ## Atlas clean-checkout freshness blocker (2026-10-18)
 
 CB-366 isolates a Finder-metadata defect in the existing Atlas directory

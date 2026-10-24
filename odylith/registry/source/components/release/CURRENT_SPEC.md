@@ -1,5 +1,17 @@
 # Release
-Last updated: 2026-10-16
+Last updated: 2026-10-24
+
+## Hosted candidate checkout boundary (2026-10-24)
+
+CB-367 preserves candidate run `40111631851` at
+`6d249fbca9cd8c41d45e6e2e90a72745cd954ce6`. Its security-version check passed,
+but implicit workflow checkout selected `main`; self-host validation then
+correctly refused maintainer authoring, and every build, signing, and staging
+step was skipped. The source correction pins checkout to
+`inputs.expected_sha` so canonical source proof runs detached at the reserved
+commit. It does not weaken custody or authoring guards. Its real-Git regression,
+89 focused controls, and independent review pass. A fresh checkpoint, CI, and
+hosted progression past validation remain pending.
 
 ## Release benchmark acceptance classification (2026-10-17)
 
@@ -1368,6 +1380,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-24 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7`, `tests/unit/runtime/test_validate_self_host_posture.py`
 - **2026-10-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
   - Scope: B-142
   - Evidence: `sha256:674e4dcf1279090b822ef14c228da2a688306fb096338d331c896c5034c7610b`, `sha256:f6f6644081399f8233ed84590606a8894096990f2fe98cebafc6ffdd34fd570e`, `sha256:0d8006c91a5f4a229a1c9734a745efc1544e418aa22e2ca40ea3b8d315a6ae11`, `sha256:e09e99afa961b3674632a6d6594cf6aa534cbc7f784af22e98200bb0a6d35fe1`, plus 2 more
@@ -1383,9 +1398,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-10-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/atlas/source/greenfield-matrix-tiered-campaign-progress.mmd`, `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
-- **2026-10-10 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/project_intelligence/authored_fact_presenter.py`, `tests/fixtures/greenfield-release-corpus/source-annotations/public40-20261010/evidence-amendment.v1.json`
 <!-- registry-requirements:end -->
 
 ## Feature History

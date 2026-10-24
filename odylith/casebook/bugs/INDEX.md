@@ -1,11 +1,12 @@
 # Bug Index
 
-Last updated (UTC): 2026-10-18
+Last updated (UTC): 2026-10-24
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-367 | 2026-10-24 | Hosted release candidate checks out main and hits the maintainer authoring guard | P1 | release | Open | [2026-10-24-hosted-release-candidate-checks-out-main-and-hits-the-maintainer-authoring-guard.md](2026-10-24-hosted-release-candidate-checks-out-main-and-hits-the-maintainer-authoring-guard.md) |
 | CB-366 | 2026-10-18 | Atlas directory fingerprints treat finder metadata as source changes | P2 | atlas | Open | [2026-10-18-atlas-directory-fingerprints-treat-finder-metadata-as-source-changes.md](2026-10-18-atlas-directory-fingerprints-treat-finder-metadata-as-source-changes.md) |
 | CB-365 | 2026-10-17 | Benchmark session brief scenario invokes a moved pytest node | P1 | benchmark | Open | [2026-10-17-benchmark-session-brief-scenario-invokes-a-moved-pytest-node.md](2026-10-17-benchmark-session-brief-scenario-invokes-a-moved-pytest-node.md) |
 | CB-364 | 2026-10-15 | Release benchmark comparison confuses raw baseline variance with product regress | P1 | benchmark | Open | [2026-10-15-release-benchmark-comparison-confuses-raw-baseline-variance-with-product-regress.md](2026-10-15-release-benchmark-comparison-confuses-raw-baseline-variance-with-product-regress.md) |

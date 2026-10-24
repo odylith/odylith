@@ -60,6 +60,20 @@ supersedes:
 
 superseded_by: 
 
+## Hosted candidate checkout blocker (2026-10-24)
+
+CB-367 records the first canonical candidate attempt at
+`6d249fbca9cd8c41d45e6e2e90a72745cd954ce6`. Run `40111631851` passed its
+security-version check, then checked out `main` and correctly refused the
+self-host governance check under the maintainer authoring guard. No wheel,
+signature, or staged package exists. Full B `57bc87dcb7a1323e` (82 scenarios,
+328 observations) and its canonical predecessor comparison passed their blocking
+checks, but do not replace hosted candidate custody. The source correction pins
+`actions/checkout` to `inputs.expected_sha`. Its real-Git regression fails before
+the correction and passes afterward; all 89 focused controls and independent
+review pass. A fresh checkpoint, CI, and hosted progression beyond self-host
+validation remain required.
+
 ## Atlas clean-checkout freshness blocker (2026-10-18)
 
 CB-366 records a clean-checkout-only Atlas defect. At checkpoint
